@@ -9,5 +9,5 @@ from app.schemas.alerts import AlertOut
 
 
 def list_alerts(portfolio_id: str) -> list[AlertOut]:
-    portfolio_service.get_valued(portfolio_id)  # NOT_FOUND si la cartera no existe
+    portfolio_service.ensure_exists(portfolio_id)  # NOT_FOUND si la cartera no existe
     return mock.list_alerts()

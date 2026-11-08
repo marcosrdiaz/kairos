@@ -1,4 +1,5 @@
-"""El mock de cartera sirve los ejemplos por la API (criterio de T0-02)."""
+"""Rutas de cartera que aún sirven el mock (T0-02). La valoración real tiene sus casos dorados en
+`tests/golden/portfolio_init*` (T1-03)."""
 
 from fastapi.testclient import TestClient
 
@@ -6,16 +7,14 @@ from app.main import API_PREFIX
 from app.schemas import examples
 
 
-def test_get_laura_serves_example(client: TestClient) -> None:
-    response = client.get(f"{API_PREFIX}/portfolios/laura")
-    assert response.status_code == 200
-    assert response.json() == examples.load("PortfolioOut")
+def test_get_portfolio_without_prices_is_503(client: TestClient) -> None:
+    """Sin CSV en el proveedor (T1-09), la valoración no inventa precios."""
+    from tests.fakes.price_provider import FakePriceProvider, use_price_provider
 
-
-def test_get_javier(client: TestClient) -> None:
-    body = client.get(f"{API_PREFIX}/portfolios/javier").json()
-    assert body["id"] == "javier"
-    assert body["profile"] == "conservador"
+    with use_price_provider(FakePriceProvider()):
+        response = client.get(f"{API_PREFIX}/portfolios/laura")
+    assert response.status_code == 503
+    assert response.json()["code"] == "PRICE_UNAVAILABLE"
 
 
 def test_list_portfolios(client: TestClient) -> None:

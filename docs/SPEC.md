@@ -225,7 +225,7 @@ erDiagram
 | `sell` | Consume lotes por **FIFO**; devuelve plusvalía estimada = Σ (precio − coste) × unidades consumidas | units ≤ unidades disponibles |
 | `transfer` | `transfer_out` del fondo origen (FIFO) + `transfer_in` al destino. Los lotes nuevos **conservan `acquired_at` y el coste total** de los lotes consumidos; las unidades se recalculan con el VL de destino | Origen y destino `asset_type == fund`. Si no: error `TRANSFER_NOT_ALLOWED` con mensaje para ofrecer venta + compra con aviso fiscal |
 
-Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación.
+Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación. Cada `value_eur` se redondea a céntimos y `total_eur` es su suma; pesos y asignación a 4 decimales; el cambio semanal compara con las mismas participaciones a precios de hace 7 días (decisión «Valoración, alta y seed (T1-03)»).
 
 DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `clock.now()`) y crea una ejecución pendiente; el usuario confirma o salta desde la app. En demo se fuerza con `POST /demo/dca/run`.
 

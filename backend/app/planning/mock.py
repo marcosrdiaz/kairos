@@ -11,10 +11,10 @@ _AGENDA_EXAMPLES = ("AgendaItemOut", "AgendaItemOut.dca")
 
 
 def get_projection(portfolio_id: str) -> ProjectionOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return ProjectionOut.model_validate(examples.load("ProjectionOut"))
 
 
 def get_agenda(portfolio_id: str) -> list[AgendaItemOut]:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return [AgendaItemOut.model_validate(examples.load(name)) for name in _AGENDA_EXAMPLES]

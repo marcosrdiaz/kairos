@@ -47,8 +47,14 @@ def db() -> Iterator[None]:
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
-    from app.main import create_app
+def client(db: None) -> Iterator[TestClient]:
+    """Cliente de la API sobre una BD con `data/seed` cargado (Laura y Javier, T1-03).
 
+    Sin precios: quien valore una cartera activa un `FakePriceProvider` (`tests/fakes/`).
+    """
+    from app.main import create_app
+    from app.portfolio import service as portfolio_service
+
+    portfolio_service.load_seed()
     with TestClient(create_app()) as test_client:
         yield test_client

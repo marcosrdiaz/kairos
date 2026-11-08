@@ -10,7 +10,6 @@ from app.core.errors import AppError, ErrorCode
 from app.schemas import examples
 from app.schemas.common import AssetType, ErrorOut
 from app.schemas.portfolio import (
-    AssetOut,
     DcaExecutionOut,
     DcaPlanOut,
     PlanOut,
@@ -88,20 +87,6 @@ def register_transfer(portfolio_id: str, request: TransferRequest) -> Transactio
         details = {**error.details, "from_asset_type": involved[0], "to_asset_type": involved[1]}
         raise AppError(ErrorCode.TRANSFER_NOT_ALLOWED, error.message, details=details)
     return TransactionOut.model_validate(examples.load("TransactionOut.transfer"))
-
-
-_ASSET_EXAMPLES = ("AssetOut", "AssetOut.fund", "AssetOut.stock")
-
-
-def lookup_assets(query: str) -> list[AssetOut]:
-    """Busca en los ejemplos por ISIN, ticker o nombre (sin distinguir mayúsculas)."""
-    q = query.strip().casefold()
-    assets = [AssetOut.model_validate(examples.load(name)) for name in _ASSET_EXAMPLES]
-    return [
-        a
-        for a in assets
-        if q and any(q in (field or "").casefold() for field in (a.id, a.isin, a.ticker, a.name))
-    ]
 
 
 def get_dca_execution(execution_id: str) -> DcaExecutionOut:
