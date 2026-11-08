@@ -10,6 +10,17 @@
     "https://www.irishtimes.com/business/2025/06/13/stocks-fall-and-oil-prices-hit-three-year-high-after-israel-strikes-iran",
     "https://www.arabnews.pk/business/oil-settles-up-7-as-israel-iran-trade-air-strikes-2604473"
   ],
+  "observed": {
+    "factors": {
+      "EQ_GLOBAL": "-0.00331",
+      "EQ_US_TECH": "-0.01288",
+      "OIL": "0.07021",
+      "EURUSD": "0.00790",
+      "RATES_EUR": "0.00025"
+    },
+    "companies": {}
+  },
+  "observed_source": "data/prices + data/factors, cierre del día frente al cierre anterior",
   "consensus": null,
   "fallback_chain": [
     "Israel ataca instalaciones nucleares y militares de Irán y aumenta el riesgo en Oriente Próximo.",

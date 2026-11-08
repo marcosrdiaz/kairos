@@ -8,6 +8,19 @@
     "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025",
     "https://finance.yahoo.com/news/nvidia-stock-rises-modestly-as-wall-street-applauds-blackwell-ai-sales-but-notes-gross-margin-miss-135629897.html"
   ],
+  "observed": {
+    "factors": {
+      "EQ_GLOBAL": "0.00179",
+      "EQ_US_TECH": "-0.02754",
+      "OIL": "0.02082",
+      "EURUSD": "-0.00336",
+      "RATES_EUR": "-0.00009"
+    },
+    "companies": {
+      "NVDA": "-0.08478"
+    }
+  },
+  "observed_source": "data/prices + data/factors, cierre del día frente al cierre anterior",
   "consensus": null,
   "fallback_chain": [
     "NVIDIA publica unos ingresos trimestrales récord, pero prevé un margen bruto menor para el siguiente trimestre.",
