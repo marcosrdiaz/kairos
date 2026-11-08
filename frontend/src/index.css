@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de diseño de KAIROS (ver DESIGN.md).
+ * Calma antes que alarma: sin rojos. Cada estado lleva color + palabra.
+ * Todos los pares texto/fondo cumplen WCAG AA (ratios en DESIGN.md).
+ */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-base: 1.125rem; /* 18 px */
+  --text-sm: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-hero: 2.75rem;
+
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+  --color-ink: #1b2430;
+  --color-ink-muted: #4a5565;
+  --color-line: #ddd8ce;
+  --color-line-strong: #8a8f98;
+  --color-accent: #2f4b7c;
+  --color-on-accent: #ffffff;
+
+  /* Estados del widget: tranquilo · atento · revisa_plan */
+  --color-tranquilo: #1f5f46;
+  --color-tranquilo-bg: #e3f1ea;
+  --color-atento: #7a4b00;
+  --color-atento-bg: #fbefd2;
+  --color-revisa-plan: #4b3a9a;
+  --color-revisa-plan-bg: #e9e6f8;
+
+  --spacing-touch: 2.75rem; /* 44 px: objetivo táctil mínimo */
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    font-size: 100%; /* respeta el zoom del usuario */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

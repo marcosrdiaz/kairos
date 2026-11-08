@@ -57,6 +57,8 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-031 | 2026-11-08 | Reloj inyectable y ajuste de demo en la valoración (sustituye a D-009) | Aceptada |
 | D-032 | 2026-11-08 | Avisos mínimos (`event_impact`, 2 por semana ISO) pasan a MVP | Aceptada |
 | D-033 | 2026-11-08 | Herramientas de Claude Code a nivel de proyecto. Añade (solo desarrollo, no entran en la app): plugin superpowers, skills impeccable / emil-design-eng / review-animations / playwright-cli, y `@playwright/cli` global vía `scripts/setup-dev.sh` | Aceptada |
+| D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
+| D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
 
 ---
 
@@ -284,3 +286,18 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Los ejemplos de `schemas/examples/` llevan `"illustrative": true`, pero `ContractModel` rechaza campos extra: quien carga un ejemplo (tests, `mock.py`) quita esa marca antes de validar.
 - Dependencias que añade (ya previstas en `SPEC.md` §2/§3): `pydantic-settings`, `psycopg[binary]`; en desarrollo `httpx` (para `TestClient`). Herramientas: imagen `ghcr.io/astral-sh/uv:0.13.7`, `postgres:16-alpine`, `node:22-alpine`, `nginx:1.27-alpine`.
 - Consecuencias: T1-01 incluye `calc_trace`; T1-03 hace `seed_db.py` idempotente; T0-07 conviene que añada `frontend/.dockerignore` con `node_modules`.
+
+### D-035 · Dependencias y base del frontend (T0-07)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: T0-07 monta `frontend/`. React, Vite, TypeScript, Tailwind, TanStack Query, Recharts, openapi-typescript y vitest ya estaban aceptados (D-001 / `SPEC.md` §2); aquí solo se anota lo nuevo.
+- Decisión:
+  - Router: `react-router` (v8). Son 4 rutas simples; no hay motivo para TanStack Router.
+  - Tests: `@testing-library/react` y `jsdom` para vitest.
+  - Lint: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` y `globals`.
+  - Sin librerías de componentes ni de iconos. Fuentes del sistema, sin fuentes remotas (la demo funciona sin red).
+  - Proxy de Vite: el frontend llama a `/api/...` y Vite lo reenvía al backend **tal cual**, sin quitar el prefijo. La API vive bajo `/api/v1` (`SPEC.md` §11) y `src/api/client.ts` usa `/api/v1` como base; las rutas sin prefijo del diseño son abreviaturas. Pendiente de confirmar con T0-01 que el backend monta los routers en `/api/v1` (*Peticiones de contrato*). Destino por `KAIROS_API_PROXY`: `http://localhost:8000` fuera de Docker, `http://backend:8000` dentro.
+  - Formateo de cifras solo con `src/lib/format.ts` (`Intl.NumberFormat('es-ES')`): los importes entran como string Decimal y no se convierten a `number`.
+- Consecuencias:
+  - Las versiones instaladas son las últimas: React 19 y Tailwind 4 (tokens en `@theme` de `src/index.css`). `SPEC.md` §2 actualizado en el mismo PR.
+  - El `Makefile` de T0-01 puede llamar a `npm run lint|typecheck|test|build` en `frontend/`.
+  - Tokens y reglas visuales en `DESIGN.md` (raíz); contexto de producto en `PRODUCT.md`.
