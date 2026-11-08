@@ -69,6 +69,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 | D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
+| D-XXX | 2026-11-08 | Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas | Propuesta |
 
 ---
 
@@ -456,3 +457,21 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Datos reales que el equipo debe conocer: el día del BCE la rentabilidad a 10 años **sube** 2,4 pb, así que `fallback_chain` de `bce-2025-06` ("bajan… la rentabilidad de los bonos", "tienden a ganar valor") no coincide con `observed`.
   - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
   - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
+
+### D-XXX · Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas
+- Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
+- Contexto: T1-12 rellena `factor_beta`. `SPEC.md` §8.1 proponía statsmodels, pero ni pandas, ni numpy ni statsmodels estaban todavía en `backend/pyproject.toml`.
+- Decisión:
+  - **Dependencia nueva: `numpy>=2.1`** (y nada más). El OLS con término independiente, el error estándar y el R² se calculan con numpy en `backend/app/impact/betas.py`, que es una función pura tipada con `mypy --strict`. Los CSV se leen con `csv`, sin pandas.
+  - **Regresión multivariante**: la rentabilidad diaria del activo, en su divisa local y con `adj_close` (D-045), se regresa sobre los cinco factores a la vez. Así T1-13 puede sumar `Σ β·s` sin contar dos veces lo que comparten `EQ_GLOBAL` y `EQ_US_TECH`. El R² guardado es el del modelo y es igual en las cinco filas de cada activo.
+  - **Alineación**: primero se cruzan las fechas (inner join) y después se calculan las rentabilidades, de modo que un festivo de un mercado no desalinea los intervalos. `RATES_EUR` usa la variación absoluta (fracción, la misma unidad que el shock); el resto, la variación porcentual.
+  - **Ventana**: los últimos 3 años hasta la última fecha común de los factores (`--years`). Hace falta un mínimo de 60 observaciones.
+  - **Sin betas**: los activos con `price_source` `fixed:` (`DEP-12M`, `PP-MIXTO`) y las series sin variación no tienen filas. El script avisa y no inventa nada.
+  - `impact/repository.py`: `replace_betas` sustituye las filas de los activos recibidos (es idempotente) y `get_betas(asset_ids)` las devuelve como `BetaEstimate`.
+- Motivo: statsmodels arrastra scipy y patsy (unos 100 MB más en la imagen) y no trae tipos, lo que obligaría a ignorarlo en mypy. El cálculo son unas 15 líneas.
+- Alternativas descartadas: statsmodels con pandas; regresiones univariantes por factor (sumarlas cuenta dos veces la correlación entre factores).
+- Consecuencias:
+  - T1-13: un activo sin filas en `factor_beta` no tiene sensibilidad estimada, y debe contar como R² 0 en la confianza, no como 0 € con certeza. Para los activos en EUR con subyacente en USD, la beta de `EURUSD` ya recoge la divisa. El `r_fx` de §8.2 solo se aplica a los activos que cotizan en USD, cuya beta de `EURUSD` en divisa local sale casi nula.
+  - `IE00B4L5Y983` (IWDA) **es** la serie de `EQ_GLOBAL`, así que sale con beta 1 y R² 1.
+  - `make betas` necesita la tabla `asset` sembrada antes (`seed_db.py`, T1-03).
+  - Ficheros añadidos fuera de la fila de T1-12: `backend/pyproject.toml`, `backend/uv.lock` y los tests `backend/tests/test_{betas,impact_repository}.py`. `SPEC.md` §2 y §8.1 actualizados.
