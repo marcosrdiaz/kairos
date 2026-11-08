@@ -76,7 +76,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
 | T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | — | ⬜ |
 | T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | — | ⬜ |
-| T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | 🔄 en curso |
+| T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | 🧪 en PR |
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | — | ⬜ |
 | T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | — | ⬜ |
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | — | ⬜ |
@@ -168,6 +168,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** revisar y mergear #20; después cambiar la base de #21 a `main` (rebase), revisar y mergear.
 **Datos:** lee los CSV de T1-09 tal cual (D-045): `data/prices/<asset_id>.csv` (columna `close`) y `data/factors/EURUSD.csv` para el tipo de cambio. Con esos datos, Laura sale en 42.363,67 € (RV 76 %) y Javier en 180.000,25 € (RF 65 %).
 **Ficheros tocados:** `backend/app/prices/{catalog,provider,service}.py`, `backend/tests/fakes/{__init__,price_provider}.py`, `backend/tests/test_prices.py`, `docs/decisiones.md`, `docs/SPEC.md` §12.
+
+### T1-12 · Betas de factor — Manu
+**Estado:** PR #25 (`t1-12/compute-betas`). Decisión «Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas» en `docs/decisiones.md`. Añade la dependencia `numpy`.
+**Siguiente paso exacto:** revisión y merge de #25 → `docs: done T1-12`.
+**Para T1-13:** `impact.repository.get_betas(asset_ids)` devuelve `BetaEstimate`. `DEP-12M` y `PP-MIXTO` no tienen betas: tratarlos como R² 0 en la confianza. `make betas` necesita la tabla `asset` sembrada (T1-03).
+**Ficheros tocados:** `backend/app/impact/{betas,repository}.py`, `scripts/compute_betas.py`, `backend/tests/test_{betas,impact_repository}.py`, `backend/{pyproject.toml,uv.lock}`, `docs/decisiones.md`, `docs/SPEC.md` §2 y §8.1.
 
 ## 5. Bloqueos
 
