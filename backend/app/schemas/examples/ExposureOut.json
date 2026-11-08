@@ -1,0 +1,185 @@
+{
+  "illustrative": true,
+  "by_country": [
+    {
+      "key": "US",
+      "label": "Estados Unidos",
+      "value_eur": "20930.12",
+      "weight": "0.61"
+    },
+    {
+      "key": "ES",
+      "label": "España",
+      "value_eur": "2058.70",
+      "weight": "0.06"
+    },
+    {
+      "key": "GB",
+      "label": "Reino Unido",
+      "value_eur": "1715.58",
+      "weight": "0.05"
+    },
+    {
+      "key": "JP",
+      "label": "Japón",
+      "value_eur": "1715.58",
+      "weight": "0.05"
+    },
+    {
+      "key": "OTHER",
+      "label": "Otros",
+      "value_eur": "7891.70",
+      "weight": "0.23"
+    }
+  ],
+  "by_sector": [
+    {
+      "key": "information_technology",
+      "label": "Tecnología",
+      "value_eur": "11322.85",
+      "weight": "0.33"
+    },
+    {
+      "key": "financials",
+      "label": "Finanzas",
+      "value_eur": "4803.64",
+      "weight": "0.14"
+    },
+    {
+      "key": "health_care",
+      "label": "Salud",
+      "value_eur": "3431.17",
+      "weight": "0.10"
+    },
+    {
+      "key": "consumer_discretionary",
+      "label": "Consumo discrecional",
+      "value_eur": "3088.05",
+      "weight": "0.09"
+    },
+    {
+      "key": "other",
+      "label": "Otros",
+      "value_eur": "11665.97",
+      "weight": "0.34"
+    }
+  ],
+  "by_currency": [
+    {
+      "key": "USD",
+      "label": "Dólar",
+      "value_eur": "20930.12",
+      "weight": "0.61"
+    },
+    {
+      "key": "EUR",
+      "label": "Euro",
+      "value_eur": "13381.56",
+      "weight": "0.39"
+    }
+  ],
+  "top_companies": [
+    {
+      "key": "NVDA",
+      "name": "NVIDIA",
+      "value_eur": "2285.33",
+      "weight": "0.067",
+      "held_in": [
+        {
+          "asset_id": "US67066G1040",
+          "weight_in_asset": "1"
+        },
+        {
+          "asset_id": "IE00B4L5Y983",
+          "weight_in_asset": "0.05"
+        },
+        {
+          "asset_id": "IE00B03HD191",
+          "weight_in_asset": "0.05"
+        }
+      ]
+    },
+    {
+      "key": "AAPL",
+      "name": "Apple",
+      "value_eur": "1772.17",
+      "weight": "0.052",
+      "held_in": [
+        {
+          "asset_id": "US0378331005",
+          "weight_in_asset": "1"
+        },
+        {
+          "asset_id": "IE00B4L5Y983",
+          "weight_in_asset": "0.048"
+        },
+        {
+          "asset_id": "IE00B03HD191",
+          "weight_in_asset": "0.048"
+        }
+      ]
+    },
+    {
+      "key": "MSFT",
+      "name": "Microsoft",
+      "value_eur": "821.33",
+      "weight": "0.024",
+      "held_in": [
+        {
+          "asset_id": "IE00B4L5Y983",
+          "weight_in_asset": "0.04"
+        },
+        {
+          "asset_id": "IE00B03HD191",
+          "weight_in_asset": "0.04"
+        }
+      ]
+    }
+  ],
+  "overlap": [
+    {
+      "key": "NVDA",
+      "name": "NVIDIA",
+      "weight": "0.067",
+      "asset_ids": [
+        "US67066G1040",
+        "IE00B4L5Y983",
+        "IE00B03HD191"
+      ]
+    },
+    {
+      "key": "AAPL",
+      "name": "Apple",
+      "weight": "0.052",
+      "asset_ids": [
+        "US0378331005",
+        "IE00B4L5Y983",
+        "IE00B03HD191"
+      ]
+    },
+    {
+      "key": "MSFT",
+      "name": "Microsoft",
+      "weight": "0.024",
+      "asset_ids": [
+        "IE00B4L5Y983",
+        "IE00B03HD191"
+      ]
+    }
+  ],
+  "radiography": {
+    "num_holdings": 3,
+    "top_country": {
+      "key": "US",
+      "label": "Estados Unidos",
+      "weight": "0.61"
+    },
+    "top_companies_group": {
+      "n": 7,
+      "weight": "0.19"
+    }
+  },
+  "coverage_pct": "0.94",
+  "as_of": "2026-06-30T00:00:00Z",
+  "calc_id": "calc_b1b57b87d3b0adf8903512fb2e794408"
+}

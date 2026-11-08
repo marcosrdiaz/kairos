@@ -1,0 +1,67 @@
+{
+  "illustrative": true,
+  "factor_shocks": {
+    "EQ_GLOBAL": "-0.10"
+  },
+  "impact_eur": "-2410.00",
+  "low_eur": "-2890.00",
+  "high_eur": "-1930.00",
+  "confidence": "alta",
+  "breakdown": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "value_eur": "10877.88",
+      "impact_eur": "-1090.00",
+      "market_eur": "-1090.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "name": "Vanguard Global Stock Index Fund EUR Acc",
+      "value_eur": "9655.31",
+      "impact_eur": "-965.00",
+      "market_eur": "-965.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    },
+    {
+      "asset_id": "US67066G1040",
+      "name": "NVIDIA Corp.",
+      "value_eur": "1258.67",
+      "impact_eur": "-170.00",
+      "market_eur": "-170.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    },
+    {
+      "asset_id": "US0378331005",
+      "name": "Apple Inc.",
+      "value_eur": "786.58",
+      "impact_eur": "-85.00",
+      "market_eur": "-85.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    },
+    {
+      "asset_id": "ES0148396007",
+      "name": "Inditex",
+      "value_eur": "1195.00",
+      "impact_eur": "-60.00",
+      "market_eur": "-60.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    },
+    {
+      "asset_id": "ES0144580Y14",
+      "name": "Iberdrola",
+      "value_eur": "761.40",
+      "impact_eur": "-40.00",
+      "market_eur": "-40.00",
+      "fx_eur": "0.00",
+      "channel": "bolsa"
+    }
+  ],
+  "calc_id": "calc_ff002f20300f51c19acdfd06f5dceb03"
+}

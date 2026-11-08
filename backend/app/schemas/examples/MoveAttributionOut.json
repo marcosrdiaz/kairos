@@ -1,0 +1,56 @@
+{
+  "illustrative": true,
+  "period": "week",
+  "start": "2026-11-01T18:00:00Z",
+  "end": "2026-11-08T18:00:00Z",
+  "change_eur": "-514.00",
+  "change_pct": "-0.015",
+  "by_asset": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "change_eur": "-230.00"
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "name": "Vanguard Global Stock Index Fund EUR Acc",
+      "change_eur": "-90.00"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "name": "Vanguard Global Bond Index Fund EUR Hedged Acc",
+      "change_eur": "30.00"
+    },
+    {
+      "asset_id": "US67066G1040",
+      "name": "NVIDIA Corp.",
+      "change_eur": "-180.00"
+    },
+    {
+      "asset_id": "US0378331005",
+      "name": "Apple Inc.",
+      "change_eur": "-40.00"
+    },
+    {
+      "asset_id": "ES0148396007",
+      "name": "Inditex",
+      "change_eur": "-10.00"
+    },
+    {
+      "asset_id": "ES0144580Y14",
+      "name": "Iberdrola",
+      "change_eur": "6.00"
+    }
+  ],
+  "by_event": [
+    {
+      "event_id": "nvda-2025-02",
+      "title": "NVIDIA cae tras presentar resultados",
+      "impact_eur": "-470.00",
+      "low_eur": "-620.00",
+      "high_eur": "-320.00"
+    }
+  ],
+  "unexplained_eur": "-44.00",
+  "calc_id": "calc_3734a903022249b3010be1897042568e"
+}

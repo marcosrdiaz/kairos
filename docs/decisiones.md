@@ -5,7 +5,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en las referencias desde otros ficheros **del mismo PR**; fuera del PR, p. ej. en el tablero, se cita por título, nunca como `D-XXX`); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
@@ -64,6 +64,8 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
+| D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
+| D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 | D-XXX | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 
 ---
@@ -375,6 +377,34 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `mock.mp3` (6,7 s, 48 kbps mono) se generó en local con la voz es-ES de Windows (Helena) y ffmpeg. Dice: "Audio de prueba de KAIROS. Soy una inteligencia artificial y esto no es asesoramiento financiero.", para que también valga como aviso de IA mientras no exista `disclaimer.mp3`. No lleva cifras.
   - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
 - Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
+
+### D-041 · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios.
+- Decisión:
+  - Rutas: `api/impact.py` sirve `GET /portfolios/{id}/events`, `POST /portfolios/{id}/scenarios` y `GET /portfolios/{id}/move`; `api/exposure.py`, `/exposure` y `/radar`; `api/status.py`, `/status`; `api/planning.py`, `/projection` y `/agenda`. T2-05, T2-06 y T2-07 pueden mover las suyas a `api/{radar,agenda,move}.py`.
+  - `schemas/impact.py` añade `ScenarioRequest`, que el diseño solo describía con un JSON. `EventType` y `MovePeriod` son `Literal` para no chocar en el OpenAPI con los enums de T0-05.
+  - `ExplanationStatus`, `SentenceStatus`, `StatusState` y `StatusReasonKind` se importan de `schemas/agents.py` (D-039).
+  - Los mocks comprueban que la cartera existe con `portfolio.service.get_valued` (404).
+  - Ejemplos con los activos y el total de `PortfolioOut.json` (ilustrativos), con desgloses que suman. Variantes: `EventImpactOut.nvda` (sin consenso, `pending`), `StatusOut.tranquilo`, `StatusOut.revisa_plan` y `AgendaItemOut.dca`.
+  - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
+  - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
+- Consecuencias: `EventImpactStub` (`schemas/agents.py`) ya se puede sustituir por `EventImpactOut` (D-039).
+
+### D-042 · Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: `SPEC.md` §6 no tenía tablas para las ejecuciones de DCA (`DcaExecutionOut`, estado `pending`) ni para el ajuste de demo (D-031), y le faltaban columnas que piden los contratos. Además, las tablas tienen claves foráneas entre módulos y hay que cargarlas todas juntas antes de crear el esquema.
+- Decisión:
+  - Tablas nuevas: `dca_execution` (id, dca_plan_id, scheduled_for, status, created_at, resolved_at), `dca_execution_line` (execution_id, asset_id, amount_eur, price, price_at, units_estimated, transaction_id) y `demo_adjustment` (portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at), **una fila por posición**, para que `value_eur` de cada posición pueda sumar su parte. `PortfolioOut.demo_adjustments` las agrega por evento. Las tres van en `portfolio/models.py`.
+  - Columnas añadidas a las de §6: `portfolio.created_at`; `transaction.price_currency`, `realized_gain_eur` y `calc_id`; `tax_lot.units_initial`; `dca_plan.last_execution_at` y `next_execution_at` (vienen en el seed, D-038); `event.text` y `created_at`; `event_impact.impact_pct`, `explanation_status` y `created_at`; `agent_log.created_at`. `agent_log.guardian_verdict` es JSON.
+  - IDs de texto que genera cada servicio (`laura`, el ISIN, `dca_laura`, `tx_…`, `lot_…`); solo `demo_adjustment` y `agent_log` usan entero autoincremental. Los enums se guardan como texto con los valores de `app.schemas`, sin tipos `ENUM` de Postgres.
+  - Tipos: euros `NUMERIC(18,2)`; participaciones, precios, tipos de cambio, coste por unidad y estadísticos (`beta`, `r2`, `score`, `impact_pct`) `NUMERIC(20,8)`; pesos y fracciones `NUMERIC(10,8)`; fechas `TIMESTAMP WITH TIME ZONE`. Los `calc_id` no llevan clave foránea a `calc_trace`, porque la traza se escribe en su propia sesión.
+  - `app/models.py` importa todos los `models.py`; lo usan `alembic/env.py` y el fixture `db` (`conftest.py`). Quien añada un `models.py` lo registra ahí y crea una migración (`alembic revision --autogenerate`, desde `backend/`). `test_migrations.py` falla si los modelos y las migraciones no coinciden.
+  - `alembic.ini` en `backend/` (la condición del servicio `seed` de Compose, D-034); la URL sale de `DATABASE_URL`. Migración inicial `0001`, probada en SQLite y en Postgres 16 (subir, `alembic check`, bajar).
+  - Ficheros añadidos fuera de la fila de T1-01: `backend/alembic.ini`, `backend/app/models.py`, `backend/app/prices/__init__.py`, `backend/tests/test_migrations.py`, una línea en `backend/tests/conftest.py` y `known-third-party = ["alembic"]` en `backend/pyproject.toml` (ruff tomaba `backend/alembic/` por el paquete).
+- Motivo: así T1-06 (DCA) y T2-02 (ajuste de demo) no necesitan otra migración, que podría chocar con las de otras tareas en paralelo.
+- Alternativas descartadas: el ajuste de demo agregado por evento (no basta para `value_eur` por posición); `ENUM` de Postgres (cada valor nuevo exigiría una migración y no funcionan igual en SQLite).
+- Consecuencias: T1-02, T1-03, T1-06, T1-11, T1-12, T1-13, T1-15, T2-02 y T2-08 ya tienen sus tablas. Si una tarea cambia un modelo, añade una migración `0002_…` encadenada a la última que haya en `main`; si dos ramas crean migraciones a la vez, la segunda en entrar ajusta su `down_revision`. `SPEC.md` §6 actualizado.
 
 ### D-XXX · Eventos de replay (T0-10): formato del texto como entrada de fuente
 - Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta

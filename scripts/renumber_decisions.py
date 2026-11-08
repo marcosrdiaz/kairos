@@ -4,7 +4,7 @@
 Las ramas escriben las decisiones nuevas con `D-XXX` (y `D-XXX-a`, `D-XXX-b`… si hay varias en la
 misma rama). Al entrar en `main`, este script (lo lanza la Action `renumber-decisions`) asigna los
 siguientes IDs correlativos `D-NNN` y los sustituye en la entrada, en la fila del índice y en las
-referencias de los ficheros de texto versionados.
+referencias de los ficheros que ese mismo commit ha modificado.
 
 Reglas:
 - El siguiente ID es el mayor `D-NNN` ya usado en entradas e índice, más uno.
@@ -13,12 +13,18 @@ Reglas:
   índice por orden.
 - Una referencia con sufijo (`D-XXX-b`) siempre es inequívoca. Una `D-XXX` sin sufijo en el texto
   solo se sustituye si ese día hay una sola; si hay varias, se deja y se avisa.
+- Las referencias solo se sustituyen en `docs/decisiones.md` y en los ficheros del commit que
+  dispara la Action (`--before` y `--after`, lo que da `git diff --name-only`). Un `D-XXX` en
+  cualquier otro fichero (p. ej. el tablero, que cita decisiones de PRs aún sin mergear) no se toca:
+  pertenece a otra decisión pendiente y numerarlo ahora lo apuntaría a la equivocada. Solo se avisa.
+  Fuera del propio PR, las decisiones sin mergear se citan por título, no como `D-XXX`.
 - No se tocan los textos que explican la convención: la cabecera de `docs/decisiones.md` (antes de
   `## Índice`) y los ficheros de `PROTECTED`.
 - Idempotente: sin `D-XXX` no cambia nada y sale con 0. Sale con 1 si hay IDs repetidos o una
   entrada sin fila de índice (o al revés).
 
-Uso: `python scripts/renumber_decisions.py [--root RUTA]`. Solo biblioteca estándar.
+Uso: `python scripts/renumber_decisions.py [--root RUTA] [--before SHA --after SHA]`. Sin `--before` y
+`--after` solo se procesa `docs/decisiones.md`. Solo biblioteca estándar.
 """
 
 import argparse
@@ -67,6 +73,25 @@ def _tracked_files(root: Path) -> list[Path]:
             for p in root.rglob("*")
             if p.is_file() and not skip.intersection(p.relative_to(root).parts)
         ]
+    return [root / name for name in out.split("\0") if name]
+
+
+def changed_files(root: Path, before: str, after: str) -> list[Path]:
+    """Ficheros que cambió el rango `before..after` (los del push que dispara la Action).
+
+    Un `before` de ceros (rama nueva) se sustituye por el padre de `after`.
+    """
+    if not before.strip("0"):
+        before = f"{after}^"
+    try:
+        out = subprocess.run(
+            ["git", "diff", "--name-only", "-z", "--diff-filter=d", f"{before}..{after}"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        ).stdout.decode("utf-8")
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise RenumberError(f"No se puede calcular git diff {before}..{after}: {error}") from error
     return [root / name for name in out.split("\0") if name]
 
 
@@ -155,7 +180,11 @@ def _sub_refs(text: str, plan: _Plan, ambiguous: list[str]) -> str:
 
 
 def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
-    """Renumera y devuelve un informe (una línea por ID asignado). Vacío si no había nada."""
+    """Renumera y devuelve un informe (una línea por ID asignado). Vacío si no había nada.
+
+    `files` son los ficheros (además de `docs/decisiones.md`) donde se sustituyen las referencias:
+    los que cambió el commit que dispara la Action. Los demás ficheros con `D-XXX` no se tocan.
+    """
     decisions_path = root / DECISIONS
     text = _read_text(decisions_path)
     if text is None:
@@ -190,8 +219,10 @@ def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
         out.append(new_line)
     _write_text(decisions_path, "".join(out))
 
-    for path in files if files is not None else _tracked_files(root):
+    processed: set[str] = set()
+    for path in files or []:
         rel = path.relative_to(root).as_posix()
+        processed.add(rel)
         if rel == DECISIONS or _is_protected(rel):
             continue
         original = _read_text(path)
@@ -201,6 +232,13 @@ def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
         if updated != original:
             _write_text(path, updated)
             report.append(f"  referencias actualizadas en {rel}")
+    for path in _tracked_files(root):
+        rel = path.relative_to(root).as_posix()
+        if rel == DECISIONS or rel in processed or _is_protected(rel):
+            continue
+        other = _read_text(path)
+        if other is not None and _REF.search(other):
+            report.append(f"AVISO: {rel} cita D-XXX pero no está en el diff; no se toca")
     for token in sorted(set(ambiguous)):
         report.append(f"AVISO: quedan referencias ambiguas a {token} (hay varias D-XXX); revísalas")
     return report
@@ -209,12 +247,17 @@ def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0] if __doc__ else None)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--before", help="commit anterior al push (github.event.before)")
+    parser.add_argument("--after", help="commit del push (github.sha)")
     args = parser.parse_args(argv)
+    if bool(args.before) != bool(args.after):
+        parser.error("--before y --after van juntos")
     for stream in (sys.stdout, sys.stderr):  # consolas de Windows sin UTF-8
         if isinstance(stream, io.TextIOWrapper):
             stream.reconfigure(encoding="utf-8")
     try:
-        report = renumber(args.root)
+        files = changed_files(args.root, args.before, args.after) if args.before else []
+        report = renumber(args.root, files)
     except RenumberError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
