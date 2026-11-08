@@ -73,7 +73,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-047 | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
 | D-048 | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
 | D-049 | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
-| D-XXX | 2026-11-08 | Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas | Propuesta |
+| D-050 | 2026-11-08 | Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas | Propuesta |
 
 ---
 
@@ -533,7 +533,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
     - En eventos de resultados, el residuo de un fondo equivale a "esa empresa no está en el residuo": el peso `w_{i,c}` de la empresa sale solo de su fila nombrada y, si no tiene fila, es 0.
     - Efecto en `Confidence` (`SPEC.md` §8): el umbral "cobertura ≥ 90 %" de `alta` se mide con este `coverage_pct`; Laura lo cumple.
 
-### D-XXX · Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas
+### D-050 · Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas
 - Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
 - Contexto: T1-12 rellena `factor_beta`. `SPEC.md` §8.1 proponía statsmodels, pero ni pandas, ni numpy ni statsmodels estaban todavía en `backend/pyproject.toml`.
 - Decisión:
