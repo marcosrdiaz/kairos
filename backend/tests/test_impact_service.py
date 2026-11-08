@@ -218,7 +218,10 @@ def test_scenario_endpoint_computes_and_traces(betas: None, client: TestClient) 
     assert response.status_code == 200
     body = response.json()
     assert body["factor_shocks"] == {"EQ_GLOBAL": "-0.10"}
-    priced = sum(p.value_eur for p in total.positions if p.asset_id not in {"DEP-12M", "PP-MIXTO"})
+    priced = sum(
+        (p.value_eur for p in total.positions if p.asset_id not in {"DEP-12M", "PP-MIXTO"}),
+        Decimal("0"),
+    )
     assert abs(Decimal(body["impact_eur"]) + priced / 10) <= Decimal("0.05")
     assert Decimal(body["low_eur"]) < Decimal(body["impact_eur"]) < Decimal(body["high_eur"])
     record = trace.get(body["calc_id"])
