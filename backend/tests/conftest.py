@@ -39,7 +39,7 @@ def _isolated_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Itera
 @pytest.fixture
 def db() -> Iterator[None]:
     """Base de datos vacía con todas las tablas."""
-    import app.core.trace  # noqa: F401  (registra calc_trace en Base.metadata)
+    import app.models  # noqa: F401  (registra todas las tablas en Base.metadata)
 
     Base.metadata.create_all(get_engine())
     yield
