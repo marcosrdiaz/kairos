@@ -58,7 +58,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | Alons | ✅ hecho |
 | T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
-| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🧪 en PR |
+| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | ✅ hecho |
 | T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | Manu | 🧪 en PR |
 
 ### Fase 1 · Datos y motores (lun 9)
@@ -138,11 +138,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** revisión y merge del PR, y después `docs: done T0-10`. Eso desbloquea T1-09 y T1-15.
 **Para T1-09:** las horas de `occurred_at` son 12:15Z (BCE), 01:42Z del 13 jun (petróleo, primera cotización del Brent tras los ataques del día 12 a las 23:30Z) y 21:20Z del 26 feb (NVIDIA; la caída es del 27 feb). `observed` debe medirse en esos días de mercado.
 **Ficheros tocados:** los de arriba.
-
-### T0-09 · IDs de voz de ElevenLabs — Marcos
-**Estado:** PR #16 abierto (`t0-09/elevenlabs-ids`): IDs, voz (Ciro), latencia y pronunciación en `docs/decisiones.md` (entrada «IDs de ElevenLabs (T0-09)»), y los tres IDs en `.env.example`.
-**Siguiente paso exacto:** que un revisor lo mire y se haga merge. La voz Ciro la eligió el equipo a oído; Carolina y Lydia quedan descartadas.
-**Ficheros tocados:** `docs/decisiones.md`, `.env.example` (este último no estaba en la fila de la tarea: solo se rellenan los IDs).
 
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
 **Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
