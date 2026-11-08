@@ -67,7 +67,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 | D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
-| D-XXX | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
+| D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 
 ---
 
@@ -425,7 +425,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: Carolina (`UOIqAnmS11Reiei1Ytkc`, voz de la biblioteca, mujer peninsular) y Lydia (`SDVJaMLoJa7wc3s2sn7d`, mujer peninsular): elegida Ciro a oído por el equipo. Antes de eso Carolina se había preferido sobre Lydia por ritmo (~14 frente a ~19 car/s en una frase de prueba).
 - Consecuencias: `.env.example` lleva ya los tres IDs. T1-21 (`voice/`) implementa la conversión de cifras a palabras y el calentamiento de la voz; T0-06 puede usar el `voice_id`. Si la voz o la latencia fallan en T2-16, se cambia de voz o de modelo, no de proveedor (decisión 4).
 
-### D-XXX · Eventos de replay (T0-10): formato del texto como entrada de fuente
+### D-044 · Eventos de replay (T0-10): formato del texto como entrada de fuente
 - Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
 - Contexto: T0-10 redacta los tres eventos de D-020 en `data/events/replay/*.json`. Más adelante la app obtendrá los eventos scrapeando noticias y datos de mercado, y el analizador los interpretará; hoy estos JSON son mocks de esa entrada.
 - Decisión:
