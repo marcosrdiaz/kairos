@@ -1,0 +1,14 @@
+{
+  "illustrative": true,
+  "state": "atento",
+  "total_eur": "42380.00",
+  "change_week_pct": "-0.012",
+  "reason": {"kind": "event", "event_id": "nvda-2025-02"},
+  "event_title": "Resultados de NVIDIA",
+  "top_asset_class": "equity",
+  "main_channel": "tecnológicas",
+  "event_impact_eur": "-470.00",
+  "equity_current": null,
+  "equity_target": null,
+  "calc_id": "calc_9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b"
+}
