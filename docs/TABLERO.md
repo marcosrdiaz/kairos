@@ -72,7 +72,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | — | ⬜ |
-| T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | 🔄 en curso |
+| T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | 🧪 en PR |
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
 | T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | — | ⬜ |
 | T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | — | ⬜ |
@@ -132,6 +132,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T1-08 · Composición de fondos y ETF — Marcos
+**Qué estaba haciendo:** PR #24 abierto (`t1-08/fund-compositions`) con los 10 CSV de `data/seed/compositions/`, `backend/tests/test_compositions.py` y la decisión «Composición de fondos y ETF (T1-08)». `make lint && make test` en verde. Falta revisor y merge.
+**Siguiente paso exacto:** que un compañero revise el PR (5 minutos); mergear y marcar `docs: done T1-08`. T1-11 puede empezar al entrar en `main`; las claves `OTROS_`, `GOV_` y `BONOS_` no son una empresa (ver la decisión).
+**Ficheros tocados:** `data/seed/compositions/*.csv`, `backend/tests/test_compositions.py`, `docs/decisiones.md`, `docs/SPEC.md` (§12).
 
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
 **Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
