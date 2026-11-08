@@ -59,6 +59,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-033 | 2026-11-08 | Herramientas de Claude Code a nivel de proyecto. Añade (solo desarrollo, no entran en la app): plugin superpowers, skills impeccable / emil-design-eng / review-animations / playwright-cli, y `@playwright/cli` global vía `scripts/setup-dev.sh` | Aceptada |
 | D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
 | D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
+| D-XXX | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 
 ---
 
@@ -312,3 +313,16 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `api/portfolio.py` expone ya todas las rutas de cartera sobre el mock, también las de escritura (devuelven el ejemplo). `POST /dca-executions/{id}` vive ahí de momento; T1-06 puede moverlo a `api/dca.py`. Las escrituras pasan por `portfolio/service.py`, no por el mock.
   - Ficheros añadidos fuera de la fila de T0-02: `backend/app/portfolio/__init__.py`, `backend/app/schemas/examples/__init__.py` y `backend/tests/test_portfolio_mock.py`.
 - Consecuencias: T0-03 copia también las variantes. T1-03 a T1-07 sustituyen las funciones de `service.py` sin cambiar sus firmas. Las cifras de los ejemplos usan los activos del seed de T0-08, pero son ilustrativas: con esos precios, la RV de Laura en el mock sale en 0,72, no en 0,76.
+
+### D-XXX · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios. Además, `compute_event_impact` recibe tipos que publica T0-05, en curso.
+- Decisión:
+  - Rutas: `api/impact.py` sirve `GET /portfolios/{id}/events`, `POST /portfolios/{id}/scenarios` y `GET /portfolios/{id}/move`; `api/exposure.py`, `/exposure` y `/radar`; `api/status.py`, `/status`; `api/planning.py`, `/projection` y `/agenda`. T2-05, T2-06 y T2-07 pueden mover las suyas a `api/{radar,agenda,move}.py`.
+  - `schemas/impact.py` añade `ScenarioRequest`, que el diseño solo describía con un JSON. `EventType` y `MovePeriod` son `Literal` para no chocar en el OpenAPI con los enums de T0-05.
+  - Hasta que T1-13 fije los tipos, `impact.service.compute_event_impact` declara `analysis` y `shocks` como `object`; así no depende de que T0-05 esté en `main`.
+  - Los mocks comprueban que la cartera existe con `portfolio.service.get_valued` (404).
+  - Ejemplos con los activos y el total de `PortfolioOut.json` (ilustrativos), con desgloses que suman. Variantes: `EventImpactOut.nvda` (sin consenso, `pending`), `StatusOut.tranquilo`, `StatusOut.revisa_plan` y `AgendaItemOut.dca`.
+  - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
+  - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
+- Consecuencias: T0-05 no debe declarar `GET /portfolios/{id}/events` en `api/events.py`, porque la ruta quedaría duplicada. T1-13 sustituye `object` por `EventAnalysis` y `ShockSet`.
