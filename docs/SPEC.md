@@ -249,10 +249,10 @@ Betas: regresión OLS multivariante (los cinco factores a la vez, con término i
 Las magnitudes de los shocks `s_f` y de los movimientos `m_c` salen del campo `observed` del evento (D-025); el analizador solo elige qué canales aplican.
 
 - **Efecto mercado**: `r_i = Σ_f β_{i,f} · s_f`
-- **Efecto divisa** (activos no EUR, `s_EURUSD` = variación de EUR/USD): `r_fx = 1/(1 + s_EURUSD) − 1` sobre la parte de la posición en USD. El USD se separa para enseñar "cuánto es bolsa y cuánto es dólar".
+- **Efecto divisa** (activos no EUR, `s_EURUSD` = variación de EUR/USD): `r_fx = 1/(1 + s_EURUSD) − 1` sobre la parte de la posición en USD. El USD se separa para enseñar "cuánto es bolsa y cuánto es dólar": `fx_eur = impact_eur − market_eur`, que incluye también `β_{i,EURUSD} · s_EURUSD` y el término cruzado (D-XXX).
 - **Resultados de una empresa *c***: `r_i = w_{i,c} · m_c` con `w_{i,c}` el peso de la empresa dentro del fondo (look-through; 1 si es acción directa) y `m_c` el movimiento de la acción. El activo **no** recibe además el shock de factor por esa misma empresa (sin doble conteo). En eventos `earnings`, los factores seleccionados se aplican al resto del activo con peso `(1 − w_{i,c})`.
 - **Impacto**: `I_i = V_i · ((1 + r_i)(1 + r_fx) − 1)`; cartera: `I = Σ I_i`.
-- **Rango** (80%): `I ± 1,28 · sqrt(Σ_i (V_i · Σ_f se_{i,f} · s_f)²)` (aproximación que trata los errores de cada activo como independientes; documentarlo en la traza).
+- **Rango** (80%): `I ± 1,28 · sqrt(Σ_i (V_i · (1 − Σ_c w_{i,c}) · Σ_f u_{i,f})²)` con `u_{i,f} = se_{i,f} · |s_f|` y, si la beta no es significativa (`|β/se| < 2`), además `|β_{i,f} · s_f|`; esa beta no suma a `I` (D-050, D-XXX). Aproximación que trata los errores de cada activo como independientes; está documentada en la traza.
 - **Confianza**: `alta` si R² medio ponderado ≥ 0,6 y cobertura de look-through ≥ 90%; `media` si R² ≥ 0,3; `baja` en otro caso.
 - **Polaridad**: `riesgo` si `high_eur < 0`. `oportunidad` si `low_eur > 0` **y** más del 50 % del impacto positivo cae en una clase de activo que está por debajo de su objetivo en el plan del usuario (el evento acerca la cartera al plan). `neutral` en el resto.
 

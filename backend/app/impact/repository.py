@@ -1,13 +1,71 @@
 """Acceso a las tablas de `impact/` (`factor_beta`, `event_impact`). Solo aquí se abren sesiones."""
 
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy import delete, select
 
+from app.core import clock
 from app.core.db import session_scope
 from app.impact.betas import BetaEstimate
-from app.impact.models import FactorBeta
+from app.impact.models import EventImpact, FactorBeta
+from app.schemas.agents import ExplanationStatus
 from app.schemas.common import Factor
+from app.schemas.impact import EventImpactOut
+
+
+@dataclass(frozen=True)
+class StoredImpact:
+    """Lo que cambia tras calcular. El resto del resultado está en la traza `calc_id`."""
+
+    calc_id: str
+    explanation: str | None
+    explanation_status: str
+
+
+def save_event_impact(impact: EventImpactOut) -> None:
+    """Guarda el impacto. Si el evento se reinyecta, sustituye el anterior."""
+    with session_scope() as session:
+        session.merge(
+            EventImpact(
+                event_id=impact.event_id,
+                portfolio_id=impact.portfolio_id,
+                impact_eur=impact.impact_eur,
+                low_eur=impact.low_eur,
+                high_eur=impact.high_eur,
+                impact_pct=impact.impact_pct,
+                confidence=impact.confidence.value,
+                polarity=impact.polarity.value,
+                breakdown=[a.model_dump(mode="json") for a in impact.breakdown],
+                explanation=impact.explanation,
+                explanation_status=impact.explanation_status.value,
+                calc_id=impact.calc_id,
+                created_at=clock.now(),
+            )
+        )
+
+
+def set_explanation(event_id: str, portfolio_id: str, text: str, status: ExplanationStatus) -> bool:
+    """`False` si no hay impacto guardado para ese evento y esa cartera."""
+    with session_scope() as session:
+        row = session.get(EventImpact, (event_id, portfolio_id))
+        if row is None:
+            return False
+        row.explanation = text
+        row.explanation_status = status.value
+        return True
+
+
+def list_event_impacts(portfolio_id: str, since: datetime) -> list[StoredImpact]:
+    """Impactos calculados desde `since`, del más reciente al más antiguo."""
+    with session_scope() as session:
+        rows = session.scalars(
+            select(EventImpact)
+            .where(EventImpact.portfolio_id == portfolio_id, EventImpact.created_at >= since)
+            .order_by(EventImpact.created_at.desc(), EventImpact.event_id)
+        ).all()
+        return [StoredImpact(r.calc_id, r.explanation, r.explanation_status) for r in rows]
 
 
 def replace_betas(estimates: Sequence[BetaEstimate], clear: Iterable[str] = ()) -> int:
