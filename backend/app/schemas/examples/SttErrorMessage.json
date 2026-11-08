@@ -1,0 +1,6 @@
+{
+  "illustrative": true,
+  "type": "error",
+  "code": "UPSTREAM_UNAVAILABLE",
+  "message": "No se ha podido transcribir el audio. Prueba con una de las preguntas sugeridas."
+}

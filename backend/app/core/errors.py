@@ -35,7 +35,7 @@ DEFAULT_STATUS: dict[ErrorCode, int] = {
     ErrorCode.DCA_ALLOCATION_INVALID: 422,
     ErrorCode.DEMO_MODE_DISABLED: 403,
     ErrorCode.UPSTREAM_UNAVAILABLE: 503,
-    ErrorCode.SENTENCE_NOT_APPROVED: 403,
+    ErrorCode.SENTENCE_NOT_APPROVED: 404,
 }
 
 
