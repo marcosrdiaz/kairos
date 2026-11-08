@@ -1,6 +1,6 @@
 """Motor de impacto (`SPEC.md` §8.2): funciones puras, sin BD. Todo en `Decimal`.
 
-Decisiones que concretan la fórmula: D-050 (betas no significativas, activos sin betas) y D-XXX
+Decisiones que concretan la fórmula: D-050 (betas no significativas, activos sin betas) y D-051
 (`se·|s|` en el rango y efecto dólar de los activos en EUR).
 """
 

@@ -1,4 +1,4 @@
-### D-XXX · Motor de impacto (T1-13): rango, efecto dólar, persistencia y lecturas de otros módulos
+### D-051 · Motor de impacto (T1-13): rango, efecto dólar, persistencia y lecturas de otros módulos
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
 - Contexto: T1-13 implementa `SPEC.md` §8.2. La fórmula del rango cancelaba errores entre shocks de signo contrario, la separación bolsa/divisa no decía qué hacer con la beta de `EURUSD`, y `compute_event_impact` necesita datos que su firma no recibe y que ninguna tarea tenía asignados.
 - Decisión:

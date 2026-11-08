@@ -80,4 +80,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-048](decisiones/D-048-valoracion-alta-seed-t1-03.md) | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
 | [D-049](decisiones/D-049-composicion-fondos-t1-08.md) | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
 | [D-050](decisiones/D-050-betas-factor-t1-12.md) | 2026-11-08 | Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas | Propuesta |
+| [D-051](decisiones/D-051-motor-impacto-t1-13.md) | 2026-11-08 | Motor de impacto (T1-13): rango, efecto dólar, persistencia y lecturas de otros módulos | Propuesta |
 <!-- INDICE:FIN -->
