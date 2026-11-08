@@ -55,7 +55,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-04 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints responden con mock | T0-01 | `backend/app/schemas/{impact,exposure,radar,status,planning}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{exposure,impact,status,planning}/{mock,service}.py`, `backend/app/api/{exposure,impact,status,planning}.py` | — | ⬜ |
 | T0-05 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; el `/ask` mock emite SSE de ejemplo | El frontend recibe el SSE mock | T0-01 | `backend/app/schemas/{events,agents,alerts}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{agents,events,alerts}/{mock,service}.py`, `backend/app/api/{ask,events,alerts}.py` | — | ⬜ |
 | T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | — | ⬜ |
-| T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | 🔄 en curso |
+| T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
 | T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | — | ⬜ |
 | T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | — | ⬜ |
@@ -132,7 +132,19 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
-_(Ninguna tarea en curso.)_
+### T1-18 · T1-19 · T1-20 · Base del frontend que deja T0-07 — Marcos
+**Qué hay en `main`:** scaffold en `frontend/` (Vite, TS estricto, Tailwind 4, TanStack Query, `react-router`). Rutas `/inicio`, `/cartera`, `/pregunta` (dentro de `AppShell`, con pestañas abajo) y `/panel` (layout de escritorio). Decisión D-035; contexto en `PRODUCT.md` y `DESIGN.md`.
+**Dónde está cada cosa:**
+- **Tokens:** `frontend/src/index.css`, bloque `@theme`. Son clases de Tailwind: `bg-paper`, `bg-surface`, `text-ink`, `text-ink-muted`, `border-line`, `text-accent`, `rounded-card`, `min-h-touch` (44 px) y los tres estados `text-tranquilo` / `bg-tranquilo-bg`, `text-atento` / `bg-atento-bg`, `text-revisa-plan` / `bg-revisa-plan-bg`. Texto base de 18 px. Valores y reglas en `DESIGN.md` (sin rojos, estado siempre con color + palabra, sin sombras, objetivos de 44 px). No añadas colores sueltos: si falta un token, se añade en `@theme` y en `DESIGN.md`.
+- **Formato de cifras:** `frontend/src/lib/format.ts`: `formatEur`, `formatEurRange`, `formatPercent`, `formatUnits`, `formatDate`. Los importes llegan como string Decimal y se pasan tal cual; no los conviertas a `number`.
+- **API y mocks:** `frontend/src/api/client.ts`. `apiGet<T>(path, { mock: "NombreDelEsquema" })` llama a `/api/v1/...` (el proxy de Vite reenvía `/api` sin reescribirlo; destino en `KAIROS_API_PROXY`, ver `frontend/.env.example`). Con `VITE_USE_MOCKS=true` lee `src/api/mocks/<Modelo>.json`, que rellena `make gen-api` (T0-03). Hasta entonces falla con `ApiError` de código `mock_missing`: pinta un estado vacío honesto, sin cifras inventadas. Los hooks de TanStack Query van en `src/api/hooks/` (carpeta aún sin crear; es de T2-13 para el polling).
+- **Dónde poner tu trabajo:** T1-18 en `src/widget/`; T1-19 en `src/app/onboarding/` y `src/app/portfolio-picker/`; T1-20 en `src/app/operations/` y `src/app/dca/`. Las páginas `InicioPage`, `CarteraPage` y `PreguntaPage` de `src/app/` son marcadores de posición: se enganchan desde ahí.
+- **Scripts (en `frontend/`):** `npm run dev | build | lint | typecheck | test`. Hay tests de ejemplo en `src/App.test.tsx` y `src/lib/format.test.ts`.
+**Pendientes que afectan a estas tareas:**
+- Alons (T0-01) debe confirmar que el backend monta los routers en `/api/v1` (*Peticiones de contrato*).
+- Hasta T0-03 no hay tipos generados ni mocks en `src/api/{generated,mocks}/`.
+- `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
+**Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
 
 ## 5. Bloqueos
 
