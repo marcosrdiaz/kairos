@@ -24,11 +24,14 @@ Reglas:
   Fuera del propio PR, las decisiones sin mergear se citan por título, no como `D-XXX`.
 - No se tocan los textos que explican la convención: la cabecera de `docs/decisiones.md` (antes de
   `## Índice`) y los ficheros de `PROTECTED`.
-- Idempotente: sin `D-XXX` no cambia nada y sale con 0. Sale con 1 si hay IDs repetidos o una
-  entrada sin fila de índice (o al revés).
+- Idempotente: sin `D-XXX` no cambia nada y sale con 0.
+- Códigos de salida: 1 si hay IDs repetidos o una entrada sin fila de índice (o al revés); no se
+  escribe nada. 2 si quedan referencias `D-XXX` ambiguas (en `decisiones.md` o en los ficheros del
+  diff): antes de salir se escribe todo lo que sí se pudo numerar, para que la Action lo
+  commitee, y el job termina en rojo para que el aviso no pase desapercibido.
 
-Uso: `python scripts/renumber_decisions.py [--root RUTA] [--before SHA --after SHA]`. Sin `--before` y
-`--after` solo se procesa `docs/decisiones.md`. Solo biblioteca estándar.
+Uso: `python scripts/renumber_decisions.py [--root RUTA] [--before SHA --after SHA]`.
+Sin `--before` y `--after` solo se procesa `docs/decisiones.md`. Solo biblioteca estándar.
 """
 
 import argparse
@@ -44,6 +47,8 @@ from pathlib import Path
 DECISIONS = "docs/decisiones.md"
 INDEX_MARKER = "## Índice"
 MAX_FILE_BYTES = 2_000_000
+AMBIGUOUS_WARNING = "AVISO: referencias ambiguas a"
+EXIT_AMBIGUOUS = 2
 
 # Ficheros que explican la convención `D-XXX`: se dejan tal cual.
 PROTECTED = (
@@ -272,7 +277,7 @@ def renumber(
         if other is not None and _REF.search(other):
             report.append(f"AVISO: {rel} cita D-XXX pero no está en el diff; no se toca")
     for token in sorted(set(ambiguous)):
-        report.append(f"AVISO: referencias ambiguas a {token} (no hay una única D-XXX nueva)")
+        report.append(f"{AMBIGUOUS_WARNING} {token} (no hay una única D-XXX nueva)")
     return report
 
 
@@ -295,6 +300,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
     print("\n".join(report) if report else "Nada que renumerar.")
+    if any(line.startswith(AMBIGUOUS_WARNING) for line in report):
+        print(
+            "ERROR: quedan referencias D-XXX sin numerar; lo demás ya está numerado. "
+            "Corrígelas a mano con el ID de la decisión.",
+            file=sys.stderr,
+        )
+        return EXIT_AMBIGUOUS
     return 0
 
 
