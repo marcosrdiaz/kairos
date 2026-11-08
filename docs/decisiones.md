@@ -63,7 +63,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-037 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
-| D-XXX | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
+| D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
 
 ---
 
@@ -361,7 +361,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
 - Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
 
-### D-XXX · Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404
+### D-040 · Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404
 - Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
 - Contexto: el diseño §4.5 define los mensajes de `WS /voice/stt` y `POST /voice/tts`, pero no cómo se modelan ni qué hace el mock. Además `core/errors.py` (T0-01) asignaba 403 a `SENTENCE_NOT_APPROVED`, mientras que el diseño §4.5 y `SPEC.md` §10 dicen 404.
 - Decisión:
