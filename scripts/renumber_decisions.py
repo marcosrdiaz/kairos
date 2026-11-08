@@ -12,7 +12,11 @@ Reglas:
   mantienen su orden. Varias `D-XXX` sin sufijo (de ramas distintas) se emparejan con su fila del
   índice por orden.
 - Una referencia con sufijo (`D-XXX-b`) siempre es inequívoca. Una `D-XXX` sin sufijo en el texto
-  solo se sustituye si ese día hay una sola; si hay varias, se deja y se avisa.
+  solo se sustituye si el push que dispara la Action (`--before` y `--after`) añade **una sola**
+  entrada `D-XXX`; si añade varias o ninguna, se deja y se avisa. Las `D-XXX` que `decisiones.md`
+  arrastra de pushes anteriores sin numerar (p. ej. porque su Action no llegó a correr) no cuentan:
+  se numeran igual, pero no hacen ambigua la referencia del push actual. Sin `--before` y
+  `--after` no se sabe qué entradas son nuevas y basta con que haya una sola en el fichero.
 - Las referencias solo se sustituyen en `docs/decisiones.md` y en los ficheros del commit que
   dispara la Action (`--before` y `--after`, lo que da `git diff --name-only`). Un `D-XXX` en
   cualquier otro fichero (p. ej. el tablero, que cita decisiones de PRs aún sin mergear) no se toca:
@@ -76,23 +80,37 @@ def _tracked_files(root: Path) -> list[Path]:
     return [root / name for name in out.split("\0") if name]
 
 
-def changed_files(root: Path, before: str, after: str) -> list[Path]:
-    """Ficheros que cambió el rango `before..after` (los del push que dispara la Action).
+def _git_diff(root: Path, before: str, after: str, *args: str, paths: Iterable[str] = ()) -> str:
+    """Salida de `git diff` entre `before` y `after`, limitada a `paths` si se indican.
 
     Un `before` de ceros (rama nueva) se sustituye por el padre de `after`.
     """
     if not before.strip("0"):
         before = f"{after}^"
     try:
-        out = subprocess.run(
-            ["git", "diff", "--name-only", "-z", "--diff-filter=d", f"{before}..{after}"],
+        return subprocess.run(
+            ["git", "diff", *args, f"{before}..{after}", *(["--", *paths] if paths else [])],
             cwd=root,
             check=True,
             capture_output=True,
         ).stdout.decode("utf-8")
     except (OSError, subprocess.CalledProcessError) as error:
         raise RenumberError(f"No se puede calcular git diff {before}..{after}: {error}") from error
+
+
+def changed_files(root: Path, before: str, after: str) -> list[Path]:
+    """Ficheros que cambió el rango `before..after` (los del push que dispara la Action)."""
+    out = _git_diff(root, before, after, "--name-only", "-z", "--diff-filter=d")
     return [root / name for name in out.split("\0") if name]
+
+
+def added_headings(root: Path, before: str, after: str) -> set[str]:
+    """Líneas `### D-XXX…` que añade el rango `before..after` a `docs/decisiones.md`."""
+    out = _git_diff(root, before, after, "-U0", paths=[DECISIONS])
+    added = (line[1:].rstrip() for line in out.splitlines() if line.startswith("+###"))
+    return {
+        line for line in added if (m := _HEADING.match(line)) and m.group(1).startswith("D-XXX")
+    }
 
 
 def _is_protected(rel: str) -> bool:
@@ -115,16 +133,19 @@ def _write_text(path: Path, text: str) -> None:
 class _Plan:
     """IDs asignados a cada `D-XXX` de las entradas, por orden de aparición."""
 
-    def __init__(self, lines: list[str], start: int) -> None:
+    def __init__(self, lines: list[str], start: int, added: set[str] | None = None) -> None:
         headings: list[str] = []
         rows: list[str] = []
         numbered_headings: list[str] = []
         numbered_rows: list[str] = []
+        fresh: list[int] = []  # posición (entre las `D-XXX` sin sufijo) de las que añade el push
         for line in lines[start:]:
             if m := _HEADING.match(line):
                 (headings if m.group(1).startswith("D-XXX") else numbered_headings).append(
                     m.group(1)
                 )
+                if m.group(1) == "D-XXX" and added is not None and line.rstrip() in added:
+                    fresh.append(Counter(headings)["D-XXX"] - 1)
             if m := _ROW.match(line):
                 (rows if m.group(1).startswith("D-XXX") else numbered_rows).append(m.group(1))
         self.headings = headings
@@ -139,7 +160,14 @@ class _Plan:
             self.ids[(token, seen[token])] = f"D-{nxt:03d}"
             seen[token] += 1
             nxt += 1
-        self.bare = Counter(headings)["D-XXX"]
+        # Con `added` (modo Action) la `D-XXX` sin sufijo de una referencia es la única que añade
+        # este push; sin él, la única que hay en el fichero.
+        self.bare = Counter(headings)["D-XXX"] if added is None else len(fresh)
+        self._bare_id = (
+            self.ids.get(("D-XXX", fresh[0] if added is not None and fresh else 0))
+            if self.bare == 1
+            else None
+        )
 
     @staticmethod
     def _check(
@@ -163,8 +191,8 @@ class _Plan:
 
     def ref(self, token: str) -> str | None:
         """ID de una referencia, o `None` si es ambigua."""
-        if token == "D-XXX" and self.bare > 1:
-            return None
+        if token == "D-XXX":
+            return self._bare_id
         return self.ids.get((token, 0))
 
 
@@ -179,11 +207,15 @@ def _sub_refs(text: str, plan: _Plan, ambiguous: list[str]) -> str:
     return _REF.sub(replace, text)
 
 
-def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
+def renumber(
+    root: Path, files: Iterable[Path] | None = None, added: set[str] | None = None
+) -> list[str]:
     """Renumera y devuelve un informe (una línea por ID asignado). Vacío si no había nada.
 
     `files` son los ficheros (además de `docs/decisiones.md`) donde se sustituyen las referencias:
     los que cambió el commit que dispara la Action. Los demás ficheros con `D-XXX` no se tocan.
+    `added` son las líneas `### D-XXX…` que añade ese commit (ver `added_headings`); decide a cuál
+    se refiere una `D-XXX` sin sufijo.
     """
     decisions_path = root / DECISIONS
     text = _read_text(decisions_path)
@@ -191,7 +223,7 @@ def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
         raise RenumberError(f"No se puede leer {DECISIONS}")
     lines = text.splitlines(keepends=True)
     start = next((i for i, line in enumerate(lines) if line.startswith(INDEX_MARKER)), 0)
-    plan = _Plan(lines, start)  # también valida IDs repetidos aunque no haya D-XXX
+    plan = _Plan(lines, start, added)  # también valida IDs repetidos aunque no haya D-XXX
     if not plan.headings:
         return []
 
@@ -240,7 +272,7 @@ def renumber(root: Path, files: Iterable[Path] | None = None) -> list[str]:
         if other is not None and _REF.search(other):
             report.append(f"AVISO: {rel} cita D-XXX pero no está en el diff; no se toca")
     for token in sorted(set(ambiguous)):
-        report.append(f"AVISO: quedan referencias ambiguas a {token} (hay varias D-XXX); revísalas")
+        report.append(f"AVISO: referencias ambiguas a {token} (no hay una única D-XXX nueva)")
     return report
 
 
@@ -257,7 +289,8 @@ def main(argv: list[str] | None = None) -> int:
             stream.reconfigure(encoding="utf-8")
     try:
         files = changed_files(args.root, args.before, args.after) if args.before else []
-        report = renumber(args.root, files)
+        added = added_headings(args.root, args.before, args.after) if args.before else None
+        report = renumber(args.root, files, added)
     except RenumberError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1

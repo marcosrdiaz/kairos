@@ -34,7 +34,7 @@ SECTORS = {
 }
 KEY = re.compile(r"^[A-Z0-9_]+$")
 NON_COMPANY_PREFIXES = ("OTROS_", "GOV_", "BONOS_")
-HEDGED_FUNDS = {"IE00B18GC888"}  # Vanguard Global Bond EUR Hedged: la divisa es EUR (D-XXX)
+HEDGED_FUNDS = {"IE00B18GC888"}  # Vanguard Global Bond EUR Hedged: la divisa es EUR (D-049)
 
 
 def _assets() -> list[dict[str, str]]:
