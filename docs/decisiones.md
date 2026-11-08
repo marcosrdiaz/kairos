@@ -55,6 +55,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-029 | 2026-11-08 | Proyección y agenda en un módulo `planning` | Aceptada |
 | D-030 | 2026-11-08 | Año de `DEMO_CLOCK` | Aceptada |
 | D-031 | 2026-11-08 | Reloj inyectable y ajuste de demo en la valoración (sustituye a D-009) | Aceptada |
+| D-032 | 2026-11-08 | Avisos mínimos (`event_impact`, 2 por semana ISO) pasan a MVP | Aceptada |
 
 ---
 
@@ -254,3 +255,9 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Sigue vigente de D-009: `app.core.clock.now()` en todo el backend; `DEMO_CLOCK` y `/demo/clock` la fijan; prohibido `datetime.now()` (regla de ruff `DTZ`); el replay reinyecta el evento con `occurred_at = now()` y calcula el impacto sobre la valoración actual.
   - Nuevo: **solo con `DEMO_MODE=true`**, la valoración suma el impacto central estimado de cada posición, con la etiqueta "Estimación tras el evento" y su `calc_id` (`demo_adjustments` en `PortfolioOut`). Los precios no se tocan: el ajuste va aparte y se borra en `/demo/reset`.
 - Consecuencias: T2-02 implementa `apply_demo_adjustment`. `change_week_*` y `by_asset` de `explain_move` lo incluyen.
+
+### D-032 · Avisos mínimos (`event_impact`, 2 por semana ISO) pasan a MVP
+- Fecha: 2026-11-08 · Autor: equipo · Estado: Aceptada
+- Contexto: RF-23 era "S" en `INGENIERIA.md`, pero el paso 3 del guion (replay → Atento + aviso) y T2-08 dependen de los avisos de tipo `event_impact`.
+- Decisión: RF-23 pasa a M en versión mínima: avisos `kind=event_impact` con `score = |impact_eur| / max(150, 0,005 · total)`, aviso si `score ≥ 1`, y límite de 2 por semana ISO y cartera según `clock.now()`. `dca_pending` y `drift` siguen en "Si da tiempo". Contrato en el diseño §4.4.
+- Consecuencias: `INGENIERIA.md` (RF-23 y trazabilidad del paso 3) actualizado; T2-08 es MVP.
