@@ -1,0 +1,7 @@
+{
+  "illustrative": true,
+  "type": "start",
+  "sample_rate": 16000,
+  "encoding": "pcm_s16le",
+  "language": "es"
+}

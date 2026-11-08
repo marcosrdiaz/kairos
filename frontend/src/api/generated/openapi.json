@@ -1320,6 +1320,28 @@
         "title": "TransferRequest",
         "type": "object"
       },
+      "TtsRequest": {
+        "additionalProperties": false,
+        "description": "Frase aprobada a sintetizar: la `index` del turno `turn_id` del SSE de `/ask`.",
+        "properties": {
+          "index": {
+            "minimum": 0.0,
+            "title": "Index",
+            "type": "integer"
+          },
+          "turn_id": {
+            "minLength": 1,
+            "title": "Turn Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "turn_id",
+          "index"
+        ],
+        "title": "TtsRequest",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -1423,7 +1445,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -1812,7 +1834,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -1883,7 +1905,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
@@ -1995,7 +2017,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -2057,7 +2079,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
@@ -2119,7 +2141,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -2181,12 +2203,76 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/voice/disclaimer": {
+      "get": {
+        "operationId": "disclaimer_api_v1_voice_disclaimer_get",
+        "responses": {
+          "200": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Disclaimer",
+        "tags": [
+          "voice"
+        ]
+      }
+    },
+    "/api/v1/voice/tts": {
+      "post": {
+        "operationId": "tts_api_v1_voice_tts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TtsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Tts",
+        "tags": [
+          "voice"
         ]
       }
     }
