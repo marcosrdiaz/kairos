@@ -5,13 +5,13 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`.** Antes de añadir, haz `git pull` para no repetir ID. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados al mergear.** En tu rama escribe la decisión con el ID provisional `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros). Si metes varias en el mismo PR, `D-XXX-a`, `D-XXX-b`… **Quien mergea el PR**, justo antes, hace `git fetch`, mira el último ID de `main` y sustituye `D-XXX` por el siguiente libre en el PR (entrada, índice y referencias, incluida la descripción del PR). Así no chocan IDs entre ramas en paralelo. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
 
 ```
-### D-xxx · Título corto
+### D-XXX · Título corto   (ID provisional; se sustituye al mergear)
 - Fecha: AAAA-MM-DD HH:MM · Autor: nombre · Estado: Propuesta
 - Contexto: qué problema había.
 - Decisión: qué se hace.
