@@ -12,9 +12,9 @@ Documento vivo: qué tareas hay, quién ha cogido cada una, en qué estado está
 - **Dependencias.** Si una tarea depende de otra, se hace antes la dependencia. `(b)` = dependencia blanda: se puede empezar con mocks o datos de prueba.
 - **Fases.** Una fase está **cerrada** cuando todas sus tareas están en `main` con `make lint && make test` en verde. Se puede **adelantar** una tarea de la fase siguiente solo si todas sus dependencias están hechas.
 - **Excepciones a la propiedad por tarea:** `docs/decisiones.md` (solo se añade al final) y tu propia fila de este tablero.
-- **Commits directos a `main` (excepción a "todo por PR")**: solo si tocan únicamente `docs/TABLERO.md` y el mensaje es `docs: claim T<x>-<nn>`, `docs: release T<x>-<nn>` o `docs: done T<x>-<nn>`. Flujo: `git pull --rebase` → comprobar que la tarea sigue libre → commit → `git push`. Si el push falla, se repite desde el pull. Todo lo demás va por PR: el merge lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde.
+- **El tablero solo se modifica con commits directos a `main`** (excepción a "todo por PR"), nunca dentro de un PR, y el commit toca únicamente `docs/TABLERO.md`. Mensaje `docs: claim|release|done|block|note T<x>-<nn>`: `claim`, `release` y `done` cambian la fila de la tarea; `block` apunta o cierra una fila de *Bloqueos* (y marca `⛔`); `note` actualiza *Notas para retomar* o *Peticiones de contrato* (y marca `🧪 en PR`). Flujo: `git pull --rebase` → comprobar (p. ej. que la tarea sigue libre) → commit → `git push` justo después. Si el push falla, se repite desde el pull. Excepción puntual: `docs: tablero rules` para cambios de reglas de este propio tablero. Todo lo demás va por PR: el merge lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde.
 - **Estados:** `⬜ pendiente` · `🔄 en curso` · `🧪 en PR` · `✅ hecho` · `⛔ bloqueado`. Marcar `✅ hecho` (`docs: done T<x>-<nn>`) solo con la tarea en `main`.
-- Al cerrar cada sesión (`/cierre`), actualiza *Notas para retomar* de tu tarea.
+- Al cerrar cada sesión (`/cierre`), actualiza *Notas para retomar* de tu tarea con un commit directo a `main` (`docs: note T<x>-<nn>`).
 
 ---
 
