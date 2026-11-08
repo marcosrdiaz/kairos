@@ -1,0 +1,78 @@
+name: kairos
+
+x-backend-env: &backend-env
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: postgresql+psycopg://kairos:kairos@db:5432/kairos
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kairos
+      POSTGRES_PASSWORD: kairos
+      POSTGRES_DB: kairos
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kairos -d kairos"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Migraciones + carga de data/seed. Se ejecuta una vez en cada `up` y con `make seed`.
+  # Usa la imagen del backend; los pasos que aún no existen (alembic, seed_db.py) se saltan.
+  seed:
+    build: ./backend
+    <<: *backend-env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/data:ro
+      - ./scripts:/scripts:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        if [ -f alembic.ini ]; then alembic upgrade head; else echo "seed: sin alembic todavía (T1-01)"; fi
+        if [ -f /scripts/seed_db.py ]; then python /scripts/seed_db.py; else echo "seed: sin scripts/seed_db.py todavía (T1-03)"; fi
+    restart: "no"
+
+  backend:
+    build: ./backend
+    <<: *backend-env
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - ./data:/data:ro
+      - ./scripts:/scripts:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  db-data:

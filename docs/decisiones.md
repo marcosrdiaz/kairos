@@ -270,3 +270,17 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Motivo: reproducibilidad entre sesiones con un solo paso tras el pull.
 - Dependencias de desarrollo que añade: plugin superpowers; skills impeccable, emil-design-eng, review-animations, playwright-cli; paquete npm global `@playwright/cli` (fuera del repo, distinto de `@playwright/test` de T3-02). Ninguna entra en el código de producción.
 - Consecuencias: `.claude/.gitignore` y `.playwright-cli/.gitignore` ignoran `settings.local.json` y la salida de playwright-cli, para no tocar el `.gitignore` raíz (de T0-01); cuando T0-01 cierre se pueden mover allí. impeccable puede activar un hook de diseño por edición con `impeccable hooks on`, que escribe en `settings.local.json` (no versionado); no está activado.
+
+### D-034 · Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core`
+- Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
+- Contexto: T0-01 necesitaba ficheros que su fila no declaraba y había que decidir dónde vive la tabla de trazas.
+- Decisión:
+  - Ficheros añadidos fuera de la lista de T0-01: `.gitattributes` (LF en todo el repo; con CRLF fallan los `sh -c` de Compose en Windows), `backend/Dockerfile`, `backend/.dockerignore`, `backend/uv.lock`, `backend/app/api/{__init__,health}.py` y los tests `backend/tests/test_{core_clock,core_errors,core_trace,schemas_common,main}.py`. Ninguna otra tarea los declara.
+  - `main.py` descubre solo los módulos de `app/api/`: cada uno exporta `router` y se monta en `/api/v1`. Para añadir un router no hay que tocar `main.py`.
+  - Compose tiene un servicio `seed` (imagen del backend) que corre en cada `up` antes del backend: `alembic upgrade head` si existe `alembic.ini` y `python /scripts/seed_db.py` si existe. Por eso **`seed_db.py` (T1-03) tiene que ser idempotente**. `data/` y `scripts/` se montan en `/data` y `/scripts` (solo lectura).
+  - El modelo `CalcTrace` (tabla `calc_trace`) vive en `core/trace.py`, junto a `record()` y `get()`. Lleva además `formula` y `parent_calc_ids`, que pide `TraceOut`. T1-01 debe incluirlo en la migración inicial (importando `app.core.trace`).
+  - `frontend/Dockerfile` construye con Vite si hay `package.json` y, si no, sirve una página provisional. nginx reenvía `/api` al backend con SSE y WebSocket. `make test` y `make lint` se saltan el frontend mientras no exista `package.json`.
+  - Los tests usan SQLite temporal (`db` fixture en `conftest.py`); nunca Postgres ni APIs externas.
+  - Los ejemplos de `schemas/examples/` llevan `"illustrative": true`, pero `ContractModel` rechaza campos extra: quien carga un ejemplo (tests, `mock.py`) quita esa marca antes de validar.
+- Dependencias que añade (ya previstas en `SPEC.md` §2/§3): `pydantic-settings`, `psycopg[binary]`; en desarrollo `httpx` (para `TestClient`). Herramientas: imagen `ghcr.io/astral-sh/uv:0.13.7`, `postgres:16-alpine`, `node:22-alpine`, `nginx:1.27-alpine`.
+- Consecuencias: T1-01 incluye `calc_trace`; T1-03 hace `seed_db.py` idempotente; T0-07 conviene que añada `frontend/.dockerignore` con `node_modules`.

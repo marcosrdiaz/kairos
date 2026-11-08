@@ -1,0 +1,8 @@
+# LF en todo el repo: los scripts de Compose, Dockerfile y Makefile se ejecutan en Linux.
+* text=auto eol=lf
+
+*.mp3 binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

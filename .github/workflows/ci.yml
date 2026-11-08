@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+          python-version: "3.12"
+
+      - name: Instalar backend
+        working-directory: backend
+        run: uv sync --frozen
+
+      - uses: actions/setup-node@v4
+        if: hashFiles('frontend/package.json') != ''
+        with:
+          node-version: "22"
+
+      - name: Instalar frontend
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Lint
+        run: make lint
+
+      - name: Test
+        run: make test
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Arranca el stack y comprueba /health
+        run: |
+          docker compose up --build -d --wait backend
+          curl -fsS http://localhost:8000/api/v1/health
+      - name: Logs si falla
+        if: failure()
+        run: docker compose logs
+      - name: Para el stack
+        if: always()
+        run: docker compose down -v
