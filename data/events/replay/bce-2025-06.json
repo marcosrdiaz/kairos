@@ -10,6 +10,17 @@
     "https://www.bolsamania.com/capitalbolsa/noticias_amp/economia/encuesta-de-reuters-el-bce-recortara-sus-tipos-al-200-el-5-de-junio--19849732.html",
     "https://investinglive.com/news/reuters-poll-ecb-to-cut-rate-to-200-on-june-5-20250529"
   ],
+  "observed": {
+    "factors": {
+      "EQ_GLOBAL": "0.00085",
+      "EQ_US_TECH": "-0.00803",
+      "OIL": "0.00740",
+      "EURUSD": "0.00330",
+      "RATES_EUR": "0.00024"
+    },
+    "companies": {}
+  },
+  "observed_source": "data/prices + data/factors, cierre del día frente al cierre anterior",
   "consensus": {
     "metric": "rate_change_bp",
     "expected": "-25",

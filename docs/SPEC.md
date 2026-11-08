@@ -231,13 +231,13 @@ DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `cloc
 
 ### 8.1 Factores
 
-| Código | Serie de referencia (propuesta) | Shock en un evento |
+| Código | Serie de referencia | Shock en un evento |
 | --- | --- | --- |
-| `EQ_GLOBAL` | MSCI World en EUR | variación % |
-| `EQ_US_TECH` | Nasdaq-100 | variación % |
-| `RATES_EUR` | Rentabilidad Bund 10 años | variación absoluta de la rentabilidad, como fracción (`-0.0010` = −10 pb) |
-| `OIL` | Brent | variación % |
-| `EURUSD` | Tipo de cambio EUR/USD | variación % |
+| `EQ_GLOBAL` | MSCI World en EUR (`IWDA.AS`) | variación % |
+| `EQ_US_TECH` | Nasdaq-100 (`^NDX`) | variación % |
+| `RATES_EUR` | Rentabilidad a 10 años de la curva AAA del área euro (BCE) | variación absoluta de la rentabilidad, como fracción (`-0.0010` = −10 pb) |
+| `OIL` | Brent (`BZ=F`) | variación % |
+| `EURUSD` | Tipo de cambio EUR/USD (`EURUSD=X`) | variación % |
 
 Betas: regresión OLS de rentabilidades diarias del activo (en su divisa local) sobre los factores, ventana de 2-3 años (`scripts/compute_betas.py`, statsmodels). Se guardan beta, error estándar, R² y nº de observaciones. Las betas de `RATES_EUR` se estiman en la misma unidad que el shock (fracción).
 
@@ -393,7 +393,8 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | `data/seed/compositions/*.csv` | Composición de los fondos/ETFs (gestoras o informes CNMV), fecha `as_of` | pendiente |
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |
-| `data/prices/*.csv` | Histórico diario 2-3 años para betas | pendiente |
+| `data/prices/<asset_id>.csv` | Histórico diario de 3 años (`date,close,adj_close`) | hecho (T1-09) |
+| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción | hecho (T1-09) |
 | `data/events/replay/*.json` | 3-4 eventos reales: BCE, petróleo, resultados (+ USD si da tiempo) | pendiente |
 | `data/seed/assumptions.json` | Rentabilidad anual por clase de activo para la proyección, con fuente | pendiente |
 | `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | pendiente |

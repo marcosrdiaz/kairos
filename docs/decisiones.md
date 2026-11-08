@@ -68,6 +68,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
+| D-XXX | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
 
 ---
 
@@ -439,3 +440,19 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Motivo: si el texto ya parece una entrada de fuente, el analizador se prueba hoy en las mismas condiciones que tendrá con scraping, y no se le dan pistas de impacto que debería deducir él.
 - Alternativas descartadas: redactar `text` como explicación del impacto (mezcla entrada y salida del analizador); poner la hora de los ataques en el evento del petróleo (cae el 12 de junio en UTC).
 - Consecuencias: T1-09 añade `observed` sin tocar el resto. T1-15 (analizador) recibe `text` como si viniera de una fuente. Si el scraping llega a existir, debe producir `text` con este mismo estilo.
+
+### D-XXX · Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-09 descarga los históricos y calcula `observed` (D-025). `SPEC.md` §8.1 solo proponía las series, ningún documento fijaba el formato de los CSV ni qué sesión recoge un evento.
+- Decisión:
+  - `data/prices/<asset_id>.csv`: `date,close,adj_close`, 3 años, en la divisa de cotización y solo para activos `yahoo:`. `data/factors/<FACTOR>.csv`: `date,value`. Los cierres de la sesión aún abierta no se guardan.
+  - Series: `EQ_GLOBAL` = `IWDA.AS` (MSCI World en EUR), `EQ_US_TECH` = `^NDX`, `OIL` = `BZ=F`, `EURUSD` = `EURUSD=X` y `RATES_EUR` = curva AAA a 10 años del BCE, como **fracción** (`0.0264` = 2,64 %), para restar directamente y obtener el shock en la unidad del contrato.
+  - Sesión que recoge el evento: la del día de `occurred_at` en UTC; si es a partir de las 21:00 UTC (tras el cierre de EE. UU.), la del día siguiente. `observed` compara ese cierre con el anterior, con 5 decimales. `companies` se rellena solo en NVIDIA (`NVDA`).
+  - `scripts/fetch_prices.py` no añade dependencias: usa `httpx`, ya presente en el entorno de desarrollo. Con `--observed-only` recalcula sin red.
+- Motivo: Yahoo no publica la rentabilidad del Bund a 10 años. La serie Svensson del Bundesbank marca −5 pb el 5 de junio de 2025 (2,60 → 2,55) y la curva del BCE, con cierre a las 17:00 CET, +2,4 pb. Se usa la del BCE porque recoge la reacción a una decisión publicada a las 14:15 CEST.
+- Alternativas descartadas: Bundesbank (ver motivo); `^TNX` (es el bono de EE. UU.); `yfinance` (dependencia nueva para una sola petición HTTP).
+- Consecuencias:
+  - T1-02 lee estos CSV, y el cambio EUR/USD sale de `data/factors/EURUSD.csv`. T1-12 debería usar `adj_close` para las rentabilidades.
+  - Datos reales que el equipo debe conocer: el día del BCE la rentabilidad a 10 años **sube** 2,4 pb, así que `fallback_chain` de `bce-2025-06` ("bajan… la rentabilidad de los bonos", "tienden a ganar valor") no coincide con `observed`.
+  - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
+  - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
