@@ -16,21 +16,21 @@ def _event(name: str, portfolio_id: str) -> EventImpactOut:
 
 
 def list_event_impacts(portfolio_id: str) -> list[EventImpactOut]:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return [_event(name, portfolio_id) for name in _EVENT_EXAMPLES]
 
 
 def compute_event_impact(portfolio_id: str) -> EventImpactOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return _event(_EVENT_EXAMPLES[0], portfolio_id)
 
 
 def estimate_scenario(portfolio_id: str) -> ScenarioOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return ScenarioOut.model_validate(examples.load("ScenarioOut"))
 
 
 def explain_move(portfolio_id: str, period: MovePeriod) -> MoveAttributionOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     move = MoveAttributionOut.model_validate(examples.load("MoveAttributionOut"))
     return move.model_copy(update={"period": period})

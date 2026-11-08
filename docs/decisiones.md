@@ -69,6 +69,10 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 | D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
+| D-046 | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
+| D-047 | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
+| D-048 | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
+| D-049 | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
 | D-XXX | 2026-11-08 | Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas | Propuesta |
 
 ---
@@ -458,6 +462,77 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
   - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
 
+### D-046 · Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: tres interfaces del diseño no tenían modelo en `app/schemas/`: la respuesta de `GET /assets/lookup` (RF-01), el `PriceOut` que devuelven `prices.latest()` y `history()` (§4.1) y el cuerpo y la respuesta de `POST /demo/reset` (§4.6). Los contratos ya estaban cerrados, así que van en un PR de contrato aparte, antes de T1-02 y T1-03.
+- Decisión:
+  - `AssetOut` (en `schemas/portfolio.py`): `id`, `isin`, `ticker`, `name`, `asset_type`, `asset_class`, `currency`, `ter` (fracción o `null`), `transferable` y `price_kind`, los campos de la tabla `asset` salvo `price_source`, que es interno. `GET /assets/lookup?q=` devuelve `list[AssetOut]` y busca por ISIN, ticker o nombre sin distinguir mayúsculas; `q` vacío da 422 y sin coincidencias, `[]`. Ruta en `api/assets.py`.
+  - `PriceOut` (en `schemas/prices.py`, sin endpoint): `asset_id`, `price` (8 decimales, en la divisa del activo), `currency`, `price_at` (instante del dato, no de la consulta), `price_kind` y `source: SourceRef`, para que quien valore lo pase tal cual a la traza.
+  - `DemoResetRequest {preload: bool = false}` (cuerpo opcional) y `DemoResetOut {portfolio_ids, preloaded_event_ids}` (en `schemas/demo.py`). `POST /demo/reset` vive en `api/demo.py` y comprueba `DEMO_MODE` (403 `DEMO_MODE_DISABLED`). `/demo/dca/run` (T1-06) y `PUT /demo/clock` (T2-03) se añaden en ese mismo fichero.
+  - Las rutas nuevas responden ya sobre el mock (como en D-036): `portfolio.service.lookup_assets(q)` busca en los ejemplos `AssetOut*` y `portfolio.service.reset_demo()` devuelve los IDs. `preload` no reproduce eventos todavía y `preloaded_event_ids` sale vacío hasta que existan el pipeline (T1-15) y la integración (T2-03).
+  - Ficheros fuera de la fila de T1-03: `backend/app/schemas/{prices,demo}.py`, los ejemplos nuevos, `backend/app/portfolio/mock.py`, `backend/tests/test_asset_demo_contract.py`, la lista de `test_schema_examples.py` y lo regenerado por `make gen-api`.
+- Motivo: así T1-02, T1-03 y T1-19 (alta en el frontend) trabajan en paralelo contra tipos fijos.
+- Alternativas descartadas: que `/demo/reset` responda 204 sin cuerpo (el frontend no sabría qué eventos quedan precargados); un `AssetLookupOut` envuelto (`GET /portfolios` ya devuelve una lista sin envolver).
+- Consecuencias: T1-02 devuelve `PriceOut` en `latest()` y `history()`. T1-03 sustituye el mock de `lookup_assets` y `reset_demo` por la BD. T1-19 usa `AssetOut` para el autocompletar. T2-03 rellena `preloaded_event_ids` con el `preload`.
+
+### D-047 · Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria
+- Fecha: 2026-11-08 19:30 · Autor: Alons · Estado: Propuesta
+- Contexto: T1-02 lee sin red (D-014) los CSV de T1-09 (D-045). Además `prices` necesita la divisa, el tipo de precio y la fuente de cada activo, que están en la tabla `asset` de `portfolio`, y `portfolio` llama a `prices` para valorar.
+- Decisión:
+  - Lectura del formato de D-045: de `data/prices/<asset_id>.csv` (`date,close,adj_close`) se usa `close`, el cierre en la divisa del activo; el tipo de cambio sale de `data/factors/<PAR>.csv` (`date,value`; `EURUSD` = dólares por euro). El orden de las filas da igual; las líneas vacías se ignoran; un valor no positivo o no numérico hace fallar la carga con el fichero y la línea. Sin fichero, serie vacía.
+  - `prices` lee divisa, `price_kind` y `price_source` de `data/seed/assets.json` (`prices/catalog.py`), no de la tabla `asset`: así no hay dependencia circular con `portfolio`. Los activos solo existen si están en ese catálogo (el alta usa `/assets/lookup`).
+  - Modo offline: los CSV se leen una vez y se guardan en memoria (`OfflineCsvProvider`). Las tablas `price` y `fx_rate` quedan para el proveedor en directo (D-026), que no existe todavía; con cualquier `MARKET_DATA_PROVIDER` se usa el offline.
+  - `latest()` devuelve el último cierre con fecha no posterior a `clock.now()` (respeta `DEMO_CLOCK`); `price_at` es la fecha del cierre a las 00:00 UTC. `fixed:<valor>` vale lo mismo todos los días, con `price_at` = hoy. Sin dato: 503 `PRICE_UNAVAILABLE`; activo fuera del catálogo: 404 `NOT_FOUND`.
+  - `fx_rate(pair)` busca el par directo y, si no está, el inverso (`USDEUR` = 1 / `EURUSD`, redondeado a 8 decimales como `NUMERIC(20,8)`); misma divisa, `1`. Además de la interfaz de §4.1, `fx_quote(pair, at)` devuelve tipo, fecha y `SourceRef` (`kind: fx`) para las trazas.
+  - Los tests cambian de proveedor con `tests/fakes/price_provider.py` (`FakePriceProvider` + `use_price_provider`). Ficheros fuera de la fila de T1-02: `backend/tests/fakes/__init__.py` y `backend/tests/test_prices.py`.
+- Motivo: es lo mínimo que valora en < 300 ms sin red ni carga previa en BD, y lee los CSV de T1-09 tal cual.
+- Alternativas descartadas: cargar los CSV en la tabla `price` desde `seed_db.py` (la tabla no guarda `price_kind` y haría falta una migración); leer la tabla `asset` desde `prices` (rompe la frontera por `service.py`).
+- Consecuencias: T1-03 valora con `prices.latest` y `fx_quote("USDEUR")` (inverso de `EURUSD`). Un activo `yahoo:` sin CSV responde `PRICE_UNAVAILABLE`. Los tests usan el proveedor falso, salvo uno que comprueba los CSV reales del repo.
+
+### D-048 · Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks
+- Fecha: 2026-11-08 20:30 · Autor: Alons · Estado: Propuesta
+- Contexto: T1-03 pasa a real la valoración (`get_valued`), el alta, `/assets/lookup`, el seed y `/demo/reset`. Había que fijar cómo se redondea, de dónde sale el cambio semanal y qué pasa con los mocks de otros módulos que llamaban a `get_valued` solo para comprobar que la cartera existe.
+- Decisión:
+  - Redondeo (`portfolio/engine.py`, puro): `value_eur` de cada posición a céntimos (HALF_EVEN) y `total_eur = Σ value_eur`, para que el total cuadre con lo que se ve. `weight`, `allocation` y `change_week_pct` a 4 decimales. `avg_cost_eur` = coste total / participaciones, a céntimos. Posiciones ordenadas por valor descendente.
+  - Cambio semanal: `total_eur` menos el valor de las **mismas participaciones** al último cierre no posterior a `now − 7 días` (con el fx de ese día). Una posición sin dato de esa fecha no aporta cambio. No descuenta flujos (eso es `get_value_change`, T1-07).
+  - Cada valoración deja una traza `valuation` con lotes, precios, fx y las fuentes de `prices` (`kind: price` y `fx`).
+  - Seed (`portfolio/seed.py`, `scripts/seed_db.py`): el catálogo se actualiza siempre; cada cartera del seed se crea si no existe y **no se toca si ya existe** (un reinicio de Compose no borra lo que haya hecho el usuario). Con `--force` o `POST /demo/reset` vuelve al estado inicial: se borran sus lotes, operaciones, plan, DCA y ajustes de demo, sin borrar la fila de la cartera (otras tablas apuntan a ella). Carga también el plan y los planes DCA del seed. Cada lote del seed es una operación `initial` con su lote.
+  - Alta: comprueba cartera, activos (404 `NOT_FOUND` con `asset_id`) y precios (503 `PRICE_UNAVAILABLE`) **antes** de escribir: si algo falla, no guarda nada. `acquired_at` por defecto, `clock.now()`.
+  - `portfolio.service.ensure_exists(id)` (solo BD, sin precios). Los mocks de `impact`, `exposure`, `planning` y `status`, y `alerts.service` y `agents.service`, la usan en lugar de `get_valued` para el 404: así sus endpoints siguen respondiendo aunque no haya precios (hasta T1-09).
+  - El fixture `client` de `tests/conftest.py` crea las tablas y carga el seed; quien valore en un test activa un `FakePriceProvider`.
+  - `/demo/reset` todavía no limpia eventos, impactos, avisos ni la caché de voz: lo hace T2-03 cuando existan esos `reset()`.
+  - Ficheros fuera de la fila de T1-03: `backend/app/portfolio/{seed,mock}.py`, `backend/tests/golden/__init__.py`, `backend/tests/test_portfolio_engine.py`, `backend/tests/test_portfolio_mock.py`, `backend/tests/conftest.py` (fixture `client`) y una línea en `app/{impact,exposure,planning,status}/mock.py` y `app/{alerts,agents}/service.py`.
+- Motivo: totales que cuadran con la suma visible y mocks de otros módulos que no dependen de los precios.
+- Alternativas descartadas: redondear solo el total (el total no coincidiría con la suma de las filas); que el seed recargue siempre (cada `docker compose up` borraría las operaciones de la demo).
+- Consecuencias: T1-04 a T1-07 reutilizan `engine`, `repository.add_initial_lot` y `_quotes`. T2-02 suma los ajustes de demo en `get_valued`. T2-03 llama a los `reset()` del resto desde `/demo/reset`. Los casos dorados están en `backend/tests/golden/portfolio_init_cases.json`.
+
+### D-049 · Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa
+- Fecha: 2026-11-08 19:13 · Autor: Marcos · Estado: Propuesta
+- Contexto: T1-08 crea `data/seed/compositions/<ISIN>.csv` para el look-through (T1-11). Ningún documento fijaba las columnas, cómo se reparte lo que no está en el top-N ni cómo se identifican las empresas entre fondos y acciones directas.
+- Decisión:
+  - **Formato.** Un CSV por fondo o ETF de `assets.json` (10 en total) con las columnas de la tabla `composition` (`SPEC.md` §6): `constituent_key,name,weight,country,sector,currency,as_of,source`. `weight` es una fracción con 8 decimales y suma 1 (el último decimal se ajusta en la fila residual mayor). `country` es ISO 3166-1 alfa-2 en mayúsculas o `OTHER`; `sector`, una clave en minúsculas y con guion bajo (las 11 de GICS más `government`, `corporate` y `other`); `currency`, ISO 4217 o vacío si se desconoce. `as_of` y `source` van en cada fila. `test_compositions.py` lo valida.
+  - **Residuos por país, no una fila "Otros".** Lo que no está en el top-N se reparte en filas `OTROS_<PAÍS>` con el peso de ese país en la ficha de la gestora, para que la exposición por país y por divisa salga completa aunque solo se nombren las mayores empresas.
+    - Vanguard: el factsheet da las 10 mayores empresas y los 10 primeros países; la fila residual de cada país es el peso del país menos el de sus empresas del top-10 (`OTROS_US`, `OTROS_JP`…), con `sector = other`. El resto de países, hasta 100 %, va en `OTROS_OTHER` (`country = OTHER`, divisa vacía).
+    - iShares (IWDA, CSPX, IEAC): la gestora publica la cartera completa, así que el residuo se agrupa por país, sector y divisa (`OTROS_US_FINANCIALS`; con sufijo de divisa solo si en ese país y sector hay más de una) y no se pierde la exposición sectorial. Top-N: 100 empresas en IWDA y CSPX (más Inditex e Iberdrola, que tienen acción directa en las carteras), 50 emisores en IEAC.
+    - La divisa de las filas de Vanguard es la de la plaza del país: el factsheet no da divisas. En iShares es la divisa de cotización de cada valor.
+  - **Fondos cubiertos.** `IE00B18GC888` es la clase `EUR Hedged`: todas sus filas llevan `currency = EUR` (la exposición a divisa es el euro) y `country` sigue siendo el del emisor. Se revisaron los otros nueve: ninguno está cubierto (clases `EUR Acc` o `USD Acc` sin cobertura; IEAC y el fondo de deuda pública de la zona euro solo tienen bonos en euros).
+  - **Claves de empresa.** En mayúsculas, sin espacios y comunes a todos los CSV y a las acciones directas de `assets.json` (clave = `ticker`: `AAPL`, `NVDA`, `MSFT`, `ITX`, `IBE`). Se parte del ticker de iShares; las clases de una misma empresa se agrupan (`GOOG` y `GOOGL` → `GOOGL`; `BRK B` → `BRKB`). Si un ticker de iShares es de dos empresas distintas (`SAN`: Santander y Sanofi; `SAP`: SAP y Saputo), la clave lleva el país: `SAN_ES`, `SAN_FR`, `SAP_DE`. Los nombres se copian de iShares y los de Vanguard se resuelven contra ellos para que una empresa tenga el mismo nombre en todos los ficheros.
+  - **Fondos de bonos.** Las claves identifican al emisor, no al bono. Deuda pública de la zona euro: `GOV_FR`, `GOV_DE`… con `sector = government`. Vanguard Global Bond solo publica el peso por país (mezcla gobierno, corporativo y titulizaciones): `BONOS_US`, `BONOS_FR`… con `sector = other`. IEAC (todo corporativo): una fila por emisor con el ticker del emisor en iShares (`BNP`, `VZ`, `GOOGL`…), `sector = corporate`, y el resto por país.
+  - **Claves que no son una empresa.** Las que empiezan por `OTROS_`, `GOV_` o `BONOS_` representan un residuo o un emisor público: T1-11 las cuenta en país, sector y divisa, pero las excluye de `top_companies`, de los solapamientos y de la regla de concentración.
+  - **Normalización.** En iShares solo cuentan los valores de renta variable (IWDA, CSPX) o de renta fija (IEAC); el efectivo, los futuros y las divisas (netos, menos del 1 % de la cartera) se excluyen y los pesos se renormalizan. Los grupos residuales que iShares redondea a 0,00 % se omiten.
+  - **Fuentes y fechas.** iShares: CSV `latest-holdings.csv` de cada producto, `as_of` 2026-11-05. Vanguard: factsheet PDF de la clase exacta de cada ISIN (`fund-docs.vanguard.com`), `as_of` 2026-09-30; la URL va en `source`. El sector de las 10 mayores empresas de Vanguard es la clasificación GICS de iShares y, en las de mercados emergentes, asignada a mano. Las claves de los valores de mercados emergentes (`TSM`, `005930`, `0700`…) también se asignan a mano.
+- Motivo: sin país y divisa en los residuos, el look-through subestimaría EE. UU. y el riesgo divisa; sin claves comunes no salen los solapamientos del paso 2 del guion ni la exposición por empresa de los eventos de resultados (`NVDA`).
+- Alternativas descartadas: una única fila "Otros" sin país (rompe la exposición por país); listar bonos individuales (no aporta al look-through); reordenar los residuos de Vanguard por sector (el factsheet no da la distribución conjunta país × sector y habría que inventarla); la clave del emisor de renta fija prefijada con `BOND_` (impediría detectar que un bono de Alphabet y su acción son la misma empresa).
+- Consecuencias:
+  - T1-11 lee estos CSV y tiene que tratar los prefijos `OTROS_`, `GOV_` y `BONOS_` como no-empresa. Un emisor de bonos de IEAC y su acción solo comparten clave cuando iShares usa el mismo ticker (`GOOGL`, `VZ`); en el resto (`SANTAN` frente a `SAN_ES`) no hay solapamiento.
+  - **Cifras reales para el guion y los entregables.** T1-10 (dorados) y T1-13 parten de estas cifras. Con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026, el look-through de Laura da **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas y **76,0 %** en renta variable. No coinciden con el ≈ 61 % y el ≈ 19 % de la fila 2 de §5: el guion, el PDF y la presentación dicen estas cifras (con la marca de ejemplo ilustrativo), no las antiguas.
+  - El `source` de cada fila cabe en los 300 caracteres de la columna de `composition`.
+  - **Propuesta de cobertura (a validar por quien coja T1-11 o T1-13).** `coverage_pct` = fracción del patrimonio cuyo país se conoce por look-through, es decir, que no cae en `country = OTHER` (`OTROS_OTHER` y `BONOS_SUPRA`). Con estos ficheros, Laura: 94,3 %.
+    - Si se exige también el sector (`sector != other`), Laura baja a 54,9 %, porque los bonos y los residuos de Vanguard llevan `other`. Por eso la propuesta usa solo el país; el sector se puede mostrar aparte, pero no cuenta para la confianza.
+    - La cobertura a nivel de empresa (Laura: 40 %) no cuenta para la confianza.
+    - En eventos de resultados, el residuo de un fondo equivale a "esa empresa no está en el residuo": el peso `w_{i,c}` de la empresa sale solo de su fila nombrada y, si no tiene fila, es 0.
+    - Efecto en `Confidence` (`SPEC.md` §8): el umbral "cobertura ≥ 90 %" de `alta` se mide con este `coverage_pct`; Laura lo cumple.
+
 ### D-XXX · Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas
 - Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
 - Contexto: T1-12 rellena `factor_beta`. `SPEC.md` §8.1 proponía statsmodels, pero ni pandas, ni numpy ni statsmodels estaban todavía en `backend/pyproject.toml`.
@@ -474,4 +549,4 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - T1-13: un activo sin filas en `factor_beta` no tiene sensibilidad estimada, y debe contar como R² 0 en la confianza, no como 0 € con certeza. Para los activos en EUR con subyacente en USD, la beta de `EURUSD` ya recoge la divisa. El `r_fx` de §8.2 solo se aplica a los activos que cotizan en USD, cuya beta de `EURUSD` en divisa local sale casi nula.
   - `IE00B4L5Y983` (IWDA) **es** la serie de `EQ_GLOBAL`, así que sale con beta 1 y R² 1.
   - `make betas` necesita la tabla `asset` sembrada antes (`seed_db.py`, T1-03).
-  - Ficheros añadidos fuera de la fila de T1-12: `backend/pyproject.toml`, `backend/uv.lock` y los tests `backend/tests/test_{betas,impact_repository}.py`. `SPEC.md` §2 y §8.1 actualizados.
+  - Ficheros añadidos fuera de la fila de T1-12: `backend/pyproject.toml`, `backend/uv.lock` y los tests `backend/tests/test_{betas,impact_repository,compute_betas_script}.py`. `SPEC.md` §2 y §8.1 actualizados.

@@ -4,6 +4,7 @@
 UV ?= uv
 BACKEND := backend
 FRONTEND := frontend
+SCRIPTS := scripts
 HAS_FRONTEND := $(wildcard $(FRONTEND)/package.json)
 
 .PHONY: up down seed test test-backend test-frontend lint lint-backend lint-frontend \
@@ -33,7 +34,7 @@ endif
 lint: lint-backend lint-frontend
 
 lint-backend:
-	cd $(BACKEND) && $(UV) run ruff check . && $(UV) run ruff format --check . && $(UV) run mypy app tests
+	cd $(BACKEND) && $(UV) run ruff check . ../$(SCRIPTS) && $(UV) run ruff format --check . ../$(SCRIPTS) && $(UV) run mypy app tests
 
 lint-frontend:
 ifneq ($(HAS_FRONTEND),)

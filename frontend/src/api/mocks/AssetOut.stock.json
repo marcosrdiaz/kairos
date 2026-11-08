@@ -1,0 +1,13 @@
+{
+  "illustrative": true,
+  "id": "US0378331005",
+  "isin": "US0378331005",
+  "ticker": "AAPL",
+  "name": "Apple Inc.",
+  "asset_type": "stock",
+  "asset_class": "equity",
+  "currency": "USD",
+  "ter": null,
+  "transferable": false,
+  "price_kind": "intraday"
+}

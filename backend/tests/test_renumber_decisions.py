@@ -213,6 +213,110 @@ def test_main_with_before_after_uses_only_the_files_of_that_push(tmp_path: Path)
     assert tablero.read_text(encoding="utf-8") == "Otro PR: D-XXX.\n"
 
 
+def _commit_base_and_push(
+    root: Path,
+    base: list[tuple[str, str]],
+    pushed: list[tuple[str, str]],
+    refs_in_push: dict[str, str],
+) -> tuple[str, str]:
+    """Commit `base` y luego un push que deja `pushed` en decisiones.md y escribe `refs_in_push`."""
+    _git(root, "init", "-q")
+    _setup(root, base)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "base")
+    before = _git(root, "rev-parse", "HEAD")
+    _setup(root, pushed)
+    for name, text in refs_in_push.items():
+        _write(root, name, text)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "push")
+    return before, _git(root, "rev-parse", "HEAD")
+
+
+def test_stale_placeholders_from_a_failed_run_do_not_make_the_new_reference_ambiguous(
+    tmp_path: Path,
+) -> None:
+    """Incidente del #24: la Action del #23 no corrió y sus D-XXX seguían sin numerar."""
+    stale = [("D-001", "Uno"), ("D-XXX", "Vieja A"), ("D-XXX", "Vieja B")]
+    before, after = _commit_base_and_push(
+        tmp_path,
+        stale,
+        [*stale, ("D-XXX", "Nueva")],
+        {"backend/tests/x.py": "# (D-XXX)\n"},
+    )
+    assert script.main(["--root", str(tmp_path), "--before", before, "--after", after]) == 0
+    text = _decisions(tmp_path)
+    assert "### D-002 · Vieja A" in text and "### D-003 · Vieja B" in text
+    assert "### D-004 · Nueva" in text
+    assert (tmp_path / "backend/tests/x.py").read_text(encoding="utf-8") == "# (D-004)\n"
+
+
+def test_two_placeholders_added_by_the_same_push_leave_bare_references_ambiguous(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    before, after = _commit_base_and_push(
+        tmp_path,
+        [("D-001", "Uno")],
+        [("D-001", "Uno"), ("D-XXX", "Una"), ("D-XXX", "Otra")],
+        {"docs/SPEC.md": "Ver D-XXX.\n"},
+    )
+    code = script.main(["--root", str(tmp_path), "--before", before, "--after", after])
+    captured = capsys.readouterr()
+    assert code == script.EXIT_AMBIGUOUS == 2
+    assert (tmp_path / "docs/SPEC.md").read_text(encoding="utf-8") == "Ver D-XXX.\n"
+    assert "ambiguas" in captured.out
+    assert "sin numerar" in captured.err
+    # lo que sí se pudo numerar queda escrito (la Action lo commitea antes de fallar)
+    text = _decisions(tmp_path)
+    assert "### D-002 · Una" in text and "### D-003 · Otra" in text
+
+
+def test_push_without_new_placeholders_does_not_resolve_references_to_old_ones(
+    tmp_path: Path,
+) -> None:
+    """Una D-XXX vieja se numera, pero una referencia nueva sin entrada nueva no es suya."""
+    stale = [("D-001", "Uno"), ("D-XXX", "Vieja")]
+    before, after = _commit_base_and_push(tmp_path, stale, stale, {"docs/SPEC.md": "Ver D-XXX.\n"})
+    code = script.main(["--root", str(tmp_path), "--before", before, "--after", after])
+    assert code == script.EXIT_AMBIGUOUS
+    assert "### D-002 · Vieja" in _decisions(tmp_path)
+    assert (tmp_path / "docs/SPEC.md").read_text(encoding="utf-8") == "Ver D-XXX.\n"
+
+
+def test_ambiguous_reference_inside_decisions_file_also_exits_nonzero(tmp_path: Path) -> None:
+    _setup(
+        tmp_path,
+        [("D-001", "Uno"), ("D-XXX", "Primera"), ("D-XXX", "Segunda")],
+        {"D-XXX": "- Ver D-XXX.\n"},
+    )
+    assert script.main(["--root", str(tmp_path)]) == script.EXIT_AMBIGUOUS
+    text = _decisions(tmp_path)
+    assert "### D-002 · Primera" in text and "### D-003 · Segunda" in text
+
+
+def test_references_outside_the_diff_do_not_fail_the_run(tmp_path: Path) -> None:
+    """El tablero cita decisiones sin mergear: es un aviso informativo, no un error."""
+    before, after = _commit_base_and_push(
+        tmp_path, [("D-001", "Uno")], [("D-001", "Uno"), ("D-XXX", "Nueva")], {}
+    )
+    _write(tmp_path, "docs/TABLERO.md", "Otro PR: D-XXX.\n")
+    assert script.main(["--root", str(tmp_path), "--before", before, "--after", after]) == 0
+
+
+def test_workflow_commits_before_failing_on_ambiguous_references() -> None:
+    """El job tiene que commitear lo numerado y fallar después, no abortar antes del commit."""
+    workflow = SCRIPT.parents[1] / ".github" / "workflows" / "renumber-decisions.yml"
+    text = workflow.read_text(encoding="utf-8")
+    assert "continue-on-error: true" in text
+    assert text.index("Commit y push") < text.index("steps.renumber.outcome == 'failure'")
+
+
+def test_added_headings_lists_only_new_placeholder_entries(tmp_path: Path) -> None:
+    stale = [("D-001", "Uno"), ("D-XXX", "Vieja")]
+    before, after = _commit_base_and_push(tmp_path, stale, [*stale, ("D-XXX", "Nueva")], {})
+    assert script.added_headings(tmp_path, before, after) == {"### D-XXX · Nueva"}
+
+
 def test_before_of_zeros_falls_back_to_the_parent_commit(tmp_path: Path) -> None:
     _git(tmp_path, "init", "-q")
     _setup(tmp_path, [("D-001", "Uno")])

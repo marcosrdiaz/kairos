@@ -134,6 +134,25 @@ class PortfolioSummaryOut(ContractModel):
     profile: Profile
 
 
+class AssetOut(ContractModel):
+    """Activo del catálogo: `GET /assets/lookup?q=` (lista). Completa el alta (RF-01).
+
+    `id` es el ISIN; sin ISIN, un código propio (`DEP-12M`, `PP-MIXTO`). `ter` es `null` en
+    acciones, depósitos y planes. La fuente del precio es interna y no sale en el contrato.
+    """
+
+    id: str
+    isin: str | None
+    ticker: str | None
+    name: str
+    asset_type: AssetType
+    asset_class: AssetClass
+    currency: str
+    ter: Fraction | None
+    transferable: bool
+    price_kind: PriceKind
+
+
 class PositionInitLine(ContractModel):
     asset_id: str
     units: Units = Field(gt=0)

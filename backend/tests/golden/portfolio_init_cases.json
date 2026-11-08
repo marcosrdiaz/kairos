@@ -1,0 +1,229 @@
+{
+  "illustrative": true,
+  "description": "Alta de Laura y Javier desde data/seed con precios ilustrativos fijos. Valores calculados a mano (script aparte) con: valor = unidades × precio × fx redondeado a céntimos (HALF_EVEN); total = Σ valores; pesos y asignación a 4 decimales; fx USD→EUR = 1/EURUSD a 8 decimales; semana anterior = cierre del 2026-10-30.",
+  "now": "2026-11-08T18:00:00Z",
+  "closes": {
+    "IE00B4L5Y983": {
+      "2026-10-30": "94.00",
+      "2026-11-06": "95.42"
+    },
+    "IE00B03HD191": {
+      "2026-10-30": "48.00",
+      "2026-11-06": "48.20"
+    },
+    "IE00B18GC888": {
+      "2026-10-30": "95.30",
+      "2026-11-06": "95.10"
+    },
+    "US67066G1040": {
+      "2026-10-30": "180.00",
+      "2026-11-06": "182.50"
+    },
+    "US0378331005": {
+      "2026-10-30": "230.00",
+      "2026-11-06": "228.10"
+    },
+    "ES0148396007": {
+      "2026-10-30": "47.00",
+      "2026-11-06": "47.80"
+    },
+    "ES0144580Y14": {
+      "2026-10-30": "16.50",
+      "2026-11-06": "16.20"
+    },
+    "IE0007472115": {
+      "2026-10-30": "236.00",
+      "2026-11-06": "236.40"
+    }
+  },
+  "fx": {
+    "EURUSD": {
+      "2026-10-30": "1.1500",
+      "2026-11-06": "1.1600"
+    }
+  },
+  "expected": {
+    "laura": {
+      "total_eur": "34311.60",
+      "change_week_eur": "180.28",
+      "change_week_pct": "0.0053",
+      "allocation": {
+        "equity": "0.7151",
+        "fixed_income": "0.2849",
+        "cash": "0.0000",
+        "mixed": "0.0000"
+      },
+      "positions": [
+        {
+          "asset_id": "IE00B4L5Y983",
+          "units": "114.00000000",
+          "avg_cost_eur": "80.27",
+          "price": "95.42000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "10877.88",
+          "unrealized_pnl_eur": "1727.00",
+          "first_acquired_at": "2023-03-06T00:00:00Z",
+          "weight": "0.3170"
+        },
+        {
+          "asset_id": "IE00B18GC888",
+          "units": "102.80591101",
+          "avg_cost_eur": "92.22",
+          "price": "95.10000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "9776.84",
+          "unrealized_pnl_eur": "296.26",
+          "first_acquired_at": "2023-03-06T00:00:00Z",
+          "weight": "0.2849"
+        },
+        {
+          "asset_id": "IE00B03HD191",
+          "units": "200.31765635",
+          "avg_cost_eur": "36.53",
+          "price": "48.20000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "9655.31",
+          "unrealized_pnl_eur": "2337.89",
+          "first_acquired_at": "2023-03-06T00:00:00Z",
+          "weight": "0.2814"
+        },
+        {
+          "asset_id": "US67066G1040",
+          "units": "8.00000000",
+          "avg_cost_eur": "73.53",
+          "price": "182.50000000",
+          "price_currency": "USD",
+          "fx_rate": "0.86206897",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "1258.62",
+          "unrealized_pnl_eur": "670.39",
+          "first_acquired_at": "2024-02-05T00:00:00Z",
+          "weight": "0.0367"
+        },
+        {
+          "asset_id": "ES0148396007",
+          "units": "25.00000000",
+          "avg_cost_eur": "38.89",
+          "price": "47.80000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "1195.00",
+          "unrealized_pnl_eur": "222.75",
+          "first_acquired_at": "2024-01-15T00:00:00Z",
+          "weight": "0.0348"
+        },
+        {
+          "asset_id": "US0378331005",
+          "units": "4.00000000",
+          "avg_cost_eur": "176.04",
+          "price": "228.10000000",
+          "price_currency": "USD",
+          "fx_rate": "0.86206897",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "786.55",
+          "unrealized_pnl_eur": "82.39",
+          "first_acquired_at": "2023-09-04T00:00:00Z",
+          "weight": "0.0229"
+        },
+        {
+          "asset_id": "ES0144580Y14",
+          "units": "47.00000000",
+          "avg_cost_eur": "13.50",
+          "price": "16.20000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "761.40",
+          "unrealized_pnl_eur": "126.66",
+          "first_acquired_at": "2024-10-07T00:00:00Z",
+          "weight": "0.0222"
+        }
+      ]
+    },
+    "javier": {
+      "total_eur": "187189.79",
+      "change_week_eur": "110.36",
+      "change_week_pct": "0.0006",
+      "allocation": {
+        "equity": "0.0738",
+        "fixed_income": "0.6858",
+        "cash": "0.1442",
+        "mixed": "0.0962"
+      },
+      "positions": [
+        {
+          "asset_id": "IE0007472115",
+          "units": "360.09362434",
+          "avg_cost_eur": "227.09",
+          "price": "236.40000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "85126.13",
+          "unrealized_pnl_eur": "3351.35",
+          "first_acquired_at": "2021-05-03T00:00:00Z",
+          "weight": "0.4548"
+        },
+        {
+          "asset_id": "IE00B18GC888",
+          "units": "454.84868700",
+          "avg_cost_eur": "108.59",
+          "price": "95.10000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "43256.11",
+          "unrealized_pnl_eur": "-6138.09",
+          "first_acquired_at": "2021-05-03T00:00:00Z",
+          "weight": "0.2311"
+        },
+        {
+          "asset_id": "DEP-12M",
+          "units": "27000.00000000",
+          "avg_cost_eur": "1.00",
+          "price": "1.00000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-08T00:00:00Z",
+          "value_eur": "27000.00",
+          "unrealized_pnl_eur": "0.00",
+          "first_acquired_at": "2026-03-02T00:00:00Z",
+          "weight": "0.1442"
+        },
+        {
+          "asset_id": "PP-MIXTO",
+          "units": "1800.00000000",
+          "avg_cost_eur": "10.00",
+          "price": "10.00000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-08T00:00:00Z",
+          "value_eur": "18000.00",
+          "unrealized_pnl_eur": "0.00",
+          "first_acquired_at": "2018-01-15T00:00:00Z",
+          "weight": "0.0962"
+        },
+        {
+          "asset_id": "IE00B03HD191",
+          "units": "286.46363822",
+          "avg_cost_eur": "38.78",
+          "price": "48.20000000",
+          "price_currency": "EUR",
+          "fx_rate": "1",
+          "price_at": "2026-11-06T00:00:00Z",
+          "value_eur": "13807.55",
+          "unrealized_pnl_eur": "2697.17",
+          "first_acquired_at": "2022-01-10T00:00:00Z",
+          "weight": "0.0738"
+        }
+      ]
+    }
+  }
+}
