@@ -25,8 +25,8 @@ Especificación técnica viva. Si el código y este documento discrepan, se arre
 | Cálculo | pandas, numpy, statsmodels | Solo en `impact/` y `scripts/` |
 | LLM | API de Anthropic (SDK `anthropic`) | IDs de modelo por variable de entorno (§9) |
 | Voz | ElevenLabs: Scribe v2 Realtime (STT) + Flash v2.5 (TTS) | IDs exactos a verificar en la doc de ElevenLabs (tarea T0-09) |
-| Frontend | React 18 + TypeScript + Vite | `openapi-typescript` para tipos; TanStack Query para datos |
-| Estilos | Tailwind CSS | Contraste AA, tipografía base 18 px en la app móvil |
+| Frontend | React 19 + TypeScript + Vite | `openapi-typescript` para tipos; TanStack Query para datos |
+| Estilos | Tailwind CSS 4 | Contraste AA, tipografía base 18 px en la app móvil |
 | Gráficos (panel) | Recharts | Solo en el panel, nunca en la portada móvil |
 | Tests | pytest, pytest-asyncio, vitest, Playwright (smoke de la demo) | |
 | Lint | ruff, mypy, eslint, tsc | `make lint` |

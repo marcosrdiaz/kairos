@@ -1,13 +1,13 @@
 /**
  * Cliente de API. Todas las llamadas al backend pasan por aquí (regla de CLAUDE.md).
  *
- * - Normal: fetch a `/api/...` (Vite lo reenvía al backend, ver vite.config.ts).
+ * - Normal: fetch a `/api/v1/...` (Vite lo reenvía al backend, ver vite.config.ts).
  * - Con VITE_USE_MOCKS=true: lee `src/api/mocks/<Modelo>.json` si existe. Esa carpeta la
  *   rellena `make gen-api` (T0-03) copiando backend/app/schemas/examples/*.json.
  *   Mientras no exista, no se inventa ningún dato: la llamada falla con `mock_missing`
  *   y la pantalla muestra su estado vacío.
  */
-const BASE = "/api";
+const BASE = "/api/v1";
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === "true";
 
 // Sin ficheros en mocks/ el glob devuelve {}: es válido.

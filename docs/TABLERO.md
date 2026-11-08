@@ -138,7 +138,7 @@ _(Ninguna tarea en curso.)_
 
 | Fecha/hora | Tarea bloqueada | Por qué | Necesita de | Estado |
 | --- | --- | --- | --- | --- |
-| | | | | |
+| 2026-11-08 | Ninguna (tarea menor de setup) | `playwright-cli` no encuentra Chrome en Windows (`chrome.exe` no instalado) y hay que usar `--browser=msedge`. Hay que hacer que `scripts/setup-dev.sh` deje a `playwright-cli` usando su propio Chromium | Quien coja la tarea menor de `scripts/setup-dev.sh` | Abierto |
 
 ## 6. Peticiones de contrato
 
@@ -146,7 +146,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 
 | Fecha/hora | Pide | Esquema / endpoint | Cambio | Afecta a | Estado |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| 2026-11-08 | Marcos (T0-07) a Alons (T0-01) | Prefijo de la API | Confirmar que `main.py` monta todos los routers bajo `/api/v1` (`SPEC.md` §11). El cliente del frontend usa la base `/api/v1` y el proxy de Vite reenvía `/api` tal cual | T0-01, T0-03, T0-07 y todo el frontend | Pendiente de confirmar |
 
 ## 7. Preguntas abiertas
 

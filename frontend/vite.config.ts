@@ -3,7 +3,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// El frontend llama siempre a /api/...; Vite lo reenvía al backend quitando el prefijo.
+// El frontend llama a /api/v1/...; Vite reenvía la ruta tal cual al backend (SPEC §11).
 // Fuera de Docker: http://localhost:8000. Dentro de Docker (compose): KAIROS_API_PROXY=http://backend:8000.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 5173,
       proxy: {
-        "/api": { target, changeOrigin: true, rewrite: (path: string) => path.replace(/^\/api/, "") },
+        "/api": { target, changeOrigin: true },
       },
     },
     test: {

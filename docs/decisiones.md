@@ -279,9 +279,9 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Tests: `@testing-library/react` y `jsdom` para vitest.
   - Lint: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` y `globals`.
   - Sin librerías de componentes ni de iconos. Fuentes del sistema, sin fuentes remotas (la demo funciona sin red).
-  - Proxy de Vite: el frontend llama a `/api/...` y Vite lo reenvía al backend **quitando el prefijo `/api`** (los endpoints del diseño no llevan prefijo). Destino por `KAIROS_API_PROXY`: `http://localhost:8000` fuera de Docker, `http://backend:8000` dentro.
+  - Proxy de Vite: el frontend llama a `/api/...` y Vite lo reenvía al backend **tal cual**, sin quitar el prefijo. La API vive bajo `/api/v1` (`SPEC.md` §11) y `src/api/client.ts` usa `/api/v1` como base; las rutas sin prefijo del diseño son abreviaturas. Pendiente de confirmar con T0-01 que el backend monta los routers en `/api/v1` (*Peticiones de contrato*). Destino por `KAIROS_API_PROXY`: `http://localhost:8000` fuera de Docker, `http://backend:8000` dentro.
   - Formateo de cifras solo con `src/lib/format.ts` (`Intl.NumberFormat('es-ES')`): los importes entran como string Decimal y no se convierten a `number`.
 - Consecuencias:
-  - Las versiones instaladas son las últimas: React 19 y Tailwind 4 (tokens en `@theme` de `src/index.css`), mientras `SPEC.md` §2 dice React 18. Si alguien necesita React 18, se baja en `package.json`; nada del scaffold depende de React 19.
+  - Las versiones instaladas son las últimas: React 19 y Tailwind 4 (tokens en `@theme` de `src/index.css`). `SPEC.md` §2 actualizado en el mismo PR.
   - El `Makefile` de T0-01 puede llamar a `npm run lint|typecheck|test|build` en `frontend/`.
   - Tokens y reglas visuales en `DESIGN.md` (raíz); contexto de producto en `PRODUCT.md`.
