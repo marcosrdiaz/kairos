@@ -147,6 +147,14 @@ class ShockSet(ContractModel):
 # --- Control de replay (POST /demo/replay/{event_id}) ---
 
 
+class ReplayRequest(ContractModel):
+    """Cuerpo opcional. `occurred_at` fecha el evento en ese instante en vez de `now()`; con
+    `silent` no se generan avisos."""
+
+    occurred_at: UtcDatetime | None = None
+    silent: bool = False
+
+
 class ReplayOut(ContractModel):
     """Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó."""
 

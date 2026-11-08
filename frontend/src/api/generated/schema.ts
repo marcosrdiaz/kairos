@@ -53,7 +53,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Replay Event */
+        /**
+         * Replay Event
+         * @description Cuerpo aceptado por contrato; T1-15 lo aplica.
+         */
         post: operations["replay_event_api_v1_demo_replay__event_id__post"];
         delete?: never;
         options?: never;
@@ -1389,6 +1392,20 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /**
+         * ReplayRequest
+         * @description Cuerpo opcional. `occurred_at` fecha el evento en ese instante en vez de `now()`; con
+         *     `silent` no se generan avisos.
+         */
+        ReplayRequest: {
+            /** Occurred At */
+            occurred_at?: string | null;
+            /**
+             * Silent
+             * @default false
+             */
+            silent: boolean;
+        };
         /** ScenarioOut */
         ScenarioOut: {
             /** Breakdown */
@@ -1761,6 +1778,7 @@ export type RadarOut = components['schemas']['RadarOut'];
 export type RadarRule = components['schemas']['RadarRule'];
 export type Radiography = components['schemas']['Radiography'];
 export type ReplayOut = components['schemas']['ReplayOut'];
+export type ReplayRequest = components['schemas']['ReplayRequest'];
 export type ScenarioOut = components['schemas']['ScenarioOut'];
 export type ScenarioRequest = components['schemas']['ScenarioRequest'];
 export type SentenceStatus = components['schemas']['SentenceStatus'];
@@ -1848,7 +1866,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -1868,7 +1886,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReplayRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2218,7 +2240,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2263,7 +2285,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2305,7 +2327,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2387,7 +2409,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2471,7 +2493,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2515,7 +2537,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2639,7 +2661,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2723,7 +2745,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2767,7 +2789,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2829,7 +2851,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
