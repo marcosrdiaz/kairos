@@ -5,7 +5,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en las referencias desde otros ficheros **del mismo PR**; fuera del PR, p. ej. en el tablero, se cita por título, nunca como `D-XXX`); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
@@ -60,10 +60,13 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
 | D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
 | D-036 | 2026-11-08 | Contrato de cartera (T0-02): peticiones, variantes de ejemplo y mock por API | Aceptada |
-| D-038 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
-| D-037 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
+| D-037 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
+| D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
-| D-XXX | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime y Flash v2.5; voz y latencia pendientes | Propuesta |
+| D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
+| D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
+| D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
+| D-XXX | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 
 ---
 
@@ -318,7 +321,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-02: `backend/app/portfolio/__init__.py`, `backend/app/schemas/examples/__init__.py` y `backend/tests/test_portfolio_mock.py`.
 - Consecuencias: T0-03 copia también las variantes. T1-03 a T1-07 sustituyen las funciones de `service.py` sin cambiar sus firmas. Las cifras de los ejemplos usan los activos del seed de T0-08, pero son ilustrativas: con esos precios, la RV de Laura en el mock sale en 0,72, no en 0,76.
 
-### D-038 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
+### D-037 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
 - Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
 - Contexto: T0-03 tiene que generar los tipos TS desde el OpenAPI del backend. `openapi-typescript` estaba aceptado (D-001 / `SPEC.md` §2), pero la última versión (7.13.0) pide `typescript@^5` como peer y el frontend usa TypeScript 6 (D-035): `npm install` falla con `ERESOLVE`.
 - Decisión:
@@ -329,7 +332,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-03: `backend/tests/test_gen_api.py` (copia de mocks y OpenAPI determinista, sin npx) y `frontend/src/api/mocks.test.ts` (el frontend importa los mocks con los tipos generados).
 - Consecuencias: T0-04, T0-05 y T0-06 ejecutan `make gen-api` en su PR para que sus tipos y mocks lleguen al frontend. Si sale una versión de `openapi-typescript` compatible con TS 6, se puede pasar a `devDependencies`.
 
-### D-037 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
+### D-038 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
 - Fecha: 2026-11-08 17:23 · Autor: Jaime · Estado: Propuesta
 - Contexto: T0-08 tenía que crear los datos de semilla, pero ningún documento fijaba su formato ni de dónde salen las rentabilidades de la proyección.
 - Decisión:
@@ -360,6 +363,48 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
   - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
 - Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
+
+### D-040 · Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404
+- Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
+- Contexto: el diseño §4.5 define los mensajes de `WS /voice/stt` y `POST /voice/tts`, pero no cómo se modelan ni qué hace el mock. Además `core/errors.py` (T0-01) asignaba 403 a `SENTENCE_NOT_APPROVED`, mientras que el diseño §4.5 y `SPEC.md` §10 dicen 404.
+- Decisión:
+  - `SENTENCE_NOT_APPROVED` pasa a **404** en `core/errors.py`, como dice el contrato.
+  - `schemas/voice.py`: `SttStartMessage` (`sample_rate`, `encoding` y `language` son literales fijos: 16000, `pcm_s16le`, `es`), `SttStopMessage`, `SttPartialMessage`, `SttFinalMessage`, `SttErrorMessage` (`code` es `str`, como en `ErrorOut`) y `TtsRequest {turn_id, index ≥ 0}`, que rechaza campos extra: el cliente nunca manda texto. Uniones discriminadas por `type`: `SttClientMessage` y `SttServerMessage` (alias, como `AskEvent` de T0-05). Un ejemplo por clase concreta, más `ErrorOut.sentence_not_approved.json`.
+  - FastAPI no documenta WebSockets, así que los `Stt*Message` no salen en `schema.ts`. `make gen-api` copia sus ejemplos a `frontend/src/api/mocks/`, y T2-14 escribe sus tipos TS en `frontend/src/voice/` a partir de ellos.
+  - `voice/service.py`: `register_approved(turn_id, index, text)` (la única función para otros módulos), `reset()`, `get_approved`, `synthesize`, `disclaimer` y `transcribe`. La caché de frases aprobadas es real, no mock: está en memoria, con lock, una clave `(turn_id, index)`, TTL de 5 min con `clock.now()` y limpieza de entradas caducadas en cada acceso. `synthesize` comprueba la caché **antes** de abrir el stream (404 JSON, no audio vacío).
+  - `voice/mock.py`: el STT ignora el audio y responde `partial` con el primer frame y `final` al recibir `stop` (los textos de los ejemplos). El TTS devuelve `data/voice/mock.mp3` en trozos de 16 KB. `/voice/disclaimer` sirve `data/voice/disclaimer.mp3` si existe (T1-21) y, si no, `mock.mp3`. La ruta a `data/` se resuelve desde el propio fichero (`parents[3]`): en local da la raíz del repo y en Docker `/data` (montado en Compose).
+  - `WS /voice/stt`: si el primer mensaje no es un `start` válido o llega un texto que no es `stop`, el servidor manda `error` `VALIDATION_ERROR` y cierra. Si falla la transcripción, `error` `UPSTREAM_UNAVAILABLE` (el frontend pasa al plan B).
+  - `mock.mp3` (6,7 s, 48 kbps mono) se generó en local con la voz es-ES de Windows (Helena) y ffmpeg. Dice: "Audio de prueba de KAIROS. Soy una inteligencia artificial y esto no es asesoramiento financiero.", para que también valga como aviso de IA mientras no exista `disclaimer.mp3`. No lleva cifras.
+  - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
+- Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
+
+### D-041 · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios.
+- Decisión:
+  - Rutas: `api/impact.py` sirve `GET /portfolios/{id}/events`, `POST /portfolios/{id}/scenarios` y `GET /portfolios/{id}/move`; `api/exposure.py`, `/exposure` y `/radar`; `api/status.py`, `/status`; `api/planning.py`, `/projection` y `/agenda`. T2-05, T2-06 y T2-07 pueden mover las suyas a `api/{radar,agenda,move}.py`.
+  - `schemas/impact.py` añade `ScenarioRequest`, que el diseño solo describía con un JSON. `EventType` y `MovePeriod` son `Literal` para no chocar en el OpenAPI con los enums de T0-05.
+  - `ExplanationStatus`, `SentenceStatus`, `StatusState` y `StatusReasonKind` se importan de `schemas/agents.py` (D-039).
+  - Los mocks comprueban que la cartera existe con `portfolio.service.get_valued` (404).
+  - Ejemplos con los activos y el total de `PortfolioOut.json` (ilustrativos), con desgloses que suman. Variantes: `EventImpactOut.nvda` (sin consenso, `pending`), `StatusOut.tranquilo`, `StatusOut.revisa_plan` y `AgendaItemOut.dca`.
+  - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
+  - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
+- Consecuencias: `EventImpactStub` (`schemas/agents.py`) ya se puede sustituir por `EventImpactOut` (D-039).
+
+### D-042 · Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: `SPEC.md` §6 no tenía tablas para las ejecuciones de DCA (`DcaExecutionOut`, estado `pending`) ni para el ajuste de demo (D-031), y le faltaban columnas que piden los contratos. Además, las tablas tienen claves foráneas entre módulos y hay que cargarlas todas juntas antes de crear el esquema.
+- Decisión:
+  - Tablas nuevas: `dca_execution` (id, dca_plan_id, scheduled_for, status, created_at, resolved_at), `dca_execution_line` (execution_id, asset_id, amount_eur, price, price_at, units_estimated, transaction_id) y `demo_adjustment` (portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at), **una fila por posición**, para que `value_eur` de cada posición pueda sumar su parte. `PortfolioOut.demo_adjustments` las agrega por evento. Las tres van en `portfolio/models.py`.
+  - Columnas añadidas a las de §6: `portfolio.created_at`; `transaction.price_currency`, `realized_gain_eur` y `calc_id`; `tax_lot.units_initial`; `dca_plan.last_execution_at` y `next_execution_at` (vienen en el seed, D-038); `event.text` y `created_at`; `event_impact.impact_pct`, `explanation_status` y `created_at`; `agent_log.created_at`. `agent_log.guardian_verdict` es JSON.
+  - IDs de texto que genera cada servicio (`laura`, el ISIN, `dca_laura`, `tx_…`, `lot_…`); solo `demo_adjustment` y `agent_log` usan entero autoincremental. Los enums se guardan como texto con los valores de `app.schemas`, sin tipos `ENUM` de Postgres.
+  - Tipos: euros `NUMERIC(18,2)`; participaciones, precios, tipos de cambio, coste por unidad y estadísticos (`beta`, `r2`, `score`, `impact_pct`) `NUMERIC(20,8)`; pesos y fracciones `NUMERIC(10,8)`; fechas `TIMESTAMP WITH TIME ZONE`. Los `calc_id` no llevan clave foránea a `calc_trace`, porque la traza se escribe en su propia sesión.
+  - `app/models.py` importa todos los `models.py`; lo usan `alembic/env.py` y el fixture `db` (`conftest.py`). Quien añada un `models.py` lo registra ahí y crea una migración (`alembic revision --autogenerate`, desde `backend/`). `test_migrations.py` falla si los modelos y las migraciones no coinciden.
+  - `alembic.ini` en `backend/` (la condición del servicio `seed` de Compose, D-034); la URL sale de `DATABASE_URL`. Migración inicial `0001`, probada en SQLite y en Postgres 16 (subir, `alembic check`, bajar).
+  - Ficheros añadidos fuera de la fila de T1-01: `backend/alembic.ini`, `backend/app/models.py`, `backend/app/prices/__init__.py`, `backend/tests/test_migrations.py`, una línea en `backend/tests/conftest.py` y `known-third-party = ["alembic"]` en `backend/pyproject.toml` (ruff tomaba `backend/alembic/` por el paquete).
+- Motivo: así T1-06 (DCA) y T2-02 (ajuste de demo) no necesitan otra migración, que podría chocar con las de otras tareas en paralelo.
+- Alternativas descartadas: el ajuste de demo agregado por evento (no basta para `value_eur` por posición); `ENUM` de Postgres (cada valor nuevo exigiría una migración y no funcionan igual en SQLite).
+- Consecuencias: T1-02, T1-03, T1-06, T1-11, T1-12, T1-13, T1-15, T2-02 y T2-08 ya tienen sus tablas. Si una tarea cambia un modelo, añade una migración `0002_…` encadenada a la última que haya en `main`; si dos ramas crean migraciones a la vez, la segunda en entrar ajusta su `down_revision`. `SPEC.md` §6 actualizado.
 
 ### D-XXX · IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras
 - Fecha: 2026-11-08 · Autor: Marcos · Estado: Propuesta

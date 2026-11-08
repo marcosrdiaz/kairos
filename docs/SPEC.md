@@ -192,21 +192,25 @@ erDiagram
 
 | Tabla | Columnas clave | Notas |
 | --- | --- | --- |
-| `portfolio` | id, name, profile (`conservador`/`moderado`/`dinamico`), base_currency=EUR | Sin login: la demo elige Laura o Javier |
+| `portfolio` | id, name, profile (`conservador`/`moderado`/`dinamico`), base_currency=EUR, created_at | Sin login: la demo elige Laura o Javier |
 | `plan` | portfolio_id, target_equity_pct, target_fixed_income_pct, target_cash_pct, drift_threshold (fracción, def. 0,10), goal_amount_eur, goal_year | |
 | `asset` | id, isin, ticker, name, asset_type, asset_class, currency, ter, transferable, price_kind, price_source | `transferable` = fondo de inversión (traspaso sin tributar) |
 | `price` | asset_id, ts, value, currency, source | PK (asset_id, ts) |
 | `fx_rate` | pair (`EURUSD`…), ts, rate, source | |
-| `transaction` | id, portfolio_id, type, asset_id, ts, units, price, amount_eur, fx_rate, linked_tx_id, dca_plan_id | type: `buy`, `sell`, `transfer_out`, `transfer_in`, `dca_buy`, `initial` |
-| `tax_lot` | id, portfolio_id, asset_id, acquired_at, units_remaining, cost_eur_per_unit, origin_tx_id | Base de FIFO y traspasos |
-| `dca_plan` / `dca_allocation` | amount_eur, frequency, day, status / asset_id, pct | Σ pct = 1 |
+| `transaction` | id, portfolio_id, type, asset_id, ts, units, price, price_currency, fx_rate, amount_eur, realized_gain_eur, linked_tx_id, dca_plan_id, calc_id | type: `buy`, `sell`, `transfer_out`, `transfer_in`, `dca_buy`, `initial` |
+| `tax_lot` | id, portfolio_id, asset_id, acquired_at, units_initial, units_remaining, cost_eur_per_unit, origin_tx_id | Base de FIFO y traspasos |
+| `dca_plan` / `dca_allocation` | amount_eur, frequency, day, status, last_execution_at, next_execution_at / asset_id, weight | Σ weight = 1 |
+| `dca_execution` / `dca_execution_line` | dca_plan_id, scheduled_for, status (`pending`/`confirmed`/`skipped`), created_at, resolved_at / asset_id, amount_eur, price, price_at, units_estimated, transaction_id | Una ejecución por fecha; al confirmar, cada línea apunta a su `transaction` (D-042) |
+| `demo_adjustment` | portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at | Solo con `DEMO_MODE=true`; una fila por posición; la borra `/demo/reset` (D-031, D-042) |
 | `composition` | fund_asset_id, constituent_key, name, weight, country, sector, currency, as_of, source | Pesos normalizados; "Otros" para el resto |
 | `factor_beta` | asset_id, factor, beta, std_err, r2, n_obs, window_start, window_end | Calculado por `make betas` |
-| `event` | id, type, title, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model | |
-| `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, confidence, polarity, breakdown (json), explanation, calc_id | |
+| `event` | id, type, title, text, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model, created_at | |
+| `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, impact_pct, confidence, polarity, breakdown (json), explanation, explanation_status, calc_id, created_at | |
 | `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered | |
 | `calc_trace` | id, kind, formula, inputs (json), outputs (json), sources (json), parent_calc_ids (json), created_at | Trazabilidad de cada cifra. Modelo en `core/trace.py` (D-034) |
-| `agent_log` | id, agent, model, prompt_hash, tool_calls (json), output, guardian_verdict, latency_ms | Para depurar y para la métrica de latencia |
+| `agent_log` | id, agent, model, prompt_hash, tool_calls (json), output, guardian_verdict (json), latency_ms, created_at | Para depurar y para la métrica de latencia |
+
+**Implementación** (T1-01, D-042): cada módulo declara sus tablas en `models.py` y `app/models.py` las registra todas. Migraciones con Alembic en `backend/alembic/` (`alembic upgrade head`; la ejecuta el servicio `seed`). Euros `NUMERIC(18,2)`; participaciones, precios y estadísticos `NUMERIC(20,8)`; pesos `NUMERIC(10,8)`; enums como texto.
 
 **Posiciones**: no hay tabla `position`. Se derivan de `tax_lot` (suma de `units_remaining` por activo; precio medio = coste total / unidades). El libro de operaciones (`transaction`) es la fuente de verdad; los lotes se pueden reconstruir desde él.
 

@@ -1,0 +1,17 @@
+{
+  "illustrative": true,
+  "state": "revisa_plan",
+  "state_label": "Revisa tu plan",
+  "total_eur": "34311.68",
+  "change_week_pct": "-0.015",
+  "sentence": "Tu cartera se ha alejado de tu plan. Toca para ver cuánto.",
+  "sentence_status": "ok",
+  "reason": {
+    "kind": "drift",
+    "event_id": null,
+    "event_impact_eur": null
+  },
+  "price_as_of": "2026-11-06T16:35:00Z",
+  "computed_at": "2026-11-08T18:02:04Z",
+  "calc_id": "calc_f24ee1f54f5651591a8987e6d1af7922"
+}

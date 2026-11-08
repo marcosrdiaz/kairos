@@ -14,6 +14,7 @@ Documento vivo: qué tareas hay, quién ha cogido cada una, en qué estado está
 - **Excepciones a la propiedad por tarea:** `docs/decisiones.md` (solo se añade al final) y tu propia fila de este tablero.
 - **El tablero solo se modifica con commits directos a `main`** (excepción a "todo por PR"), nunca dentro de un PR, y el commit toca únicamente `docs/TABLERO.md`. Mensaje `docs: claim|release|done|block|note T<x>-<nn>`: `claim`, `release` y `done` cambian la fila de la tarea; `block` apunta o cierra una fila de *Bloqueos* (y marca `⛔`); `note` actualiza *Notas para retomar* o *Peticiones de contrato* (y marca `🧪 en PR`). Flujo: `git pull --rebase` → comprobar (p. ej. que la tarea sigue libre) → commit → `git push` justo después. Si el push falla, se repite desde el pull. Excepción puntual: `docs: tablero rules` para cambios de reglas de este propio tablero. Todo lo demás va por PR: el merge lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde.
 - **Estados:** `⬜ pendiente` · `🔄 en curso` · `🧪 en PR` · `✅ hecho` · `⛔ bloqueado`. Marcar `✅ hecho` (`docs: done T<x>-<nn>`) solo con la tarea en `main`.
+- **Decisiones sin mergear: por título, nunca `D-XXX`.** En el tablero (que no va en PRs) una decisión de un PR aún sin mergear se cita por su título. La Action `renumber-decisions` solo renumera los ficheros del PR que entra en `main`, así que un `D-XXX` aquí no se numera, o apuntaría a la decisión de otro PR.
 - Al cerrar cada sesión (`/cierre`), actualiza *Notas para retomar* de tu tarea con un commit directo a `main` (`docs: note T<x>-<nn>`).
 
 ---
@@ -52,21 +53,21 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-01 | Esqueleto: Compose (db, backend, frontend, seed), Makefile, `config.py`, `core/{clock,db,errors,trace}.py`, CI. Incluye lo común de los contratos: `schemas/common.py` (Money, SourceRef, enums compartidos, ErrorOut) y los códigos de error de `core/errors.py` | `make up` y `make test` en limpio; `main.py` monta solo todos los routers de `api/`; `common.py` y `errors.py` publicados | — | `Makefile`, `docker-compose.yml`, `.env.example`, `.gitignore`, `.github/workflows/ci.yml`, `backend/pyproject.toml`, `backend/app/{main,config}.py`, `backend/app/core/`, `backend/app/schemas/common.py`, `backend/tests/conftest.py`, `frontend/Dockerfile` (mínimo: nginx sirviendo el build de Vite) | Alons | ✅ hecho |
 | T0-02 | Esquemas de cartera (§4.1) + `examples/` + `portfolio/mock.py` + test que valida todos los ejemplos | Ejemplos validan; el mock sirve `/portfolios/laura` | T0-01 | `backend/app/schemas/portfolio.py`, `backend/app/schemas/examples/` (cartera, plan, operaciones, DCA, traza), `backend/app/portfolio/{mock,service}.py`, `backend/app/api/portfolio.py`, `backend/tests/test_schema_examples.py` | Alons | ✅ hecho |
 | T0-03 | `make gen-api` genera los tipos TS y copia a `frontend/src/api/mocks/` todos los `schemas/examples/*.json` que existan | El frontend importa los mocks; funciona aunque falten esquemas de otros | T0-02 | `Makefile` (solo el objetivo `gen-api`), `scripts/gen_api.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/` | Alons | ✅ hecho |
-| T0-04 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints responden con mock | T0-01 | `backend/app/schemas/{impact,exposure,radar,status,planning}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{exposure,impact,status,planning}/{mock,service}.py`, `backend/app/api/{exposure,impact,status,planning}.py` | Jaime | 🔄 en curso |
+| T0-04 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints responden con mock | T0-01 | `backend/app/schemas/{impact,exposure,radar,status,planning}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{exposure,impact,status,planning}/{mock,service}.py`, `backend/app/api/{exposure,impact,status,planning}.py` | Jaime | ✅ hecho |
 | T0-05 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; el `/ask` mock emite SSE de ejemplo | El frontend recibe el SSE mock | T0-01 | `backend/app/schemas/{events,agents,alerts}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{agents,events,alerts}/{mock,service}.py`, `backend/app/api/{ask,events,alerts}.py`, `backend/app/{agents,events,alerts}/__init__.py`, `backend/tests/test_event_agent_examples.py` | Marcos | ✅ hecho |
-| T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | Alons | 🔄 en curso |
+| T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | Alons | ✅ hecho |
 | T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
-| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🔄 en curso |
-| T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | — | ⬜ |
+| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🧪 en PR |
+| T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | Manu | 🧪 en PR |
 
 ### Fase 1 · Datos y motores (lun 9)
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | — | ⬜ |
-| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | — | ⬜ |
-| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | — | ⬜ |
+| T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
+| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | 🔄 en curso |
+| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | 🔄 en curso |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | — | ⬜ |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
@@ -131,6 +132,22 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T0-10 · Eventos de replay — Manu
+**Estado:** PR #18 abierto (`t0-10/replay-events`). Contiene `data/events/replay/{bce-2025-06,oil-2025-06,nvda-2025-02}.json` sin `observed`, el test `backend/tests/test_replay_events.py` (fuera de la fila de la tarea) y una entrada «Eventos de replay (T0-10): formato del texto como entrada de fuente» en estado *Propuesta* en `docs/decisiones.md`.
+**Siguiente paso exacto:** revisión y merge del PR, y después `docs: done T0-10`. Eso desbloquea T1-09 y T1-15.
+**Para T1-09:** las horas de `occurred_at` son 12:15Z (BCE), 01:42Z del 13 jun (petróleo, primera cotización del Brent tras los ataques del día 12 a las 23:30Z) y 21:20Z del 26 feb (NVIDIA; la caída es del 27 feb). `observed` debe medirse en esos días de mercado.
+**Ficheros tocados:** los de arriba.
+
+### T0-09 · IDs de voz de ElevenLabs — Marcos
+**Estado:** PR #16 abierto (`t0-09/elevenlabs-ids`): IDs, voz (Ciro), latencia y pronunciación en `docs/decisiones.md` (entrada «IDs de ElevenLabs (T0-09)»), y los tres IDs en `.env.example`.
+**Siguiente paso exacto:** que un revisor lo mire y se haga merge. La voz Ciro la eligió el equipo a oído; Carolina y Lydia quedan descartadas.
+**Ficheros tocados:** `docs/decisiones.md`, `.env.example` (este último no estaba en la fila de la tarea: solo se rellenan los IDs).
+
+### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
+**Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
+**Calentamiento:** la primera llamada con una voz tarda 7–11 s hasta el primer byte; las siguientes, ~150 ms. Haz una llamada de calentamiento al arrancar el backend con `ELEVENLABS_VOICE_ID`.
+**IDs:** ya están en `.env.example` (`scribe_v2_realtime`, `eleven_flash_v2_5`, voz Ciro). `language_code=es` funciona en Scribe.
 
 ### T1-18 · T1-19 · T1-20 · Base del frontend que deja T0-07 — Marcos
 **Qué hay en `main`:** scaffold en `frontend/` (Vite, TS estricto, Tailwind 4, TanStack Query, `react-router`). Rutas `/inicio`, `/cartera`, `/pregunta` (dentro de `AppShell`, con pestañas abajo) y `/panel` (layout de escritorio). Decisión D-035; contexto en `PRODUCT.md` y `DESIGN.md`.

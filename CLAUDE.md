@@ -85,7 +85,7 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 
 - Rama por tarea: `t<fase>-<nn>/<descripcion-corta>` (p. ej. `t1-13/impact-fx-split`). PR pequeño a `main`, CI en verde y un revisor del equipo (vale con un vistazo de 5 minutos). El merge lo hace quien abre el PR, tras la aprobación.
 - Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los cambios del tablero usan `docs: claim|release|done|block|note T<x>-<nn>` y van directos a `main`, nunca en un PR (ver arriba).
-- **IDs de decisiones.** Las decisiones nuevas van con `D-XXX` (`D-XXX-a`, `D-XXX-b`… si hay varias en la misma rama). La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`. No las toques a mano.
+- **IDs de decisiones.** Las decisiones nuevas van con `D-XXX` (`D-XXX-a`, `D-XXX-b`… si hay varias en la misma rama). La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`. No las toques a mano. La Action solo sustituye `D-XXX` en `docs/decisiones.md` y en los ficheros que cambia ese mismo PR. **Fuera del propio PR** (por ejemplo, en el tablero), una decisión aún sin mergear se cita **por título**, nunca como `D-XXX`: no se renumeraría o, peor, se confundiría con la de otro PR.
 - Nunca `push --force` a `main`. No mezcles en un PR cambios de contrato con cambios de implementación.
 - **Congelación**: el miércoles 11 a las 16:00 solo se aceptan fixes. Entrega antes de las 21:00 (cierre oficial 23:59). Lo que se entrega es el ZIP de `main`.
 

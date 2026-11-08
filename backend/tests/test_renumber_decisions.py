@@ -1,6 +1,8 @@
 """`scripts/renumber_decisions.py`: numeración de las decisiones `D-XXX`."""
 
 import importlib.util
+import os
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -159,6 +161,83 @@ def test_single_bare_reference_is_replaced_everywhere(tmp_path: Path) -> None:
     code = _write(tmp_path, "backend/app/x.py", "# ver D-XXX\n")
     script.renumber(tmp_path, files=[code])
     assert code.read_text(encoding="utf-8") == "# ver D-002\n"
+
+
+def test_placeholder_in_file_outside_the_diff_is_not_renumbered(tmp_path: Path) -> None:
+    """El tablero cita decisiones de otros PRs sin mergear: no es del commit que numera."""
+    _setup(tmp_path, [("D-001", "Uno"), ("D-XXX", "Nueva")])
+    in_diff = _write(tmp_path, "docs/SPEC.md", "Ver D-XXX.\n")
+    outside = _write(tmp_path, "docs/TABLERO.md", "Nota: decisión D-XXX en otro PR.\n")
+    report = script.renumber(tmp_path, files=[in_diff])
+    assert in_diff.read_text(encoding="utf-8") == "Ver D-002.\n"
+    assert outside.read_text(encoding="utf-8") == "Nota: decisión D-XXX en otro PR.\n"
+    assert any("docs/TABLERO.md" in line and "no se toca" in line for line in report)
+
+
+def test_no_files_only_processes_the_decisions_file(tmp_path: Path) -> None:
+    _setup(tmp_path, [("D-001", "Uno"), ("D-XXX", "Nueva")])
+    other = _write(tmp_path, "docs/nota.md", "Ver D-XXX.\n")
+    script.main(["--root", str(tmp_path)])
+    assert "### D-002 · Nueva" in _decisions(tmp_path)
+    assert other.read_text(encoding="utf-8") == "Ver D-XXX.\n"
+
+
+def _git(root: Path, *args: str) -> str:
+    env = {
+        "GIT_AUTHOR_NAME": "t",
+        "GIT_AUTHOR_EMAIL": "t@t",
+        "GIT_COMMITTER_NAME": "t",
+        "GIT_COMMITTER_EMAIL": "t@t",
+        "PATH": os.environ["PATH"],
+        "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+    }
+    out = subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, env=env)
+    return out.stdout.decode().strip()
+
+
+def test_main_with_before_after_uses_only_the_files_of_that_push(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-q")
+    _setup(tmp_path, [("D-001", "Uno")])
+    tablero = _write(tmp_path, "docs/TABLERO.md", "Otro PR: D-XXX.\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "base")
+    before = _git(tmp_path, "rev-parse", "HEAD")
+    _setup(tmp_path, [("D-001", "Uno"), ("D-XXX", "Nueva")])
+    spec = _write(tmp_path, "docs/SPEC.md", "Ver D-XXX.\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "push")
+    after = _git(tmp_path, "rev-parse", "HEAD")
+    assert script.main(["--root", str(tmp_path), "--before", before, "--after", after]) == 0
+    assert "### D-002 · Nueva" in _decisions(tmp_path)
+    assert spec.read_text(encoding="utf-8") == "Ver D-002.\n"
+    assert tablero.read_text(encoding="utf-8") == "Otro PR: D-XXX.\n"
+
+
+def test_before_of_zeros_falls_back_to_the_parent_commit(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-q")
+    _setup(tmp_path, [("D-001", "Uno")])
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "base")
+    spec = _write(tmp_path, "docs/SPEC.md", "x\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "push")
+    after = _git(tmp_path, "rev-parse", "HEAD")
+    assert script.changed_files(tmp_path, "0" * 40, after) == [spec]
+
+
+def test_bad_range_fails_with_a_clear_error(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _git(tmp_path, "init", "-q")
+    _setup(tmp_path, [("D-001", "Uno"), ("D-XXX", "Nueva")])
+    assert script.main(["--root", str(tmp_path), "--before", "abc", "--after", "def"]) == 1
+    assert "git diff" in capsys.readouterr().err
+
+
+def test_before_without_after_is_a_usage_error(tmp_path: Path) -> None:
+    _setup(tmp_path, [("D-001", "Uno")])
+    with pytest.raises(SystemExit):
+        script.main(["--root", str(tmp_path), "--before", "abc"])
 
 
 def test_convention_files_are_protected(tmp_path: Path) -> None:

@@ -1,0 +1,37 @@
+{
+  "illustrative": true,
+  "goal_amount_eur": "150000.00",
+  "goal_year": 2040,
+  "current_value_eur": "34311.68",
+  "monthly_contribution_eur": "300.00",
+  "scenarios": [
+    {
+      "name": "pesimista",
+      "annual_return": "0.03747",
+      "value_at_goal_eur": "123926.90",
+      "reaches_goal": false
+    },
+    {
+      "name": "base",
+      "annual_return": "0.05740",
+      "value_at_goal_eur": "152181.69",
+      "reaches_goal": true
+    },
+    {
+      "name": "optimista",
+      "annual_return": "0.07733",
+      "value_at_goal_eur": "187321.51",
+      "reaches_goal": true
+    }
+  ],
+  "on_track": true,
+  "gap_eur": "0.00",
+  "assumptions_source": {
+    "kind": "assumption",
+    "label": "Supuestos de rentabilidad por clase de activo",
+    "ref": "data/seed/assumptions.json",
+    "as_of": "2025-12-31T00:00:00Z",
+    "url": null
+  },
+  "calc_id": "calc_dfa555786d19f339a13e6719241e9d6f"
+}
