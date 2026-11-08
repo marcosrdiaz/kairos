@@ -1,0 +1,11 @@
+{
+  "illustrative": true,
+  "code": "TRANSFER_NOT_ALLOWED",
+  "message": "Los ETF y las acciones no admiten traspaso sin tributar. Puedes registrar una venta y una compra; la venta tributa.",
+  "details": {
+    "from_asset_type": "etf",
+    "to_asset_type": "fund",
+    "alternative": "sell_and_buy",
+    "estimated_gain_eur": "1105.50"
+  }
+}
