@@ -158,7 +158,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 ### T1-01 · Modelos + migración — Alons
 **Estado:** PR #17 (`t1-01/db-models`) abierto, con CI y tests en verde en local; falta un revisor y el merge.
-**Qué hay:** `models.py` en 7 módulos, registro en `backend/app/models.py`, `backend/alembic.ini` y migración `0001`. Se han añadido las tablas `dca_execution`, `dca_execution_line` y `demo_adjustment` (decisión `D-XXX` en el PR).
+**Qué hay:** `models.py` en 7 módulos, registro en `backend/app/models.py`, `backend/alembic.ini` y migración `0001`. Se han añadido las tablas `dca_execution`, `dca_execution_line` y `demo_adjustment` (decisión `D-042` en el PR).
 **Siguiente paso exacto:** revisar y hacer merge del PR #17; luego `docs: done T1-01`. Se desbloquean T1-02, T1-03 y T2-01.
 **Ficheros tocados:** los de la fila, más `backend/alembic.ini`, `backend/app/models.py`, `backend/app/prices/__init__.py`, `backend/tests/{test_migrations,conftest}.py`, `backend/pyproject.toml` (isort), `docs/{SPEC,decisiones}.md`.
 
