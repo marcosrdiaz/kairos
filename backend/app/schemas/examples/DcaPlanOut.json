@@ -1,0 +1,21 @@
+{
+  "illustrative": true,
+  "id": "dca_laura",
+  "portfolio_id": "laura",
+  "amount_eur": "300.00",
+  "frequency": "monthly",
+  "day": 5,
+  "status": "active",
+  "allocations": [
+    {
+      "asset_id": "IE00B03HD191",
+      "weight": "0.70"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "weight": "0.30"
+    }
+  ],
+  "last_execution_at": "2026-10-05T00:00:00Z",
+  "next_execution_at": "2026-11-05T00:00:00Z"
+}
