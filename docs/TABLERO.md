@@ -161,7 +161,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ### T1-02 · `prices` offline — Alons
 **Estado:** PR #21 (`t1-02/prices-offline`), apilado sobre el PR de contrato #20 (`t1-03/asset-price-contract`). Decisión «Precios offline (T1-02)» en `docs/decisiones.md`.
 **Siguiente paso exacto:** revisar y mergear #20; después cambiar la base de #21 a `main` (rebase), revisar y mergear.
-**Para T1-09:** formato `data/prices/<asset_id>.csv` (`date,close`) y `data/prices/fx/EURUSD.csv` (`date,rate`, dólares por euro). Sin esos CSV, la app responde `PRICE_UNAVAILABLE`.
+**Datos:** lee los CSV de T1-09 tal cual (D-045): `data/prices/<asset_id>.csv` (columna `close`) y `data/factors/EURUSD.csv` para el tipo de cambio. Con esos datos, Laura sale en 42.363,67 € (RV 76 %) y Javier en 180.000,25 € (RF 65 %).
 **Ficheros tocados:** `backend/app/prices/{catalog,provider,service}.py`, `backend/tests/fakes/{__init__,price_provider}.py`, `backend/tests/test_prices.py`, `docs/decisiones.md`, `docs/SPEC.md` §12.
 
 ## 5. Bloqueos
