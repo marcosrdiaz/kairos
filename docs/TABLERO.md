@@ -57,7 +57,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | Alons | 🧪 en PR |
 | T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
-| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🔄 en curso |
+| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🧪 en PR |
 | T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | — | ⬜ |
 
 ### Fase 1 · Datos y motores (lun 9)
@@ -131,6 +131,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T0-09 · IDs de voz de ElevenLabs — Marcos
+**Estado:** PR #16 abierto (`t0-09/elevenlabs-ids`): IDs, voz (Carolina), latencia y pronunciación en `docs/decisiones.md` (entrada `D-XXX`), y los tres IDs en `.env.example`.
+**Siguiente paso exacto:** que un revisor lo mire y se haga merge. Nadie ha escuchado todavía la voz elegida; si no gusta, la alternativa es Lydia (`SDVJaMLoJa7wc3s2sn7d`).
+**Ficheros tocados:** `docs/decisiones.md`, `.env.example` (este último no estaba en la fila de la tarea: solo se rellenan los IDs).
 
 ### T1-18 · T1-19 · T1-20 · Base del frontend que deja T0-07 — Marcos
 **Qué hay en `main`:** scaffold en `frontend/` (Vite, TS estricto, Tailwind 4, TanStack Query, `react-router`). Rutas `/inicio`, `/cartera`, `/pregunta` (dentro de `AppShell`, con pestañas abajo) y `/panel` (layout de escritorio). Decisión D-035; contexto en `PRODUCT.md` y `DESIGN.md`.
