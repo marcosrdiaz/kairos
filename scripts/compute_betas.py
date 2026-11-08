@@ -22,6 +22,9 @@ from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
 
+from sqlalchemy.exc import IntegrityError
+
+import app.models  # noqa: F401  (registra todas las tablas: la FK factor_beta → asset)
 from app.impact import repository
 from app.impact.betas import BetaEstimate, InsufficientData, Series, estimate_betas
 from app.schemas.common import Factor
@@ -96,7 +99,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"aviso: {w}", file=sys.stderr)
     _print_table(estimates)
     if not args.dry_run:
-        written = repository.replace_betas(estimates)
+        try:
+            written = repository.replace_betas(estimates)
+        except IntegrityError:
+            msg = "error: faltan activos en la tabla `asset`; siembra antes (make seed)"
+            print(msg, file=sys.stderr)
+            return 1
         print(f"factor_beta: {written} filas")
     return 0
 
