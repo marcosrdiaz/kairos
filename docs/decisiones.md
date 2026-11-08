@@ -59,7 +59,9 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-033 | 2026-11-08 | Herramientas de Claude Code a nivel de proyecto. Añade (solo desarrollo, no entran en la app): plugin superpowers, skills impeccable / emil-design-eng / review-animations / playwright-cli, y `@playwright/cli` global vía `scripts/setup-dev.sh` | Aceptada |
 | D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
 | D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
-| D-XXX | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
+| D-036 | 2026-11-08 | Contrato de cartera (T0-02): peticiones, variantes de ejemplo y mock por API | Aceptada |
+| D-XXX | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
+| D-037 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 
 ---
 
@@ -314,7 +316,18 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-02: `backend/app/portfolio/__init__.py`, `backend/app/schemas/examples/__init__.py` y `backend/tests/test_portfolio_mock.py`.
 - Consecuencias: T0-03 copia también las variantes. T1-03 a T1-07 sustituyen las funciones de `service.py` sin cambiar sus firmas. Las cifras de los ejemplos usan los activos del seed de T0-08, pero son ilustrativas: con esos precios, la RV de Laura en el mock sale en 0,72, no en 0,76.
 
-### D-XXX · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
+### D-XXX · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
+- Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
+- Contexto: T0-03 tiene que generar los tipos TS desde el OpenAPI del backend. `openapi-typescript` estaba aceptado (D-001 / `SPEC.md` §2), pero la última versión (7.13.0) pide `typescript@^5` como peer y el frontend usa TypeScript 6 (D-035): `npm install` falla con `ERESOLVE`.
+- Decisión:
+  - `scripts/gen_api.py` llama a `npx --yes openapi-typescript@7.13.0`, con la versión fija y sin añadirlo a `package.json`. npx lo instala aparte, con su propio TypeScript 5. Así no hace falta `--legacy-peer-deps` en el frontend.
+  - Salida en `frontend/src/api/generated/`: `openapi.json` (volcado determinista de `create_app().openapi()`) y `schema.ts`, generado con `--root-types --root-types-no-schema-prefix --alphabetize`. Cada esquema se puede importar por su nombre: `import type { PortfolioOut } from "./generated/schema"` (desde `src/api/`). Todo con LF.
+  - `frontend/src/api/mocks/` se **vacía y se rellena** con todos los `schemas/examples/*.json`, variantes incluidas y con `illustrative` intacto. Se copian también los ejemplos sin ruta todavía (p. ej. `TraceOut`), aunque su tipo no salga en `schema.ts` hasta que haya un endpoint que lo use.
+  - Lo generado **va al repo**. CI, Docker y quien solo toque el frontend no necesitan ni Python ni npx. Quien cambie un esquema o un ejemplo ejecuta `make gen-api` y sube el resultado en el mismo PR. Sin Node: `make gen-api GEN_API_ARGS=--skip-ts`.
+  - Ficheros añadidos fuera de la fila de T0-03: `backend/tests/test_gen_api.py` (copia de mocks y OpenAPI determinista, sin npx) y `frontend/src/api/mocks.test.ts` (el frontend importa los mocks con los tipos generados).
+- Consecuencias: T0-04, T0-05 y T0-06 ejecutan `make gen-api` en su PR para que sus tipos y mocks lleguen al frontend. Si sale una versión de `openapi-typescript` compatible con TS 6, se puede pasar a `devDependencies`.
+
+### D-037 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
 - Fecha: 2026-11-08 17:23 · Autor: Jaime · Estado: Propuesta
 - Contexto: T0-08 tenía que crear los datos de semilla, pero ningún documento fijaba su formato ni de dónde salen las rentabilidades de la proyección.
 - Decisión:

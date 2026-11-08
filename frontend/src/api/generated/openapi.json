@@ -1,0 +1,1898 @@
+{
+  "components": {
+    "schemas": {
+      "AllocationOut": {
+        "additionalProperties": false,
+        "properties": {
+          "cash": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Cash",
+            "type": "string"
+          },
+          "equity": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Equity",
+            "type": "string"
+          },
+          "fixed_income": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Fixed Income",
+            "type": "string"
+          },
+          "mixed": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Mixed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equity",
+          "fixed_income",
+          "cash",
+          "mixed"
+        ],
+        "title": "AllocationOut",
+        "type": "object"
+      },
+      "AssetClass": {
+        "enum": [
+          "equity",
+          "fixed_income",
+          "cash",
+          "mixed"
+        ],
+        "title": "AssetClass",
+        "type": "string"
+      },
+      "AssetType": {
+        "enum": [
+          "fund",
+          "etf",
+          "stock",
+          "deposit",
+          "pension_plan"
+        ],
+        "title": "AssetType",
+        "type": "string"
+      },
+      "DcaAllocation": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "weight": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Weight",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "weight"
+        ],
+        "title": "DcaAllocation",
+        "type": "object"
+      },
+      "DcaExecutionActionRequest": {
+        "additionalProperties": false,
+        "description": "`POST /dca-executions/{id}`. Responde `DcaExecutionOut`.",
+        "properties": {
+          "action": {
+            "enum": [
+              "confirm",
+              "skip"
+            ],
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "DcaExecutionActionRequest",
+        "type": "object"
+      },
+      "DcaExecutionLine": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Amount Eur",
+            "type": "string"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "price": {
+            "description": "Precio con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Price",
+            "type": "string"
+          },
+          "price_at": {
+            "format": "date-time",
+            "title": "Price At",
+            "type": "string"
+          },
+          "units_estimated": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units Estimated",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "amount_eur",
+          "price",
+          "price_at",
+          "units_estimated"
+        ],
+        "title": "DcaExecutionLine",
+        "type": "object"
+      },
+      "DcaExecutionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "dca_plan_id": {
+            "title": "Dca Plan Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/DcaExecutionLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "scheduled_for": {
+            "format": "date-time",
+            "title": "Scheduled For",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DcaExecutionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "dca_plan_id",
+          "scheduled_for",
+          "status",
+          "lines"
+        ],
+        "title": "DcaExecutionOut",
+        "type": "object"
+      },
+      "DcaExecutionStatus": {
+        "enum": [
+          "pending",
+          "confirmed",
+          "skipped"
+        ],
+        "title": "DcaExecutionStatus",
+        "type": "string"
+      },
+      "DcaPlanCreateRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios/{id}/dca-plans`. Σ weight = 1 exacto (si no, `DCA_ALLOCATION_INVALID`).\n\n`day`: día del mes (1-28) si es mensual; día ISO de la semana (1 = lunes) si es semanal.",
+        "properties": {
+          "allocations": {
+            "items": {
+              "$ref": "#/components/schemas/DcaAllocation"
+            },
+            "minItems": 1,
+            "title": "Allocations",
+            "type": "array"
+          },
+          "amount_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Amount Eur",
+            "type": "string"
+          },
+          "day": {
+            "maximum": 28.0,
+            "minimum": 1.0,
+            "title": "Day",
+            "type": "integer"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DcaPlanStatus",
+            "default": "active"
+          }
+        },
+        "required": [
+          "amount_eur",
+          "frequency",
+          "day",
+          "allocations"
+        ],
+        "title": "DcaPlanCreateRequest",
+        "type": "object"
+      },
+      "DcaPlanOut": {
+        "additionalProperties": false,
+        "properties": {
+          "allocations": {
+            "items": {
+              "$ref": "#/components/schemas/DcaAllocation"
+            },
+            "title": "Allocations",
+            "type": "array"
+          },
+          "amount_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Amount Eur",
+            "type": "string"
+          },
+          "day": {
+            "title": "Day",
+            "type": "integer"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_execution_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Execution At"
+          },
+          "next_execution_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Execution At"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DcaPlanStatus"
+          }
+        },
+        "required": [
+          "id",
+          "portfolio_id",
+          "amount_eur",
+          "frequency",
+          "day",
+          "status",
+          "allocations",
+          "last_execution_at",
+          "next_execution_at"
+        ],
+        "title": "DcaPlanOut",
+        "type": "object"
+      },
+      "DcaPlanStatus": {
+        "enum": [
+          "active",
+          "paused"
+        ],
+        "title": "DcaPlanStatus",
+        "type": "string"
+      },
+      "DcaPlanUpdateRequest": {
+        "additionalProperties": false,
+        "description": "`PATCH /portfolios/{id}/dca-plans/{plan_id}`. Solo los campos enviados.",
+        "properties": {
+          "allocations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DcaAllocation"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocations"
+          },
+          "amount_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Eur"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "maximum": 28.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          },
+          "frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Frequency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DcaPlanStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "DcaPlanUpdateRequest",
+        "type": "object"
+      },
+      "DemoAdjustmentOut": {
+        "additionalProperties": false,
+        "description": "Ajuste de demo tras un replay (D-031). Ya está sumado en los totales.",
+        "properties": {
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "impact_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Impact Eur",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "impact_eur",
+          "label",
+          "calc_id"
+        ],
+        "title": "DemoAdjustmentOut",
+        "type": "object"
+      },
+      "ErrorOut": {
+        "additionalProperties": false,
+        "description": "Cuerpo de toda respuesta de error HTTP 4xx/5xx. `code` es uno de `core.errors.ErrorCode`.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorOut",
+        "type": "object"
+      },
+      "Frequency": {
+        "enum": [
+          "monthly",
+          "weekly"
+        ],
+        "title": "Frequency",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LotOut": {
+        "additionalProperties": false,
+        "properties": {
+          "acquired_at": {
+            "format": "date-time",
+            "title": "Acquired At",
+            "type": "string"
+          },
+          "cost_eur_per_unit": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Cost Eur Per Unit",
+            "type": "string"
+          },
+          "lot_id": {
+            "title": "Lot Id",
+            "type": "string"
+          },
+          "units": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lot_id",
+          "acquired_at",
+          "units",
+          "cost_eur_per_unit"
+        ],
+        "title": "LotOut",
+        "type": "object"
+      },
+      "OperationEffect": {
+        "additionalProperties": false,
+        "description": "Efecto sobre el activo de origen. En un traspaso, `lots_created` son los del destino.",
+        "properties": {
+          "avg_cost_eur_after": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Avg Cost Eur After",
+            "type": "string"
+          },
+          "lots_consumed": {
+            "items": {
+              "$ref": "#/components/schemas/LotOut"
+            },
+            "title": "Lots Consumed",
+            "type": "array"
+          },
+          "lots_created": {
+            "items": {
+              "$ref": "#/components/schemas/LotOut"
+            },
+            "title": "Lots Created",
+            "type": "array"
+          },
+          "realized_gain_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Gain Eur"
+          },
+          "units_after": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units After",
+            "type": "string"
+          }
+        },
+        "required": [
+          "units_after",
+          "avg_cost_eur_after"
+        ],
+        "title": "OperationEffect",
+        "type": "object"
+      },
+      "OperationType": {
+        "description": "Tipo en la respuesta. En BD hay además `transfer_out`, `transfer_in` e `initial`.",
+        "enum": [
+          "buy",
+          "sell",
+          "transfer",
+          "dca_buy"
+        ],
+        "title": "OperationType",
+        "type": "string"
+      },
+      "PlanOut": {
+        "additionalProperties": false,
+        "properties": {
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "current": {
+            "$ref": "#/components/schemas/TargetAllocation"
+          },
+          "drift_equity": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Drift Equity",
+            "type": "string"
+          },
+          "drift_exceeded": {
+            "title": "Drift Exceeded",
+            "type": "boolean"
+          },
+          "drift_threshold": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Drift Threshold",
+            "type": "string"
+          },
+          "goal_amount_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Amount Eur"
+          },
+          "goal_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Year"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          },
+          "target": {
+            "$ref": "#/components/schemas/TargetAllocation"
+          }
+        },
+        "required": [
+          "portfolio_id",
+          "target",
+          "drift_threshold",
+          "goal_amount_eur",
+          "goal_year",
+          "current",
+          "drift_equity",
+          "drift_exceeded",
+          "calc_id"
+        ],
+        "title": "PlanOut",
+        "type": "object"
+      },
+      "PlanUpdateRequest": {
+        "additionalProperties": false,
+        "description": "`PUT /portfolios/{id}/plan`. Responde `PlanOut`.",
+        "properties": {
+          "drift_threshold": {
+            "default": "0.10",
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Drift Threshold",
+            "type": "string"
+          },
+          "goal_amount_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Amount Eur"
+          },
+          "goal_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Year"
+          },
+          "target": {
+            "$ref": "#/components/schemas/TargetAllocation"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "title": "PlanUpdateRequest",
+        "type": "object"
+      },
+      "PortfolioOut": {
+        "additionalProperties": false,
+        "description": "`GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.",
+        "properties": {
+          "allocation": {
+            "$ref": "#/components/schemas/AllocationOut"
+          },
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "change_week_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Change Week Eur",
+            "type": "string"
+          },
+          "change_week_pct": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Change Week Pct",
+            "type": "string"
+          },
+          "demo_adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/DemoAdjustmentOut"
+            },
+            "title": "Demo Adjustments",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionOut"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "total_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Total Eur",
+            "type": "string"
+          },
+          "valued_at": {
+            "format": "date-time",
+            "title": "Valued At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "profile",
+          "total_eur",
+          "change_week_eur",
+          "change_week_pct",
+          "allocation",
+          "positions",
+          "valued_at",
+          "calc_id"
+        ],
+        "title": "PortfolioOut",
+        "type": "object"
+      },
+      "PortfolioSummaryOut": {
+        "additionalProperties": false,
+        "description": "Elemento de `GET /portfolios` (selector Laura/Javier).",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "profile"
+        ],
+        "title": "PortfolioSummaryOut",
+        "type": "object"
+      },
+      "PositionInitLine": {
+        "additionalProperties": false,
+        "properties": {
+          "acquired_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acquired At"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "avg_cost_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Avg Cost Eur",
+            "type": "string"
+          },
+          "units": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "units",
+          "avg_cost_eur"
+        ],
+        "title": "PositionInitLine",
+        "type": "object"
+      },
+      "PositionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "asset_type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "avg_cost_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Avg Cost Eur",
+            "type": "string"
+          },
+          "first_acquired_at": {
+            "format": "date-time",
+            "title": "First Acquired At",
+            "type": "string"
+          },
+          "fx_rate": {
+            "description": "Tipo de cambio de la divisa del precio a EUR: 1 USD = 0.8621 EUR",
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Fx Rate",
+            "type": "string"
+          },
+          "isin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isin"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price": {
+            "description": "Precio con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Price",
+            "type": "string"
+          },
+          "price_at": {
+            "format": "date-time",
+            "title": "Price At",
+            "type": "string"
+          },
+          "price_currency": {
+            "title": "Price Currency",
+            "type": "string"
+          },
+          "price_kind": {
+            "$ref": "#/components/schemas/PriceKind"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          },
+          "transferable": {
+            "title": "Transferable",
+            "type": "boolean"
+          },
+          "units": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units",
+            "type": "string"
+          },
+          "unrealized_pnl_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Unrealized Pnl Eur",
+            "type": "string"
+          },
+          "value_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Value Eur",
+            "type": "string"
+          },
+          "weight": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Weight",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "isin",
+          "ticker",
+          "name",
+          "asset_type",
+          "asset_class",
+          "units",
+          "avg_cost_eur",
+          "price",
+          "price_currency",
+          "price_at",
+          "price_kind",
+          "fx_rate",
+          "value_eur",
+          "weight",
+          "unrealized_pnl_eur",
+          "transferable",
+          "first_acquired_at"
+        ],
+        "title": "PositionOut",
+        "type": "object"
+      },
+      "PositionsInitRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios/{id}/positions`: alta (tipo `initial`). Responde `PortfolioOut`.",
+        "properties": {
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionInitLine"
+            },
+            "minItems": 1,
+            "title": "Positions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "positions"
+        ],
+        "title": "PositionsInitRequest",
+        "type": "object"
+      },
+      "PriceKind": {
+        "enum": [
+          "intraday",
+          "nav_daily"
+        ],
+        "title": "PriceKind",
+        "type": "string"
+      },
+      "Profile": {
+        "enum": [
+          "conservador",
+          "moderado",
+          "dinamico"
+        ],
+        "title": "Profile",
+        "type": "string"
+      },
+      "TargetAllocation": {
+        "additionalProperties": false,
+        "properties": {
+          "cash": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Cash",
+            "type": "string"
+          },
+          "equity": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Equity",
+            "type": "string"
+          },
+          "fixed_income": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Fixed Income",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equity",
+          "fixed_income",
+          "cash"
+        ],
+        "title": "TargetAllocation",
+        "type": "object"
+      },
+      "TransactionOut": {
+        "additionalProperties": false,
+        "description": "Respuesta 201 de una operación o un traspaso.",
+        "properties": {
+          "amount_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Amount Eur",
+            "type": "string"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "effect": {
+            "$ref": "#/components/schemas/OperationEffect"
+          },
+          "fx_rate": {
+            "description": "Tipo de cambio de la divisa del precio a EUR: 1 USD = 0.8621 EUR",
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Fx Rate",
+            "type": "string"
+          },
+          "portfolio": {
+            "$ref": "#/components/schemas/PortfolioOut"
+          },
+          "price": {
+            "description": "Precio con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Price",
+            "type": "string"
+          },
+          "price_at": {
+            "format": "date-time",
+            "title": "Price At",
+            "type": "string"
+          },
+          "price_currency": {
+            "title": "Price Currency",
+            "type": "string"
+          },
+          "to_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Asset Id"
+          },
+          "transaction_id": {
+            "title": "Transaction Id",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/OperationType"
+          },
+          "units": {
+            "description": "Participaciones con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transaction_id",
+          "type",
+          "asset_id",
+          "units",
+          "price",
+          "price_currency",
+          "price_at",
+          "fx_rate",
+          "amount_eur",
+          "effect",
+          "portfolio",
+          "calc_id"
+        ],
+        "title": "TransactionOut",
+        "type": "object"
+      },
+      "TransactionRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios/{id}/transactions`. Compra o venta por importe o por participaciones.",
+        "properties": {
+          "amount_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Eur"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "description": "Participaciones con 8 decimales",
+                "pattern": "^-?\\d+\\.\\d{8}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          }
+        },
+        "required": [
+          "type",
+          "asset_id"
+        ],
+        "title": "TransactionRequest",
+        "type": "object"
+      },
+      "TransferRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios/{id}/transfers`. Solo fondo → fondo; si no, 422 `TRANSFER_NOT_ALLOWED`.",
+        "properties": {
+          "amount_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Eur"
+          },
+          "from_asset_id": {
+            "title": "From Asset Id",
+            "type": "string"
+          },
+          "to_asset_id": {
+            "title": "To Asset Id",
+            "type": "string"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "description": "Participaciones con 8 decimales",
+                "pattern": "^-?\\d+\\.\\d{8}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          }
+        },
+        "required": [
+          "from_asset_id",
+          "to_asset_id"
+        ],
+        "title": "TransferRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Contexto, no órdenes: impacto en euros de los eventos sobre tu cartera.",
+    "title": "KAIROS API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/dca-executions/{execution_id}": {
+      "post": {
+        "description": "Confirmar o saltar una aportación pendiente. T1-06 puede moverlo a `api/dca.py`.",
+        "operationId": "act_on_dca_execution_api_v1_dca_executions__execution_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "execution_id",
+            "required": true,
+            "schema": {
+              "title": "Execution Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DcaExecutionActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DcaExecutionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Act On Dca Execution",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Comprobación de Docker. No toca la base de datos.",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "title": "Response Health Api V1 Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/portfolios": {
+      "get": {
+        "operationId": "list_portfolios_api_v1_portfolios_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PortfolioSummaryOut"
+                  },
+                  "title": "Response List Portfolios Api V1 Portfolios Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Portfolios",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}": {
+      "get": {
+        "operationId": "get_portfolio_api_v1_portfolios__portfolio_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Portfolio",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/dca-plans": {
+      "get": {
+        "operationId": "list_dca_plans_api_v1_portfolios__portfolio_id__dca_plans_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DcaPlanOut"
+                  },
+                  "title": "Response List Dca Plans Api V1 Portfolios  Portfolio Id  Dca Plans Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Dca Plans",
+        "tags": [
+          "portfolio"
+        ]
+      },
+      "post": {
+        "operationId": "create_dca_plan_api_v1_portfolios__portfolio_id__dca_plans_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DcaPlanCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DcaPlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Create Dca Plan",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/dca-plans/{plan_id}": {
+      "patch": {
+        "operationId": "update_dca_plan_api_v1_portfolios__portfolio_id__dca_plans__plan_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DcaPlanUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DcaPlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Update Dca Plan",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/plan": {
+      "get": {
+        "operationId": "get_plan_api_v1_portfolios__portfolio_id__plan_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Plan",
+        "tags": [
+          "portfolio"
+        ]
+      },
+      "put": {
+        "operationId": "update_plan_api_v1_portfolios__portfolio_id__plan_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Update Plan",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/positions": {
+      "post": {
+        "operationId": "init_positions_api_v1_portfolios__portfolio_id__positions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionsInitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Init Positions",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/transactions": {
+      "post": {
+        "operationId": "register_transaction_api_v1_portfolios__portfolio_id__transactions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Register Transaction",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/transfers": {
+      "post": {
+        "operationId": "register_transfer_api_v1_portfolios__portfolio_id__transfers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Register Transfer",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    }
+  }
+}
