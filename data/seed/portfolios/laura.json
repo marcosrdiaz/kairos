@@ -1,0 +1,120 @@
+{
+  "illustrative": true,
+  "id": "laura",
+  "name": "Laura",
+  "profile": "dinamico",
+  "base_currency": "EUR",
+  "plan": {
+    "target": {
+      "equity": "0.70",
+      "fixed_income": "0.30",
+      "cash": "0.00"
+    },
+    "drift_threshold": "0.10",
+    "goal_amount_eur": "150000.00",
+    "goal_year": 2040
+  },
+  "dca_plans": [
+    {
+      "id": "dca_laura",
+      "amount_eur": "300.00",
+      "frequency": "monthly",
+      "day": 5,
+      "status": "active",
+      "allocations": [
+        {
+          "asset_id": "IE00B03HD191",
+          "weight": "0.70"
+        },
+        {
+          "asset_id": "IE00B18GC888",
+          "weight": "0.30"
+        }
+      ],
+      "last_execution_at": "2026-11-05T00:00:00Z",
+      "next_execution_at": "2026-12-05T00:00:00Z"
+    }
+  ],
+  "positions": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "lots": [
+        {
+          "acquired_at": "2023-03-06T00:00:00Z",
+          "units": "70.00000000",
+          "cost_eur_per_unit": "73.31000000"
+        },
+        {
+          "acquired_at": "2024-06-03T00:00:00Z",
+          "units": "44.00000000",
+          "cost_eur_per_unit": "91.34500000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "lots": [
+        {
+          "acquired_at": "2023-03-06T00:00:00Z",
+          "units": "200.31765635",
+          "cost_eur_per_unit": "36.52910000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "lots": [
+        {
+          "acquired_at": "2023-03-06T00:00:00Z",
+          "units": "102.80591101",
+          "cost_eur_per_unit": "92.21820000"
+        }
+      ]
+    },
+    {
+      "asset_id": "US67066G1040",
+      "lots": [
+        {
+          "acquired_at": "2024-02-05T00:00:00Z",
+          "units": "5.00000000",
+          "cost_eur_per_unit": "64.31539889"
+        },
+        {
+          "acquired_at": "2025-04-07T00:00:00Z",
+          "units": "3.00000000",
+          "cost_eur_per_unit": "88.88484297"
+        }
+      ]
+    },
+    {
+      "asset_id": "US0378331005",
+      "lots": [
+        {
+          "acquired_at": "2023-09-04T00:00:00Z",
+          "units": "4.00000000",
+          "cost_eur_per_unit": "176.03934670"
+        }
+      ]
+    },
+    {
+      "asset_id": "ES0148396007",
+      "lots": [
+        {
+          "acquired_at": "2024-01-15T00:00:00Z",
+          "units": "25.00000000",
+          "cost_eur_per_unit": "38.89000000"
+        }
+      ]
+    },
+    {
+      "asset_id": "ES0144580Y14",
+      "lots": [
+        {
+          "acquired_at": "2024-10-07T00:00:00Z",
+          "units": "47.00000000",
+          "cost_eur_per_unit": "13.50500000"
+        }
+      ]
+    }
+  ]
+}

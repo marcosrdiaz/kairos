@@ -1,0 +1,29 @@
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Playwright (E2E de T3-02)
+test-results/
+playwright-report/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

@@ -1,0 +1,245 @@
+{
+  "illustrative": true,
+  "as_of": "2026-11-08",
+  "ter_sources": [
+    {
+      "label": "Vanguard, costes y gastos de sus fondos en la UE (8-10-2026), por fondo",
+      "url": "https://fund-docs.vanguard.com/vanguard-funds-cost-charges-information-eu.pdf"
+    },
+    {
+      "label": "Finect, ficha de IE00B03HD191",
+      "url": "https://www.finect.com/fondos-inversion/IE00B03HD191-Vanguard_Global_Stock_Index_Ins_EUR_Acc"
+    },
+    {
+      "label": "extraETF, ficha de IE0032126645",
+      "url": "https://extraetf.com/de/fund-profile/IE0032126645"
+    },
+    {
+      "label": "justETF, fichas de los ETF",
+      "url": "https://www.justetf.com/en/etf-profile.html?isin=IE00B5BMR087"
+    }
+  ],
+  "assets": [
+    {
+      "id": "IE00B03HD191",
+      "isin": "IE00B03HD191",
+      "ticker": null,
+      "name": "Vanguard Global Stock Index Fund EUR Acc",
+      "asset_type": "fund",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0018",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P00000WLG.F"
+    },
+    {
+      "id": "IE0032126645",
+      "isin": "IE0032126645",
+      "ticker": null,
+      "name": "Vanguard U.S. 500 Stock Index Fund EUR Acc",
+      "asset_type": "fund",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0010",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P00000SUJ.F"
+    },
+    {
+      "id": "IE0007987708",
+      "isin": "IE0007987708",
+      "ticker": null,
+      "name": "Vanguard European Stock Index Fund EUR Acc",
+      "asset_type": "fund",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0012",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P00000RN9.F"
+    },
+    {
+      "id": "IE0031786142",
+      "isin": "IE0031786142",
+      "ticker": null,
+      "name": "Vanguard Emerging Markets Stock Index Fund Investor EUR Acc",
+      "asset_type": "fund",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0023",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P000060MS.F"
+    },
+    {
+      "id": "IE00B18GC888",
+      "isin": "IE00B18GC888",
+      "ticker": null,
+      "name": "Vanguard Global Bond Index Fund EUR Hedged Acc",
+      "asset_type": "fund",
+      "asset_class": "fixed_income",
+      "currency": "EUR",
+      "ter": "0.0015",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P00012I69.F"
+    },
+    {
+      "id": "IE0007472115",
+      "isin": "IE0007472115",
+      "ticker": null,
+      "name": "Vanguard Euro Government Bond Index Fund Investor EUR Acc",
+      "asset_type": "fund",
+      "asset_class": "fixed_income",
+      "currency": "EUR",
+      "ter": "0.0012",
+      "transferable": true,
+      "price_kind": "nav_daily",
+      "price_source": "yahoo:0P00000RNA.F"
+    },
+    {
+      "id": "IE00B4L5Y983",
+      "isin": "IE00B4L5Y983",
+      "ticker": "IWDA",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0020",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:IWDA.AS"
+    },
+    {
+      "id": "IE00B5BMR087",
+      "isin": "IE00B5BMR087",
+      "ticker": "CSPX",
+      "name": "iShares Core S&P 500 UCITS ETF USD (Acc)",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0007",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:CSPX.AS"
+    },
+    {
+      "id": "IE00BK5BQT80",
+      "isin": "IE00BK5BQT80",
+      "ticker": "VWCE",
+      "name": "Vanguard FTSE All-World UCITS ETF USD Acc",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0014",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:VWCE.DE"
+    },
+    {
+      "id": "IE00B3F81R35",
+      "isin": "IE00B3F81R35",
+      "ticker": "IEAC",
+      "name": "iShares Core EUR Corporate Bond UCITS ETF (Dist)",
+      "asset_type": "etf",
+      "asset_class": "fixed_income",
+      "currency": "EUR",
+      "ter": "0.0009",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:IEAC.AS"
+    },
+    {
+      "id": "US0378331005",
+      "isin": "US0378331005",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:AAPL"
+    },
+    {
+      "id": "US67066G1040",
+      "isin": "US67066G1040",
+      "ticker": "NVDA",
+      "name": "NVIDIA Corp.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:NVDA"
+    },
+    {
+      "id": "US5949181045",
+      "isin": "US5949181045",
+      "ticker": "MSFT",
+      "name": "Microsoft Corp.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:MSFT"
+    },
+    {
+      "id": "ES0148396007",
+      "isin": "ES0148396007",
+      "ticker": "ITX",
+      "name": "Inditex",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:ITX.MC"
+    },
+    {
+      "id": "ES0144580Y14",
+      "isin": "ES0144580Y14",
+      "ticker": "IBE",
+      "name": "Iberdrola",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:IBE.MC"
+    },
+    {
+      "id": "DEP-12M",
+      "isin": null,
+      "ticker": null,
+      "name": "Depósito a plazo 12 meses (ilustrativo)",
+      "asset_type": "deposit",
+      "asset_class": "cash",
+      "currency": "EUR",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "nav_daily",
+      "price_source": "fixed:1"
+    },
+    {
+      "id": "PP-MIXTO",
+      "isin": null,
+      "ticker": null,
+      "name": "Plan de pensiones mixto (ilustrativo)",
+      "asset_type": "pension_plan",
+      "asset_class": "mixed",
+      "currency": "EUR",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "nav_daily",
+      "price_source": "fixed:10"
+    }
+  ]
+}

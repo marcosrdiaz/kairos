@@ -205,7 +205,7 @@ erDiagram
 | `event` | id, type, title, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model | |
 | `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, confidence, polarity, breakdown (json), explanation, calc_id | |
 | `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered | |
-| `calc_trace` | id, kind, inputs (json), outputs (json), sources (json), created_at | Trazabilidad de cada cifra |
+| `calc_trace` | id, kind, formula, inputs (json), outputs (json), sources (json), parent_calc_ids (json), created_at | Trazabilidad de cada cifra. Modelo en `core/trace.py` (D-034) |
 | `agent_log` | id, agent, model, prompt_hash, tool_calls (json), output, guardian_verdict, latency_ms | Para depurar y para la métrica de latencia |
 
 **Posiciones**: no hay tabla `position`. Se derivan de `tax_lot` (suma de `units_remaining` por activo; precio medio = coste total / unidades). El libro de operaciones (`transaction`) es la fuente de verdad; los lotes se pueden reconstruir desde él.
