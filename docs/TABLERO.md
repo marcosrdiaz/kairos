@@ -148,6 +148,9 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Efecto en la confianza:** la cobertura a nivel de empresa (Laura: 40 %) no cuenta. El sector tampoco: con paÃ­s **y** sector conocidos Laura baja a 54,9 % (bonos y residuos de Vanguard llevan `sector = other`) y la confianza nunca serÃ­a `alta`.
 **Eventos de resultados:** el peso `w_{i,c}` sale solo de la fila nombrada de la empresa; sin fila, es 0 (Â«no estÃ¡ en el residuoÂ»).
 
+### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
+**Usad estas cifras, no el â‰ˆ 61 % ni el â‰ˆ 19 % de la fila 2 de Â§5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisiÃ³n Â«ComposiciÃ³n de fondos y ETF (T1-08): formato del CSV, residuos por paÃ­s, divisa de los fondos cubiertos y claves de empresaÂ».
+
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
 **Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
 **Calentamiento:** la primera llamada con una voz tarda 7–11 s hasta el primer byte; las siguientes, ~150 ms. Haz una llamada de calentamiento al arrancar el backend con `ELEVENLABS_VOICE_ID`.
