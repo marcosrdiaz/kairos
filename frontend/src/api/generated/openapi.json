@@ -2073,6 +2073,31 @@
         "title": "ReplayOut",
         "type": "object"
       },
+      "ReplayRequest": {
+        "additionalProperties": false,
+        "description": "Cuerpo opcional. `occurred_at` fecha el evento en ese instante en vez de `now()`; con\n`silent` no se generan avisos.",
+        "properties": {
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "silent": {
+            "default": false,
+            "title": "Silent",
+            "type": "boolean"
+          }
+        },
+        "title": "ReplayRequest",
+        "type": "object"
+      },
       "ScenarioOut": {
         "additionalProperties": false,
         "properties": {
@@ -2911,7 +2936,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Act On Dca Execution",
@@ -2922,6 +2947,7 @@
     },
     "/api/v1/demo/replay/{event_id}": {
       "post": {
+        "description": "Cuerpo aceptado por contrato; T1-15 lo aplica.",
         "operationId": "replay_event_api_v1_demo_replay__event_id__post",
         "parameters": [
           {
@@ -2934,6 +2960,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ReplayRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -3416,7 +3459,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Create Dca Plan",
@@ -3487,7 +3530,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Dca Plan",
@@ -3554,7 +3597,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "List Event Impacts",
@@ -3674,7 +3717,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Explain Move",
@@ -3786,7 +3829,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Plan",
@@ -3848,7 +3891,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Init Positions",
@@ -4015,7 +4058,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Estimate Scenario",
@@ -4129,7 +4172,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transaction",
@@ -4191,7 +4234,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transfer",
@@ -4255,7 +4298,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Tts",

@@ -9,7 +9,7 @@ from fastapi import APIRouter
 
 from app.events import service
 from app.schemas.common import ErrorOut
-from app.schemas.events import ReplayOut
+from app.schemas.events import ReplayOut, ReplayRequest
 
 router = APIRouter(tags=["events"])
 
@@ -17,5 +17,6 @@ _ERRORS: dict[int | str, dict[str, Any]] = {403: {"model": ErrorOut}, 404: {"mod
 
 
 @router.post("/demo/replay/{event_id}", response_model=ReplayOut, responses=_ERRORS)
-def replay_event(event_id: str) -> ReplayOut:
+def replay_event(event_id: str, body: ReplayRequest | None = None) -> ReplayOut:
+    """Cuerpo aceptado por contrato; T1-15 lo aplica."""
     return service.replay(event_id)
