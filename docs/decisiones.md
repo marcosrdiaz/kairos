@@ -270,3 +270,18 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Motivo: reproducibilidad entre sesiones con un solo paso tras el pull.
 - Dependencias de desarrollo que añade: plugin superpowers; skills impeccable, emil-design-eng, review-animations, playwright-cli; paquete npm global `@playwright/cli` (fuera del repo, distinto de `@playwright/test` de T3-02). Ninguna entra en el código de producción.
 - Consecuencias: `.claude/.gitignore` y `.playwright-cli/.gitignore` ignoran `settings.local.json` y la salida de playwright-cli, para no tocar el `.gitignore` raíz (de T0-01); cuando T0-01 cierre se pueden mover allí. impeccable puede activar un hook de diseño por edición con `impeccable hooks on`, que escribe en `settings.local.json` (no versionado); no está activado.
+
+### D-034 · Dependencias y base del frontend (T0-07)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: T0-07 monta `frontend/`. React, Vite, TypeScript, Tailwind, TanStack Query, Recharts, openapi-typescript y vitest ya estaban aceptados (D-001 / `SPEC.md` §2); aquí solo se anota lo nuevo.
+- Decisión:
+  - Router: `react-router` (v8). Son 4 rutas simples; no hay motivo para TanStack Router.
+  - Tests: `@testing-library/react` y `jsdom` para vitest.
+  - Lint: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` y `globals`.
+  - Sin librerías de componentes ni de iconos. Fuentes del sistema, sin fuentes remotas (la demo funciona sin red).
+  - Proxy de Vite: el frontend llama a `/api/...` y Vite lo reenvía al backend **quitando el prefijo `/api`** (los endpoints del diseño no llevan prefijo). Destino por `KAIROS_API_PROXY`: `http://localhost:8000` fuera de Docker, `http://backend:8000` dentro.
+  - Formateo de cifras solo con `src/lib/format.ts` (`Intl.NumberFormat('es-ES')`): los importes entran como string Decimal y no se convierten a `number`.
+- Consecuencias:
+  - Las versiones instaladas son las últimas: React 19 y Tailwind 4 (tokens en `@theme` de `src/index.css`), mientras `SPEC.md` §2 dice React 18. Si alguien necesita React 18, se baja en `package.json`; nada del scaffold depende de React 19.
+  - El `Makefile` de T0-01 puede llamar a `npm run lint|typecheck|test|build` en `frontend/`.
+  - Tokens y reglas visuales en `DESIGN.md` (raíz); contexto de producto en `PRODUCT.md`.
