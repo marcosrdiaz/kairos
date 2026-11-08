@@ -138,7 +138,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** `docs/decisiones.md`, `.env.example` (este último no estaba en la fila de la tarea: solo se rellenan los IDs).
 
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
-**Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada `D-041` de `docs/decisiones.md` (IDs de ElevenLabs).
+**Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
 **Calentamiento:** la primera llamada con una voz tarda 7–11 s hasta el primer byte; las siguientes, ~150 ms. Haz una llamada de calentamiento al arrancar el backend con `ELEVENLABS_VOICE_ID`.
 **IDs:** ya están en `.env.example` (`scribe_v2_realtime`, `eleven_flash_v2_5`, voz Ciro). `language_code=es` funciona en Scribe.
 
