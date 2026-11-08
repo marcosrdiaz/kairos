@@ -63,6 +63,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-037 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
+| D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
 | D-XXX | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 
 ---
@@ -360,6 +361,20 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
   - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
 - Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
+
+### D-040 · Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404
+- Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
+- Contexto: el diseño §4.5 define los mensajes de `WS /voice/stt` y `POST /voice/tts`, pero no cómo se modelan ni qué hace el mock. Además `core/errors.py` (T0-01) asignaba 403 a `SENTENCE_NOT_APPROVED`, mientras que el diseño §4.5 y `SPEC.md` §10 dicen 404.
+- Decisión:
+  - `SENTENCE_NOT_APPROVED` pasa a **404** en `core/errors.py`, como dice el contrato.
+  - `schemas/voice.py`: `SttStartMessage` (`sample_rate`, `encoding` y `language` son literales fijos: 16000, `pcm_s16le`, `es`), `SttStopMessage`, `SttPartialMessage`, `SttFinalMessage`, `SttErrorMessage` (`code` es `str`, como en `ErrorOut`) y `TtsRequest {turn_id, index ≥ 0}`, que rechaza campos extra: el cliente nunca manda texto. Uniones discriminadas por `type`: `SttClientMessage` y `SttServerMessage` (alias, como `AskEvent` de T0-05). Un ejemplo por clase concreta, más `ErrorOut.sentence_not_approved.json`.
+  - FastAPI no documenta WebSockets, así que los `Stt*Message` no salen en `schema.ts`. `make gen-api` copia sus ejemplos a `frontend/src/api/mocks/`, y T2-14 escribe sus tipos TS en `frontend/src/voice/` a partir de ellos.
+  - `voice/service.py`: `register_approved(turn_id, index, text)` (la única función para otros módulos), `reset()`, `get_approved`, `synthesize`, `disclaimer` y `transcribe`. La caché de frases aprobadas es real, no mock: está en memoria, con lock, una clave `(turn_id, index)`, TTL de 5 min con `clock.now()` y limpieza de entradas caducadas en cada acceso. `synthesize` comprueba la caché **antes** de abrir el stream (404 JSON, no audio vacío).
+  - `voice/mock.py`: el STT ignora el audio y responde `partial` con el primer frame y `final` al recibir `stop` (los textos de los ejemplos). El TTS devuelve `data/voice/mock.mp3` en trozos de 16 KB. `/voice/disclaimer` sirve `data/voice/disclaimer.mp3` si existe (T1-21) y, si no, `mock.mp3`. La ruta a `data/` se resuelve desde el propio fichero (`parents[3]`): en local da la raíz del repo y en Docker `/data` (montado en Compose).
+  - `WS /voice/stt`: si el primer mensaje no es un `start` válido o llega un texto que no es `stop`, el servidor manda `error` `VALIDATION_ERROR` y cierra. Si falla la transcripción, `error` `UPSTREAM_UNAVAILABLE` (el frontend pasa al plan B).
+  - `mock.mp3` (6,7 s, 48 kbps mono) se generó en local con la voz es-ES de Windows (Helena) y ffmpeg. Dice: "Audio de prueba de KAIROS. Soy una inteligencia artificial y esto no es asesoramiento financiero.", para que también valga como aviso de IA mientras no exista `disclaimer.mp3`. No lleva cifras.
+  - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
+- Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
 
 ### D-XXX · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta

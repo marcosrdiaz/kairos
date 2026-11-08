@@ -1,91 +1,6 @@
 {
   "components": {
     "schemas": {
-      "AgendaItemOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/agenda` devuelve una lista. Un DCA no tiene `factor` ni peso.",
-        "properties": {
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "date": {
-            "format": "date-time",
-            "title": "Date",
-            "type": "string"
-          },
-          "exposed_eur": {
-            "anyOf": [
-              {
-                "description": "Importe en euros con 2 decimales",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Exposed Eur"
-          },
-          "exposed_weight": {
-            "anyOf": [
-              {
-                "description": "Fracción: 0.76 = 76 %",
-                "pattern": "^-?\\d+(\\.\\d+)?$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Exposed Weight"
-          },
-          "factor": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Factor"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "kind": {
-            "anyOf": [
-              {
-                "enum": [
-                  "central_bank",
-                  "commodity",
-                  "earnings",
-                  "fx",
-                  "macro"
-                ],
-                "type": "string"
-              },
-              {
-                "const": "dca",
-                "type": "string"
-              }
-            ],
-            "title": "Kind"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "date",
-          "kind",
-          "title",
-          "factor",
-          "exposed_weight",
-          "exposed_eur",
-          "calc_id"
-        ],
-        "title": "AgendaItemOut",
-        "type": "object"
-      },
       "AlertKind": {
         "enum": [
           "event_impact",
@@ -238,59 +153,6 @@
         "title": "AssetClass",
         "type": "string"
       },
-      "AssetImpact": {
-        "additionalProperties": false,
-        "description": "`channel` es el `label` del canal con mayor contribución: \"tipos\", \"resultados NVDA\"...",
-        "properties": {
-          "asset_id": {
-            "title": "Asset Id",
-            "type": "string"
-          },
-          "channel": {
-            "title": "Channel",
-            "type": "string"
-          },
-          "fx_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Fx Eur",
-            "type": "string"
-          },
-          "impact_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Impact Eur",
-            "type": "string"
-          },
-          "market_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Market Eur",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "value_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Value Eur",
-            "type": "string"
-          }
-        },
-        "required": [
-          "asset_id",
-          "name",
-          "value_eur",
-          "impact_eur",
-          "market_eur",
-          "fx_eur",
-          "channel"
-        ],
-        "title": "AssetImpact",
-        "type": "object"
-      },
       "AssetType": {
         "enum": [
           "fund",
@@ -300,37 +162,6 @@
           "pension_plan"
         ],
         "title": "AssetType",
-        "type": "string"
-      },
-      "CompanyHolding": {
-        "additionalProperties": false,
-        "description": "Activo de la cartera que contiene la empresa. Una acción directa pesa `\"1\"`.",
-        "properties": {
-          "asset_id": {
-            "title": "Asset Id",
-            "type": "string"
-          },
-          "weight_in_asset": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight In Asset",
-            "type": "string"
-          }
-        },
-        "required": [
-          "asset_id",
-          "weight_in_asset"
-        ],
-        "title": "CompanyHolding",
-        "type": "object"
-      },
-      "Confidence": {
-        "enum": [
-          "alta",
-          "media",
-          "baja"
-        ],
-        "title": "Confidence",
         "type": "string"
       },
       "DcaAllocation": {
@@ -710,259 +541,6 @@
         "title": "ErrorOut",
         "type": "object"
       },
-      "EventImpactOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.",
-        "properties": {
-          "breakdown": {
-            "items": {
-              "$ref": "#/components/schemas/AssetImpact"
-            },
-            "title": "Breakdown",
-            "type": "array"
-          },
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "causal_chain": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Causal Chain",
-            "type": "array"
-          },
-          "confidence": {
-            "$ref": "#/components/schemas/Confidence"
-          },
-          "event_id": {
-            "title": "Event Id",
-            "type": "string"
-          },
-          "event_type": {
-            "enum": [
-              "central_bank",
-              "commodity",
-              "earnings",
-              "fx",
-              "macro"
-            ],
-            "title": "Event Type",
-            "type": "string"
-          },
-          "explanation": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Explanation"
-          },
-          "explanation_status": {
-            "$ref": "#/components/schemas/ExplanationStatus"
-          },
-          "high_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "High Eur",
-            "type": "string"
-          },
-          "impact_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Impact Eur",
-            "type": "string"
-          },
-          "impact_pct": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Impact Pct",
-            "type": "string"
-          },
-          "low_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Low Eur",
-            "type": "string"
-          },
-          "occurred_at": {
-            "format": "date-time",
-            "title": "Occurred At",
-            "type": "string"
-          },
-          "polarity": {
-            "$ref": "#/components/schemas/Polarity"
-          },
-          "portfolio_id": {
-            "title": "Portfolio Id",
-            "type": "string"
-          },
-          "sources": {
-            "items": {
-              "$ref": "#/components/schemas/SourceRef"
-            },
-            "title": "Sources",
-            "type": "array"
-          },
-          "surprise": {
-            "$ref": "#/components/schemas/Surprise"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "event_id",
-          "portfolio_id",
-          "title",
-          "event_type",
-          "occurred_at",
-          "causal_chain",
-          "impact_eur",
-          "low_eur",
-          "high_eur",
-          "impact_pct",
-          "confidence",
-          "polarity",
-          "breakdown",
-          "surprise",
-          "explanation",
-          "explanation_status",
-          "sources",
-          "calc_id"
-        ],
-        "title": "EventImpactOut",
-        "type": "object"
-      },
-      "ExplanationStatus": {
-        "enum": [
-          "pending",
-          "ok",
-          "template"
-        ],
-        "title": "ExplanationStatus",
-        "type": "string"
-      },
-      "ExposureBucket": {
-        "additionalProperties": false,
-        "properties": {
-          "key": {
-            "title": "Key",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "value_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Value Eur",
-            "type": "string"
-          },
-          "weight": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight",
-            "type": "string"
-          }
-        },
-        "required": [
-          "key",
-          "label",
-          "value_eur",
-          "weight"
-        ],
-        "title": "ExposureBucket",
-        "type": "object"
-      },
-      "ExposureOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/exposure`.",
-        "properties": {
-          "as_of": {
-            "format": "date-time",
-            "title": "As Of",
-            "type": "string"
-          },
-          "by_country": {
-            "items": {
-              "$ref": "#/components/schemas/ExposureBucket"
-            },
-            "title": "By Country",
-            "type": "array"
-          },
-          "by_currency": {
-            "items": {
-              "$ref": "#/components/schemas/ExposureBucket"
-            },
-            "title": "By Currency",
-            "type": "array"
-          },
-          "by_sector": {
-            "items": {
-              "$ref": "#/components/schemas/ExposureBucket"
-            },
-            "title": "By Sector",
-            "type": "array"
-          },
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "coverage_pct": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Coverage Pct",
-            "type": "string"
-          },
-          "overlap": {
-            "items": {
-              "$ref": "#/components/schemas/OverlapItem"
-            },
-            "title": "Overlap",
-            "type": "array"
-          },
-          "radiography": {
-            "$ref": "#/components/schemas/Radiography"
-          },
-          "top_companies": {
-            "items": {
-              "$ref": "#/components/schemas/TopCompany"
-            },
-            "title": "Top Companies",
-            "type": "array"
-          }
-        },
-        "required": [
-          "by_country",
-          "by_sector",
-          "by_currency",
-          "top_companies",
-          "overlap",
-          "radiography",
-          "coverage_pct",
-          "as_of",
-          "calc_id"
-        ],
-        "title": "ExposureOut",
-        "type": "object"
-      },
-      "Factor": {
-        "enum": [
-          "EQ_GLOBAL",
-          "EQ_US_TECH",
-          "RATES_EUR",
-          "OIL",
-          "EURUSD"
-        ],
-        "title": "Factor",
-        "type": "string"
-      },
       "Frequency": {
         "enum": [
           "monthly",
@@ -1016,147 +594,6 @@
           "cost_eur_per_unit"
         ],
         "title": "LotOut",
-        "type": "object"
-      },
-      "MoveAssetChange": {
-        "additionalProperties": false,
-        "properties": {
-          "asset_id": {
-            "title": "Asset Id",
-            "type": "string"
-          },
-          "change_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Change Eur",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "asset_id",
-          "name",
-          "change_eur"
-        ],
-        "title": "MoveAssetChange",
-        "type": "object"
-      },
-      "MoveAttributionOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/move`. `unexplained_eur = change_eur − Σ by_event`.",
-        "properties": {
-          "by_asset": {
-            "items": {
-              "$ref": "#/components/schemas/MoveAssetChange"
-            },
-            "title": "By Asset",
-            "type": "array"
-          },
-          "by_event": {
-            "items": {
-              "$ref": "#/components/schemas/MoveEventImpact"
-            },
-            "title": "By Event",
-            "type": "array"
-          },
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "change_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Change Eur",
-            "type": "string"
-          },
-          "change_pct": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Change Pct",
-            "type": "string"
-          },
-          "end": {
-            "format": "date-time",
-            "title": "End",
-            "type": "string"
-          },
-          "period": {
-            "enum": [
-              "day",
-              "week",
-              "month"
-            ],
-            "title": "Period",
-            "type": "string"
-          },
-          "start": {
-            "format": "date-time",
-            "title": "Start",
-            "type": "string"
-          },
-          "unexplained_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Unexplained Eur",
-            "type": "string"
-          }
-        },
-        "required": [
-          "period",
-          "start",
-          "end",
-          "change_eur",
-          "change_pct",
-          "by_asset",
-          "by_event",
-          "unexplained_eur",
-          "calc_id"
-        ],
-        "title": "MoveAttributionOut",
-        "type": "object"
-      },
-      "MoveEventImpact": {
-        "additionalProperties": false,
-        "description": "Estimación del impacto de un evento en el periodo.",
-        "properties": {
-          "event_id": {
-            "title": "Event Id",
-            "type": "string"
-          },
-          "high_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "High Eur",
-            "type": "string"
-          },
-          "impact_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Impact Eur",
-            "type": "string"
-          },
-          "low_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Low Eur",
-            "type": "string"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "event_id",
-          "title",
-          "impact_eur",
-          "low_eur",
-          "high_eur"
-        ],
-        "title": "MoveEventImpact",
         "type": "object"
       },
       "OperationEffect": {
@@ -1220,40 +657,6 @@
         ],
         "title": "OperationType",
         "type": "string"
-      },
-      "OverlapItem": {
-        "additionalProperties": false,
-        "properties": {
-          "asset_ids": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Asset Ids",
-            "type": "array"
-          },
-          "key": {
-            "title": "Key",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "weight": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight",
-            "type": "string"
-          }
-        },
-        "required": [
-          "key",
-          "name",
-          "weight",
-          "asset_ids"
-        ],
-        "title": "OverlapItem",
-        "type": "object"
       },
       "PlanOut": {
         "additionalProperties": false,
@@ -1372,15 +775,6 @@
         ],
         "title": "PlanUpdateRequest",
         "type": "object"
-      },
-      "Polarity": {
-        "enum": [
-          "riesgo",
-          "oportunidad",
-          "neutral"
-        ],
-        "title": "Polarity",
-        "type": "string"
       },
       "PortfolioOut": {
         "additionalProperties": false,
@@ -1684,249 +1078,6 @@
         "title": "Profile",
         "type": "string"
       },
-      "ProjectionOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/projection`. `on_track` equivale a que `base` alcanza la meta.",
-        "properties": {
-          "assumptions_source": {
-            "$ref": "#/components/schemas/SourceRef"
-          },
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "current_value_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Current Value Eur",
-            "type": "string"
-          },
-          "gap_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Gap Eur",
-            "type": "string"
-          },
-          "goal_amount_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Goal Amount Eur",
-            "type": "string"
-          },
-          "goal_year": {
-            "title": "Goal Year",
-            "type": "integer"
-          },
-          "monthly_contribution_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Monthly Contribution Eur",
-            "type": "string"
-          },
-          "on_track": {
-            "title": "On Track",
-            "type": "boolean"
-          },
-          "scenarios": {
-            "items": {
-              "$ref": "#/components/schemas/ProjectionScenario"
-            },
-            "title": "Scenarios",
-            "type": "array"
-          }
-        },
-        "required": [
-          "goal_amount_eur",
-          "goal_year",
-          "current_value_eur",
-          "monthly_contribution_eur",
-          "scenarios",
-          "on_track",
-          "gap_eur",
-          "assumptions_source",
-          "calc_id"
-        ],
-        "title": "ProjectionOut",
-        "type": "object"
-      },
-      "ProjectionScenario": {
-        "additionalProperties": false,
-        "properties": {
-          "annual_return": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Annual Return",
-            "type": "string"
-          },
-          "name": {
-            "enum": [
-              "pesimista",
-              "base",
-              "optimista"
-            ],
-            "title": "Name",
-            "type": "string"
-          },
-          "reaches_goal": {
-            "title": "Reaches Goal",
-            "type": "boolean"
-          },
-          "value_at_goal_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Value At Goal Eur",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "annual_return",
-          "value_at_goal_eur",
-          "reaches_goal"
-        ],
-        "title": "ProjectionScenario",
-        "type": "object"
-      },
-      "RadarItem": {
-        "additionalProperties": false,
-        "description": "`title` y `detail` salen de plantillas deterministas, sin LLM.",
-        "properties": {
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "detail": {
-            "title": "Detail",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/RadarKind"
-          },
-          "rule": {
-            "$ref": "#/components/schemas/RadarRule"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          },
-          "user_rule": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/UserRule"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "value_eur": {
-            "anyOf": [
-              {
-                "description": "Importe en euros con 2 decimales",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value Eur"
-          },
-          "weight": {
-            "anyOf": [
-              {
-                "description": "Fracción: 0.76 = 76 %",
-                "pattern": "^-?\\d+(\\.\\d+)?$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Weight"
-          }
-        },
-        "required": [
-          "id",
-          "kind",
-          "rule",
-          "title",
-          "detail",
-          "calc_id"
-        ],
-        "title": "RadarItem",
-        "type": "object"
-      },
-      "RadarKind": {
-        "enum": [
-          "risk",
-          "opportunity"
-        ],
-        "title": "RadarKind",
-        "type": "string"
-      },
-      "RadarOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/radar`.",
-        "properties": {
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/RadarItem"
-            },
-            "title": "Items",
-            "type": "array"
-          }
-        },
-        "required": [
-          "items",
-          "calc_id"
-        ],
-        "title": "RadarOut",
-        "type": "object"
-      },
-      "RadarRule": {
-        "enum": [
-          "concentration",
-          "currency",
-          "drift",
-          "rebalance_with_dca",
-          "cheaper_contribution",
-          "tax_free_transfer"
-        ],
-        "title": "RadarRule",
-        "type": "string"
-      },
-      "Radiography": {
-        "additionalProperties": false,
-        "description": "Paso 2 del guion. `num_holdings` cuenta fondos y ETF.",
-        "properties": {
-          "num_holdings": {
-            "title": "Num Holdings",
-            "type": "integer"
-          },
-          "top_companies_group": {
-            "$ref": "#/components/schemas/TopCompaniesGroup"
-          },
-          "top_country": {
-            "$ref": "#/components/schemas/TopCountry"
-          }
-        },
-        "required": [
-          "num_holdings",
-          "top_country",
-          "top_companies_group"
-        ],
-        "title": "Radiography",
-        "type": "object"
-      },
       "ReplayOut": {
         "additionalProperties": false,
         "description": "Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó.",
@@ -1954,344 +1105,6 @@
         ],
         "title": "ReplayOut",
         "type": "object"
-      },
-      "ScenarioOut": {
-        "additionalProperties": false,
-        "properties": {
-          "breakdown": {
-            "items": {
-              "$ref": "#/components/schemas/AssetImpact"
-            },
-            "title": "Breakdown",
-            "type": "array"
-          },
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "confidence": {
-            "$ref": "#/components/schemas/Confidence"
-          },
-          "factor_shocks": {
-            "additionalProperties": {
-              "description": "Fracción: 0.76 = 76 %",
-              "pattern": "^-?\\d+(\\.\\d+)?$",
-              "type": "string"
-            },
-            "propertyNames": {
-              "$ref": "#/components/schemas/Factor"
-            },
-            "title": "Factor Shocks",
-            "type": "object"
-          },
-          "high_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "High Eur",
-            "type": "string"
-          },
-          "impact_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Impact Eur",
-            "type": "string"
-          },
-          "low_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Low Eur",
-            "type": "string"
-          }
-        },
-        "required": [
-          "factor_shocks",
-          "impact_eur",
-          "low_eur",
-          "high_eur",
-          "confidence",
-          "breakdown",
-          "calc_id"
-        ],
-        "title": "ScenarioOut",
-        "type": "object"
-      },
-      "ScenarioRequest": {
-        "additionalProperties": false,
-        "description": "Cuerpo de `POST /portfolios/{id}/scenarios`.",
-        "properties": {
-          "factor_shocks": {
-            "additionalProperties": {
-              "description": "Fracción: 0.76 = 76 %",
-              "pattern": "^-?\\d+(\\.\\d+)?$",
-              "type": "string"
-            },
-            "propertyNames": {
-              "$ref": "#/components/schemas/Factor"
-            },
-            "title": "Factor Shocks",
-            "type": "object"
-          }
-        },
-        "required": [
-          "factor_shocks"
-        ],
-        "title": "ScenarioRequest",
-        "type": "object"
-      },
-      "SentenceStatus": {
-        "enum": [
-          "ok",
-          "template"
-        ],
-        "title": "SentenceStatus",
-        "type": "string"
-      },
-      "SourceKind": {
-        "enum": [
-          "price",
-          "fx",
-          "composition",
-          "beta",
-          "event",
-          "assumption",
-          "user_input"
-        ],
-        "title": "SourceKind",
-        "type": "string"
-      },
-      "SourceRef": {
-        "additionalProperties": false,
-        "description": "Fuente de una cifra. Ejemplo:\n{\"kind\": \"price\", \"label\": \"VL iShares Core MSCI World\", \"ref\": \"IE00B4L5Y983\",\n \"as_of\": \"2026-11-06T00:00:00Z\", \"url\": null}",
-        "properties": {
-          "as_of": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "As Of"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/SourceKind"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "ref": {
-            "title": "Ref",
-            "type": "string"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
-          }
-        },
-        "required": [
-          "kind",
-          "label",
-          "ref"
-        ],
-        "title": "SourceRef",
-        "type": "object"
-      },
-      "StatusOut": {
-        "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/status`. Se lee precalculado.",
-        "properties": {
-          "calc_id": {
-            "title": "Calc Id",
-            "type": "string"
-          },
-          "change_week_pct": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Change Week Pct",
-            "type": "string"
-          },
-          "computed_at": {
-            "format": "date-time",
-            "title": "Computed At",
-            "type": "string"
-          },
-          "price_as_of": {
-            "format": "date-time",
-            "title": "Price As Of",
-            "type": "string"
-          },
-          "reason": {
-            "$ref": "#/components/schemas/StatusReason"
-          },
-          "sentence": {
-            "title": "Sentence",
-            "type": "string"
-          },
-          "sentence_status": {
-            "$ref": "#/components/schemas/SentenceStatus"
-          },
-          "state": {
-            "$ref": "#/components/schemas/StatusState"
-          },
-          "state_label": {
-            "title": "State Label",
-            "type": "string"
-          },
-          "total_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Total Eur",
-            "type": "string"
-          }
-        },
-        "required": [
-          "state",
-          "state_label",
-          "total_eur",
-          "change_week_pct",
-          "sentence",
-          "sentence_status",
-          "reason",
-          "price_as_of",
-          "computed_at",
-          "calc_id"
-        ],
-        "title": "StatusOut",
-        "type": "object"
-      },
-      "StatusReason": {
-        "additionalProperties": false,
-        "description": "`event_id` y `event_impact_eur` solo con `kind == \"event\"`.",
-        "properties": {
-          "event_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
-          },
-          "event_impact_eur": {
-            "anyOf": [
-              {
-                "description": "Importe en euros con 2 decimales",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Impact Eur"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/StatusReasonKind"
-          }
-        },
-        "required": [
-          "kind",
-          "event_id",
-          "event_impact_eur"
-        ],
-        "title": "StatusReason",
-        "type": "object"
-      },
-      "StatusReasonKind": {
-        "enum": [
-          "event",
-          "drift",
-          "none"
-        ],
-        "title": "StatusReasonKind",
-        "type": "string"
-      },
-      "StatusState": {
-        "enum": [
-          "tranquilo",
-          "atento",
-          "revisa_plan"
-        ],
-        "title": "StatusState",
-        "type": "string"
-      },
-      "Surprise": {
-        "additionalProperties": false,
-        "description": "Sin consenso, todos los campos son `null` (D-021).",
-        "properties": {
-          "actual": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actual"
-          },
-          "expected": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected"
-          },
-          "label": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SurpriseLabel"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "metric": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metric"
-          }
-        },
-        "required": [
-          "label",
-          "expected",
-          "actual",
-          "metric"
-        ],
-        "title": "Surprise",
-        "type": "object"
-      },
-      "SurpriseLabel": {
-        "enum": [
-          "mejor",
-          "peor",
-          "en_linea"
-        ],
-        "title": "SurpriseLabel",
-        "type": "string"
       },
       "TargetAllocation": {
         "additionalProperties": false,
@@ -2321,94 +1134,6 @@
           "cash"
         ],
         "title": "TargetAllocation",
-        "type": "object"
-      },
-      "TopCompaniesGroup": {
-        "additionalProperties": false,
-        "properties": {
-          "n": {
-            "title": "N",
-            "type": "integer"
-          },
-          "weight": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight",
-            "type": "string"
-          }
-        },
-        "required": [
-          "n",
-          "weight"
-        ],
-        "title": "TopCompaniesGroup",
-        "type": "object"
-      },
-      "TopCompany": {
-        "additionalProperties": false,
-        "properties": {
-          "held_in": {
-            "items": {
-              "$ref": "#/components/schemas/CompanyHolding"
-            },
-            "title": "Held In",
-            "type": "array"
-          },
-          "key": {
-            "title": "Key",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "value_eur": {
-            "description": "Importe en euros con 2 decimales",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "title": "Value Eur",
-            "type": "string"
-          },
-          "weight": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight",
-            "type": "string"
-          }
-        },
-        "required": [
-          "key",
-          "name",
-          "value_eur",
-          "weight",
-          "held_in"
-        ],
-        "title": "TopCompany",
-        "type": "object"
-      },
-      "TopCountry": {
-        "additionalProperties": false,
-        "properties": {
-          "key": {
-            "title": "Key",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "weight": {
-            "description": "Fracción: 0.76 = 76 %",
-            "pattern": "^-?\\d+(\\.\\d+)?$",
-            "title": "Weight",
-            "type": "string"
-          }
-        },
-        "required": [
-          "key",
-          "label",
-          "weight"
-        ],
-        "title": "TopCountry",
         "type": "object"
       },
       "TransactionOut": {
@@ -2595,28 +1320,26 @@
         "title": "TransferRequest",
         "type": "object"
       },
-      "UserRule": {
+      "TtsRequest": {
         "additionalProperties": false,
-        "description": "Regla del propio usuario frente a la que se expresa una oportunidad.",
+        "description": "Frase aprobada a sintetizar: la `index` del turno `turn_id` del SSE de `/ask`.",
         "properties": {
-          "ref": {
-            "title": "Ref",
-            "type": "string"
+          "index": {
+            "minimum": 0.0,
+            "title": "Index",
+            "type": "integer"
           },
-          "source": {
-            "enum": [
-              "dca_plan",
-              "plan"
-            ],
-            "title": "Source",
+          "turn_id": {
+            "minLength": 1,
+            "title": "Turn Id",
             "type": "string"
           }
         },
         "required": [
-          "source",
-          "ref"
+          "turn_id",
+          "index"
         ],
-        "title": "UserRule",
+        "title": "TtsRequest",
         "type": "object"
       },
       "ValidationError": {
@@ -2722,7 +1445,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -2900,63 +1623,6 @@
         "summary": "Get Portfolio",
         "tags": [
           "portfolio"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/agenda": {
-      "get": {
-        "description": "T2-06 puede moverlo a `api/agenda.py`.",
-        "operationId": "get_agenda_api_v1_portfolios__portfolio_id__agenda_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AgendaItemOut"
-                  },
-                  "title": "Response Get Agenda Api V1 Portfolios  Portfolio Id  Agenda Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Agenda",
-        "tags": [
-          "planning"
         ]
       }
     },
@@ -3168,7 +1834,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -3239,199 +1905,12 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
         "tags": [
           "portfolio"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/events": {
-      "get": {
-        "operationId": "list_event_impacts_api_v1_portfolios__portfolio_id__events_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "days",
-            "required": false,
-            "schema": {
-              "default": 7,
-              "minimum": 1,
-              "title": "Days",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/EventImpactOut"
-                  },
-                  "title": "Response List Event Impacts Api V1 Portfolios  Portfolio Id  Events Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        },
-        "summary": "List Event Impacts",
-        "tags": [
-          "impact"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/exposure": {
-      "get": {
-        "operationId": "get_exposure_api_v1_portfolios__portfolio_id__exposure_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExposureOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Exposure",
-        "tags": [
-          "exposure"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/move": {
-      "get": {
-        "description": "T2-07 puede moverlo a `api/move.py`.",
-        "operationId": "explain_move_api_v1_portfolios__portfolio_id__move_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "period",
-            "required": false,
-            "schema": {
-              "default": "week",
-              "enum": [
-                "day",
-                "week",
-                "month"
-              ],
-              "title": "Period",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MoveAttributionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        },
-        "summary": "Explain Move",
-        "tags": [
-          "impact"
         ]
       }
     },
@@ -3538,7 +2017,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -3600,231 +2079,12 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
         "tags": [
           "portfolio"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/projection": {
-      "get": {
-        "operationId": "get_projection_api_v1_portfolios__portfolio_id__projection_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Projection",
-        "tags": [
-          "planning"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/radar": {
-      "get": {
-        "description": "T2-05 puede moverlo a `api/radar.py`.",
-        "operationId": "get_radar_api_v1_portfolios__portfolio_id__radar_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RadarOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Radar",
-        "tags": [
-          "exposure"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/scenarios": {
-      "post": {
-        "operationId": "estimate_scenario_api_v1_portfolios__portfolio_id__scenarios_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScenarioRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ScenarioOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        },
-        "summary": "Estimate Scenario",
-        "tags": [
-          "impact"
-        ]
-      }
-    },
-    "/api/v1/portfolios/{portfolio_id}/status": {
-      "get": {
-        "operationId": "get_status_api_v1_portfolios__portfolio_id__status_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "portfolio_id",
-            "required": true,
-            "schema": {
-              "title": "Portfolio Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StatusOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorOut"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Status",
-        "tags": [
-          "status"
         ]
       }
     },
@@ -3881,7 +2141,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -3943,12 +2203,76 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/voice/disclaimer": {
+      "get": {
+        "operationId": "disclaimer_api_v1_voice_disclaimer_get",
+        "responses": {
+          "200": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Disclaimer",
+        "tags": [
+          "voice"
+        ]
+      }
+    },
+    "/api/v1/voice/tts": {
+      "post": {
+        "operationId": "tts_api_v1_voice_tts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TtsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Tts",
+        "tags": [
+          "voice"
         ]
       }
     }
