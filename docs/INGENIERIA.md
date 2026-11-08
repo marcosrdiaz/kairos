@@ -83,7 +83,7 @@ Prioridad MoSCoW: **M** = MVP hackathon, **S** = si da tiempo, **C** = después.
 | RF-20 | — | Avisos de IA y "no es asesoramiento" | M | Visibles en app, panel e inicio de voz |
 | RF-21 | F25 | Escenarios ¿Y si…? con impacto por activo | S | < 500 ms |
 | RF-22 | F11 | Plan del usuario: asignación objetivo, meta y proyección con DCA (versión mínima; el resto de F11 sigue en S) | M | "¿Voy bien?" responde con proyección |
-| RF-23 | F12 | Avisos por umbral, máx. 2 por semana | S | Límite comprobado en test |
+| RF-23 | F12 | Avisos por umbral de impacto en € (versión mínima: solo `kind=event_impact`), máx. 2 por semana ISO. `dca_pending` y `drift` siguen en S | M | `score ≥ 1` genera aviso; el 3.º de la semana ISO no se genera; límite comprobado en test |
 | RF-24 | F14 | Conector de bróker (Trading 212 demo) | S | — |
 | RF-25 | F15–F19 | Resumen semanal en audio, eventos en vivo, historial de aciertos, widget nativo, servidor MCP | C | — |
 
@@ -295,7 +295,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | 1 Alta / cartera de ejemplo, widget Tranquilo | RF-01, RF-02, RF-03, RF-13 | UC-01, UC-02 | `test_portfolio_golden`, `test_status_rules` |
 | 2 Radiografía (61% EE. UU., 19% en 7 empresas) | RF-08, RF-09 | UC-07 | `test_exposure_golden` |
-| 3 Replay → Atento + aviso | RF-11, RF-12, RF-10, RF-13, RF-23 | UC-11 | `test_replay_end_to_end` |
+| 3 Replay → Atento + aviso | RF-11, RF-12, RF-10, RF-13, RF-23 | UC-11 | `test_replay_end_to_end`, `test_alert_weekly_limit` |
 | 4 "¿Por qué ha bajado?" por voz | RF-14, RF-16, RF-20 | UC-05 | `test_guardian_*`, smoke de voz |
 | 5 Panel con eventos, riesgos y oportunidades | RF-17, RF-18 | UC-06, UC-08 | `test_radar_rules`, Playwright panel |
 | 6 Misma noticia, Laura vs Javier | RF-10 | UC-06 | `test_impact_two_portfolios` |
