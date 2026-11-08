@@ -7,13 +7,14 @@
   "source_urls": [
     "https://www.ecb.europa.eu/press/pr/date/2025/html/ecb.mp250605~3b5f67d007.es.html",
     "https://www.euronews.com/2025/06/05/ecb-lowers-rates-for-the-eighth-time-as-trade-tensions-threaten-growth",
+    "https://www.bolsamania.com/capitalbolsa/noticias_amp/economia/encuesta-de-reuters-el-bce-recortara-sus-tipos-al-200-el-5-de-junio--19849732.html",
     "https://investinglive.com/news/reuters-poll-ecb-to-cut-rate-to-200-on-june-5-20250529"
   ],
   "consensus": {
     "metric": "rate_change_bp",
     "expected": "-25",
     "actual": "-25",
-    "source": "Encuesta de Reuters a 81 economistas, 29 may 2025 (recogida por investingLive): todos esperaban la bajada del tipo de depósito al 2 %"
+    "source": "Encuesta de Reuters a 81 economistas, 29 may 2025 (recogida por Bolsamanía e investingLive): todos esperaban la bajada del tipo de depósito al 2 %"
   },
   "fallback_chain": [
     "El BCE baja sus tipos de interés oficiales, como esperaba el mercado.",
