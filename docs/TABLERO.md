@@ -171,6 +171,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | 2026-11-08 | Marcos (T0-07) a Alons (T0-01) | Prefijo de la API | Confirmar que `main.py` monta todos los routers bajo `/api/v1` (`SPEC.md` §11). El cliente del frontend usa la base `/api/v1` y el proxy de Vite reenvía `/api` tal cual | T0-01, T0-03, T0-07 y todo el frontend | Confirmado: `main.py` monta todos los routers de `app/api/` bajo `/api/v1` (D-034); todas las rutas del OpenAPI empiezan por `/api/v1/` (lo comprueba `test_gen_api.py`) |
 | 2026-11-08 | Marcos (T0-05) a Jaime (T0-04) | `ExplanationStatus`, `SentenceStatus`, `StatusState`, `StatusFacts` | Importar de `app.schemas.agents` en `schemas/impact.py` y `schemas/status.py` (no redefinirlos). `StatusFacts` es la entrada de `agents.write_status_sentence`; el módulo `status` la rellena | T0-04, T1-17, T2-04 | Pendiente de confirmar |
 | 2026-11-08 | Alons (T1-03) al equipo | `AssetOut` (`GET /assets/lookup`), `PriceOut` (`prices.latest`/`history`), `DemoResetRequest`/`DemoResetOut` (`POST /demo/reset`) | Modelos nuevos, sin cambios en los existentes. PR #20 (solo contrato); decisión «Contratos de activo, precio y reset de demo (T1-03)» | T1-02, T1-03, T1-19, T2-03 | Hecho: en `main` (#20) |
+| 2026-11-08 | Jaime (T1-15) al equipo | `ReplayRequest` (`POST /demo/replay/{event_id}`) | Modelo nuevo y cuerpo opcional (`occurred_at`, `silent`), definido en el diseño §4.6. PR propio, solo contrato | T1-15, T2-03 | En PR |
 
 ## 7. Preguntas abiertas
 
