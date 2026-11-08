@@ -12,9 +12,9 @@ Documento vivo: qué tareas hay, quién ha cogido cada una, en qué estado está
 - **Dependencias.** Si una tarea depende de otra, se hace antes la dependencia. `(b)` = dependencia blanda: se puede empezar con mocks o datos de prueba.
 - **Fases.** Una fase está **cerrada** cuando todas sus tareas están en `main` con `make lint && make test` en verde. Se puede **adelantar** una tarea de la fase siguiente solo si todas sus dependencias están hechas.
 - **Excepciones a la propiedad por tarea:** `docs/decisiones.md` (solo se añade al final) y tu propia fila de este tablero.
-- **Commits directos a `main` (excepción a "todo por PR")**: solo si tocan únicamente `docs/TABLERO.md` y el mensaje es `docs: claim T<x>-<nn>`, `docs: release T<x>-<nn>` o `docs: done T<x>-<nn>`. Flujo: `git pull --rebase` → comprobar que la tarea sigue libre → commit → `git push`. Si el push falla, se repite desde el pull. Todo lo demás va por PR: el merge lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde.
+- **El tablero solo se modifica con commits directos a `main`** (excepción a "todo por PR"), nunca dentro de un PR, y el commit toca únicamente `docs/TABLERO.md`. Mensaje `docs: claim|release|done|block|note T<x>-<nn>`: `claim`, `release` y `done` cambian la fila de la tarea; `block` apunta o cierra una fila de *Bloqueos* (y marca `⛔`); `note` actualiza *Notas para retomar* o *Peticiones de contrato* (y marca `🧪 en PR`). Flujo: `git pull --rebase` → comprobar (p. ej. que la tarea sigue libre) → commit → `git push` justo después. Si el push falla, se repite desde el pull. Excepción puntual: `docs: tablero rules` para cambios de reglas de este propio tablero. Todo lo demás va por PR: el merge lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde.
 - **Estados:** `⬜ pendiente` · `🔄 en curso` · `🧪 en PR` · `✅ hecho` · `⛔ bloqueado`. Marcar `✅ hecho` (`docs: done T<x>-<nn>`) solo con la tarea en `main`.
-- Al cerrar cada sesión (`/cierre`), actualiza *Notas para retomar* de tu tarea.
+- Al cerrar cada sesión (`/cierre`), actualiza *Notas para retomar* de tu tarea con un commit directo a `main` (`docs: note T<x>-<nn>`).
 
 ---
 
@@ -53,7 +53,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-02 | Esquemas de cartera (§4.1) + `examples/` + `portfolio/mock.py` + test que valida todos los ejemplos | Ejemplos validan; el mock sirve `/portfolios/laura` | T0-01 | `backend/app/schemas/portfolio.py`, `backend/app/schemas/examples/` (cartera, plan, operaciones, DCA, traza), `backend/app/portfolio/{mock,service}.py`, `backend/app/api/portfolio.py`, `backend/tests/test_schema_examples.py` | Alons | ✅ hecho |
 | T0-03 | `make gen-api` genera los tipos TS y copia a `frontend/src/api/mocks/` todos los `schemas/examples/*.json` que existan | El frontend importa los mocks; funciona aunque falten esquemas de otros | T0-02 | `Makefile` (solo el objetivo `gen-api`), `scripts/gen_api.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/` | Alons | ✅ hecho |
 | T0-04 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints responden con mock | T0-01 | `backend/app/schemas/{impact,exposure,radar,status,planning}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{exposure,impact,status,planning}/{mock,service}.py`, `backend/app/api/{exposure,impact,status,planning}.py` | Jaime | 🔄 en curso |
-| T0-05 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; el `/ask` mock emite SSE de ejemplo | El frontend recibe el SSE mock | T0-01 | `backend/app/schemas/{events,agents,alerts}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{agents,events,alerts}/{mock,service}.py`, `backend/app/api/{ask,events,alerts}.py` | Marcos | 🔄 en curso |
+| T0-05 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; el `/ask` mock emite SSE de ejemplo | El frontend recibe el SSE mock | T0-01 | `backend/app/schemas/{events,agents,alerts}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{agents,events,alerts}/{mock,service}.py`, `backend/app/api/{ask,events,alerts}.py`, `backend/app/{agents,events,alerts}/__init__.py`, `backend/tests/test_event_agent_examples.py` | Marcos | ✅ hecho |
 | T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` | Alons | 🔄 en curso |
 | T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
@@ -151,6 +151,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 | Fecha/hora | Tarea bloqueada | Por qué | Necesita de | Estado |
 | --- | --- | --- | --- | --- |
 | 2026-11-08 | Ninguna (tarea menor de setup) | `playwright-cli` no encuentra Chrome en Windows (`chrome.exe` no instalado) y hay que usar `--browser=msedge`. Hay que hacer que `scripts/setup-dev.sh` deje a `playwright-cli` usando su propio Chromium | Quien coja la tarea menor de `scripts/setup-dev.sh` | Abierto |
+| 2026-11-08 | T0-05 | `EventImpactOut` (T0-04) no está en `main`; `agents` usa `EventImpactStub` | T0-04 (Jaime) | Abierto: sustituir `EventImpactStub` por `schemas.impact.EventImpactOut` al subir T0-04 |
 
 ## 6. Peticiones de contrato
 
@@ -159,6 +160,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | Fecha/hora | Pide | Esquema / endpoint | Cambio | Afecta a | Estado |
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-08 | Marcos (T0-07) a Alons (T0-01) | Prefijo de la API | Confirmar que `main.py` monta todos los routers bajo `/api/v1` (`SPEC.md` §11). El cliente del frontend usa la base `/api/v1` y el proxy de Vite reenvía `/api` tal cual | T0-01, T0-03, T0-07 y todo el frontend | Confirmado: `main.py` monta todos los routers de `app/api/` bajo `/api/v1` (D-034); todas las rutas del OpenAPI empiezan por `/api/v1/` (lo comprueba `test_gen_api.py`) |
+| 2026-11-08 | Marcos (T0-05) a Jaime (T0-04) | `ExplanationStatus`, `SentenceStatus`, `StatusState`, `StatusFacts` | Importar de `app.schemas.agents` en `schemas/impact.py` y `schemas/status.py` (no redefinirlos). `StatusFacts` es la entrada de `agents.write_status_sentence`; el módulo `status` la rellena | T0-04, T1-17, T2-04 | Pendiente de confirmar |
 
 ## 7. Preguntas abiertas
 

@@ -1,0 +1,11 @@
+{
+  "illustrative": true,
+  "text": "Te ha restado unos 470 euros.",
+  "channel": "voice",
+  "question_kind": "impact",
+  "sentence_index": 1,
+  "evidence": [
+    {"value": "-470.00", "unit": "EUR", "calc_id": "calc_5c1d8e0a9b7f4a3e8d2c6b1a0f9e8d7c", "source": null},
+    {"value": "0.0025", "unit": "fraction", "calc_id": null, "source": "event:bce-2025-06"}
+  ]
+}

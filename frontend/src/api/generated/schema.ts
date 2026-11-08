@@ -24,6 +24,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/demo/replay/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replay Event */
+        post: operations["replay_event_api_v1_demo_replay__event_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -78,20 +95,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/portfolios/{portfolio_id}/agenda": {
+    "/api/v1/portfolios/{portfolio_id}/alerts": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get Agenda
-         * @description T2-06 puede moverlo a `api/agenda.py`.
-         */
-        get: operations["get_agenda_api_v1_portfolios__portfolio_id__agenda_get"];
+        /** List Alerts */
+        get: operations["list_alerts_api_v1_portfolios__portfolio_id__alerts_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolio_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask */
+        post: operations["ask_api_v1_portfolios__portfolio_id__ask_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -133,60 +164,6 @@ export interface paths {
         patch: operations["update_dca_plan_api_v1_portfolios__portfolio_id__dca_plans__plan_id__patch"];
         trace?: never;
     };
-    "/api/v1/portfolios/{portfolio_id}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Event Impacts */
-        get: operations["list_event_impacts_api_v1_portfolios__portfolio_id__events_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/exposure": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Exposure */
-        get: operations["get_exposure_api_v1_portfolios__portfolio_id__exposure_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/move": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Explain Move
-         * @description T2-07 puede moverlo a `api/move.py`.
-         */
-        get: operations["explain_move_api_v1_portfolios__portfolio_id__move_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/portfolios/{portfolio_id}/plan": {
         parameters: {
             query?: never;
@@ -216,77 +193,6 @@ export interface paths {
         put?: never;
         /** Init Positions */
         post: operations["init_positions_api_v1_portfolios__portfolio_id__positions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/projection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Projection */
-        get: operations["get_projection_api_v1_portfolios__portfolio_id__projection_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/radar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Radar
-         * @description T2-05 puede moverlo a `api/radar.py`.
-         */
-        get: operations["get_radar_api_v1_portfolios__portfolio_id__radar_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/scenarios": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Estimate Scenario */
-        post: operations["estimate_scenario_api_v1_portfolios__portfolio_id__scenarios_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolios/{portfolio_id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Status */
-        get: operations["get_status_api_v1_portfolios__portfolio_id__status_get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -332,26 +238,33 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * AgendaItemOut
-         * @description `GET /portfolios/{id}/agenda` devuelve una lista. Un DCA no tiene `factor` ni peso.
+         * AlertKind
+         * @enum {string}
          */
-        AgendaItemOut: {
+        AlertKind: "event_impact" | "dca_pending" | "drift";
+        /** AlertOut */
+        AlertOut: {
             /** Calc Id */
-            calc_id: string;
+            calc_id: string | null;
             /**
-             * Date
+             * Created At
              * Format: date-time
              */
-            date: string;
-            /** Exposed Eur */
-            exposed_eur: string | null;
-            /** Exposed Weight */
-            exposed_weight: string | null;
-            factor: components["schemas"]["Factor"] | null;
-            /** Kind */
-            kind: ("central_bank" | "commodity" | "earnings" | "fx" | "macro") | "dca";
-            /** Title */
-            title: string;
+            created_at: string;
+            /** Delivered */
+            delivered: boolean;
+            /** Event Id */
+            event_id: string | null;
+            /** Id */
+            id: string;
+            kind: components["schemas"]["AlertKind"];
+            /** Message */
+            message: string;
+            /**
+             * Score
+             * @description Fracción: 0.76 = 76 %
+             */
+            score: string;
         };
         /** AllocationOut */
         AllocationOut: {
@@ -377,65 +290,28 @@ export interface components {
             mixed: string;
         };
         /**
+         * AskChannel
+         * @enum {string}
+         */
+        AskChannel: "voice" | "text";
+        /** AskRequest */
+        AskRequest: {
+            channel: components["schemas"]["AskChannel"];
+            /** Question */
+            question: string;
+            /** Session Id */
+            session_id: string;
+        };
+        /**
          * AssetClass
          * @enum {string}
          */
         AssetClass: "equity" | "fixed_income" | "cash" | "mixed";
         /**
-         * AssetImpact
-         * @description `channel` es el `label` del canal con mayor contribución: "tipos", "resultados NVDA"...
-         */
-        AssetImpact: {
-            /** Asset Id */
-            asset_id: string;
-            /** Channel */
-            channel: string;
-            /**
-             * Fx Eur
-             * @description Importe en euros con 2 decimales
-             */
-            fx_eur: string;
-            /**
-             * Impact Eur
-             * @description Importe en euros con 2 decimales
-             */
-            impact_eur: string;
-            /**
-             * Market Eur
-             * @description Importe en euros con 2 decimales
-             */
-            market_eur: string;
-            /** Name */
-            name: string;
-            /**
-             * Value Eur
-             * @description Importe en euros con 2 decimales
-             */
-            value_eur: string;
-        };
-        /**
          * AssetType
          * @enum {string}
          */
         AssetType: "fund" | "etf" | "stock" | "deposit" | "pension_plan";
-        /**
-         * CompanyHolding
-         * @description Activo de la cartera que contiene la empresa. Una acción directa pesa `"1"`.
-         */
-        CompanyHolding: {
-            /** Asset Id */
-            asset_id: string;
-            /**
-             * Weight In Asset
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight_in_asset: string;
-        };
-        /**
-         * Confidence
-         * @enum {string}
-         */
-        Confidence: "alta" | "media" | "baja";
         /** DcaAllocation */
         DcaAllocation: {
             /** Asset Id */
@@ -598,118 +474,6 @@ export interface components {
             message: string;
         };
         /**
-         * EventImpactOut
-         * @description `GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.
-         */
-        EventImpactOut: {
-            /** Breakdown */
-            breakdown: components["schemas"]["AssetImpact"][];
-            /** Calc Id */
-            calc_id: string;
-            /** Causal Chain */
-            causal_chain: string[];
-            confidence: components["schemas"]["Confidence"];
-            /** Event Id */
-            event_id: string;
-            /**
-             * Event Type
-             * @enum {string}
-             */
-            event_type: "central_bank" | "commodity" | "earnings" | "fx" | "macro";
-            /** Explanation */
-            explanation: string | null;
-            explanation_status: components["schemas"]["ExplanationStatus"];
-            /**
-             * High Eur
-             * @description Importe en euros con 2 decimales
-             */
-            high_eur: string;
-            /**
-             * Impact Eur
-             * @description Importe en euros con 2 decimales
-             */
-            impact_eur: string;
-            /**
-             * Impact Pct
-             * @description Fracción: 0.76 = 76 %
-             */
-            impact_pct: string;
-            /**
-             * Low Eur
-             * @description Importe en euros con 2 decimales
-             */
-            low_eur: string;
-            /**
-             * Occurred At
-             * Format: date-time
-             */
-            occurred_at: string;
-            polarity: components["schemas"]["Polarity"];
-            /** Portfolio Id */
-            portfolio_id: string;
-            /** Sources */
-            sources: components["schemas"]["SourceRef"][];
-            surprise: components["schemas"]["Surprise"];
-            /** Title */
-            title: string;
-        };
-        /**
-         * ExplanationStatus
-         * @enum {string}
-         */
-        ExplanationStatus: "pending" | "ok" | "template";
-        /** ExposureBucket */
-        ExposureBucket: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /**
-             * Value Eur
-             * @description Importe en euros con 2 decimales
-             */
-            value_eur: string;
-            /**
-             * Weight
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight: string;
-        };
-        /**
-         * ExposureOut
-         * @description `GET /portfolios/{id}/exposure`.
-         */
-        ExposureOut: {
-            /**
-             * As Of
-             * Format: date-time
-             */
-            as_of: string;
-            /** By Country */
-            by_country: components["schemas"]["ExposureBucket"][];
-            /** By Currency */
-            by_currency: components["schemas"]["ExposureBucket"][];
-            /** By Sector */
-            by_sector: components["schemas"]["ExposureBucket"][];
-            /** Calc Id */
-            calc_id: string;
-            /**
-             * Coverage Pct
-             * @description Fracción: 0.76 = 76 %
-             */
-            coverage_pct: string;
-            /** Overlap */
-            overlap: components["schemas"]["OverlapItem"][];
-            radiography: components["schemas"]["Radiography"];
-            /** Top Companies */
-            top_companies: components["schemas"]["TopCompany"][];
-        };
-        /**
-         * Factor
-         * @enum {string}
-         */
-        Factor: "EQ_GLOBAL" | "EQ_US_TECH" | "RATES_EUR" | "OIL" | "EURUSD";
-        /**
          * Frequency
          * @enum {string}
          */
@@ -739,85 +503,6 @@ export interface components {
              */
             units: string;
         };
-        /** MoveAssetChange */
-        MoveAssetChange: {
-            /** Asset Id */
-            asset_id: string;
-            /**
-             * Change Eur
-             * @description Importe en euros con 2 decimales
-             */
-            change_eur: string;
-            /** Name */
-            name: string;
-        };
-        /**
-         * MoveAttributionOut
-         * @description `GET /portfolios/{id}/move`. `unexplained_eur = change_eur − Σ by_event`.
-         */
-        MoveAttributionOut: {
-            /** By Asset */
-            by_asset: components["schemas"]["MoveAssetChange"][];
-            /** By Event */
-            by_event: components["schemas"]["MoveEventImpact"][];
-            /** Calc Id */
-            calc_id: string;
-            /**
-             * Change Eur
-             * @description Importe en euros con 2 decimales
-             */
-            change_eur: string;
-            /**
-             * Change Pct
-             * @description Fracción: 0.76 = 76 %
-             */
-            change_pct: string;
-            /**
-             * End
-             * Format: date-time
-             */
-            end: string;
-            /**
-             * Period
-             * @enum {string}
-             */
-            period: "day" | "week" | "month";
-            /**
-             * Start
-             * Format: date-time
-             */
-            start: string;
-            /**
-             * Unexplained Eur
-             * @description Importe en euros con 2 decimales
-             */
-            unexplained_eur: string;
-        };
-        /**
-         * MoveEventImpact
-         * @description Estimación del impacto de un evento en el periodo.
-         */
-        MoveEventImpact: {
-            /** Event Id */
-            event_id: string;
-            /**
-             * High Eur
-             * @description Importe en euros con 2 decimales
-             */
-            high_eur: string;
-            /**
-             * Impact Eur
-             * @description Importe en euros con 2 decimales
-             */
-            impact_eur: string;
-            /**
-             * Low Eur
-             * @description Importe en euros con 2 decimales
-             */
-            low_eur: string;
-            /** Title */
-            title: string;
-        };
         /**
          * OperationEffect
          * @description Efecto sobre el activo de origen. En un traspaso, `lots_created` son los del destino.
@@ -846,20 +531,6 @@ export interface components {
          * @enum {string}
          */
         OperationType: "buy" | "sell" | "transfer" | "dca_buy";
-        /** OverlapItem */
-        OverlapItem: {
-            /** Asset Ids */
-            asset_ids: string[];
-            /** Key */
-            key: string;
-            /** Name */
-            name: string;
-            /**
-             * Weight
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight: string;
-        };
         /** PlanOut */
         PlanOut: {
             /** Calc Id */
@@ -903,11 +574,6 @@ export interface components {
             target: components["schemas"]["TargetAllocation"];
         };
         /**
-         * Polarity
-         * @enum {string}
-         */
-        Polarity: "riesgo" | "oportunidad" | "neutral";
-        /**
          * PortfolioOut
          * @description `GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.
          */
@@ -945,11 +611,6 @@ export interface components {
              */
             valued_at: string;
         };
-        /**
-         * PortfolioState
-         * @enum {string}
-         */
-        PortfolioState: "tranquilo" | "atento" | "revisa_plan";
         /**
          * PortfolioSummaryOut
          * @description Elemento de `GET /portfolios` (selector Laura/Javier).
@@ -1060,244 +721,19 @@ export interface components {
          */
         Profile: "conservador" | "moderado" | "dinamico";
         /**
-         * ProjectionOut
-         * @description `GET /portfolios/{id}/projection`. `on_track` equivale a que `base` alcanza la meta.
+         * ReplayOut
+         * @description Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó.
          */
-        ProjectionOut: {
-            assumptions_source: components["schemas"]["SourceRef"];
-            /** Calc Id */
-            calc_id: string;
-            /**
-             * Current Value Eur
-             * @description Importe en euros con 2 decimales
-             */
-            current_value_eur: string;
-            /**
-             * Gap Eur
-             * @description Importe en euros con 2 decimales
-             */
-            gap_eur: string;
-            /**
-             * Goal Amount Eur
-             * @description Importe en euros con 2 decimales
-             */
-            goal_amount_eur: string;
-            /** Goal Year */
-            goal_year: number;
-            /**
-             * Monthly Contribution Eur
-             * @description Importe en euros con 2 decimales
-             */
-            monthly_contribution_eur: string;
-            /** On Track */
-            on_track: boolean;
-            /** Scenarios */
-            scenarios: components["schemas"]["ProjectionScenario"][];
-        };
-        /** ProjectionScenario */
-        ProjectionScenario: {
-            /**
-             * Annual Return
-             * @description Fracción: 0.76 = 76 %
-             */
-            annual_return: string;
-            /**
-             * Name
-             * @enum {string}
-             */
-            name: "pesimista" | "base" | "optimista";
-            /** Reaches Goal */
-            reaches_goal: boolean;
-            /**
-             * Value At Goal Eur
-             * @description Importe en euros con 2 decimales
-             */
-            value_at_goal_eur: string;
-        };
-        /**
-         * RadarItem
-         * @description `title` y `detail` salen de plantillas deterministas, sin LLM.
-         */
-        RadarItem: {
-            /** Calc Id */
-            calc_id: string;
-            /** Detail */
-            detail: string;
-            /** Id */
-            id: string;
-            kind: components["schemas"]["RadarKind"];
-            rule: components["schemas"]["RadarRule"];
-            /** Title */
-            title: string;
-            user_rule?: components["schemas"]["UserRule"] | null;
-            /** Value Eur */
-            value_eur?: string | null;
-            /** Weight */
-            weight?: string | null;
-        };
-        /**
-         * RadarKind
-         * @enum {string}
-         */
-        RadarKind: "risk" | "opportunity";
-        /**
-         * RadarOut
-         * @description `GET /portfolios/{id}/radar`.
-         */
-        RadarOut: {
-            /** Calc Id */
-            calc_id: string;
-            /** Items */
-            items: components["schemas"]["RadarItem"][];
-        };
-        /**
-         * RadarRule
-         * @enum {string}
-         */
-        RadarRule: "concentration" | "currency" | "drift" | "rebalance_with_dca" | "cheaper_contribution" | "tax_free_transfer";
-        /**
-         * Radiography
-         * @description Paso 2 del guion. `num_holdings` cuenta fondos y ETF.
-         */
-        Radiography: {
-            /** Num Holdings */
-            num_holdings: number;
-            top_companies_group: components["schemas"]["TopCompaniesGroup"];
-            top_country: components["schemas"]["TopCountry"];
-        };
-        /**
-         * ReasonKind
-         * @enum {string}
-         */
-        ReasonKind: "event" | "drift" | "none";
-        /** ScenarioOut */
-        ScenarioOut: {
-            /** Breakdown */
-            breakdown: components["schemas"]["AssetImpact"][];
-            /** Calc Id */
-            calc_id: string;
-            confidence: components["schemas"]["Confidence"];
-            /** Factor Shocks */
-            factor_shocks: {
-                [key: string]: string;
-            };
-            /**
-             * High Eur
-             * @description Importe en euros con 2 decimales
-             */
-            high_eur: string;
-            /**
-             * Impact Eur
-             * @description Importe en euros con 2 decimales
-             */
-            impact_eur: string;
-            /**
-             * Low Eur
-             * @description Importe en euros con 2 decimales
-             */
-            low_eur: string;
-        };
-        /**
-         * ScenarioRequest
-         * @description Cuerpo de `POST /portfolios/{id}/scenarios`.
-         */
-        ScenarioRequest: {
-            /** Factor Shocks */
-            factor_shocks: {
-                [key: string]: string;
-            };
-        };
-        /**
-         * SentenceStatus
-         * @enum {string}
-         */
-        SentenceStatus: "ok" | "template";
-        /**
-         * SourceKind
-         * @enum {string}
-         */
-        SourceKind: "price" | "fx" | "composition" | "beta" | "event" | "assumption" | "user_input";
-        /**
-         * SourceRef
-         * @description Fuente de una cifra. Ejemplo:
-         *     {"kind": "price", "label": "VL iShares Core MSCI World", "ref": "IE00B4L5Y983",
-         *      "as_of": "2026-11-06T00:00:00Z", "url": null}
-         */
-        SourceRef: {
-            /** As Of */
-            as_of?: string | null;
-            kind: components["schemas"]["SourceKind"];
-            /** Label */
-            label: string;
-            /** Ref */
-            ref: string;
-            /** Url */
-            url?: string | null;
-        };
-        /**
-         * StatusOut
-         * @description `GET /portfolios/{id}/status`. Se lee precalculado.
-         */
-        StatusOut: {
-            /** Calc Id */
-            calc_id: string;
-            /**
-             * Change Week Pct
-             * @description Fracción: 0.76 = 76 %
-             */
-            change_week_pct: string;
-            /**
-             * Computed At
-             * Format: date-time
-             */
-            computed_at: string;
-            /**
-             * Price As Of
-             * Format: date-time
-             */
-            price_as_of: string;
-            reason: components["schemas"]["StatusReason"];
-            /** Sentence */
-            sentence: string;
-            sentence_status: components["schemas"]["SentenceStatus"];
-            state: components["schemas"]["PortfolioState"];
-            /** State Label */
-            state_label: string;
-            /**
-             * Total Eur
-             * @description Importe en euros con 2 decimales
-             */
-            total_eur: string;
-        };
-        /**
-         * StatusReason
-         * @description `event_id` y `event_impact_eur` solo con `kind == "event"`.
-         */
-        StatusReason: {
+        ReplayOut: {
+            /** Elapsed Ms */
+            elapsed_ms: number;
             /** Event Id */
-            event_id: string | null;
-            /** Event Impact Eur */
-            event_impact_eur: string | null;
-            kind: components["schemas"]["ReasonKind"];
+            event_id: string;
+            /** Portfolios */
+            portfolios: {
+                [key: string]: string;
+            };
         };
-        /**
-         * Surprise
-         * @description Sin consenso, todos los campos son `null` (D-021).
-         */
-        Surprise: {
-            /** Actual */
-            actual: string | null;
-            /** Expected */
-            expected: string | null;
-            label: components["schemas"]["SurpriseLabel"] | null;
-            /** Metric */
-            metric: string | null;
-        };
-        /**
-         * SurpriseLabel
-         * @enum {string}
-         */
-        SurpriseLabel: "mejor" | "peor" | "en_linea";
         /** TargetAllocation */
         TargetAllocation: {
             /**
@@ -1315,47 +751,6 @@ export interface components {
              * @description Fracción: 0.76 = 76 %
              */
             fixed_income: string;
-        };
-        /** TopCompaniesGroup */
-        TopCompaniesGroup: {
-            /** N */
-            n: number;
-            /**
-             * Weight
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight: string;
-        };
-        /** TopCompany */
-        TopCompany: {
-            /** Held In */
-            held_in: components["schemas"]["CompanyHolding"][];
-            /** Key */
-            key: string;
-            /** Name */
-            name: string;
-            /**
-             * Value Eur
-             * @description Importe en euros con 2 decimales
-             */
-            value_eur: string;
-            /**
-             * Weight
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight: string;
-        };
-        /** TopCountry */
-        TopCountry: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /**
-             * Weight
-             * @description Fracción: 0.76 = 76 %
-             */
-            weight: string;
         };
         /**
          * TransactionOut
@@ -1432,19 +827,6 @@ export interface components {
             /** Units */
             units?: string | null;
         };
-        /**
-         * UserRule
-         * @description Regla del propio usuario frente a la que se expresa una oportunidad.
-         */
-        UserRule: {
-            /** Ref */
-            ref: string;
-            /**
-             * Source
-             * @enum {string}
-             */
-            source: "dca_plan" | "plan";
-        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -1465,13 +847,13 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type AgendaItemOut = components['schemas']['AgendaItemOut'];
+export type AlertKind = components['schemas']['AlertKind'];
+export type AlertOut = components['schemas']['AlertOut'];
 export type AllocationOut = components['schemas']['AllocationOut'];
+export type AskChannel = components['schemas']['AskChannel'];
+export type AskRequest = components['schemas']['AskRequest'];
 export type AssetClass = components['schemas']['AssetClass'];
-export type AssetImpact = components['schemas']['AssetImpact'];
 export type AssetType = components['schemas']['AssetType'];
-export type CompanyHolding = components['schemas']['CompanyHolding'];
-export type Confidence = components['schemas']['Confidence'];
 export type DcaAllocation = components['schemas']['DcaAllocation'];
 export type DcaExecutionActionRequest = components['schemas']['DcaExecutionActionRequest'];
 export type DcaExecutionLine = components['schemas']['DcaExecutionLine'];
@@ -1483,56 +865,25 @@ export type DcaPlanStatus = components['schemas']['DcaPlanStatus'];
 export type DcaPlanUpdateRequest = components['schemas']['DcaPlanUpdateRequest'];
 export type DemoAdjustmentOut = components['schemas']['DemoAdjustmentOut'];
 export type ErrorOut = components['schemas']['ErrorOut'];
-export type EventImpactOut = components['schemas']['EventImpactOut'];
-export type ExplanationStatus = components['schemas']['ExplanationStatus'];
-export type ExposureBucket = components['schemas']['ExposureBucket'];
-export type ExposureOut = components['schemas']['ExposureOut'];
-export type Factor = components['schemas']['Factor'];
 export type Frequency = components['schemas']['Frequency'];
 export type HttpValidationError = components['schemas']['HTTPValidationError'];
 export type LotOut = components['schemas']['LotOut'];
-export type MoveAssetChange = components['schemas']['MoveAssetChange'];
-export type MoveAttributionOut = components['schemas']['MoveAttributionOut'];
-export type MoveEventImpact = components['schemas']['MoveEventImpact'];
 export type OperationEffect = components['schemas']['OperationEffect'];
 export type OperationType = components['schemas']['OperationType'];
-export type OverlapItem = components['schemas']['OverlapItem'];
 export type PlanOut = components['schemas']['PlanOut'];
 export type PlanUpdateRequest = components['schemas']['PlanUpdateRequest'];
-export type Polarity = components['schemas']['Polarity'];
 export type PortfolioOut = components['schemas']['PortfolioOut'];
-export type PortfolioState = components['schemas']['PortfolioState'];
 export type PortfolioSummaryOut = components['schemas']['PortfolioSummaryOut'];
 export type PositionInitLine = components['schemas']['PositionInitLine'];
 export type PositionOut = components['schemas']['PositionOut'];
 export type PositionsInitRequest = components['schemas']['PositionsInitRequest'];
 export type PriceKind = components['schemas']['PriceKind'];
 export type Profile = components['schemas']['Profile'];
-export type ProjectionOut = components['schemas']['ProjectionOut'];
-export type ProjectionScenario = components['schemas']['ProjectionScenario'];
-export type RadarItem = components['schemas']['RadarItem'];
-export type RadarKind = components['schemas']['RadarKind'];
-export type RadarOut = components['schemas']['RadarOut'];
-export type RadarRule = components['schemas']['RadarRule'];
-export type Radiography = components['schemas']['Radiography'];
-export type ReasonKind = components['schemas']['ReasonKind'];
-export type ScenarioOut = components['schemas']['ScenarioOut'];
-export type ScenarioRequest = components['schemas']['ScenarioRequest'];
-export type SentenceStatus = components['schemas']['SentenceStatus'];
-export type SourceKind = components['schemas']['SourceKind'];
-export type SourceRef = components['schemas']['SourceRef'];
-export type StatusOut = components['schemas']['StatusOut'];
-export type StatusReason = components['schemas']['StatusReason'];
-export type Surprise = components['schemas']['Surprise'];
-export type SurpriseLabel = components['schemas']['SurpriseLabel'];
+export type ReplayOut = components['schemas']['ReplayOut'];
 export type TargetAllocation = components['schemas']['TargetAllocation'];
-export type TopCompaniesGroup = components['schemas']['TopCompaniesGroup'];
-export type TopCompany = components['schemas']['TopCompany'];
-export type TopCountry = components['schemas']['TopCountry'];
 export type TransactionOut = components['schemas']['TransactionOut'];
 export type TransactionRequest = components['schemas']['TransactionRequest'];
 export type TransferRequest = components['schemas']['TransferRequest'];
-export type UserRule = components['schemas']['UserRule'];
 export type ValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
 export interface operations {
@@ -1576,6 +927,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replay_event_api_v1_demo_replay__event_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplayOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1662,7 +1062,7 @@ export interface operations {
             };
         };
     };
-    get_agenda_api_v1_portfolios__portfolio_id__agenda_get: {
+    list_alerts_api_v1_portfolios__portfolio_id__alerts_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1679,7 +1079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AgendaItemOut"][];
+                    "application/json": components["schemas"]["AlertOut"][];
                 };
             };
             /** @description Not Found */
@@ -1690,6 +1090,39 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_api_v1_portfolios__portfolio_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -1809,130 +1242,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DcaPlanOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-        };
-    };
-    list_event_impacts_api_v1_portfolios__portfolio_id__events_get: {
-        parameters: {
-            query?: {
-                days?: number;
-            };
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EventImpactOut"][];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-        };
-    };
-    get_exposure_api_v1_portfolios__portfolio_id__exposure_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExposureOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    explain_move_api_v1_portfolios__portfolio_id__move_get: {
-        parameters: {
-            query?: {
-                period?: "day" | "week" | "month";
-            };
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MoveAttributionOut"];
                 };
             };
             /** @description Not Found */
@@ -2079,170 +1388,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-        };
-    };
-    get_projection_api_v1_portfolios__portfolio_id__projection_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectionOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_radar_api_v1_portfolios__portfolio_id__radar_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RadarOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    estimate_scenario_api_v1_portfolios__portfolio_id__scenarios_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ScenarioRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ScenarioOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-        };
-    };
-    get_status_api_v1_portfolios__portfolio_id__status_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolio_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

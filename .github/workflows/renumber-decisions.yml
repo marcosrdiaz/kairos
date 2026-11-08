@@ -1,0 +1,52 @@
+name: Renumber decisions
+
+# Numera las decisiones `D-XXX` al entrar en main (scripts/renumber_decisions.py).
+# El commit del bot lleva [skip ci]: solo cambia IDs de texto.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/decisiones.md
+
+permissions:
+  contents: write
+
+concurrency:
+  group: renumber-decisions
+  cancel-in-progress: false
+
+jobs:
+  renumber:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Renumerar decisiones
+        run: python scripts/renumber_decisions.py
+
+      - name: Commit y push
+        run: |
+          if git diff --quiet; then
+            echo "Nada que commitear."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "docs: renumber decisions [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push rechazado (intento $attempt): main ha avanzado; rebase y reintento."
+            git pull --rebase origin main
+          done
+          echo "No se pudo hacer push tras 5 intentos." >&2
+          exit 1
