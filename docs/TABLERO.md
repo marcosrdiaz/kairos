@@ -133,7 +133,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 ### T0-10 · Eventos de replay — Manu
-**Estado:** PR #18 abierto (`t0-10/replay-events`). Contiene `data/events/replay/{bce-2025-06,oil-2025-06,nvda-2025-02}.json` sin `observed`, el test `backend/tests/test_replay_events.py` (fuera de la fila de la tarea) y una entrada `D-XXX` en estado *Propuesta* en `docs/decisiones.md`.
+**Estado:** PR #18 abierto (`t0-10/replay-events`). Contiene `data/events/replay/{bce-2025-06,oil-2025-06,nvda-2025-02}.json` sin `observed`, el test `backend/tests/test_replay_events.py` (fuera de la fila de la tarea) y una entrada «Eventos de replay (T0-10): formato del texto como entrada de fuente» en estado *Propuesta* en `docs/decisiones.md`.
 **Siguiente paso exacto:** revisión y merge del PR, y después `docs: done T0-10`. Eso desbloquea T1-09 y T1-15.
 **Para T1-09:** las horas de `occurred_at` son 12:15Z (BCE), 01:42Z del 13 jun (petróleo, primera cotización del Brent tras los ataques del día 12 a las 23:30Z) y 21:20Z del 26 feb (NVIDIA; la caída es del 27 feb). `observed` debe medirse en esos días de mercado.
 **Ficheros tocados:** los de arriba.
