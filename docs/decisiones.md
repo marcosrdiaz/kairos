@@ -65,6 +65,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
 | D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
+| D-XXX | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 
 ---
 
@@ -388,3 +389,18 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
   - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
 - Consecuencias: `EventImpactStub` (`schemas/agents.py`) ya se puede sustituir por `EventImpactOut` (D-039).
+
+### D-XXX · Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: `SPEC.md` §6 no tenía tablas para las ejecuciones de DCA (`DcaExecutionOut`, estado `pending`) ni para el ajuste de demo (D-031), y le faltaban columnas que piden los contratos. Además, las tablas tienen claves foráneas entre módulos y hay que cargarlas todas juntas antes de crear el esquema.
+- Decisión:
+  - Tablas nuevas: `dca_execution` (id, dca_plan_id, scheduled_for, status, created_at, resolved_at), `dca_execution_line` (execution_id, asset_id, amount_eur, price, price_at, units_estimated, transaction_id) y `demo_adjustment` (portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at), **una fila por posición**, para que `value_eur` de cada posición pueda sumar su parte. `PortfolioOut.demo_adjustments` las agrega por evento. Las tres van en `portfolio/models.py`.
+  - Columnas añadidas a las de §6: `portfolio.created_at`; `transaction.price_currency`, `realized_gain_eur` y `calc_id`; `tax_lot.units_initial`; `dca_plan.last_execution_at` y `next_execution_at` (vienen en el seed, D-038); `event.text` y `created_at`; `event_impact.impact_pct`, `explanation_status` y `created_at`; `agent_log.created_at`. `agent_log.guardian_verdict` es JSON.
+  - IDs de texto que genera cada servicio (`laura`, el ISIN, `dca_laura`, `tx_…`, `lot_…`); solo `demo_adjustment` y `agent_log` usan entero autoincremental. Los enums se guardan como texto con los valores de `app.schemas`, sin tipos `ENUM` de Postgres.
+  - Tipos: euros `NUMERIC(18,2)`; participaciones, precios, tipos de cambio, coste por unidad y estadísticos (`beta`, `r2`, `score`, `impact_pct`) `NUMERIC(20,8)`; pesos y fracciones `NUMERIC(10,8)`; fechas `TIMESTAMP WITH TIME ZONE`. Los `calc_id` no llevan clave foránea a `calc_trace`, porque la traza se escribe en su propia sesión.
+  - `app/models.py` importa todos los `models.py`; lo usan `alembic/env.py` y el fixture `db` (`conftest.py`). Quien añada un `models.py` lo registra ahí y crea una migración (`alembic revision --autogenerate`, desde `backend/`). `test_migrations.py` falla si los modelos y las migraciones no coinciden.
+  - `alembic.ini` en `backend/` (la condición del servicio `seed` de Compose, D-034); la URL sale de `DATABASE_URL`. Migración inicial `0001`, probada en SQLite y en Postgres 16 (subir, `alembic check`, bajar).
+  - Ficheros añadidos fuera de la fila de T1-01: `backend/alembic.ini`, `backend/app/models.py`, `backend/app/prices/__init__.py`, `backend/tests/test_migrations.py`, una línea en `backend/tests/conftest.py` y `known-third-party = ["alembic"]` en `backend/pyproject.toml` (ruff tomaba `backend/alembic/` por el paquete).
+- Motivo: así T1-06 (DCA) y T2-02 (ajuste de demo) no necesitan otra migración, que podría chocar con las de otras tareas en paralelo.
+- Alternativas descartadas: el ajuste de demo agregado por evento (no basta para `value_eur` por posición); `ENUM` de Postgres (cada valor nuevo exigiría una migración y no funcionan igual en SQLite).
+- Consecuencias: T1-02, T1-03, T1-06, T1-11, T1-12, T1-13, T1-15, T2-02 y T2-08 ya tienen sus tablas. Si una tarea cambia un modelo, añade una migración `0002_…` encadenada a la última que haya en `main`; si dos ramas crean migraciones a la vez, la segunda en entrar ajusta su `down_revision`. `SPEC.md` §6 actualizado.
