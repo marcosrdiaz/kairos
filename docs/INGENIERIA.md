@@ -1,6 +1,6 @@
 # Documento de ingeniería — KAIROS
 
-Versión 0.1 · 2026-11-08 · Plazo: Dom 8 → Mié 11 23:59 · Documento vivo. Producto: `KAIROS — Idea de proyecto (Hack Finance)`. Detalle técnico en `SPEC.md`.
+Versión 0.1 · 2026-11-08 · Plazo: Dom 8 → Mié 11 23:59 · Documento vivo. Producto: `KAIROS — Idea de proyecto (Hack Finance)`. Detalle técnico en `SPEC.md` y en el diseño del MVP (`docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`).
 
 ## Índice
 
@@ -26,7 +26,7 @@ Versión 0.1 · 2026-11-08 · Plazo: Dom 8 → Mié 11 23:59 · Documento vivo. 
 
 **Fuera del alcance:** open banking, órdenes reales, noticias en vivo, widget nativo, login y varios usuarios reales, niveles de usuario.
 
-**Criterio de éxito del hackathon:** el guion de demo (§11) funciona de punta a punta el martes 10 a las 23:00 y `docker compose up` + README bastan para que el jurado lo ejecute.
+**Criterio de éxito del hackathon:** el guion de demo (§11) funciona de punta a punta el martes 10 a las 18:00 y `docker compose up` + README bastan para que el jurado lo ejecute.
 
 ## 2. Glosario
 
@@ -57,39 +57,39 @@ Versión 0.1 · 2026-11-08 · Plazo: Dom 8 → Mié 11 23:59 · Documento vivo. 
 
 ## 4. Requisitos funcionales
 
-Prioridad MoSCoW: **M** = MVP hackathon, **S** = si da tiempo, **C** = después. Dueño según `TABLERO.md`.
+Prioridad MoSCoW: **M** = MVP hackathon, **S** = si da tiempo, **C** = después.
 
-| ID | Feature | Requisito | Prio | Dueño | Criterio de aceptación |
-| --- | --- | --- | --- | --- | --- |
-| RF-01 | F1 | Dar de alta posiciones con ISIN/ticker, participaciones y precio medio; el sistema completa tipo, divisa, clase, TER y traspasable | M | P1 | Alta de 6 posiciones de Laura en < 60 s; tras guardar, `GET /portfolios/{id}` devuelve valor y asignación |
-| RF-02 | F1 | Cargar una cartera de ejemplo (Laura o Javier) con un clic | M | P1 | `/demo/reset` deja ambas carteras en su estado inicial |
-| RF-03 | F2 | Valorar la cartera con el último precio: intradía para acciones/ETF, VL diario para fondos, todo en € | M | P1 | Cada posición expone `price_at` y `price_kind`; la app muestra "VL a fecha X" |
-| RF-04 | F4 | Registrar compra por importe o por participaciones | M | P1 | Precio medio recalculado; test dorado |
-| RF-05 | F4 | Registrar venta con FIFO y plusvalía estimada | M | P1 | Rechaza vender más de lo que hay; FIFO verificado con 3 lotes |
-| RF-06 | F4 | Registrar traspaso fondo → fondo conservando coste y fecha | M | P1 | ETF/acción → error `TRANSFER_NOT_ALLOWED` con alternativa explicada |
-| RF-07 | F5 | Crear, pausar y editar planes DCA; registrar cada aportación al precio del día tras confirmar | M | P1 | `/demo/dca/run` genera ejecución pendiente; confirmar crea `dca_buy` |
-| RF-08 | F3 | Calcular exposición por país, sector, divisa y empresa mirando dentro de fondos | M | P2 | Suma de buckets = 100% ± 0,1; indica `coverage_pct` |
-| RF-09 | F3/F13 | Detectar empresas repetidas en varias posiciones | M | P2 | Lista solapamientos con peso total en cartera |
-| RF-10 | F8 | Calcular impacto en € de un evento por posición y total, con rango, confianza y separación bolsa/divisa | M | P2 | Test dorado Laura/Javier por evento; `calc_id` presente |
-| RF-11 | F9 | Reproducir 3 eventos reales (BCE, petróleo, resultados) en modo replay | M | P3 | `/demo/replay/{id}` → evento analizado e impactos calculados en < 10 s |
-| RF-12 | F9 | Analizar cada evento a JSON estructurado (tipo, entidades, shocks, cadena causal) | M | P3 | Salida valida contra `EventAnalysis`; se guarda en `event.analysis` |
-| RF-13 | F6 | Mostrar estado del widget (tranquilo / atento / revisa tu plan), cifra y frase | M | P2 (back) · P4 (front) | Reglas de §8.6 de SPEC; color + palabra; < 1 s |
-| RF-14 | F7 | Pregunta por voz con respuesta hablada de 15-20 s con al menos una cifra en € | M | P3 (agente) · P5 (voz) · P4 (UI) | Primera palabra < 2 s en red del evento; 3 preguntas tipo funcionan |
-| RF-15 | F7 | Pregunta por texto con la misma respuesta (plan B y accesibilidad) | M | P3 · P4 | `/ask` SSE |
-| RF-16 | F10 | Validar toda salida de IA: sin órdenes de compraventa, cifras presentes en las herramientas | M | P3 | 0 salidas no validadas en `agent_log`; tests de patrones |
-| RF-17 | F23 | Panel con resumen, eventos traducidos (cadena causal, €, rango, confianza), exposición real y agenda | M | P4 | Los 6 bloques de producto visibles con datos reales del backend |
-| RF-18 | F24 | Radar de riesgos y oportunidades según el plan del usuario | M | P2 · P4 | Reglas de SPEC §8.5; ninguna oportunidad sin regla del usuario detrás |
-| RF-19 | — | Pantalla de trazabilidad: cálculo y fuentes de cualquier cifra | M | P1 · P4 | Desde cualquier cifra del panel se llega a `/traces/{calc_id}` |
-| RF-20 | — | Avisos de IA y "no es asesoramiento" | M | P4 · P5 | Visibles en app, panel e inicio de voz |
-| RF-21 | F25 | Escenarios ¿Y si…? con impacto por activo | S | P2 · P4 | < 500 ms |
-| RF-22 | F11 | Plan del usuario: asignación objetivo, meta y proyección con DCA | S | P1 · P2 | "¿Voy bien?" responde con proyección |
-| RF-23 | F12 | Avisos por umbral, máx. 2 por semana | S | P3 | Límite comprobado en test |
-| RF-24 | F14 | Conector de bróker (Trading 212 demo) | S | — | — |
-| RF-25 | F15–F19 | Resumen semanal en audio, eventos en vivo, historial de aciertos, widget nativo, servidor MCP | C | — | — |
+| ID | Feature | Requisito | Prio | Criterio de aceptación |
+| --- | --- | --- | --- | --- |
+| RF-01 | F1 | Dar de alta posiciones con ISIN/ticker, participaciones y precio medio; el sistema completa tipo, divisa, clase, TER y traspasable | M | Alta de 6 posiciones de Laura en < 60 s; tras guardar, `GET /portfolios/{id}` devuelve valor y asignación |
+| RF-02 | F1 | Cargar una cartera de ejemplo (Laura o Javier) con un clic | M | `/demo/reset` deja ambas carteras en su estado inicial |
+| RF-03 | F2 | Valorar la cartera con el último precio: intradía para acciones/ETF, VL diario para fondos, todo en € | M | Cada posición expone `price_at` y `price_kind`; la app muestra "VL a fecha X" |
+| RF-04 | F4 | Registrar compra por importe o por participaciones | M | Precio medio recalculado; test dorado |
+| RF-05 | F4 | Registrar venta con FIFO y plusvalía estimada | M | Rechaza vender más de lo que hay; FIFO verificado con 3 lotes |
+| RF-06 | F4 | Registrar traspaso fondo → fondo conservando coste y fecha | M | ETF/acción → error `TRANSFER_NOT_ALLOWED` con alternativa explicada |
+| RF-07 | F5 | Crear, pausar y editar planes DCA; registrar cada aportación al precio del día tras confirmar | M | `/demo/dca/run` genera ejecución pendiente; confirmar crea `dca_buy` |
+| RF-08 | F3 | Calcular exposición por país, sector, divisa y empresa mirando dentro de fondos | M | Suma de buckets = 100% ± 0,1; indica `coverage_pct` |
+| RF-09 | F3/F13 | Detectar empresas repetidas en varias posiciones y dar la radiografía mínima de la cartera | M | Lista solapamientos con peso total en cartera; `radiography` con nº de fondos/ETF, país principal y peso de las 7 primeras empresas (F13 mínima, D-023) |
+| RF-10 | F8 | Calcular impacto en € de un evento por posición y total, con rango, confianza y separación bolsa/divisa | M | Test dorado Laura/Javier por evento; `calc_id` presente |
+| RF-11 | F9 | Reproducir 3 eventos reales (BCE, petróleo, resultados) en modo replay | M | `/demo/replay/{id}` → evento analizado e impactos calculados en < 10 s |
+| RF-12 | F9 | Analizar cada evento a JSON estructurado (tipo, entidades, canales afectados, cadena causal; sin cifras) | M | Salida valida contra `EventAnalysis`; se guarda en `event.analysis` |
+| RF-13 | F6 | Mostrar estado del widget (tranquilo / atento / revisa tu plan), cifra y frase | M | Reglas de §8.6 de SPEC; color + palabra; < 1 s |
+| RF-14 | F7 | Pregunta por voz con respuesta hablada de 15-20 s con al menos una cifra en € | M | Primera palabra < 2 s en red del evento; 3 preguntas tipo funcionan |
+| RF-15 | F7 | Pregunta por texto con la misma respuesta (plan B y accesibilidad) | M | `/ask` SSE |
+| RF-16 | F10 | Validar toda salida de IA: sin órdenes de compraventa, cifras presentes en las herramientas | M | 0 salidas no validadas en `agent_log`; tests de patrones |
+| RF-17 | F23 | Panel con resumen, eventos traducidos (cadena causal, €, rango, confianza), exposición real y agenda | M | Los 6 bloques de producto visibles con datos reales del backend |
+| RF-18 | F24 | Radar de riesgos y oportunidades según el plan del usuario | M | Reglas de SPEC §8.5; ninguna oportunidad sin regla del usuario detrás |
+| RF-19 | — | Pantalla de trazabilidad: cálculo y fuentes de cualquier cifra | M | Desde cualquier cifra del panel se llega a `/traces/{calc_id}` |
+| RF-20 | — | Avisos de IA y "no es asesoramiento" | M | Visibles en app, panel e inicio de voz |
+| RF-21 | F25 | Escenarios ¿Y si…? con impacto por activo | S | < 500 ms |
+| RF-22 | F11 | Plan del usuario: asignación objetivo, meta y proyección con DCA (versión mínima; el resto de F11 sigue en S) | M | "¿Voy bien?" responde con proyección |
+| RF-23 | F12 | Avisos por umbral de impacto en € (versión mínima: solo `kind=event_impact`), máx. 2 por semana ISO. `dca_pending` y `drift` siguen en S | M | `score ≥ 1` genera aviso; el 3.º de la semana ISO no se genera; límite comprobado en test |
+| RF-24 | F14 | Conector de bróker (Trading 212 demo) | S | — |
+| RF-25 | F15–F19 | Resumen semanal en audio, eventos en vivo, historial de aciertos, widget nativo, servidor MCP | C | — |
 
 Descartados: F20 (recomendaciones, MiFID II), F21 (dashboard en portada), F22 (órdenes reales).
 
-> Nota: el guion de demo usa "¿Voy bien?" (paso 7), que depende de RF-22 (S). O se sube a M o se cambia el paso 7. Ver *Preguntas abiertas* en `TABLERO.md`.
+> Resuelto (D-023): el guion de demo usa "¿Voy bien?" (paso 7) y la radiografía (paso 2), por lo que RF-22 y la radiografía de RF-09 pasan a **M** en su versión mínima.
 
 ## 5. Requisitos no funcionales
 
@@ -291,45 +291,45 @@ flowchart LR
 
 ## 8. Trazabilidad
 
-| Paso de demo | Requisitos | Casos de uso | Tests clave | Dueños |
-| --- | --- | --- | --- | --- |
-| 1 Alta / cartera de ejemplo, widget Tranquilo | RF-01, RF-02, RF-03, RF-13 | UC-01, UC-02 | `test_portfolio_golden`, `test_status_rules` | P1, P2, P4 |
-| 2 Radiografía (61% EE. UU., 19% en 7 empresas) | RF-08, RF-09 | UC-07 | `test_exposure_golden` | P2, P4 |
-| 3 Replay → Atento + aviso | RF-11, RF-12, RF-10, RF-13, RF-23 | UC-11 | `test_replay_end_to_end` | P3, P2, P4 |
-| 4 "¿Por qué ha bajado?" por voz | RF-14, RF-16, RF-20 | UC-05 | `test_guardian_*`, smoke de voz | P3, P5, P4 |
-| 5 Panel con eventos, riesgos y oportunidades | RF-17, RF-18 | UC-06, UC-08 | `test_radar_rules`, Playwright panel | P4, P2 |
-| 6 Misma noticia, Laura vs Javier | RF-10 | UC-06 | `test_impact_two_portfolios` | P2, P4 |
-| 7 "¿Voy bien?" | RF-22 | UC-05 | `test_projection` | P2, P3 |
-| 8 Cálculo y fuentes | RF-19 | UC-10 | `test_trace_complete` | P1, P4 |
+| Paso de demo | Requisitos | Casos de uso | Tests clave |
+| --- | --- | --- | --- |
+| 1 Alta / cartera de ejemplo, widget Tranquilo | RF-01, RF-02, RF-03, RF-13 | UC-01, UC-02 | `test_portfolio_golden`, `test_status_rules` |
+| 2 Radiografía (61% EE. UU., 19% en 7 empresas) | RF-08, RF-09 | UC-07 | `test_exposure_golden` |
+| 3 Replay → Atento + aviso | RF-11, RF-12, RF-10, RF-13, RF-23 | UC-11 | `test_replay_end_to_end`, `test_alert_weekly_limit` |
+| 4 "¿Por qué ha bajado?" por voz | RF-14, RF-16, RF-20 | UC-05 | `test_guardian_*`, smoke de voz |
+| 5 Panel con eventos, riesgos y oportunidades | RF-17, RF-18 | UC-06, UC-08 | `test_radar_rules`, Playwright panel |
+| 6 Misma noticia, Laura vs Javier | RF-10 | UC-06 | `test_impact_two_portfolios` |
+| 7 "¿Voy bien?" | RF-22 | UC-05 | `test_projection` |
+| 8 Cálculo y fuentes | RF-19 | UC-10 | `test_trace_complete` |
 
 ## 9. Plan de pruebas
 
-| Nivel | Qué | Herramienta | Dueño | Cuándo |
-| --- | --- | --- | --- | --- |
-| Unitario motores | Lotes, FIFO, traspaso, DCA, valoración, FX | pytest (casos dorados) | P1 | Lun, antes del código |
-| Unitario motores | Betas, impacto, rango, look-through, radar, estado | pytest | P2 | Lun-Mar |
-| Unitario agentes | Patrones prohibidos, comprobación de cifras, reintento, plantilla | pytest + FakeClaude | P3 | Lun |
-| Contrato | El OpenAPI generado no rompe los tipos del frontend | `make gen-api` + `tsc` en CI | P4 | Cada PR |
-| Integración | Replay → impacto → estado → aviso | pytest con BD de test | P3 | Mar |
-| E2E | Guion de demo pasos 1-8 en modo offline | Playwright | P4 | Mar noche-Mié |
-| Calidad IA | 30 preguntas (10 por tipo + 10 trampa "¿vendo?") con revisión manual | Script `scripts/eval_answers.py` | P3 | Mar |
-| Latencia | Primera palabra de voz, `/status`, escenario | `agent_log` + script | P5 | Mar |
-| Ejecución limpia | Clonar ZIP → `docker compose up` → README | Máquina de otro miembro | P5 | Mié mañana |
+| Nivel | Qué | Herramienta | Cuándo |
+| --- | --- | --- | --- |
+| Unitario motores | Lotes, FIFO, traspaso, DCA, valoración, FX | pytest (casos dorados) | Lun, antes del código |
+| Unitario motores | Betas, impacto, rango, look-through, radar, estado | pytest | Lun-Mar |
+| Unitario agentes | Patrones prohibidos, comprobación de cifras, reintento, plantilla | pytest + FakeClaude | Lun |
+| Contrato | El OpenAPI generado no rompe los tipos del frontend | `make gen-api` + `tsc` en CI | Cada PR |
+| Integración | Replay → impacto → estado → aviso | pytest con BD de test | Mar |
+| E2E | Guion de demo pasos 1-8 en modo offline | Playwright | Mar noche-Mié |
+| Calidad IA | 30 preguntas (10 por tipo + 10 trampa "¿vendo?") con revisión manual | Script `scripts/eval_answers.py` | Mar |
+| Latencia | Primera palabra de voz, `/status`, escenario | `agent_log` + script | Mar |
+| Ejecución limpia | Clonar ZIP → `docker compose up` → README | Máquina de otro miembro | Mié mañana |
 
 **Casos dorados.** `backend/tests/golden/laura.json` y `javier.json`: cartera, betas fijas de prueba, shocks de cada evento e impacto esperado calculado a mano en hoja de cálculo. Si el motor cambia y el dorado no cuadra, se revisa el dorado con el equipo, no se "ajusta".
 
 ## 10. Riesgos técnicos
 
-| Riesgo | Prob. | Impacto | Mitigación | Dueño |
-| --- | --- | --- | --- | --- |
-| No conseguir composición de fondos a tiempo | Media | Alto (sin look-through no hay demo paso 2) | Empezar el domingo; usar ETFs con fichero de posiciones público; normalizar a top-N + "Otros" | P5 |
-| Betas poco significativas (R² bajo) | Media | Medio | Mostrar confianza; ventana de 3 años; fallback a betas por categoría | P2 |
-| Latencia de voz > 2 s | Media | Alto (rúbrica IA y UX) | Contexto precargado sin tools, streaming por frase, modelo rápido, medir desde el lunes | P3, P5 |
-| Cuotas gratuitas de APIs de mercado | Alta | Medio | Modo `offline` por defecto; caché | P1 |
-| Conflictos de merge entre 5 personas | Media | Medio | Carpetas con dueño, contratos primero, PR pequeños, tablero por secciones | Todos |
-| Wi-Fi del evento caída en la demo | Media | Alto | Vídeo de respaldo; modo offline; preguntas en texto | P5 |
-| El guardián bloquea demasiado | Media | Medio | Tolerancias calibradas con las 30 preguntas; plantilla de respaldo | P3 |
-| Datos de la demo incoherentes (p. ej. estado inicial) | Media | Alto | Revisar el guion contra los datos el lunes | P5, P2 |
+| Riesgo | Prob. | Impacto | Mitigación |
+| --- | --- | --- | --- |
+| No conseguir composición de fondos a tiempo | Media | Alto (sin look-through no hay demo paso 2) | Empezar el domingo; usar ETFs con fichero de posiciones público; normalizar a top-N + "Otros" |
+| Betas poco significativas (R² bajo) | Media | Medio | Mostrar confianza; ventana de 3 años; fallback a betas por categoría |
+| Latencia de voz > 2 s | Media | Alto (rúbrica IA y UX) | Contexto precargado sin tools, streaming por frase, modelo rápido, medir desde el lunes |
+| Cuotas gratuitas de APIs de mercado | Alta | Medio | Modo `offline` por defecto; caché |
+| Conflictos de merge entre 5 personas | Media | Medio | Propiedad por tarea (ficheros declarados en el tablero), contratos cerrados en la fase 0, PR pequeños |
+| Wi-Fi del evento caída en la demo | Media | Alto | Vídeo de respaldo; modo offline; preguntas en texto |
+| El guardián bloquea demasiado | Media | Medio | Tolerancias calibradas con las 30 preguntas; plantilla de respaldo |
+| Datos de la demo incoherentes (p. ej. estado inicial) | Media | Alto | Revisar el guion contra los datos el lunes |
 
 ## 11. Criterios de aceptación de la demo
 
