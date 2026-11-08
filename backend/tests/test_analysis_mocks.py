@@ -18,7 +18,6 @@ READ_PATHS = ["events", "exposure", "radar", "status", "projection", "agenda", "
 @pytest.mark.parametrize(
     ("path", "example"),
     [
-        ("exposure", "ExposureOut"),
         ("radar", "RadarOut"),
         ("status", "StatusOut"),
         ("projection", "ProjectionOut"),

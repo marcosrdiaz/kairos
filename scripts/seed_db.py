@@ -26,9 +26,11 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="vuelve al estado inicial del seed")
     args = parser.parse_args()
 
+    from app.exposure import service as exposure_service
     from app.portfolio import service
 
     ids = service.load_seed(force=args.force)
+    exposure_service.load_compositions()
     action = "recargadas" if args.force else "listas"
     print(f"seed: carteras {action}: {', '.join(ids)}")
 

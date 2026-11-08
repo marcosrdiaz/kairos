@@ -1,0 +1,20 @@
+### D-XXX · Look-through (T1-11): carga de `composition`, posiciones sin composición, cobertura y listas devueltas
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-11 implementa `SPEC.md` §8.4. Nadie cargaba la tabla `composition`, el catálogo de activos no tiene país ni sector para las acciones directas, y la cobertura era solo una propuesta en la decisión de T1-08.
+- Decisión:
+  - **Carga:** `exposure.service.load_compositions()` sustituye la tabla con los CSV de `data/seed/compositions/` y es idempotente. La llama `scripts/seed_db.py`, y no `portfolio/seed.py`, porque `exposure` ya depende de `portfolio`. `/demo/reset` no la toca: no es estado de la cartera.
+  - **Acciones directas:** son un fondo de un solo componente con peso 1. Clave = `ticker`; país y sector, los de su fila más reciente en cualquier composición; divisa, la de cotización. Si la empresa no aparece en ninguna composición, país y sector quedan desconocidos.
+  - **Posiciones sin composición** (`DEP-12M`, `PP-MIXTO`): un residuo no-empresa con país y sector desconocidos y la divisa de cotización.
+  - **Cobertura:** se adopta la propuesta de T1-08: `coverage_pct` es la parte del patrimonio con país conocido. Por eso el depósito y el plan de pensiones la bajan: Javier queda por debajo del 90 % y no puede tener confianza `alta`.
+  - **Listas:** `by_country`, `by_sector` y `by_currency` devuelven todas las categorías, de mayor a menor y con lo desconocido al final; agrupar para la pantalla es cosa del panel (T2-10). `top_companies` se limita a 20. `overlap` no tiene límite. `top_companies_group` usa las 7 primeras e incluye acciones directas.
+  - **Etiquetas:** países, sectores y divisas en español en `exposure/engine.py`. Una clave sin etiqueta se muestra tal cual.
+  - **Pesos** redondeados a 4 decimales; `weight_in_asset` conserva el valor de la composición.
+  - **`as_of`:** la composición más antigua de las que se usan, porque es la que limita la frescura del dato.
+  - El nombre de una empresa es el de la acción directa si la hay; si no, el de la composición.
+- Motivo: añadir país y sector al catálogo cambiaría el modelo de datos y duplicaría lo que ya está en las composiciones. Tratar el depósito como país conocido inflaría la confianza con un activo que no tiene look-through.
+- Alternativas descartadas: seguir leyendo los CSV en cada petición (`SPEC.md` §6 define la tabla); carga perezosa en la primera lectura (carrera con peticiones simultáneas).
+- Consecuencias:
+  - La confianza del motor de impacto ya usa la cobertura real.
+  - Cifras con precios de `data/prices`: Laura 63,7 % en EE. UU., 25,9 % en las 7 primeras empresas y 94,3 % de cobertura, las mismas de la decisión de T1-08.
+  - Hay que ejecutar `make seed` para que una base existente tenga la composición.
+  - Ficheros añadidos fuera de la fila de T1-11: `backend/app/exposure/mock.py`, `scripts/seed_db.py`, `backend/tests/conftest.py` y `backend/tests/test_analysis_mocks.py`. `SPEC.md` §8.4 actualizado.

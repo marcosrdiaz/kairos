@@ -53,9 +53,11 @@ def client(db: None) -> Iterator[TestClient]:
     Precios: los CSV reales de `data/prices` (T1-09). Para cifras fijas en un test, activa un
     `FakePriceProvider` (`tests/fakes/price_provider.py`).
     """
+    from app.exposure import service as exposure_service
     from app.main import create_app
     from app.portfolio import service as portfolio_service
 
     portfolio_service.load_seed()
+    exposure_service.load_compositions()
     with TestClient(create_app()) as test_client:
         yield test_client
