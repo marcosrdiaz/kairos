@@ -50,7 +50,8 @@ def db() -> Iterator[None]:
 def client(db: None) -> Iterator[TestClient]:
     """Cliente de la API sobre una BD con `data/seed` cargado (Laura y Javier, T1-03).
 
-    Sin precios: quien valore una cartera activa un `FakePriceProvider` (`tests/fakes/`).
+    Precios: los CSV reales de `data/prices` (T1-09). Para cifras fijas en un test, activa un
+    `FakePriceProvider` (`tests/fakes/price_provider.py`).
     """
     from app.main import create_app
     from app.portfolio import service as portfolio_service
