@@ -70,6 +70,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 | D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
 | D-XXX | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
+| D-XXX | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
 
 ---
 
@@ -470,3 +471,17 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Motivo: así T1-02, T1-03 y T1-19 (alta en el frontend) trabajan en paralelo contra tipos fijos.
 - Alternativas descartadas: que `/demo/reset` responda 204 sin cuerpo (el frontend no sabría qué eventos quedan precargados); un `AssetLookupOut` envuelto (`GET /portfolios` ya devuelve una lista sin envolver).
 - Consecuencias: T1-02 devuelve `PriceOut` en `latest()` y `history()`. T1-03 sustituye el mock de `lookup_assets` y `reset_demo` por la BD. T1-19 usa `AssetOut` para el autocompletar. T2-03 rellena `preloaded_event_ids` con el `preload`.
+
+### D-XXX · Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria
+- Fecha: 2026-11-08 19:30 · Autor: Alons · Estado: Propuesta
+- Contexto: T1-02 lee sin red (D-014) los CSV de T1-09 (D-045). Además `prices` necesita la divisa, el tipo de precio y la fuente de cada activo, que están en la tabla `asset` de `portfolio`, y `portfolio` llama a `prices` para valorar.
+- Decisión:
+  - Lectura del formato de D-045: de `data/prices/<asset_id>.csv` (`date,close,adj_close`) se usa `close`, el cierre en la divisa del activo; el tipo de cambio sale de `data/factors/<PAR>.csv` (`date,value`; `EURUSD` = dólares por euro). El orden de las filas da igual; las líneas vacías se ignoran; un valor no positivo o no numérico hace fallar la carga con el fichero y la línea. Sin fichero, serie vacía.
+  - `prices` lee divisa, `price_kind` y `price_source` de `data/seed/assets.json` (`prices/catalog.py`), no de la tabla `asset`: así no hay dependencia circular con `portfolio`. Los activos solo existen si están en ese catálogo (el alta usa `/assets/lookup`).
+  - Modo offline: los CSV se leen una vez y se guardan en memoria (`OfflineCsvProvider`). Las tablas `price` y `fx_rate` quedan para el proveedor en directo (D-026), que no existe todavía; con cualquier `MARKET_DATA_PROVIDER` se usa el offline.
+  - `latest()` devuelve el último cierre con fecha no posterior a `clock.now()` (respeta `DEMO_CLOCK`); `price_at` es la fecha del cierre a las 00:00 UTC. `fixed:<valor>` vale lo mismo todos los días, con `price_at` = hoy. Sin dato: 503 `PRICE_UNAVAILABLE`; activo fuera del catálogo: 404 `NOT_FOUND`.
+  - `fx_rate(pair)` busca el par directo y, si no está, el inverso (`USDEUR` = 1 / `EURUSD`, redondeado a 8 decimales como `NUMERIC(20,8)`); misma divisa, `1`. Además de la interfaz de §4.1, `fx_quote(pair, at)` devuelve tipo, fecha y `SourceRef` (`kind: fx`) para las trazas.
+  - Los tests cambian de proveedor con `tests/fakes/price_provider.py` (`FakePriceProvider` + `use_price_provider`). Ficheros fuera de la fila de T1-02: `backend/tests/fakes/__init__.py` y `backend/tests/test_prices.py`.
+- Motivo: es lo mínimo que valora en < 300 ms sin red ni carga previa en BD, y lee los CSV de T1-09 tal cual.
+- Alternativas descartadas: cargar los CSV en la tabla `price` desde `seed_db.py` (la tabla no guarda `price_kind` y haría falta una migración); leer la tabla `asset` desde `prices` (rompe la frontera por `service.py`).
+- Consecuencias: T1-03 valora con `prices.latest` y `fx_quote("USDEUR")` (inverso de `EURUSD`). Un activo `yahoo:` sin CSV responde `PRICE_UNAVAILABLE`. Los tests usan el proveedor falso, salvo uno que comprueba los CSV reales del repo.

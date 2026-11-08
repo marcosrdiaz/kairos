@@ -396,7 +396,7 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |
 | `data/prices/<asset_id>.csv` | Histórico diario de 3 años (`date,close,adj_close`) | hecho (T1-09) |
-| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción | hecho (T1-09) |
+| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción. `EURUSD` (dólares por euro) es también el tipo de cambio de la valoración (`prices`, T1-02) | hecho (T1-09) |
 | `data/events/replay/*.json` | 3-4 eventos reales: BCE, petróleo, resultados (+ USD si da tiempo) | pendiente |
 | `data/seed/assumptions.json` | Rentabilidad anual por clase de activo para la proyección, con fuente | pendiente |
 | `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | pendiente |
