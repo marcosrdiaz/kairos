@@ -1,0 +1,86 @@
+{
+  "illustrative": true,
+  "id": "javier",
+  "name": "Javier",
+  "profile": "conservador",
+  "base_currency": "EUR",
+  "plan": {
+    "target": {
+      "equity": "0.15",
+      "fixed_income": "0.65",
+      "cash": "0.20"
+    },
+    "drift_threshold": "0.10",
+    "goal_amount_eur": "200000.00",
+    "goal_year": 2031
+  },
+  "dca_plans": [
+    {
+      "id": "dca_javier",
+      "amount_eur": "200.00",
+      "frequency": "monthly",
+      "day": 10,
+      "status": "active",
+      "allocations": [
+        {
+          "asset_id": "IE0007472115",
+          "weight": "1"
+        }
+      ],
+      "last_execution_at": "2026-10-10T00:00:00Z",
+      "next_execution_at": "2026-11-10T00:00:00Z"
+    }
+  ],
+  "positions": [
+    {
+      "asset_id": "IE0007472115",
+      "lots": [
+        {
+          "acquired_at": "2021-05-03T00:00:00Z",
+          "units": "360.09362434",
+          "cost_eur_per_unit": "227.09310000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "lots": [
+        {
+          "acquired_at": "2021-05-03T00:00:00Z",
+          "units": "454.84868700",
+          "cost_eur_per_unit": "108.59480000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "lots": [
+        {
+          "acquired_at": "2022-01-10T00:00:00Z",
+          "units": "286.46363822",
+          "cost_eur_per_unit": "38.78460000"
+        }
+      ]
+    },
+    {
+      "asset_id": "DEP-12M",
+      "lots": [
+        {
+          "acquired_at": "2026-03-02T00:00:00Z",
+          "units": "27000.00000000",
+          "cost_eur_per_unit": "1.00000000"
+        }
+      ]
+    },
+    {
+      "asset_id": "PP-MIXTO",
+      "lots": [
+        {
+          "acquired_at": "2018-01-15T00:00:00Z",
+          "units": "1800.00000000",
+          "cost_eur_per_unit": "10.00000000"
+        }
+      ]
+    }
+  ]
+}
