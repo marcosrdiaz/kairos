@@ -5,13 +5,13 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`, asignados al mergear.** En tu rama escribe la decisión con el ID provisional `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros). Si metes varias en el mismo PR, `D-XXX-a`, `D-XXX-b`… **Quien mergea el PR**, justo antes, hace `git fetch`, mira el último ID de `main` y sustituye `D-XXX` por el siguiente libre en el PR (entrada, índice y referencias, incluida la descripción del PR). Así no chocan IDs entre ramas en paralelo. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
 
 ```
-### D-XXX · Título corto   (ID provisional; se sustituye al mergear)
+### D-XXX · Título corto   (ID provisional; la Action lo numera al entrar en main)
 - Fecha: AAAA-MM-DD HH:MM · Autor: nombre · Estado: Propuesta
 - Contexto: qué problema había.
 - Decisión: qué se hace.
@@ -357,5 +357,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Unión SSE: `AskEvent` es una unión discriminada por `type` (alias, no clase). Los ejemplos van por clase concreta (`AskMetaEvent.json`, `AskSentenceEvent.json`, `AskSentenceEvent.impact.json`, `AskDoneEvent.json`, `AskErrorEvent.json`) para que el test genérico los encuentre sin cambios.
   - `EventIn.observed` es opcional porque T0-10 escribe los JSON antes de que T1-09 calcule `observed`. `EventAnalysis` rechaza dígitos en `entities[].name`, `channels[].label|rationale`, `companies[].name` y `causal_chain`; los identificadores (`event_id`, `analyzed_model`, claves) pueden llevarlos.
   - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
-  - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide D-XXX de T0-03.
+  - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
 - Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.

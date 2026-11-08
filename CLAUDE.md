@@ -34,7 +34,7 @@ No hay roles ni carpetas con dueño. Cualquiera hace cualquier tarea del pool de
 - **Claim.** Coger una tarea es un commit al tablero (`docs: claim T1-04`) **antes de empezar**. Si ya está cogida, se elige otra. Usa `/coger <ID>`.
 - **Propiedad por tarea.** Mientras una tarea está en curso, quien la tiene es dueño de los ficheros de su columna *Ficheros que toca*. Otra sesión no los edita: si necesita algo de ellos, apunta un bloqueo en el tablero. No se coge una tarea cuyos ficheros solapen con los de otra en curso.
 - **Excepciones a la propiedad:** `docs/decisiones.md` (solo se añade al final) y tu propia fila del tablero.
-- **Commits directos a `main` (excepción a "todo por PR").** Solo si tocan únicamente `docs/TABLERO.md` y el mensaje es `docs: claim|release|done T<x>-<nn>`. Flujo: `git pull --rebase` → comprobar que la tarea sigue libre → commit → `git push`. Si el push falla, se repite desde el pull. Todo lo demás va por PR.
+- **Tablero: solo commits directos a `main` (excepción a "todo por PR").** `docs/TABLERO.md` se modifica únicamente con commits directos a `main`, nunca dentro de un PR, y el commit toca solo ese fichero. Mensaje `docs: claim|release|done|block|note T<x>-<nn>`: `claim`, `release` y `done` cambian la fila de la tarea (*Cogida por* y *Estado*); `block` apunta o cierra una fila de *Bloqueos* (y marca la tarea `⛔`); `note` actualiza *Notas para retomar* o *Peticiones de contrato* (y marca `🧪 en PR`). Flujo: `git pull --rebase` → comprobar (p. ej. que la tarea sigue libre) → commit → `git push` justo después. Si el push falla, se repite desde el pull. Todo lo demás va por PR.
 - **Arquitectura (no es propiedad).** Los módulos de backend se llaman entre sí solo a través de su `service.py`. Nunca consultes las tablas de otro módulo directamente. Si necesitas algo de otro módulo que aún no existe, usa su mock (`*/mock.py` o `frontend/src/api/mocks/`).
 - **Contratos.** `backend/app/schemas/` y `frontend/src/api/generated/` se cierran en la fase 0. Después solo se cambian con un PR propio (sin mezclar implementación), una fila en *Peticiones de contrato* y aviso al equipo. Añadir un campo opcional es aceptable; renombrar o quitar, no.
 - **Decisiones.** Qué "Si da tiempo" entra lo decide el equipo en el checkpoint del martes 10 a las 18:00 y se apunta en `docs/decisiones.md`.
@@ -84,17 +84,17 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 ## Git
 
 - Rama por tarea: `t<fase>-<nn>/<descripcion-corta>` (p. ej. `t1-13/impact-fx-split`). PR pequeño a `main`, CI en verde y un revisor del equipo (vale con un vistazo de 5 minutos). El merge lo hace quien abre el PR, tras la aprobación.
-- Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los claims usan `docs: claim|release|done T<x>-<nn>` y pueden ir directos a `main` (ver arriba).
-- **IDs de decisiones.** En la rama las decisiones llevan `D-XXX`. Quien mergea el PR, justo antes, sustituye `D-XXX` por el siguiente ID libre según `main` (entrada, índice, referencias y descripción del PR).
+- Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los cambios del tablero usan `docs: claim|release|done|block|note T<x>-<nn>` y van directos a `main`, nunca en un PR (ver arriba).
+- **IDs de decisiones.** Las decisiones nuevas van con `D-XXX` (`D-XXX-a`, `D-XXX-b`… si hay varias en la misma rama). La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`. No las toques a mano.
 - Nunca `push --force` a `main`. No mezcles en un PR cambios de contrato con cambios de implementación.
 - **Congelación**: el miércoles 11 a las 16:00 solo se aceptan fixes. Entrega antes de las 21:00 (cierre oficial 23:59). Lo que se entrega es el ZIP de `main`.
 
 ## Al terminar una sesión (o antes de `/clear`)
 
-1. Actualiza en `docs/TABLERO.md` la subsección de tu tarea en *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados). Si la tarea ya está en `main`, márcala `✅ hecho` con `docs: done T<x>-<nn>` y borra sus notas. Si la abandonas, `docs: release T<x>-<nn>`.
-2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` con el ID provisional `D-XXX` (entrada e índice). El ID real lo pone quien mergea el PR (ver *Git*).
+1. Actualiza en `docs/TABLERO.md` la subsección de tu tarea en *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados) con un commit directo a `main`: `docs: note T<x>-<nn>`. Si la tarea ya está en `main`, márcala `✅ hecho` con `docs: done T<x>-<nn>` y borra sus notas. Si la abandonas, `docs: release T<x>-<nn>`.
+2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` con el ID provisional `D-XXX` (entrada e índice). La Action le pone el ID real al entrar en `main` (ver *Git*).
 3. Si cambió algo de arquitectura, contrato o modelo de datos, actualiza `docs/SPEC.md`.
-4. Commit de los docs junto al código (`docs: update notas T<x>-<nn>`).
+4. Commit de los docs (menos el tablero, que va aparte en un commit directo a `main`) junto al código, en tu rama (`docs: update notas T<x>-<nn>`).
 
 ## Qué NO hacer
 
