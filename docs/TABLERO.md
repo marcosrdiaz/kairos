@@ -67,7 +67,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | --- | --- | --- | --- | --- | --- | --- |
 | T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
 | T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | 🧪 en PR |
-| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | 🔄 en curso |
+| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | 🧪 en PR |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | — | ⬜ |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
@@ -151,6 +151,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - Hasta T0-03 no hay tipos generados ni mocks en `src/api/{generated,mocks}/`.
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
+
+### T1-03 · Alta, seed y `/demo/reset` — Alons
+**Estado:** tres PR apilados: #20 (contrato `AssetOut`/`PriceOut`/`DemoReset*`) → #21 (T1-02) → #23 (T1-03, `t1-03/portfolio-init-seed`). Decisión «Valoración, alta y seed (T1-03)».
+**Siguiente paso exacto:** mergear en orden #20, #21, #23; tras cada merge, rebase del siguiente sobre `main` y cambio de base del PR a `main`. Después `docs: done T1-02` y `docs: done T1-03`.
+**Para quien siga:** `get_valued` es real y necesita precios (sin CSV de T1-09 responde 503). Para comprobar que una cartera existe usad `portfolio.service.ensure_exists` (ya lo usan los mocks de `impact`, `exposure`, `planning`, `status`, `alerts` y `agents`). En tests, el fixture `client` ya carga el seed; para valorar, `FakePriceProvider` de `tests/fakes/price_provider.py`.
+**Ficheros tocados:** `backend/app/portfolio/{engine,repository,seed,service,mock}.py`, `scripts/seed_db.py`, `backend/tests/golden/`, `backend/tests/{conftest,test_portfolio_engine,test_portfolio_mock}.py`, una línea en `app/{impact,exposure,planning,status}/mock.py` y `app/{alerts,agents}/service.py`; en #20, `backend/app/api/{assets,demo}.py` y `backend/app/schemas/{portfolio,prices,demo}.py`.
 
 ### T1-02 · `prices` offline — Alons
 **Estado:** PR #21 (`t1-02/prices-offline`), apilado sobre el PR de contrato #20 (`t1-03/asset-price-contract`). Decisión «Precios offline (T1-02)» en `docs/decisiones.md`.
