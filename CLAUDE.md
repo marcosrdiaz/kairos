@@ -85,13 +85,14 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 
 - Rama por tarea: `t<fase>-<nn>/<descripcion-corta>` (p. ej. `t1-13/impact-fx-split`). PR pequeño a `main`, CI en verde y un revisor del equipo (vale con un vistazo de 5 minutos). El merge lo hace quien abre el PR, tras la aprobación.
 - Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los claims usan `docs: claim|release|done T<x>-<nn>` y pueden ir directos a `main` (ver arriba).
+- **IDs de decisiones.** En la rama las decisiones llevan `D-XXX`. Quien mergea el PR, justo antes, sustituye `D-XXX` por el siguiente ID libre según `main` (entrada, índice, referencias y descripción del PR).
 - Nunca `push --force` a `main`. No mezcles en un PR cambios de contrato con cambios de implementación.
 - **Congelación**: el miércoles 11 a las 16:00 solo se aceptan fixes. Entrega antes de las 21:00 (cierre oficial 23:59). Lo que se entrega es el ZIP de `main`.
 
 ## Al terminar una sesión (o antes de `/clear`)
 
 1. Actualiza en `docs/TABLERO.md` la subsección de tu tarea en *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados). Si la tarea ya está en `main`, márcala `✅ hecho` con `docs: done T<x>-<nn>` y borra sus notas. Si la abandonas, `docs: release T<x>-<nn>`.
-2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` (siguiente ID correlativo; haz `git pull` antes).
+2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` con el ID provisional `D-XXX` (entrada e índice). El ID real lo pone quien mergea el PR (ver *Git*).
 3. Si cambió algo de arquitectura, contrato o modelo de datos, actualiza `docs/SPEC.md`.
 4. Commit de los docs junto al código (`docs: update notas T<x>-<nn>`).
 
