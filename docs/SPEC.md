@@ -390,7 +390,7 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | Fichero | Contenido | Estado |
 | --- | --- | --- |
 | `data/seed/assets.json` | ~10 fondos/ETFs + ~5 acciones + 1 depósito + 1 plan de pensiones | pendiente |
-| `data/seed/compositions/*.csv` | Composición de los fondos/ETFs (gestoras o informes CNMV), fecha `as_of` | pendiente |
+| `data/seed/compositions/*.csv` | Composición de los fondos/ETFs (iShares y factsheets de Vanguard), fecha `as_of`; formato en la decisión «Composición de fondos y ETF (T1-08)» | hecho (T1-08) |
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |
 | `data/prices/*.csv` | Histórico diario 2-3 años para betas | pendiente |
