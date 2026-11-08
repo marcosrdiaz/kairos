@@ -1,26 +1,16 @@
 # Diseño técnico del MVP — KAIROS
 
-Fecha: 2026-11-08 · Estado: **borrador para aprobación** · Plazo: Dom 8 (tarde) → Mié 11 (entrega antes de las 21:00)
+Fecha: 2026-11-08 · Estado: **aprobado** · Plazo: Dom 8 (tarde) → Mié 11 (entrega antes de las 21:00)
 
 Fuentes, por orden de autoridad:
 
 1. `docs/kairos-spec.md`: producto. **No se cambia.**
-2. `CLAUDE.md`: reglas de producto y de trabajo.
-3. `docs/INGENIERIA.md`, `docs/SPEC.md`, `docs/decisiones.md` y `docs/TABLERO.md`: desarrollo técnico previo.
+2. Este documento: diseño técnico del MVP, **aprobado**.
+3. El resto: `CLAUDE.md`, `docs/INGENIERIA.md`, `docs/SPEC.md`, `docs/decisiones.md` y `docs/TABLERO.md`.
 
-Este documento **completa y concreta** esos textos. Si contradice a `SPEC.md`, manda este documento, y tras la aprobación se corrige `SPEC.md` (§9). Si contradice a `kairos-spec.md`, el error está aquí.
+Este documento **completa y concreta** esos textos. Si contradice a `SPEC.md`, manda este documento; los documentos vivos ya se han corregido (§9). Si contradice a `kairos-spec.md`, el error está aquí.
 
-Personas: **Persona 1 … Persona 5** (= P1…P5 de `TABLERO.md`). Los nombres reales los asigna el equipo.
-
-| Persona | Rol | Carpetas |
-| --- | --- | --- |
-| Persona 1 | Cartera, precios, core, plan (proyección y agenda) e integración | `backend/app/{portfolio,prices,core,planning}`, `alembic/`, `docker-compose.yml`, `Makefile`, CI |
-| Persona 2 | Exposición, motor de impacto, estado | `backend/app/{exposure,impact,status}`, `scripts/compute_betas.py` |
-| Persona 3 | Agentes y eventos | `backend/app/{agents,events,alerts}`, `scripts/replay_event.py`, `scripts/eval_answers.py` |
-| Persona 4 | Frontend | `frontend/` salvo `src/voice/` |
-| Persona 5 | Voz, datos y entregables | `backend/app/voice`, `frontend/src/voice`, `data/`, `README.md`, PDF, PPT, vídeo |
-
-Persona 1 es además **coordinadora de integración**: hace el merge final y decide en los conflictos de alcance.
+**Modelo de trabajo.** No hay roles fijos ni carpetas con dueño. Somos 5 (Manu, Jaime, Marcos, Alons y Javi) y cualquiera puede hacer cualquier tarea. Se trabaja por **fases**, con un pool de tareas en `TABLERO.md`. Quien coge una tarea es dueño, mientras está en curso, de los ficheros que la tarea declara en "Ficheros que toca". La regla completa está en `CLAUDE.md` y la decisión, en `decisiones.md`.
 
 ---
 
@@ -49,7 +39,7 @@ Por eso el diseño optimiza, en este orden:
 - Que una cifra dicha o mostrada no cuadre con su traza.
 - Una respuesta con "compra", "vende", "te recomiendo"…
 - Que la demo dependa de la red del evento para algo que no sea Claude o ElevenLabs.
-- Que Persona X edite la carpeta de Persona Y "para avanzar".
+- Que alguien edite los ficheros de una tarea en curso de otra persona "para avanzar".
 
 ---
 
@@ -58,17 +48,17 @@ Por eso el diseño optimiza, en este orden:
 La arquitectura de componentes de `SPEC.md` §4 se mantiene. Este diseño añade o precisa cinco cosas:
 
 1. **Los números de un evento salen de los datos, no del LLM.** El analizador clasifica el evento, extrae entidades, elige qué canales (factores) aplican y redacta la cadena causal. Las **magnitudes** de los shocks salen del campo `observed` del JSON del replay, que son movimientos reales de ese día. `events` construye un `ShockSet` determinista con los factores que eligió el analizador. Si el analizador falla, se usan todos los factores observados. Así se cumple la regla 1 de `CLAUDE.md` sin perder la parte inteligente.
-2. **Pipeline de evento orquestado por `events` (Persona 3).** Cada flecha es una llamada a `service.py`:
+2. **Pipeline de evento orquestado por `events`.** Cada flecha es una llamada a `service.py`:
 
 ```mermaid
 sequenceDiagram
   participant OP as POST /demo/replay/{id}
-  participant EV as events (P3)
-  participant AN as agents.analyzer (P3)
-  participant IM as impact (P2)
-  participant AG as agents.explainer + guardian (P3)
-  participant ST as status (P2)
-  participant AL as alerts (P3)
+  participant EV as events
+  participant AN as agents.analyzer
+  participant IM as impact
+  participant AG as agents.explainer + guardian
+  participant ST as status
+  participant AL as alerts
   OP->>EV: replay(event_id)
   EV->>AN: analyze(EventIn)
   AN-->>EV: EventAnalysis (o fallback)
@@ -86,15 +76,15 @@ sequenceDiagram
 ```
 
    Objetivo: < 10 s de punta a punta por replay (RF-11).
-3. **Voz en tres tramos, uno por dueño.** Así nadie depende del código de otro para probar:
-   - **STT** (Persona 5): `WS /voice/stt` devuelve la transcripción final.
-   - **Respuesta** (Persona 3): el frontend llama a `POST /ask` (SSE), que devuelve frases ya validadas por el guardián.
-   - **TTS** (Persona 5): por cada frase, el frontend llama a `POST /voice/tts` con `turn_id` e `index`. El backend **solo sintetiza frases aprobadas** por el guardián, que busca en una caché en memoria por `turn_id`, nunca texto libre del cliente. Esto aplica la regla 3 también al audio.
+3. **Voz en tres tramos independientes.** Así nadie depende del código de otro para probar:
+   - **STT**: `WS /voice/stt` devuelve la transcripción final.
+   - **Respuesta**: el frontend llama a `POST /ask` (SSE), que devuelve frases ya validadas por el guardián.
+   - **TTS**: por cada frase, el frontend llama a `POST /voice/tts` con `turn_id` e `index`. El backend **solo sintetiza frases aprobadas** por el guardián, que busca en una caché en memoria por `turn_id`, nunca texto libre del cliente. Esto aplica la regla 3 también al audio.
    - El aviso de IA del inicio de la voz es un audio pregenerado (`GET /voice/disclaimer`). Suena mientras Claude genera la primera frase y ayuda a cumplir los < 2 s.
 4. **Actualización en el frontend por polling.** `/status` y `/alerts` se consultan cada 5 s. Es más simple que SSE de servidor y basta para la demo. SSE se usa solo en `/ask`.
 5. **Dos endpoints nuevos:**
-   - `GET /portfolios/{id}/agenda` (Persona 1, decisión 15): bloque "Próximos eventos" del panel, F23 MVP.
-   - `GET /portfolios/{id}/move?period=week` (Persona 2): atribución de "¿Por qué ha bajado?". Es la herramienta `explain_move`, que antes no tenía endpoint.
+   - `GET /portfolios/{id}/agenda` (módulo `planning`, decisión 15): bloque "Próximos eventos" del panel, F23 MVP.
+   - `GET /portfolios/{id}/move?period=week`: atribución de "¿Por qué ha bajado?". Es la herramienta `explain_move`, que antes no tenía endpoint.
 
 Presupuesto de latencia de voz, medido desde que se suelta el botón:
 
@@ -151,7 +141,7 @@ Los valores posibles de `kind` son `price`, `fx`, `composition`, `beta`, `event`
 
 Todas las cifras de los ejemplos son ilustrativas.
 
-### 4.1 Gestor de cartera (Persona 1) → motor, agentes y app
+### 4.1 Gestor de cartera → motor, agentes y app
 
 **Interfaz Python** (`portfolio/service.py`), lo único que importan otros módulos:
 
@@ -303,7 +293,7 @@ Valores permitidos: `frequency` es `monthly` o `weekly`; `status` del plan es `a
  "calc_id": "calc_..."}
 ```
 
-**`TraceOut`**: `GET /traces/{calc_id}` (Persona 1; la pantalla es de Persona 4).
+**`TraceOut`**: `GET /traces/{calc_id}` (la pantalla de traza está en el frontend).
 
 ```json
 {"calc_id": "calc_...", "kind": "event_impact", "created_at": "...",
@@ -316,9 +306,9 @@ Valores permitidos: `frequency` es `monthly` o `weekly`; `status` del plan es `a
 
 Valores de `kind`: `valuation`, `transaction`, `transfer`, `dca`, `plan`, `exposure`, `event_impact`, `scenario`, `projection`, `status`, `radar`, `move` y `agenda`.
 
-### 4.2 Analizador (Persona 3) → motor de impacto (Persona 2)
+### 4.2 Analizador → motor de impacto
 
-**Evento de replay** (`data/events/replay/<id>.json`, Persona 5 + Persona 3). Amplía el formato de `SPEC.md` §12: `observed` se separa en factores y empresas, y `consensus` pasa a ser un objeto con nombre.
+**Evento de replay** (`data/events/replay/<id>.json`). Amplía el formato de `SPEC.md` §12: `observed` se separa en factores y empresas, y `consensus` pasa a ser un objeto con nombre.
 
 ```json
 {
@@ -394,7 +384,7 @@ def explain_move(portfolio_id: str, period: Literal["day", "week", "month"]) -> 
 # exposure/service.py
 def get_exposure(portfolio_id: str) -> ExposureOut
 def get_radar(portfolio_id: str) -> RadarOut
-# planning/service.py (Persona 1, decisión 15)
+# planning/service.py (decisión 15)
 def get_projection(portfolio_id: str) -> ProjectionOut
 def get_agenda(portfolio_id: str) -> list[AgendaItemOut]
 # status/service.py
@@ -402,7 +392,7 @@ def get_status(portfolio_id: str) -> StatusOut          # lee lo precalculado (<
 def recompute(portfolio_id: str) -> StatusOut
 ```
 
-### 4.3 Motor de impacto y exposición (Persona 2) → agentes y app
+### 4.3 Motor de impacto y exposición → agentes y app
 
 **`EventImpactOut`**: `GET /portfolios/{id}/events?days=7` devuelve una lista.
 
@@ -532,7 +522,7 @@ Valores y reglas:
 Cómo se calcula:
 
 - Capitalización mensual y aportación mensual del DCA activo.
-- `annual_return` de cada escenario es la media ponderada por la asignación **objetivo** de los rendimientos por clase de `data/seed/assumptions.json`. Ese fichero lo rellena Persona 5, con fuente citada y `"illustrative": true`.
+- `annual_return` de cada escenario es la media ponderada por la asignación **objetivo** de los rendimientos por clase de `data/seed/assumptions.json`. Ese fichero lo crea la tarea T0-08, con fuente citada y `"illustrative": true`.
 - `on_track` equivale a que el escenario `base` alcanza la meta.
 
 **`AgendaItemOut`**: `GET /portfolios/{id}/agenda`.
@@ -546,7 +536,7 @@ Cómo se calcula:
 
 Cómo se calcula:
 
-- La fuente es `data/events/agenda.json` (Persona 5), con fechas **relativas** al reloj de demo (`"offset_days": 4`), más los DCA activos.
+- La fuente es `data/events/agenda.json` (tarea T2-15), con fechas **relativas** al reloj de demo (`"offset_days": 4`), más los DCA activos.
 - `exposed_eur` = Σ V_i de los activos con |β_{i,f}| ≥ 0,1 en el factor del evento. Para resultados de una empresa, es su exposición por look-through.
 
 **`MoveAttributionOut`**: `GET /portfolios/{id}/move?period=week`, herramienta `explain_move`.
@@ -562,7 +552,7 @@ Cómo se calcula:
 
 `by_asset` sale de `portfolio.get_value_change`, con precios reales, sin flujos y con los ajustes de demo (decisión 17). `by_event` son los `event_impact` del periodo, que son **estimaciones**. `unexplained_eur = change_eur − Σ by_event` y se muestra como "otros movimientos del mercado".
 
-### 4.4 Agentes (Persona 3) ↔ app y voz
+### 4.4 Agentes ↔ app y voz
 
 **`AskRequest`**: `POST /portfolios/{id}/ask`, respuesta `text/event-stream`.
 
@@ -607,7 +597,7 @@ Reglas del flujo:
 
 `facts[].display` es el formato que el prompt pide copiar literalmente. El explicador **solo** puede usar cifras que estén en `facts` o en resultados de herramientas.
 
-**Herramientas del explicador** (`agents/tools.py`). Cada una devuelve el contrato del módulo dueño, más una lista `facts` con la misma forma que en el contexto:
+**Herramientas del explicador** (`agents/tools.py`). Cada una devuelve el contrato del módulo al que llama, más una lista `facts` con la misma forma que en el contexto:
 
 | Herramienta | Llama a | Devuelve |
 | --- | --- | --- |
@@ -657,7 +647,7 @@ Cómo funciona:
 
 `kind` vale `event_impact`, `dca_pending` o `drift`. El límite es de **2 avisos por semana ISO** por cartera, según `clock.now()`; los `dca_pending` no cuentan. `score = |impact_eur| / max(150, 0,005 · total)`, y se avisa si `score ≥ 1`.
 
-### 4.5 Voz (Persona 5)
+### 4.5 Voz
 
 **`WS /api/v1/voice/stt`:**
 
@@ -677,7 +667,7 @@ Cómo funciona:
 - Request: `{"turn_id": "turn_...", "index": 1}`.
 - Respuesta: `audio/mpeg` en streaming.
 - Si la frase no está aprobada en la caché del turno (TTL 5 min), devuelve 404 `SENTENCE_NOT_APPROVED`.
-- La caché la escribe `agents` mediante `voice.service.register_approved(turn_id, index, text)`, una dependencia de Persona 3 hacia Persona 5 vía `service.py`.
+- La caché la escribe `agents` mediante `voice.service.register_approved(turn_id, index, text)`, una dependencia de `agents` hacia `voice` vía `service.py`.
 
 **`GET /api/v1/voice/disclaimer`:** `audio/mpeg` pregenerado y guardado en `data/voice/disclaimer.mp3`. Dice: "Soy el asistente de KAIROS, una IA. No es asesoramiento financiero."
 
@@ -687,18 +677,18 @@ Cómo funciona:
 
 Solo funciona con `DEMO_MODE=true`. Si no, devuelve 403 `DEMO_MODE_DISABLED`.
 
-| Endpoint | Dueño | Efecto |
-| --- | --- | --- |
-| `POST /demo/reset` | Persona 1 | Recarga carteras y borra eventos, impactos y avisos. Llama a `events.reset()` y `impact.reset()` vía `service.py`. Con `{"preload": true}` (lo que usa el guion) reproduce además BCE y petróleo con `occurred_at = now() − 96 h` y `silent: true`: quedan fuera de las 72 h del estado Atento (paso 1 en Tranquilo, sin gastar avisos) y dentro de los 7 días del panel (paso 5) |
-| `POST /demo/replay/{event_id}` | Persona 3 | Ejecuta el pipeline de §2. Body opcional `{"occurred_at": "<ISO>", "silent": false}`: con `occurred_at` el evento se fecha en ese instante en vez de `now()`; con `silent: true` no se generan avisos. Responde con `{"event_id", "portfolios": {"laura": "calc_...", "javier": "calc_..."}, "elapsed_ms"}` |
-| `POST /demo/dca/run` | Persona 1 | Crea las ejecuciones pendientes de hoy |
-| `PUT /demo/clock` | Persona 1 | `{"now": "2026-11-08T18:00:00Z"}` o `{"now": null}` para volver al reloj real |
+| Endpoint | Efecto |
+| --- | --- |
+| `POST /demo/reset` Recarga carteras y borra eventos, impactos y avisos. Llama a `events.reset()` y `impact.reset()` vía `service.py`. Con `{"preload": true}` (lo que usa el guion) reproduce además BCE y petróleo con `occurred_at = now() − 96 h` y `silent: true`: quedan fuera de las 72 h del estado Atento (paso 1 en Tranquilo, sin gastar avisos) y dentro de los 7 días del panel (paso 5) |
+| `POST /demo/replay/{event_id}` Ejecuta el pipeline de §2. Body opcional `{"occurred_at": "<ISO>", "silent": false}`: con `occurred_at` el evento se fecha en ese instante en vez de `now()`; con `silent: true` no se generan avisos. Responde con `{"event_id", "portfolios": {"laura": "calc_...", "javier": "calc_..."}, "elapsed_ms"}` |
+| `POST /demo/dca/run` Crea las ejecuciones pendientes de hoy |
+| `PUT /demo/clock` `{"now": "2026-11-08T18:00:00Z"}` o `{"now": null}` para volver al reloj real |
 
 ---
 
-## 5. Datos que el guion necesita (Persona 5, revisado con Persona 2)
+## 5. Datos que el guion necesita
 
-Antes del lunes a las 14:00, los datos de semilla tienen que cumplir esto:
+Antes del lunes a las 14:00, los datos de semilla tienen que cumplir esto, y quien haga T2-15 lo revisa contra el motor real:
 
 | Paso del guion | Condición sobre los datos |
 | --- | --- |
@@ -714,91 +704,99 @@ Las cifras de la tabla "La misma noticia, dos carteras" del producto son ilustra
 
 ## 6. Fases y tareas
 
-Los días siguen el plan de 4 días del producto. Los IDs continúan los de `TABLERO.md`, y las tareas nuevas van al final de la lista de cada persona. Cada tarea está **hecha** cuando cumple su criterio, está en `main` y `make lint && make test` pasa.
+Los días siguen el plan de 4 días del producto. El pool de tareas, con quién ha cogido cada una, está en `TABLERO.md`; aquí está la definición. Los IDs siguen el esquema `T<fase>-<nn>`; la tabla de equivalencias con los IDs antiguos está al final de `TABLERO.md`.
+
+Reglas del modelo de fases:
+
+- Una tarea está **hecha** cuando cumple su criterio, está en `main` y `make lint && make test` pasa.
+- Una fase está **cerrada** cuando todas sus tareas están hechas.
+- Se puede adelantar una tarea de la fase siguiente solo si todas sus dependencias están hechas.
+- Si una tarea depende de otra, se hace antes la dependencia. (b) = dependencia blanda: se puede empezar con datos de prueba o mocks.
+- Coger una tarea es un commit de claim en `TABLERO.md` antes de empezar. No se coge una tarea cuyos ficheros solapen con los de otra en curso.
 
 ### Fase 0 · Día 1, domingo 8 (hasta las 23:59): cimientos y contratos
 
-Objetivo: que nadie dependa de nadie desde el lunes por la mañana.
+Objetivo: que nadie dependa de nadie desde el lunes por la mañana. Tras T0-01, las tareas T0-02, T0-04, T0-05 y T0-06 son independientes entre sí y se pueden hacer en paralelo.
 
-| ID | Persona | Tarea | Hecho cuando | Depende de |
+| ID | Tarea | Hecho cuando | Depende de | Ficheros que toca |
 | --- | --- | --- | --- | --- |
-| T-P1-01 | 1 | Esqueleto: Compose (db, backend, frontend, seed), Makefile, `config.py`, `core/{clock,db,errors,trace}.py`, CI | `make up` y `make test` en limpio | — |
-| T-P1-03 | 1 | Esquemas comunes (§3) y de cartera (§4.1) + `examples/` + `portfolio/mock.py` + test que valida ejemplos | Ejemplos validan; mock sirve `/portfolios/laura` | T-P1-01 |
-| T-P1-12 | 1 | `make gen-api` también copia `schemas/examples/*.json` a `frontend/src/api/mocks/` | Persona 4 importa los mocks | T-P1-03 |
-| T-P2-01 | 2 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints de P2 responden con mock | T-P1-01 |
-| T-P3-01 | 3 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; `/ask` mock emite SSE de ejemplo | Frontend recibe SSE mock | T-P1-01 |
-| T-P5-10 | 5 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | Frontend reproduce el mp3 mock | T-P1-01 |
-| T-P4-01 | 4 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) + ruta `/panel` sobre mocks | Navega sobre mocks | T-P1-12 |
-| T-P5-01 | 5 | `assets.json` + `laura.json` / `javier.json` con plan y DCA según §5 | Cumple la fila 1 de §5 | — |
-| T-P5-04 | 5 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — |
-| T-P3-02 | 3 + 5 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía | — |
+| T0-01 | Esqueleto: Compose (db, backend, frontend, seed), Makefile, `config.py`, `core/{clock,db,errors,trace}.py`, CI. Incluye lo común de los contratos: `schemas/common.py` (Money, SourceRef, enums compartidos, ErrorOut) y los códigos de error de `core/errors.py` | `make up` y `make test` en limpio; `main.py` monta solo todos los routers de `api/`; `common.py` y `errors.py` publicados | — | `Makefile`, `docker-compose.yml`, `.env.example`, `.gitignore`, `.github/workflows/ci.yml`, `backend/pyproject.toml`, `backend/app/{main,config}.py`, `backend/app/core/`, `backend/app/schemas/common.py`, `backend/tests/conftest.py` |
+| T0-02 | Esquemas de cartera (§4.1) + `examples/` + `portfolio/mock.py` + test que valida todos los ejemplos | Ejemplos validan; el mock sirve `/portfolios/laura` | T0-01 | `backend/app/schemas/portfolio.py`, `backend/app/schemas/examples/` (cartera, plan, operaciones, DCA, traza), `backend/app/portfolio/{mock,service}.py`, `backend/app/api/portfolio.py`, `backend/tests/test_schema_examples.py` |
+| T0-03 | `make gen-api` genera los tipos TS y copia a `frontend/src/api/mocks/` todos los `schemas/examples/*.json` que existan | El frontend importa los mocks; funciona aunque falten esquemas de otros | T0-02 | `Makefile` (solo el objetivo `gen-api`), `scripts/gen_api.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/` |
+| T0-04 | Esquemas §4.3 (impacto, exposición, radar, estado, proyección, agenda, move, escenario) + ejemplos + mocks | Ejemplos validan; los endpoints responden con mock | T0-01 | `backend/app/schemas/{impact,exposure,radar,status,planning}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{exposure,impact,status,planning}/{mock,service}.py`, `backend/app/api/{exposure,impact,status,planning}.py` |
+| T0-05 | Esquemas §4.2 y §4.4 (`EventAnalysis`, `ShockSet`, Ask SSE, Guardián, `ExplainerContext`, `AlertOut`) + ejemplos + mocks; el `/ask` mock emite SSE de ejemplo | El frontend recibe el SSE mock | T0-01 | `backend/app/schemas/{events,agents,alerts}.py`, `backend/app/schemas/examples/` (esos modelos), `backend/app/{agents,events,alerts}/{mock,service}.py`, `backend/app/api/{ask,events,alerts}.py` |
+| T0-06 | Contrato de voz §4.5 + mock (`/voice/tts` devuelve un mp3 fijo) | El frontend reproduce el mp3 mock | T0-01 | `backend/app/schemas/voice.py`, `backend/app/schemas/examples/` (voz), `backend/app/voice/{mock,service}.py`, `backend/app/api/voice.py`, `data/voice/mock.mp3` |
+| T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `src/voice/`, `src/api/generated/`, `src/api/mocks/`; incluye `frontend/Dockerfile` |
+| T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` |
+| T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) |
+| T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` |
 
 ### Fase 1 · Día 2, lunes 9: datos y motores
 
 Al final del día tiene que funcionar lo de los días 1 y 2 del producto: alta por ISIN, look-through, eventos preparados, compra, venta, traspaso y DCA, impacto con rango, explicador con herramientas y guardián, todo contra el backend real. Lo del día 1 que no se haya terminado el domingo (look-through, eventos) tiene **como límite el lunes a las 14:00**.
 
-| ID | Persona | Tarea | Hecho cuando | Depende de |
+| ID | Tarea | Hecho cuando | Depende de | Ficheros que toca |
 | --- | --- | --- | --- | --- |
-| T-P1-02 | 1 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T-P1-01 |
-| T-P1-05 | 1 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03 | T-P5-03 (con CSV de prueba antes) |
-| T-P1-04 | 1 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T-P1-02, T-P5-01 |
-| T-P1-06 | 1 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T-P1-04 |
-| T-P1-07 | 1 | Traspaso fondo → fondo + error con alternativa | RF-06 | T-P1-06 |
-| T-P1-08 | 1 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T-P1-06 |
-| T-P1-10 | 1 | `/plan` + `get_value_change` | RF-22 (datos) | T-P1-04 |
-| T-P5-02 | 5 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura | — |
-| T-P5-03 | 5 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T-P3-02 |
-| T-P2-02 | 2 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T-P5-01, T-P5-02 |
-| T-P2-03 | 2 | Look-through, solapamientos y `radiography` | RF-08, RF-09 | T-P5-02 |
-| T-P2-04 | 2 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T-P5-03 |
-| T-P2-05 | 2 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T-P2-04 |
-| T-P2-08 | 1 (decisión 15) | Proyección con DCA (`ProjectionOut`) | Dorado de Laura `on_track: true` | T-P1-10 (mock antes) |
-| T-P3-03 | 3 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock de P2 al principio) | RF-11, RF-12; fallback probado | T-P3-02 |
-| T-P3-04 | 3 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T-P3-01 |
-| T-P3-05 | 3 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T-P3-04 |
-| T-P4-02 | 4 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T-P4-01 |
-| T-P4-03 | 4 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T-P4-01 |
-| T-P4-04 | 4 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T-P4-01 |
-| T-P5-05 | 5 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T-P5-04 |
+| T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` |
+| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` |
+| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` |
+| T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` |
+| T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` |
+| T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` |
+| T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` |
+| T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/` |
+| T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` |
+| T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` |
+| T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` |
+| T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` |
+| T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` |
+| T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` |
+| T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` |
+| T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` |
+| T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` |
+| T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` |
+| T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` |
+| T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` |
+| T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` |
 
 ### Fase 2 · Día 3, martes 10 (hasta las 18:00): experiencia e integración
 
-**Hito 18:00:** los 8 pasos del guion seguidos en `main`, en modo offline salvo Claude y ElevenLabs. A las 18:00 Persona 1 decide qué "Si da tiempo" entra.
+**Hito 18:00:** los 8 pasos del guion seguidos en `main`, en modo offline salvo Claude y ElevenLabs. En el checkpoint de las 18:00 el equipo decide qué "Si da tiempo" entra y lo apunta en `decisiones.md`.
 
-| ID | Persona | Tarea | Hecho cuando | Depende de |
+| ID | Tarea | Hecho cuando | Depende de | Ficheros que toca |
 | --- | --- | --- | --- | --- |
-| T-P1-09 | 1 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T-P1-02 |
-| T-P1-14 | 1 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(portfolio_id, event_id, breakdown, calc_id)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T-P1-04, T-P2-05 |
-| T-P1-11 | 1 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API (`scripts/demo_smoke.py`) | Smoke en verde | Todas las de Fase 1 |
-| T-P2-06 | 2 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T-P2-05, T-P3-05 |
-| T-P2-07 | 2 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T-P2-03, T-P1-08 |
-| T-P2-10 | 1 (decisión 15) | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T-P2-04, T-P5-11 |
-| T-P2-11 | 2 | `explain_move` | "¿Por qué ha bajado?" con dato real | T-P1-10, T-P2-05 |
-| T-P3-06 | 3 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T-P2-05 |
-| T-P3-08 | 3 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T-P3-03, T-P2-05 |
-| T-P4-05 | 4 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T-P2-* (mocks antes) |
-| T-P4-06 | 4 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T-P1-09 |
-| T-P4-07 | 4 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | — |
-| T-P4-09 | 4 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T-P2-06, T-P3-06 |
-| T-P5-06 | 5 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T-P5-05, T-P3-05 |
-| T-P5-11 | 5 | `assumptions.json`, `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T-P2-03, T-P2-05 |
-| T-P5-12 | 5 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T-P5-06 |
+| T2-01 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T1-01 | `backend/app/core/trace.py`, `backend/app/api/traces.py` |
+| T2-02 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(...)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T1-03, T1-13 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/demo.py` |
+| T2-03 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API | Smoke en verde (`scripts/demo_smoke.py`) | Todas las de la fase 1 | `backend/app/*/mock.py` (borrar), `backend/app/api/demo.py`, `scripts/demo_smoke.py` |
+| T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` |
+| T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py` |
+| T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` |
+| T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` |
+| T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` |
+| T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` |
+| T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` |
+| T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` |
+| T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` |
+| T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` |
+| T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` |
+| T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` |
+| T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones.md` (solo añadir) |
 
 ### Fase 3 · Martes 18:00 → miércoles 21:00: endurecer y entregar
 
-**Congelación el miércoles a las 16:00** (solo arreglos). **Entrega antes de las 21:00.**
+**Congelación el miércoles a las 16:00** (solo arreglos). **Entrega antes de las 21:00.** Las dependencias de esta fase las fija este diseño (el producto no las da).
 
-| ID | Persona | Tarea | Hecho cuando |
-| --- | --- | --- | --- |
-| T-P3-07 | 3 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada |
-| T-P4-08 | 4 | Playwright del guion de demo | E2E en verde en offline con fakes |
-| T-P2-09 | 2 + 4 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms |
-| T-P2-12 | 2 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas |
-| T-P1-13 | 1 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda |
-| T-P5-07 | 5 | README | Otra persona lo ejecuta sin ayuda |
-| T-P5-08 | 5 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo |
-| T-P5-09 | 5 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 |
-| — | Todas | 3 ensayos cronometrados | < 3 min |
+| ID | Tarea | Hecho cuando | Depende de | Ficheros que toca |
+| --- | --- | --- | --- | --- |
+| T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` |
+| T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts` |
+| T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` |
+| T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` |
+| T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) |
+| T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` |
+| T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` |
+| T3-08 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T3-05, T3-07 | `docs/entrega/` |
+| T3-09 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno |
 
 **Regla de recorte** (del producto): si el martes a las 15:00 el guion no va, se recorta en este orden:
 
@@ -814,11 +812,11 @@ Al final del día tiene que funcionar lo de los días 1 y 2 del producto: alta p
 
 Se mantiene `INGENIERIA.md` §9 y se añaden cinco pruebas:
 
-- Validación de todos los `schemas/examples/*.json` en CI (T-P1-03).
-- Test del invariante "oportunidad ⇒ `user_rule`" (T-P2-07).
-- Test "las plantillas de radar, estado y avisos no contienen patrones prohibidos" (T-P3-04).
-- Test "`EventAnalysis` sin dígitos" y test de fallback del analizador (T-P3-03).
-- Test "`/voice/tts` rechaza frases no aprobadas" (T-P5-05).
+- Validación de todos los `schemas/examples/*.json` en CI (T0-02).
+- Test del invariante "oportunidad ⇒ `user_rule`" (T2-05).
+- Test "las plantillas de radar, estado y avisos no contienen patrones prohibidos" (T1-16).
+- Test "`EventAnalysis` sin dígitos" y test de fallback del analizador (T1-15).
+- Test "`/voice/tts` rechaza frases no aprobadas" (T1-21).
 
 ---
 
@@ -831,48 +829,44 @@ Se cierran las preguntas abiertas de `kairos-spec.md` y las técnicas de `TABLER
 | 1 | Nombre definitivo | KAIROS | Ya decidido en el producto |
 | 2 | Criterios y duración del hackathon | Rúbrica del producto; Dom 8 tarde → Mié 11 23:59, entrega interna antes de las 21:00 | Producto + `TABLERO.md` Q2 |
 | 3 | ¿Widget nativo o web? | Simulado en web móvil; D-004 pasa a **Aceptada** | El alcance del producto lo dice |
-| 4 | Proveedor de LLM y voz | Claude (Haiku 5.5 rápido y Sonnet 5.5 profundo, por `.env`) + ElevenLabs (Scribe v2 Realtime, Flash v2.5); D-012 pasa a **Aceptada**. Si la latencia de T-P5-12 falla, se cambia de modelo o de voz, no de proveedor | Mi decisión |
-| 5 | Qué 3 eventos usar en el replay | (a) **BCE 5 jun 2025**, bajada de 25 pb (con consenso); (b) **petróleo 13 jun 2025**, ataque de Israel a Irán y salto del Brent; (c) **resultados que hunden a las tecnológicas de EE. UU.**: propuesta NVIDIA, resultados del 26 feb 2025 y caída del 27 feb. Persona 5 confirma fechas y movimientos con los datos en T-P5-03; si un evento no muestra movimiento claro, se cambia por otro del mismo tipo. Opcional (S): un día de dólar débil | Mi propuesta, a verificar |
-| 6 | Fuente de consenso para la sorpresa | Solo para el BCE (consenso de mercado citado en prensa, guardado en el JSON). En los demás eventos `consensus: null` y `surprise: null` | Mi decisión |
-| 7 | Laura arranca en "Revisa tu plan" pero el paso 1 la quiere en Tranquilo | `drift_threshold` por defecto **10 pp**. 76 % frente a 70 % da Tranquilo; el ejemplo del producto (82 % frente a 70 %) sigue dando "Revisa tu plan". No se cambia ni el producto ni la cartera | Mi decisión |
-| 8 | "¿Voy bien?" (paso 7) depende de F11 ("Si da tiempo"); la radiografía (paso 2) es F13 ("Si da tiempo") | Pasan a MVP **en versión mínima**: plan + proyección (`ProjectionOut`) y el bloque `radiography` de `ExposureOut`. El resto de F11 y F13 sigue en "Si da tiempo" | Mi decisión: el guion es producto |
+| 4 | Proveedor de LLM y voz | Claude (Haiku 5.5 rápido y Sonnet 5.5 profundo, por `.env`) + ElevenLabs (Scribe v2 Realtime, Flash v2.5); D-012 pasa a **Aceptada**. Si la latencia de T2-16 falla, se cambia de modelo o de voz, no de proveedor | Diseño |
+| 5 | Qué 3 eventos usar en el replay | (a) **BCE 5 jun 2025**, bajada de 25 pb (con consenso); (b) **petróleo 13 jun 2025**, ataque de Israel a Irán y salto del Brent; (c) **resultados que hunden a las tecnológicas de EE. UU.**: propuesta NVIDIA, resultados del 26 feb 2025 y caída del 27 feb. Quien haga T1-09 confirma fechas y movimientos con los datos; si un evento no muestra movimiento claro, se cambia por otro del mismo tipo. Opcional (S): un día de dólar débil | Propuesta del diseño, a verificar con los datos |
+| 6 | Fuente de consenso para la sorpresa | Solo para el BCE (consenso de mercado citado en prensa, guardado en el JSON). En los demás eventos `consensus: null` y `surprise: null` | Diseño |
+| 7 | Laura arranca en "Revisa tu plan" pero el paso 1 la quiere en Tranquilo | `drift_threshold` por defecto **0,10** (fracción, 10 puntos de renta variable). 76 % frente a 70 % da Tranquilo; el ejemplo del producto (82 % frente a 70 %) sigue dando "Revisa tu plan". No se cambia ni el producto ni la cartera | Diseño |
+| 8 | "¿Voy bien?" (paso 7) depende de F11 ("Si da tiempo"); la radiografía (paso 2) es F13 ("Si da tiempo") | Pasan a MVP **en versión mínima**: plan + proyección (`ProjectionOut`) y el bloque `radiography` de `ExposureOut`. El resto de F11 y F13 sigue en "Si da tiempo" | Diseño: el guion es producto |
 | 9 | Modelo de negocio del pitch | B2B2C como vía principal (marca blanca para brókers y neobancos), B2C freemium para validar | Ya en el producto |
-| 10 | Hito del guion completo | **Martes 10 a las 18:00** (producto), no a las 23:00 (`TABLERO.md`) | Producto |
-| 11 | Magnitud de los shocks: ¿LLM o datos? | Datos (`observed`); el LLM elige canales y redacta | Mi decisión (regla 1 de `CLAUDE.md`) |
-| 12 | Precios "moviéndose en directo" en el paso 1 | Si hay `MARKET_DATA_API_KEY`, el proveedor real refresca acciones y ETF cada 60 s; sin clave (jurado), offline con "precio a fecha X" | Mi decisión |
-| 13 | ¿El ZIP funciona sin claves de Claude y ElevenLabs? | Las claves son **necesarias** para la IA (el producto pide en el README las claves de Claude y ElevenLabs en `.env.example`). Sin claves, la app arranca: el explicador responde con plantillas construidas con datos del motor (las mismas del guardián, `fallback_used: true`) y no hay audio. No hay respuestas pregrabadas | Mi decisión |
-| 14 | ¿El paso 1 da de alta la cartera en directo? | El guion carga la **cartera de ejemplo** ("o cartera de ejemplo", lo permite el producto). El alta por ISIN (F1) se construye igual, pero no está en la ruta crítica del martes a las 18:00 | Mi decisión |
-| 15 | Carga de Persona 2 (camino crítico) | La **proyección** (T-P2-08) y la **agenda** (T-P2-10) pasan a **Persona 1** en una carpeta nueva `backend/app/planning/` que es suya; llaman a `impact`/`exposure` solo vía `service.py`. Los endpoints `/projection` y `/agenda` pasan a Persona 1 | Mi decisión |
+| 10 | Hito del guion completo | **Martes 10 a las 18:00** (producto), no a las 23:00 (versión anterior de `TABLERO.md`) | Producto |
+| 11 | Magnitud de los shocks: ¿LLM o datos? | Datos (`observed`); el LLM elige canales y redacta | Diseño (regla 1 de `CLAUDE.md`) |
+| 12 | Precios "moviéndose en directo" en el paso 1 | Si hay `MARKET_DATA_API_KEY`, el proveedor real refresca acciones y ETF cada 60 s; sin clave (jurado), offline con "precio a fecha X" | Diseño |
+| 13 | ¿El ZIP funciona sin claves de Claude y ElevenLabs? | Las claves son **necesarias** para la IA (el producto pide en el README las claves de Claude y ElevenLabs en `.env.example`). Sin claves, la app arranca: el explicador responde con plantillas construidas con datos del motor (las mismas del guardián, `fallback_used: true`) y no hay audio. No hay respuestas pregrabadas | Diseño |
+| 14 | ¿El paso 1 da de alta la cartera en directo? | El guion carga la **cartera de ejemplo** ("o cartera de ejemplo", lo permite el producto). El alta por ISIN (F1) se construye igual, pero no está en la ruta crítica del martes a las 18:00 | Diseño |
+| 15 | Carga del camino crítico | La **proyección** (T1-14) y la **agenda** (T2-06) viven en una carpeta propia `backend/app/planning/`, separada de `impact`/`exposure`, y llaman a esos módulos solo vía `service.py`. Los endpoints `/projection` y `/agenda` son de ese módulo | Diseño |
+| 16 | Año de `DEMO_CLOCK` | 2026 (fechas actuales). `data/prices` llega hasta la fecha de descarga; los eventos son de 2025 y solo aportan `observed` | Diseño |
 | 17 | ¿El replay cambia el patrimonio mostrado? | **Sí, solo en modo demo**: la valoración suma el impacto central estimado de cada posición, con la etiqueta "Estimación tras el evento" y su `calc_id`. Sustituye a D-009 en lo de "sin reescribir precios" (los precios no se tocan; se añade un ajuste aparte) | **Equipo (decidido por el humano)** |
-| 16 | Año de `DEMO_CLOCK` | 2026 (fechas actuales). `data/prices` llega hasta la fecha de descarga; los eventos son de 2025 y solo aportan `observed` | Mi decisión |
-| — | Reparto de nombres en Persona 1–5 y disponibilidad (`TABLERO.md` Q1, Q8) | **Las decide el equipo**; no afectan al diseño | Equipo |
+| — | Modelo de trabajo y disponibilidad (`TABLERO.md` Q1, Q8) | Sin roles ni carpetas con dueño: 5 personas, tareas por fases y propiedad por tarea (ver `decisiones.md`). La disponibilidad (Q8) la ajusta el equipo en los checkpoints | Equipo |
 
 ---
 
-## 9. Qué cambia en los documentos vivos tras aprobar este diseño
+## 9. Qué cambió en los documentos vivos al aprobar este diseño
 
-Lo hace la sesión que ejecute el plan, en un PR `docs:` propio y antes de cualquier código:
+Lo hizo el PR `docs/modelo-sin-roles`, antes de cualquier código:
 
+- `CLAUDE.md`: modelo de trabajo por tareas y fases, reglas de claim y enlace a este documento en el mapa.
 - `SPEC.md`:
-  - §5: contratos completos o enlace a este documento.
-  - §8.2: polaridad, resultados sin doble conteo, unidad de `RATES_EUR`.
-  - §8.6: umbral 10 pp.
+  - §5: contratos completos en este documento (§3 y §4).
+  - §8.2: polaridad, resultados sin doble conteo y unidad de `RATES_EUR`.
+  - §6, §8.5, §8.6 y §13: `drift_threshold` como fracción (0,10).
   - §10: voz en tres tramos.
   - §11: endpoints `agenda`, `move` y `voice/disclaimer`.
   - §12: formato de `observed` y `consensus`.
-  - §13: `drift_threshold`.
+  - Sin columna "Dueño" ni referencias a P1–P5.
 - `decisiones.md`:
-  - D-004 y D-012 → Aceptada. D-009 → Sustituida por la nueva decisión del ajuste de demo (decisión 17).
-  - Nuevas decisiones desde D-016 con las decisiones 4–8 y 10–17 de §8, y "ejemplos JSON como fuente de los mocks".
-- `TABLERO.md`:
-  - "Persona 1–5" como nombres de rol.
-  - Tareas nuevas (T-P1-11 a 14, T-P2-10 a 12, T-P3-08, T-P4-09, T-P5-10 a 12).
-  - Hito del martes a las 18:00.
-  - Q3, Q4, Q5 y Q6 cerradas.
-- `INGENIERIA.md`:
-  - RF-22 (mínimo) y la radiografía pasan a M.
-  - Nota de §4 resuelta.
-- `CLAUDE.md`: enlace a este documento en el mapa.
+  - D-004 y D-012 → Aceptada. D-009 y D-006 → Sustituidas.
+  - Nuevas decisiones desde D-016: las decisiones 4–8 y 10–17 de §8, "ejemplos JSON como fuente de los mocks" y el modelo de trabajo sin roles.
+  - Numeración correlativa `D-0xx`.
+- `TABLERO.md`: pool de tareas por fase (esquema `T<fase>-<nn>`), hito del martes a las 18:00 y Q1, Q3, Q4, Q5 y Q6 cerradas.
+- `INGENIERIA.md`: RF-22 (mínimo) y la radiografía pasan a M; nota de §4 resuelta; hito del martes a las 18:00; sin columna "Dueño".
+- `.claude/commands/`: `/inicio`, `/cierre`, `/decision` y `/coger` adaptados al nuevo modelo.
 
 ## 10. Lo que queda a criterio de quien construye
 
