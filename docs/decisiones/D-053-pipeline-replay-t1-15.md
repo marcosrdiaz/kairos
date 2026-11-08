@@ -1,4 +1,4 @@
-### D-XXX · Pipeline de replay (T1-15): SDK de Anthropic, filtro provisional, fechas y reset
+### D-053 · Pipeline de replay (T1-15): SDK de Anthropic, filtro provisional, fechas y reset
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
 - Contexto: T1-15 conecta el replay con el motor real y añade el primer agente con LLM. El guardián (T1-16) aún no existe, `event` no guarda `consensus` ni `observed`, y nadie borraba eventos e impactos en `/demo/reset`.
 - Decisión:
