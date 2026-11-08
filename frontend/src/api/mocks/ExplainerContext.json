@@ -1,0 +1,17 @@
+{
+  "illustrative": true,
+  "portfolio_id": "laura",
+  "as_of": "2026-11-08T18:00:00Z",
+  "persona_hint": "dinamico",
+  "facts": [
+    {"key": "total", "label": "patrimonio", "value": "42380.00", "unit": "EUR", "display": "42.380 euros", "calc_id": "calc_bbd8df8ec96e5db2b7c3881f2869bd25"},
+    {"key": "change_week", "label": "variación semanal", "value": "-514.00", "unit": "EUR", "display": "514 euros", "calc_id": "calc_3a9f1c7d5e2b4a8c9d0e1f2a3b4c5d6e"},
+    {"key": "evt.nvda-2025-02.impact", "label": "impacto de resultados de NVIDIA", "value": "-470.00", "unit": "EUR", "display": "470 euros", "calc_id": "calc_5c1d8e0a9b7f4a3e8d2c6b1a0f9e8d7c"}
+  ],
+  "allocation": {"equity": "0.76", "fixed_income": "0.24"},
+  "plan": {"on_track": true, "goal_year": 2040, "drift_exceeded": false},
+  "events_7d": [
+    {"event_id": "nvda-2025-02", "title": "Resultados de NVIDIA", "causal_chain": ["NVIDIA presenta resultados", "Caen las grandes tecnológicas de EE. UU.", "Bajan tus fondos tecnológicos"], "polarity": "riesgo", "confidence": "media", "top_assets": ["Fondo tecnológico global"]}
+  ],
+  "status": {"state": "atento"}
+}
