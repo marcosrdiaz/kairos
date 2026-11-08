@@ -3,32 +3,14 @@
 Ejemplos en `schemas/examples/StatusOut.json` y sus variantes, uno por estado.
 """
 
-from enum import StrEnum
-
+from app.schemas.agents import SentenceStatus, StatusReasonKind, StatusState
 from app.schemas.common import ContractModel, Fraction, Money, UtcDatetime
-
-
-class PortfolioState(StrEnum):
-    TRANQUILO = "tranquilo"
-    ATENTO = "atento"
-    REVISA_PLAN = "revisa_plan"
-
-
-class SentenceStatus(StrEnum):
-    OK = "ok"
-    TEMPLATE = "template"
-
-
-class ReasonKind(StrEnum):
-    EVENT = "event"
-    DRIFT = "drift"
-    NONE = "none"
 
 
 class StatusReason(ContractModel):
     """`event_id` y `event_impact_eur` solo con `kind == "event"`."""
 
-    kind: ReasonKind
+    kind: StatusReasonKind
     event_id: str | None
     event_impact_eur: Money | None
 
@@ -36,7 +18,7 @@ class StatusReason(ContractModel):
 class StatusOut(ContractModel):
     """`GET /portfolios/{id}/status`. Se lee precalculado."""
 
-    state: PortfolioState
+    state: StatusState
     state_label: str
     total_eur: Money
     change_week_pct: Fraction

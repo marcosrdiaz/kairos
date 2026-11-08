@@ -7,18 +7,20 @@ sin cambiar su firma.
 from decimal import Decimal
 
 from app.impact import mock
+from app.schemas.agents import ExplanationStatus
 from app.schemas.common import Factor
+from app.schemas.events import EventAnalysis, ShockSet
 from app.schemas.impact import (
     EventImpactOut,
-    ExplanationStatus,
     MoveAttributionOut,
     MovePeriod,
     ScenarioOut,
 )
 
 
-def compute_event_impact(portfolio_id: str, analysis: object, shocks: object) -> EventImpactOut:
-    """`analysis` es `EventAnalysis` y `shocks`, `ShockSet` (T0-05); T1-13 fija los tipos."""
+def compute_event_impact(
+    portfolio_id: str, analysis: EventAnalysis, shocks: ShockSet
+) -> EventImpactOut:
     return mock.compute_event_impact(portfolio_id)
 
 

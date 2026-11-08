@@ -7,6 +7,7 @@ Convenciones de importes, fracciones y fechas: `schemas/common.py`.
 from enum import StrEnum
 from typing import Literal
 
+from app.schemas.agents import ExplanationStatus
 from app.schemas.common import (
     Confidence,
     ContractModel,
@@ -20,12 +21,6 @@ from app.schemas.common import (
 
 EventType = Literal["central_bank", "commodity", "earnings", "fx", "macro"]
 MovePeriod = Literal["day", "week", "month"]
-
-
-class ExplanationStatus(StrEnum):
-    PENDING = "pending"
-    OK = "ok"
-    TEMPLATE = "template"
 
 
 class SurpriseLabel(StrEnum):
