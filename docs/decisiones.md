@@ -5,13 +5,13 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`, asignados al mergear.** En tu rama escribe la decisión con el ID provisional `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros). Si metes varias en el mismo PR, `D-XXX-a`, `D-XXX-b`… **Quien mergea el PR**, justo antes, hace `git fetch`, mira el último ID de `main` y sustituye `D-XXX` por el siguiente libre en el PR (entrada, índice y referencias, incluida la descripción del PR). Así no chocan IDs entre ramas en paralelo. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
 
 ```
-### D-XXX · Título corto   (ID provisional; se sustituye al mergear)
+### D-XXX · Título corto   (ID provisional; la Action lo numera al entrar en main)
 - Fecha: AAAA-MM-DD HH:MM · Autor: nombre · Estado: Propuesta
 - Contexto: qué problema había.
 - Decisión: qué se hace.
@@ -325,3 +325,35 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Lo generado **va al repo**. CI, Docker y quien solo toque el frontend no necesitan ni Python ni npx. Quien cambie un esquema o un ejemplo ejecuta `make gen-api` y sube el resultado en el mismo PR. Sin Node: `make gen-api GEN_API_ARGS=--skip-ts`.
   - Ficheros añadidos fuera de la fila de T0-03: `backend/tests/test_gen_api.py` (copia de mocks y OpenAPI determinista, sin npx) y `frontend/src/api/mocks.test.ts` (el frontend importa los mocks con los tipos generados).
 - Consecuencias: T0-04, T0-05 y T0-06 ejecutan `make gen-api` en su PR para que sus tipos y mocks lleguen al frontend. Si sale una versión de `openapi-typescript` compatible con TS 6, se puede pasar a `devDependencies`.
+
+### D-037 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
+- Fecha: 2026-11-08 17:23 · Autor: Jaime · Estado: Propuesta
+- Contexto: T0-08 tenía que crear los datos de semilla, pero ningún documento fijaba su formato ni de dónde salen las rentabilidades de la proyección.
+- Decisión:
+  - `assets.json` lleva `illustrative`, `as_of`, `ter_sources` y `assets`, con las columnas de la tabla `asset` (`SPEC.md` §6). El `id` es el ISIN; el depósito y el plan de pensiones, sin ISIN, usan `DEP-12M` y `PP-MIXTO`.
+  - `price_source` es `yahoo:<símbolo>` o `fixed:<valor>` (precio fijo, sin histórico ni betas).
+  - `portfolios/<id>.json` lleva `illustrative`, `id`, `name`, `profile`, `base_currency`, `plan`, `dca_plans` y `positions`. Cada posición tiene `asset_id` y `lots` (`acquired_at`, `units`, `cost_eur_per_unit`), que se corresponden con `tax_lot`. Los decimales van como cadenas.
+  - Las participaciones se calcularon con los precios de Yahoo del 5-6 de noviembre de 2026 y los costes, con el cierre real de cada fecha de compra. Las carteras son ilustrativas.
+  - El DCA de Laura invierte en dos fondos (`IE00B03HD191` 70 % e `IE00B18GC888` 30 %) y no en IWDA como el ejemplo del contrato, porque el producto dice que invierte en "dos fondos indexados".
+  - `assumptions.json` toma el escenario `base` de Amundi CMA de abril de 2026, p. 18 (rentabilidad geométrica a 10 años: World 6,7 %, Euro Aggregate 3,5 %, Euro cash 1,8 %). `pesimista` y `optimista` son la base menos o más media desviación típica del rendimiento anualizado a 10 años (volatilidad simulada / √10 / 2). `mixed` es la media simple de `equity` y `fixed_income`.
+- Motivo: Amundi es la única fuente primaria localizada con renta variable, renta fija y liquidez en la misma tabla y con las clases en euros. Con esta regla, Laura alcanza su meta de 150.000 € en el escenario base y no en el pesimista, como en el ejemplo del contrato.
+- Alternativas descartadas: Vanguard Outlook 2026 (sin cifras en euros y sin rango primario para bonos); J.P. Morgan LTCMA y Fidelity CMA (no se pudo descargar el documento para contrastar la tabla); el tipo de depósito del BCE como rentabilidad de la liquidez (no es una previsión a 10 años).
+- Consecuencias:
+  - T1-03: `seed_db.py` lee este formato y crea los lotes.
+  - T1-02, T1-09 y T1-12: tratan `fixed:<valor>` sin histórico ni betas; T1-09 puede usar el símbolo de `price_source`.
+  - T1-14: lee `scenarios` y pondera por la asignación objetivo. Las rentabilidades son brutas, en divisa local y sin efecto divisa en la renta variable global.
+  - T2-15: revisa las filas de §5 con el motor real; la fila 2 depende de T1-08.
+
+### D-039 · Contratos de eventos, agentes y avisos (T0-05)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: el diseño §4.2 y §4.4 define estos contratos pero deja cabos sueltos: dónde vive `GET /portfolios/{id}/events`, qué entra en `write_status_sentence` y cómo se nombran los ejemplos de una unión SSE.
+- Decisión:
+  - `GET /portfolios/{id}/events` es de impacto (T0-04, `SPEC.md` §11) y devuelve `EventImpactOut`. `api/events.py` solo monta el control de replay: `POST /demo/replay/{event_id}` → `ReplayOut {event_id, portfolios: {laura: calc_id, javier: calc_id}, elapsed_ms}`; con `DEMO_MODE=false` responde 403 `DEMO_MODE_DISABLED`.
+  - `EventImpactStub` (en `schemas/agents.py`) es provisional: solo los campos que necesitan `write_event_explanation` y `write_alert_message`, sin ejemplo propio y con otro nombre para no chocar con `EventImpactOut` de T0-04. Se sustituye por `schemas.impact.EventImpactOut` cuando T0-04 esté en `main`.
+  - `StatusFacts` (entrada de `write_status_sentence`) lleva `state`, `total_eur`, `change_week_pct`, `reason {kind, event_id}` y `calc_id`, más opcionales ya calculados: `event_title`, `top_asset_class`, `main_channel`, `event_impact_eur` (para `atento`) y `equity_current`, `equity_target` (para `revisa_plan`). El LLM no opera con ellos.
+  - `ExplanationStatus`, `SentenceStatus` y `StatusState` viven en `schemas/agents.py`; T0-04 los importa de ahí.
+  - Unión SSE: `AskEvent` es una unión discriminada por `type` (alias, no clase). Los ejemplos van por clase concreta (`AskMetaEvent.json`, `AskSentenceEvent.json`, `AskSentenceEvent.impact.json`, `AskDoneEvent.json`, `AskErrorEvent.json`) para que el test genérico los encuentre sin cambios.
+  - `EventIn.observed` es opcional porque T0-10 escribe los JSON antes de que T1-09 calcule `observed`. `EventAnalysis` rechaza dígitos en `entities[].name`, `channels[].label|rationale`, `companies[].name` y `causal_chain`; los identificadores (`event_id`, `analyzed_model`, claves) pueden llevarlos.
+  - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
+  - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
+- Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
