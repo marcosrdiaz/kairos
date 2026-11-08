@@ -1,0 +1,20 @@
+{
+  "id": "oil-2025-06",
+  "type": "commodity",
+  "title": "El Brent se dispara tras el ataque de Israel a Irán",
+  "occurred_at": "2025-06-13T01:42:00Z",
+  "text": "En la madrugada del viernes 13 de junio de 2025, Israel atacó Irán. El primer ministro israelí, Benjamin Netanyahu, afirmó que los ataques buscaban dañar la infraestructura nuclear del país, sus fábricas de misiles balísticos y muchas de sus capacidades militares. En la ofensiva murieron los dos principales mandos militares iraníes. Irán respondió ese mismo día con el lanzamiento de misiles contra Israel y aseguró que ninguna de sus instalaciones petroleras había sido alcanzada. El Brent llegó a subir más de un 13 % en las primeras horas de negociación; a las 01:42 GMT cotizaba a 74,65 dólares por barril, un 7,63 % más. Al cierre, el Brent para entrega en agosto subió un 7,02 %, hasta 74,23 dólares, su nivel más alto en casi cinco meses. Los analistas señalan el riesgo para el estrecho de Ormuz, por donde pasa cerca de un tercio del petróleo transportado por mar. Las bolsas mundiales cayeron y el oro subió un 1,4 %.",
+  "source_urls": [
+    "https://www.thestar.com.my/business/business-news/2025/06/13/oil-jumps-more-than-7-as-israel-strikes-iran-rattling-investors",
+    "https://thenationalnews.com/business/energy/2025/06/13/oil-prices-surge-more-than-7-after-israel-launches-strike-on-iran",
+    "https://www.irishtimes.com/business/2025/06/13/stocks-fall-and-oil-prices-hit-three-year-high-after-israel-strikes-iran"
+  ],
+  "consensus": null,
+  "fallback_chain": [
+    "Israel ataca instalaciones nucleares y militares de Irán y aumenta el riesgo en Oriente Próximo.",
+    "El mercado teme cortes de suministro en la región y en el estrecho de Ormuz, y el precio del crudo sube con fuerza.",
+    "Un petróleo más caro presiona al alza la inflación esperada y encarece los costes de empresas y consumidores.",
+    "Las bolsas caen por la aversión al riesgo y el dinero busca refugio en activos como el oro."
+  ],
+  "illustrative": false
+}
