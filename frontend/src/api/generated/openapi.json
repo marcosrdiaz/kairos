@@ -291,6 +291,86 @@
         "title": "AssetImpact",
         "type": "object"
       },
+      "AssetOut": {
+        "additionalProperties": false,
+        "description": "Activo del catálogo: `GET /assets/lookup?q=` (lista). Completa el alta (RF-01).\n\n`id` es el ISIN; sin ISIN, un código propio (`DEP-12M`, `PP-MIXTO`). `ter` es `null` en\nacciones, depósitos y planes. La fuente del precio es interna y no sale en el contrato.",
+        "properties": {
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "asset_type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "isin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isin"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_kind": {
+            "$ref": "#/components/schemas/PriceKind"
+          },
+          "ter": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ter"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          },
+          "transferable": {
+            "title": "Transferable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "isin",
+          "ticker",
+          "name",
+          "asset_type",
+          "asset_class",
+          "currency",
+          "ter",
+          "transferable",
+          "price_kind"
+        ],
+        "title": "AssetOut",
+        "type": "object"
+      },
       "AssetType": {
         "enum": [
           "fund",
@@ -682,6 +762,44 @@
           "calc_id"
         ],
         "title": "DemoAdjustmentOut",
+        "type": "object"
+      },
+      "DemoResetOut": {
+        "additionalProperties": false,
+        "description": "Qué ha recargado el reset: carteras en su estado inicial y eventos precargados.",
+        "properties": {
+          "portfolio_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Portfolio Ids",
+            "type": "array"
+          },
+          "preloaded_event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Preloaded Event Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "portfolio_ids"
+        ],
+        "title": "DemoResetOut",
+        "type": "object"
+      },
+      "DemoResetRequest": {
+        "additionalProperties": false,
+        "description": "Cuerpo opcional. Con `preload: true` (lo que usa el guion) se reproducen además BCE y\npetróleo con `occurred_at = now() − 96 h` y `silent: true`.",
+        "properties": {
+          "preload": {
+            "default": false,
+            "title": "Preload",
+            "type": "boolean"
+          }
+        },
+        "title": "DemoResetRequest",
         "type": "object"
       },
       "ErrorOut": {
@@ -2690,6 +2808,55 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/assets/lookup": {
+      "get": {
+        "description": "Busca por ISIN, ticker o nombre. Lista vacía si no hay coincidencias.",
+        "operationId": "lookup_assets_api_v1_assets_lookup_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 80,
+              "minLength": 1,
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetOut"
+                  },
+                  "title": "Response Lookup Assets Api V1 Assets Lookup Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lookup Assets",
+        "tags": [
+          "assets"
+        ]
+      }
+    },
     "/api/v1/dca-executions/{execution_id}": {
       "post": {
         "description": "Confirmar o saltar una aportación pendiente. T1-06 puede moverlo a `api/dca.py`.",
@@ -2744,7 +2911,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -2812,6 +2979,65 @@
         "summary": "Replay Event",
         "tags": [
           "events"
+        ]
+      }
+    },
+    "/api/v1/demo/reset": {
+      "post": {
+        "description": "Recarga Laura y Javier. `preload` aún no reproduce eventos: llega con T1-15 / T2-03.",
+        "operationId": "reset_demo_api_v1_demo_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/DemoResetRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoResetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Demo",
+        "tags": [
+          "demo"
         ]
       }
     },
@@ -3190,7 +3416,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -3261,7 +3487,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
@@ -3328,7 +3554,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "List Event Impacts",
@@ -3448,7 +3674,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Explain Move",
@@ -3560,7 +3786,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -3622,7 +3848,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
@@ -3789,7 +4015,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Estimate Scenario",
@@ -3903,7 +4129,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -3965,7 +4191,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
@@ -4029,7 +4255,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Tts",

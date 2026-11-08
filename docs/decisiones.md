@@ -69,6 +69,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 | D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
+| D-XXX | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
 
 ---
 
@@ -456,3 +457,16 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Datos reales que el equipo debe conocer: el día del BCE la rentabilidad a 10 años **sube** 2,4 pb, así que `fallback_chain` de `bce-2025-06` ("bajan… la rentabilidad de los bonos", "tienden a ganar valor") no coincide con `observed`.
   - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
   - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
+
+### D-XXX · Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: tres interfaces del diseño no tenían modelo en `app/schemas/`: la respuesta de `GET /assets/lookup` (RF-01), el `PriceOut` que devuelven `prices.latest()` y `history()` (§4.1) y el cuerpo y la respuesta de `POST /demo/reset` (§4.6). Los contratos ya estaban cerrados, así que van en un PR de contrato aparte, antes de T1-02 y T1-03.
+- Decisión:
+  - `AssetOut` (en `schemas/portfolio.py`): `id`, `isin`, `ticker`, `name`, `asset_type`, `asset_class`, `currency`, `ter` (fracción o `null`), `transferable` y `price_kind`, los campos de la tabla `asset` salvo `price_source`, que es interno. `GET /assets/lookup?q=` devuelve `list[AssetOut]` y busca por ISIN, ticker o nombre sin distinguir mayúsculas; `q` vacío da 422 y sin coincidencias, `[]`. Ruta en `api/assets.py`.
+  - `PriceOut` (en `schemas/prices.py`, sin endpoint): `asset_id`, `price` (8 decimales, en la divisa del activo), `currency`, `price_at` (instante del dato, no de la consulta), `price_kind` y `source: SourceRef`, para que quien valore lo pase tal cual a la traza.
+  - `DemoResetRequest {preload: bool = false}` (cuerpo opcional) y `DemoResetOut {portfolio_ids, preloaded_event_ids}` (en `schemas/demo.py`). `POST /demo/reset` vive en `api/demo.py` y comprueba `DEMO_MODE` (403 `DEMO_MODE_DISABLED`). `/demo/dca/run` (T1-06) y `PUT /demo/clock` (T2-03) se añaden en ese mismo fichero.
+  - Las rutas nuevas responden ya sobre el mock (como en D-036): `portfolio.service.lookup_assets(q)` busca en los ejemplos `AssetOut*` y `portfolio.service.reset_demo()` devuelve los IDs. `preload` no reproduce eventos todavía y `preloaded_event_ids` sale vacío hasta que existan el pipeline (T1-15) y la integración (T2-03).
+  - Ficheros fuera de la fila de T1-03: `backend/app/schemas/{prices,demo}.py`, los ejemplos nuevos, `backend/app/portfolio/mock.py`, `backend/tests/test_asset_demo_contract.py`, la lista de `test_schema_examples.py` y lo regenerado por `make gen-api`.
+- Motivo: así T1-02, T1-03 y T1-19 (alta en el frontend) trabajan en paralelo contra tipos fijos.
+- Alternativas descartadas: que `/demo/reset` responda 204 sin cuerpo (el frontend no sabría qué eventos quedan precargados); un `AssetLookupOut` envuelto (`GET /portfolios` ya devuelve una lista sin envolver).
+- Consecuencias: T1-02 devuelve `PriceOut` en `latest()` y `history()`. T1-03 sustituye el mock de `lookup_assets` y `reset_demo` por la BD. T1-19 usa `AssetOut` para el autocompletar. T2-03 rellena `preloaded_event_ids` con el `preload`.

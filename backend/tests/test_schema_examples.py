@@ -76,6 +76,10 @@ PORTFOLIO_EXAMPLES = [
     "DcaExecutionActionRequest",
     "ValueChangeOut",
     "TraceOut",
+    "AssetOut",
+    "PriceOut",
+    "DemoResetRequest",
+    "DemoResetOut",
 ]
 
 

@@ -160,7 +160,9 @@ Los esquemas son la frontera entre tareas y entre backend y frontend. **Los cont
 | Fichero de esquemas | Contenido | Sección del diseño |
 | --- | --- | --- |
 | `common.py` | `Money`, `SourceRef`, enums compartidos, `ErrorOut` (códigos de `core/errors.py`) | §3 |
-| `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut` | §4.1 |
+| `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut`, `AssetOut` | §4.1 |
+| `prices.py` | `PriceOut` (lo devuelven `prices.latest()` y `history()`; sin endpoint) | §4.1 |
+| `demo.py` | `DemoResetRequest`, `DemoResetOut` (`ReplayOut` está en `events.py`) | §4.6 |
 | `events.py` · `agents.py` · `alerts.py` | `EventAnalysis`, `ShockSet`, `AskRequest` + SSE, `ExplainerContext`, `GuardianRequest/Verdict`, `AlertOut` | §4.2, §4.4 |
 | `impact.py` · `exposure.py` · `radar.py` · `status.py` · `planning.py` | `EventImpactOut`, `ScenarioOut`, `MoveAttributionOut`, `ExposureOut`, `RadarOut`, `StatusOut`, `ProjectionOut`, `AgendaItemOut` | §4.3 |
 | `voice.py` | WebSocket de STT, TTS, disclaimer | §4.5 |
@@ -359,7 +361,7 @@ sequenceDiagram
 | Método | Ruta | Para |
 | --- | --- | --- |
 | GET | `/health` | Comprobación de Docker |
-| GET | `/assets/lookup?q=` | Autocompletar por ISIN o ticker |
+| GET | `/assets/lookup?q=` | Autocompletar por ISIN, ticker o nombre (`list[AssetOut]`) |
 | GET | `/portfolios` · `/portfolios/{id}` | Lista (Laura, Javier) y detalle valorado |
 | POST | `/portfolios/{id}/positions` | Alta de posiciones |
 | POST | `/portfolios/{id}/transactions` | Compra / venta |
