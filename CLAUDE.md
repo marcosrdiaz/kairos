@@ -6,13 +6,15 @@ Este fichero se carga en todas las sesiones. Es corto a propósito: el detalle e
 
 ## Al empezar una sesión (o tras `/clear`)
 
-1. Pregunta al humano quién es (P1–P5) si no lo ha dicho. Su rol y sus carpetas están en `docs/TABLERO.md` → *Equipo*.
-2. Lee su sección en `docs/TABLERO.md` (*En curso*, *Notas para retomar*) y la tabla de *Bloqueos*.
-3. Lee las últimas ~10 entradas de `docs/decisiones.md`.
-4. Lee solo la sección de `docs/SPEC.md` del módulo en el que vas a trabajar, más *Contratos* (§5).
-5. Resume en 3-5 líneas qué vas a hacer y espera confirmación si toca más de un módulo.
+1. Pregunta al humano **cómo se llama** (Manu, Jaime, Marcos, Alons o Javi) y si va a **continuar una tarea suya en curso** o a **coger una nueva**.
+2. Si continúa una tarea: lee su fila y su subsección en *Notas para retomar* de `docs/TABLERO.md`.
+3. Si coge una nueva: lista las tareas **disponibles de la fase actual** (la primera fase no cerrada): estado `⬜`, sin nadie en *Cogida por*, con todas sus dependencias hechas y sin ficheros en común con una tarea en curso. Que elija una y cógela con `/coger <ID>` antes de empezar.
+4. Lee la tabla de *Bloqueos* del tablero.
+5. Lee las últimas ~10 entradas de `docs/decisiones.md`.
+6. Lee solo la sección de `docs/SPEC.md` del módulo en el que vas a trabajar, más los contratos (diseño del MVP §3 y §4).
+7. Resume en 3-5 líneas qué vas a hacer y espera confirmación si toca más de un módulo.
 
-Atajo: `/inicio` hace estos pasos. `/cierre` hace los de salida.
+Atajo: `/inicio` hace estos pasos. `/coger <ID>`, `/cierre` y `/decision` completan el flujo.
 
 ## Reglas de producto que el código no puede romper
 
@@ -23,14 +25,19 @@ Atajo: `/inicio` hace estos pasos. `/cierre` hace los de salida.
 5. **Rangos, no cifras exactas** en impactos estimados (`impact_eur`, `low_eur`, `high_eur`, `confidence`).
 6. Aviso de IA visible en la app y al empezar la voz (AI Act art. 50). Aviso "no es asesoramiento" en el panel.
 
-## Propiedad del código
+## Modelo de trabajo: tareas y fases
 
-Cada carpeta tiene un dueño (tabla en `docs/TABLERO.md`). Reglas:
+No hay roles ni carpetas con dueño. Cualquiera hace cualquier tarea del pool de `docs/TABLERO.md` (IDs `T<fase>-<nn>`).
 
-- Solo editas las carpetas del dueño con el que trabajas.
-- `backend/app/schemas/` y `frontend/src/api/generated/` son **contratos compartidos**: no se cambian sin abrir una fila en *Peticiones de contrato* del tablero y avisar al humano. Añadir un campo opcional es aceptable; renombrar o quitar, no.
-- Si necesitas algo de otro módulo que no existe, usa su mock (`*/mock.py` o `frontend/src/api/mocks/`) y apunta el bloqueo en el tablero. No lo implementes tú.
-- Los módulos de backend se llaman entre sí solo a través de su `service.py`. Nunca consultes las tablas de otro módulo directamente.
+- **Fases.** 0 cimientos y contratos · 1 datos y motores · 2 experiencia e integración · 3 endurecer y entregar. Una fase está **cerrada** cuando todas sus tareas están en `main` con `make lint && make test` en verde.
+- **Adelantar.** Se puede coger una tarea de la fase siguiente solo si **todas** sus dependencias están hechas. Si una tarea depende de otra, se hace antes la dependencia.
+- **Claim.** Coger una tarea es un commit al tablero (`docs: claim T1-04`) **antes de empezar**. Si ya está cogida, se elige otra. Usa `/coger <ID>`.
+- **Propiedad por tarea.** Mientras una tarea está en curso, quien la tiene es dueño de los ficheros de su columna *Ficheros que toca*. Otra sesión no los edita: si necesita algo de ellos, apunta un bloqueo en el tablero. No se coge una tarea cuyos ficheros solapen con los de otra en curso.
+- **Excepciones a la propiedad:** `docs/decisiones.md` (solo se añade al final) y tu propia fila del tablero.
+- **Commits directos a `main` (excepción a "todo por PR").** Solo si tocan únicamente `docs/TABLERO.md` y el mensaje es `docs: claim|release|done T<x>-<nn>`. Flujo: `git pull --rebase` → comprobar que la tarea sigue libre → commit → `git push`. Si el push falla, se repite desde el pull. Todo lo demás va por PR.
+- **Arquitectura (no es propiedad).** Los módulos de backend se llaman entre sí solo a través de su `service.py`. Nunca consultes las tablas de otro módulo directamente. Si necesitas algo de otro módulo que aún no existe, usa su mock (`*/mock.py` o `frontend/src/api/mocks/`).
+- **Contratos.** `backend/app/schemas/` y `frontend/src/api/generated/` se cierran en la fase 0. Después solo se cambian con un PR propio (sin mezclar implementación), una fila en *Peticiones de contrato* y aviso al equipo. Añadir un campo opcional es aceptable; renombrar o quitar, no.
+- **Decisiones.** Qué "Si da tiempo" entra lo decide el equipo en el checkpoint del martes 10 a las 18:00 y se apunta en `docs/decisiones.md`.
 
 ## Comandos
 
@@ -65,17 +72,17 @@ Antes de dar una tarea por terminada: `make lint && make test` en verde.
 
 ## Git
 
-- Rama por tarea: `p<N>/<descripcion-corta>` (p. ej. `p2/impact-fx-split`). PR pequeño a `main`, CI en verde, un revisor del equipo (vale con un vistazo de 5 minutos).
-- Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`).
+- Rama por tarea: `t<fase>-<nn>/<descripcion-corta>` (p. ej. `t1-13/impact-fx-split`). PR pequeño a `main`, CI en verde y un revisor del equipo (vale con un vistazo de 5 minutos). El merge lo hace quien abre el PR, tras la aprobación.
+- Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los claims usan `docs: claim|release|done T<x>-<nn>` y pueden ir directos a `main` (ver arriba).
 - Nunca `push --force` a `main`. No mezcles en un PR cambios de contrato con cambios de implementación.
 - **Congelación**: el miércoles 11 a las 16:00 solo se aceptan fixes. Entrega antes de las 21:00 (cierre oficial 23:59). Lo que se entrega es el ZIP de `main`.
 
 ## Al terminar una sesión (o antes de `/clear`)
 
-1. Actualiza tu sección de `docs/TABLERO.md`: mueve tareas a *Hecho*, escribe *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados).
-2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` con tu rango de ID.
+1. Actualiza en `docs/TABLERO.md` la subsección de tu tarea en *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados). Si la tarea ya está en `main`, márcala `✅ hecho` con `docs: done T<x>-<nn>` y borra sus notas. Si la abandonas, `docs: release T<x>-<nn>`.
+2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` (siguiente ID correlativo; haz `git pull` antes).
 3. Si cambió algo de arquitectura, contrato o modelo de datos, actualiza `docs/SPEC.md`.
-4. Commit de los docs junto al código (`docs: update tablero P<N>`).
+4. Commit de los docs junto al código (`docs: update notas T<x>-<nn>`).
 
 ## Qué NO hacer
 
@@ -88,7 +95,9 @@ Antes de dar una tarea por terminada: `make lint && make test` en verde.
 
 | Documento | Para qué |
 | --- | --- |
+| `docs/kairos-spec.md` | Producto (no se cambia). Orden de autoridad: producto > diseño del MVP > resto |
 | `docs/INGENIERIA.md` | Requisitos, casos de uso, diagramas, trazabilidad, plan de pruebas |
+| `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md` | Diseño técnico del MVP (aprobado): contratos exactos, fases y tareas. Manda sobre `SPEC.md` |
 | `docs/SPEC.md` | Stack, estructura del repo, modelo de datos, API, algoritmos, agentes |
 | `docs/decisiones.md` | Registro de decisiones (qué, cuándo, por qué) |
-| `docs/TABLERO.md` | Quién hace qué, estado, bloqueos, notas para retomar |
+| `docs/TABLERO.md` | Pool de tareas por fase, quién ha cogido cada una, bloqueos, notas para retomar |
