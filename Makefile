@@ -42,10 +42,12 @@ else
 	@echo "frontend: sin package.json todavía (T0-07), se omite"
 endif
 
-# Objetivo de T0-03: genera los tipos TS desde el OpenAPI y copia los ejemplos a mocks/.
+# Tipos TS desde el OpenAPI (frontend/src/api/generated/) y ejemplos a frontend/src/api/mocks/.
+# Ejecútalo tras cambiar un esquema o un ejemplo y sube lo generado en el mismo PR.
+# Sin Node: make gen-api GEN_API_ARGS=--skip-ts (solo OpenAPI y mocks).
+GEN_API_ARGS ?=
 gen-api:
-	@if [ -f scripts/gen_api.py ]; then cd $(BACKEND) && $(UV) run python ../scripts/gen_api.py; \
-	else echo "gen-api: pendiente (T0-03)"; fi
+	cd $(BACKEND) && $(UV) run python ../scripts/gen_api.py $(GEN_API_ARGS)
 
 EVENT ?=
 replay:  ## make replay EVENT=bce-2025-06

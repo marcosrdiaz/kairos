@@ -1,0 +1,16 @@
+{
+  "illustrative": true,
+  "positions": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "units": "114.00000000",
+      "avg_cost_eur": "80.27",
+      "acquired_at": "2023-03-06T00:00:00Z"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "units": "102.80591101",
+      "avg_cost_eur": "92.22"
+    }
+  ]
+}
