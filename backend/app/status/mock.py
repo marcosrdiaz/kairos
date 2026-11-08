@@ -9,5 +9,5 @@ from app.schemas.status import StatusOut
 
 
 def get_status(portfolio_id: str) -> StatusOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return StatusOut.model_validate(examples.load("StatusOut"))

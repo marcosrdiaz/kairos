@@ -225,7 +225,7 @@ erDiagram
 | `sell` | Consume lotes por **FIFO**; devuelve plusvalía estimada = Σ (precio − coste) × unidades consumidas | units ≤ unidades disponibles |
 | `transfer` | `transfer_out` del fondo origen (FIFO) + `transfer_in` al destino. Los lotes nuevos **conservan `acquired_at` y el coste total** de los lotes consumidos; las unidades se recalculan con el VL de destino | Origen y destino `asset_type == fund`. Si no: error `TRANSFER_NOT_ALLOWED` con mensaje para ofrecer venta + compra con aviso fiscal |
 
-Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación.
+Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación. Cada `value_eur` se redondea a céntimos y `total_eur` es su suma; pesos y asignación a 4 decimales; el cambio semanal compara con las mismas participaciones a precios de hace 7 días (decisión «Valoración, alta y seed (T1-03)»).
 
 DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `clock.now()`) y crea una ejecución pendiente; el usuario confirma o salta desde la app. En demo se fuerza con `POST /demo/dca/run`.
 
@@ -396,7 +396,7 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |
 | `data/prices/<asset_id>.csv` | Histórico diario de 3 años (`date,close,adj_close`) | hecho (T1-09) |
-| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción | hecho (T1-09) |
+| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción. `EURUSD` (dólares por euro) es también el tipo de cambio de la valoración (`prices`, T1-02) | hecho (T1-09) |
 | `data/events/replay/*.json` | 3-4 eventos reales: BCE, petróleo, resultados (+ USD si da tiempo) | pendiente |
 | `data/seed/assumptions.json` | Rentabilidad anual por clase de activo para la proyección, con fuente | pendiente |
 | `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | pendiente |
