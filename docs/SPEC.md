@@ -264,7 +264,7 @@ Mismo cálculo con shocks fijados por el usuario (`{"EQ_GLOBAL": -0.10}`). Objet
 
 ### 8.4 Exposición (look-through)
 
-`exposición_x = Σ_i V_i · Σ_c w_{i,c} · [c pertenece a x]` para país, sector, divisa y empresa. Acciones directas cuentan como un fondo de un solo componente. Solapamiento: empresas presentes en ≥ 2 posiciones, con la suma de su peso en la cartera. Las claves `OTROS_`, `GOV_` y `BONOS_` cuentan en país, sector y divisa, pero no son empresas. `coverage_pct` es la parte del patrimonio con país conocido; un depósito o un plan sin composición no la tiene (D-XXX).
+`exposición_x = Σ_i V_i · Σ_c w_{i,c} · [c pertenece a x]` para país, sector, divisa y empresa. Acciones directas cuentan como un fondo de un solo componente. Solapamiento: empresas presentes en ≥ 2 posiciones, con la suma de su peso en la cartera. Las claves `OTROS_`, `GOV_` y `BONOS_` cuentan en país, sector y divisa, pero no son empresas. `coverage_pct` es la parte del patrimonio con país conocido; un depósito o un plan sin composición no la tiene (D-052).
 
 ### 8.5 Radar (F24)
 

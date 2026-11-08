@@ -69,7 +69,7 @@ def _residual(position: PositionOut) -> engine.Constituent:
 
 
 def _direct_stock(position: PositionOut, known: CompositionRow | None) -> engine.Constituent:
-    """Acción directa: el país y el sector salen de su fila en las composiciones (D-XXX)."""
+    """Acción directa: el país y el sector salen de su fila en las composiciones (D-052)."""
     return engine.Constituent(
         key=position.ticker or position.asset_id,
         name=position.name,

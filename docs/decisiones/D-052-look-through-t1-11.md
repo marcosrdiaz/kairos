@@ -1,4 +1,4 @@
-### D-XXX · Look-through (T1-11): carga de `composition`, posiciones sin composición, cobertura y listas devueltas
+### D-052 · Look-through (T1-11): carga de `composition`, posiciones sin composición, cobertura y listas devueltas
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
 - Contexto: T1-11 implementa `SPEC.md` §8.4. Nadie cargaba la tabla `composition`, el catálogo de activos no tiene país ni sector para las acciones directas, y la cobertura era solo una propuesta en la decisión de T1-08.
 - Decisión:

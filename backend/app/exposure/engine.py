@@ -1,6 +1,6 @@
 """Look-through de la cartera (`SPEC.md` §8.4): funciones puras, sin BD. Todo en `Decimal`.
 
-Claves y residuos de las composiciones: D-049. Criterios de esta tarea: D-XXX.
+Claves y residuos de las composiciones: D-049. Criterios de esta tarea: D-052.
 """
 
 from collections.abc import Mapping, Sequence
