@@ -1,0 +1,20 @@
+{
+  "illustrative": true,
+  "portfolio_id": "laura",
+  "target": {
+    "equity": "0.70",
+    "fixed_income": "0.30",
+    "cash": "0.00"
+  },
+  "drift_threshold": "0.10",
+  "goal_amount_eur": "150000.00",
+  "goal_year": 2040,
+  "current": {
+    "equity": "0.72",
+    "fixed_income": "0.28",
+    "cash": "0.00"
+  },
+  "drift_equity": "0.02",
+  "drift_exceeded": false,
+  "calc_id": "calc_5f97db6cb90257a5bf76ac472a37b710"
+}
