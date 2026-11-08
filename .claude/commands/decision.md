@@ -21,7 +21,7 @@ Una decisión merece entrada si cambia un contrato o el modelo de datos, añade 
 - Consecuencias: qué cambia, quién se ve afectado, ficheros.
 ```
 
-4. Añade la fila al **índice** de arriba (`D-XXX` · fecha · título · estado). Si otros ficheros citan la decisión (código, `SPEC.md`, tablero), cita también `D-XXX`.
+4. Añade la fila al **índice** de arriba (`D-XXX` · fecha · título · estado). Si otros ficheros **del mismo PR** (código, `SPEC.md`) citan la decisión, cita también `D-XXX`. Fuera del PR, por ejemplo en el tablero, que no va en PRs, cítala **por título** (p. ej. «Modelo de datos y migración inicial (T1-01)»), nunca como `D-XXX`: la Action solo renumera los ficheros del propio PR.
 5. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir. Va en el PR de tu tarea o, si es suelta, en un PR `docs:` pequeño.
 6. Si la decisión toca `SPEC.md` o un contrato, dilo al humano; los contratos solo se cambian con PR propio y aviso al equipo.
 7. **Al mergear** no hay nada que hacer: la Action `renumber-decisions` asigna los IDs reales en `main` (entrada, índice y referencias). No renumeres en el PR.

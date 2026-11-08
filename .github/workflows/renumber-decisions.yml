@@ -30,7 +30,10 @@ jobs:
           python-version: "3.12"
 
       - name: Renumerar decisiones
-        run: python scripts/renumber_decisions.py
+        # Solo se tocan las referencias de los ficheros que cambió este push (más decisiones.md).
+        run: >
+          python scripts/renumber_decisions.py
+          --before "${{ github.event.before }}" --after "${{ github.sha }}"
 
       - name: Commit y push
         run: |
