@@ -1,0 +1,12 @@
+### D-016 · Modelo de trabajo sin roles: propiedad por tarea y fases (sustituye a D-006)
+- Fecha: 2026-11-08 · Autor: equipo · Estado: Aceptada
+- Contexto: 5 personas con 5 sesiones de Claude Code en paralelo. Los roles fijos P1–P5 con carpetas con dueño concentraban la carga y obligaban a esperar a la persona dueña.
+- Decisión:
+  - No hay roles ni carpetas con dueño: cualquiera hace cualquier tarea.
+  - El trabajo se organiza en 4 fases (0 cimientos y contratos · 1 datos y motores · 2 experiencia e integración · 3 endurecer y entregar). Una fase se cierra cuando todas sus tareas están en `main` con `make lint && make test` en verde. Se puede adelantar una tarea de la fase siguiente solo si todas sus dependencias están hechas.
+  - Coger una tarea es un commit de claim en `TABLERO.md` antes de empezar. Mientras está en curso, quien la tiene es dueño de los ficheros que declara; no se coge una tarea cuyos ficheros solapen con los de otra en curso.
+  - Se mantienen: `service.py` como única frontera entre módulos (regla de arquitectura, no de propiedad); contratos de `backend/app/schemas/` cerrados en la fase 0 y, después, cambiados solo con PR propio y aviso al equipo; las reglas de producto de `CLAUDE.md`.
+  - El merge a `main` lo hace quien abre el PR, tras la aprobación de un revisor y con el CI en verde. Qué "Si da tiempo" entra lo decide el equipo en el checkpoint del martes a las 18:00 y se apunta aquí.
+- Motivo: reparte la carga, elimina esperas por persona y mantiene el aislamiento entre sesiones donde importa (los ficheros que se están tocando).
+- Alternativas descartadas: seguir con carpetas por dueño; cola de tareas sin declaración de ficheros (se pisarían).
+- Consecuencias: `CLAUDE.md`, `TABLERO.md`, `SPEC.md` y los comandos `/inicio`, `/cierre`, `/decision` y `/coger` cambian. Los IDs `T-P<n>-<nn>` pasan a `T<fase>-<nn>` (tabla en `TABLERO.md` §9).

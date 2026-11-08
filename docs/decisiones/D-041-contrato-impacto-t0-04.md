@@ -1,0 +1,12 @@
+### D-041 · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios.
+- Decisión:
+  - Rutas: `api/impact.py` sirve `GET /portfolios/{id}/events`, `POST /portfolios/{id}/scenarios` y `GET /portfolios/{id}/move`; `api/exposure.py`, `/exposure` y `/radar`; `api/status.py`, `/status`; `api/planning.py`, `/projection` y `/agenda`. T2-05, T2-06 y T2-07 pueden mover las suyas a `api/{radar,agenda,move}.py`.
+  - `schemas/impact.py` añade `ScenarioRequest`, que el diseño solo describía con un JSON. `EventType` y `MovePeriod` son `Literal` para no chocar en el OpenAPI con los enums de T0-05.
+  - `ExplanationStatus`, `SentenceStatus`, `StatusState` y `StatusReasonKind` se importan de `schemas/agents.py` (D-039).
+  - Los mocks comprueban que la cartera existe con `portfolio.service.get_valued` (404).
+  - Ejemplos con los activos y el total de `PortfolioOut.json` (ilustrativos), con desgloses que suman. Variantes: `EventImpactOut.nvda` (sin consenso, `pending`), `StatusOut.tranquilo`, `StatusOut.revisa_plan` y `AgendaItemOut.dca`.
+  - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
+  - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
+- Consecuencias: `EventImpactStub` (`schemas/agents.py`) ya se puede sustituir por `EventImpactOut` (D-039).

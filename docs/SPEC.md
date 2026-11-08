@@ -45,7 +45,8 @@ kairos/
 ├── docs/
 │   ├── INGENIERIA.md
 │   ├── SPEC.md
-│   ├── decisiones.md
+│   ├── decisiones.md            # cabecera e índice generado
+│   ├── decisiones/              # una decisión por fichero: D-NNN-slug.md
 │   └── TABLERO.md
 ├── backend/
 │   ├── pyproject.toml

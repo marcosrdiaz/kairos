@@ -1,0 +1,14 @@
+### D-035 · Dependencias y base del frontend (T0-07)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: T0-07 monta `frontend/`. React, Vite, TypeScript, Tailwind, TanStack Query, Recharts, openapi-typescript y vitest ya estaban aceptados (D-001 / `SPEC.md` §2); aquí solo se anota lo nuevo.
+- Decisión:
+  - Router: `react-router` (v8). Son 4 rutas simples; no hay motivo para TanStack Router.
+  - Tests: `@testing-library/react` y `jsdom` para vitest.
+  - Lint: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` y `globals`.
+  - Sin librerías de componentes ni de iconos. Fuentes del sistema, sin fuentes remotas (la demo funciona sin red).
+  - Proxy de Vite: el frontend llama a `/api/...` y Vite lo reenvía al backend **tal cual**, sin quitar el prefijo. La API vive bajo `/api/v1` (`SPEC.md` §11) y `src/api/client.ts` usa `/api/v1` como base; las rutas sin prefijo del diseño son abreviaturas. Pendiente de confirmar con T0-01 que el backend monta los routers en `/api/v1` (*Peticiones de contrato*). Destino por `KAIROS_API_PROXY`: `http://localhost:8000` fuera de Docker, `http://backend:8000` dentro.
+  - Formateo de cifras solo con `src/lib/format.ts` (`Intl.NumberFormat('es-ES')`): los importes entran como string Decimal y no se convierten a `number`.
+- Consecuencias:
+  - Las versiones instaladas son las últimas: React 19 y Tailwind 4 (tokens en `@theme` de `src/index.css`). `SPEC.md` §2 actualizado en el mismo PR.
+  - El `Makefile` de T0-01 puede llamar a `npm run lint|typecheck|test|build` en `frontend/`.
+  - Tokens y reglas visuales en `DESIGN.md` (raíz); contexto de producto en `PRODUCT.md`.

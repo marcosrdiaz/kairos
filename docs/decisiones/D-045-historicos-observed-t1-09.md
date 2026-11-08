@@ -1,0 +1,15 @@
+### D-045 · Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-09 descarga los históricos y calcula `observed` (D-025). `SPEC.md` §8.1 solo proponía las series, ningún documento fijaba el formato de los CSV ni qué sesión recoge un evento.
+- Decisión:
+  - `data/prices/<asset_id>.csv`: `date,close,adj_close`, 3 años, en la divisa de cotización y solo para activos `yahoo:`. `data/factors/<FACTOR>.csv`: `date,value`. Los cierres de la sesión aún abierta no se guardan.
+  - Series: `EQ_GLOBAL` = `IWDA.AS` (MSCI World en EUR), `EQ_US_TECH` = `^NDX`, `OIL` = `BZ=F`, `EURUSD` = `EURUSD=X` y `RATES_EUR` = curva AAA a 10 años del BCE, como **fracción** (`0.0264` = 2,64 %), para restar directamente y obtener el shock en la unidad del contrato.
+  - Sesión que recoge el evento: la del día de `occurred_at` en UTC; si es a partir de las 21:00 UTC (tras el cierre de EE. UU.), la del día siguiente. `observed` compara ese cierre con el anterior, con 5 decimales. `companies` se rellena solo en NVIDIA (`NVDA`).
+  - `scripts/fetch_prices.py` no añade dependencias: usa `httpx`, ya presente en el entorno de desarrollo. Con `--observed-only` recalcula sin red.
+- Motivo: Yahoo no publica la rentabilidad del Bund a 10 años. La serie Svensson del Bundesbank marca −5 pb el 5 de junio de 2025 (2,60 → 2,55) y la curva del BCE, con cierre a las 17:00 CET, +2,4 pb. Se usa la del BCE porque recoge la reacción a una decisión publicada a las 14:15 CEST.
+- Alternativas descartadas: Bundesbank (ver motivo); `^TNX` (es el bono de EE. UU.); `yfinance` (dependencia nueva para una sola petición HTTP).
+- Consecuencias:
+  - T1-02 lee estos CSV, y el cambio EUR/USD sale de `data/factors/EURUSD.csv`. T1-12 debería usar `adj_close` para las rentabilidades.
+  - Datos reales que el equipo debe conocer: el día del BCE la rentabilidad a 10 años **sube** 2,4 pb, así que `fallback_chain` de `bce-2025-06` ("bajan… la rentabilidad de los bonos", "tienden a ganar valor") no coincide con `observed`.
+  - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
+  - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.

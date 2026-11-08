@@ -1,12 +1,15 @@
 name: Renumber decisions
 
-# Numera las decisiones `D-XXX` al entrar en main (scripts/renumber_decisions.py).
-# El commit del bot lleva [skip ci]: solo cambia IDs de texto.
+# Numera las decisiones `D-XXX` al entrar en main (scripts/renumber_decisions.py): renombra el
+# fichero, cambia el ID dentro y en las referencias del push, y regenera el índice de
+# docs/decisiones.md. También lo regenera cuando solo cambia una decisión ya numerada (p. ej. su estado).
+# El commit del bot lleva [skip ci]: solo cambia IDs de texto y el índice.
 
 on:
   push:
     branches: [main]
     paths:
+      - docs/decisiones/**
       - docs/decisiones.md
 
 permissions:
@@ -34,20 +37,22 @@ jobs:
         # Con referencias ambiguas el script numera lo que puede y sale con 2: se commitea igual y
         # el job falla al final (último paso) para que el aviso no pase desapercibido.
         continue-on-error: true
-        # Solo se tocan las referencias de los ficheros que cambió este push (más decisiones.md).
+        # Solo se tocan las referencias de los ficheros que cambió este push (más las decisiones
+        # que se numeran).
         run: >
           python scripts/renumber_decisions.py
           --before "${{ github.event.before }}" --after "${{ github.sha }}"
 
       - name: Commit y push
         run: |
-          if git diff --quiet; then
+          git add -A  # incluye los ficheros renombrados y el índice regenerado
+          if git diff --cached --quiet; then
             echo "Nada que commitear."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "docs: renumber decisions [skip ci]"
+          git commit -m "docs: renumber decisions [skip ci]"
           for attempt in 1 2 3 4 5; do
             if git push origin HEAD:main; then
               exit 0

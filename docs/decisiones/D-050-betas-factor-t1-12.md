@@ -1,0 +1,19 @@
+### D-050 · Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas
+- Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
+- Contexto: T1-12 rellena `factor_beta`. `SPEC.md` §8.1 proponía statsmodels, pero ni pandas, ni numpy ni statsmodels estaban todavía en `backend/pyproject.toml`.
+- Decisión:
+  - **Dependencia nueva: `numpy>=2.1`** (y nada más). El OLS con término independiente, el error estándar y el R² se calculan con numpy en `backend/app/impact/betas.py`, que es una función pura tipada con `mypy --strict`. Los CSV se leen con `csv`, sin pandas.
+  - **Regresión multivariante**: la rentabilidad diaria del activo, en su divisa local y con `adj_close` (D-045), se regresa sobre los cinco factores a la vez. Así T1-13 puede sumar `Σ β·s` sin contar dos veces lo que comparten `EQ_GLOBAL` y `EQ_US_TECH`. El R² guardado es el del modelo y es igual en las cinco filas de cada activo.
+  - **Alineación**: primero se cruzan las fechas (inner join) y después se calculan las rentabilidades, de modo que un festivo de un mercado no desalinea los intervalos. `RATES_EUR` usa la variación absoluta (fracción, la misma unidad que el shock); el resto, la variación porcentual.
+  - **Ventana**: los últimos 3 años hasta la última fecha común de los factores (`--years`). Hace falta un mínimo de 60 observaciones.
+  - **Sin betas**: los activos con `price_source` `fixed:` (`DEP-12M`, `PP-MIXTO`), las series sin variación y las que tienen un nivel a cero en la ventana no tienen filas. El script avisa y no inventa nada.
+  - `impact/repository.py`: `replace_betas(estimates, clear=…)` sustituye las filas de los activos recibidos y borra las de `clear` (es idempotente); `get_betas(asset_ids)` las devuelve como `BetaEstimate`. El script pasa todo el catálogo en `clear`: un activo que deja de poder estimarse se queda sin betas, no con las antiguas.
+- Motivo: statsmodels arrastra scipy y patsy (unos 100 MB más en la imagen) y no trae tipos, lo que obligaría a ignorarlo en mypy. El cálculo son unas 15 líneas.
+- Alternativas descartadas: statsmodels con pandas; regresiones univariantes por factor (sumarlas cuenta dos veces la correlación entre factores).
+- Consecuencias:
+  - T1-13: un activo sin filas en `factor_beta` no tiene sensibilidad estimada, y debe contar como R² 0 en la confianza, no como 0 € con certeza. Para los activos en EUR con subyacente en USD, la beta de `EURUSD` ya recoge la divisa. El `r_fx` de §8.2 solo se aplica a los activos que cotizan en USD, cuya beta de `EURUSD` en divisa local sale casi nula.
+  - **Betas no significativas.** Con los datos reales, varias betas tienen un error estándar del orden de la propia beta: en las acciones de EE. UU., la de `RATES_EUR` (NVDA 2,61 con error estándar 1,86; AAPL −0,39 con 1,36). T1-13 no debe aplicarlas como si fueran exactas: el rango `low_eur`/`high_eur` se ensancha con el error estándar (`β ± 2·se`), y una beta con |β/se| < 2 cuenta como ruido (aporta al rango, no a `impact_eur`).
+  - **Desfase horario.** `EQ_GLOBAL` (IWDA en Ámsterdam) cierra antes que Wall Street (ya anotado en la decisión de T1-09). Por eso las acciones de EE. UU. salen con beta casi nula frente a `EQ_GLOBAL`, cargan casi todo en `EQ_US_TECH` y tienen R² bajos (AAPL 0,27). Es un efecto de los datos de cierre, no un error del cálculo; T1-13 lo verá como confianza baja en esos activos.
+  - `IE00B4L5Y983` (IWDA) **es** la serie de `EQ_GLOBAL`, así que sale con beta 1 y R² 1.
+  - `make betas` necesita la tabla `asset` sembrada antes (`seed_db.py`, T1-03).
+  - Ficheros añadidos fuera de la fila de T1-12: `backend/pyproject.toml`, `backend/uv.lock` y los tests `backend/tests/test_{betas,impact_repository,compute_betas_script}.py`. `SPEC.md` §2 y §8.1 actualizados.

@@ -1,0 +1,13 @@
+### D-039 · Contratos de eventos, agentes y avisos (T0-05)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: el diseño §4.2 y §4.4 define estos contratos pero deja cabos sueltos: dónde vive `GET /portfolios/{id}/events`, qué entra en `write_status_sentence` y cómo se nombran los ejemplos de una unión SSE.
+- Decisión:
+  - `GET /portfolios/{id}/events` es de impacto (T0-04, `SPEC.md` §11) y devuelve `EventImpactOut`. `api/events.py` solo monta el control de replay: `POST /demo/replay/{event_id}` → `ReplayOut {event_id, portfolios: {laura: calc_id, javier: calc_id}, elapsed_ms}`; con `DEMO_MODE=false` responde 403 `DEMO_MODE_DISABLED`.
+  - `EventImpactStub` (en `schemas/agents.py`) es provisional: solo los campos que necesitan `write_event_explanation` y `write_alert_message`, sin ejemplo propio y con otro nombre para no chocar con `EventImpactOut` de T0-04. Se sustituye por `schemas.impact.EventImpactOut` cuando T0-04 esté en `main`.
+  - `StatusFacts` (entrada de `write_status_sentence`) lleva `state`, `total_eur`, `change_week_pct`, `reason {kind, event_id}` y `calc_id`, más opcionales ya calculados: `event_title`, `top_asset_class`, `main_channel`, `event_impact_eur` (para `atento`) y `equity_current`, `equity_target` (para `revisa_plan`). El LLM no opera con ellos.
+  - `ExplanationStatus`, `SentenceStatus` y `StatusState` viven en `schemas/agents.py`; T0-04 los importa de ahí.
+  - Unión SSE: `AskEvent` es una unión discriminada por `type` (alias, no clase). Los ejemplos van por clase concreta (`AskMetaEvent.json`, `AskSentenceEvent.json`, `AskSentenceEvent.impact.json`, `AskDoneEvent.json`, `AskErrorEvent.json`) para que el test genérico los encuentre sin cambios.
+  - `EventIn.observed` es opcional porque T0-10 escribe los JSON antes de que T1-09 calcule `observed`. `EventAnalysis` rechaza dígitos en `entities[].name`, `channels[].label|rationale`, `companies[].name` y `causal_chain`; los identificadores (`event_id`, `analyzed_model`, claves) pueden llevarlos.
+  - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
+  - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
+- Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.

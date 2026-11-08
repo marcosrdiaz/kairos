@@ -37,6 +37,16 @@ jobs:
       - name: Lint
         run: make lint
 
+      # El índice de docs/decisiones.md se genera (scripts/renumber_decisions.py): ningún PR lo edita
+      # a mano. Se ignoran las filas de las decisiones que el PR añade o cambia (p. ej. su estado):
+      # las regenera la Action al entrar en main. En un PR, HEAD es el merge con la base.
+      - name: Índice de decisiones sin editar a mano
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+          python3 scripts/renumber_decisions.py --check-index \
+            --base ${{ github.event.pull_request.base.sha }}
+
       - name: Test
         run: make test
 
