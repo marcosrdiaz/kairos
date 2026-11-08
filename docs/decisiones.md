@@ -63,6 +63,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-038 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
 | D-037 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
+| D-XXX | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime y Flash v2.5; voz y latencia pendientes | Propuesta |
 
 ---
 
@@ -359,3 +360,16 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
   - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
 - Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
+
+### D-XXX · IDs de ElevenLabs (T0-09): Scribe v2 Realtime y Flash v2.5; voz y latencia pendientes
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Propuesta
+- Contexto: `SPEC.md` §2 dejaba sin fijar los IDs exactos de los modelos de voz. T1-21 y T0-06 los necesitan para `.env`. La verificación se hizo contra la documentación oficial de ElevenLabs, sin clave de API.
+- Decisión (verificado en la documentación):
+  - `ELEVENLABS_STT_MODEL=scribe_v2_realtime`. Va por WebSocket: `wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime`. Auth: cabecera `xi-api-key` desde el backend (la clave no sale del backend) o `token` de un solo uso. Parámetros útiles: `audio_format` (`pcm_16000` por defecto), `language_code` (ISO 639-1 o 639-3), `commit_strategy` (`manual`, `vad`, `turn_prediction`). El cliente envía `input_audio_chunk` con `audio_base_64`, `commit` y `sample_rate`; el servidor responde `session_started`, `partial_transcript` y `committed_transcript`, entre otros. La documentación da una mediana de ~150 ms hasta la transcripción confirmada.
+  - `ELEVENLABS_TTS_MODEL=eleven_flash_v2_5`. Latencia nominal de ~75–100 ms (mediana, sin red ni aplicación). Admite 32 idiomas, español incluido, y 40.000 caracteres por petición. Va sin normalización de texto: los números y símbolos hay que escribirlos ya normalizados, algo a tener en cuenta con las frases que lleven importes.
+  - TTS por HTTP: `POST https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream`, `output_format` por defecto `mp3_44100_128` (el navegador recibe `audio/mpeg`). `optimize_streaming_latency` está obsoleto: se elige el modelo, no el parámetro.
+  - Scribe v2 Realtime transcribe en más de 90 idiomas y el español (`spa`) figura en la lista. El código `es` no aparece en esa lista: probarlo en la medición, y si falla usar `spa`.
+- Pendiente (necesita `ELEVENLABS_API_KEY`, no medido): elegir `ELEVENLABS_VOICE_ID` (voz en español de la biblioteca de ElevenLabs), comprobar que `es` funciona como `language_code` y medir la latencia real. La medición de 10 intentos es T2-16; aquí bastan unas pocas llamadas sueltas.
+- Motivo: fijar los IDs ahora desbloquea T0-06 y T1-21 y evita que se copien de memoria.
+- Alternativas descartadas: ninguna; los modelos ya estaban decididos en la decisión 4 del diseño del MVP.
+- Consecuencias: T1-21 usa estos IDs en `.env.example` y en `voice/`. Si la voz o la latencia fallan en la medición, se cambia de voz o de modelo, no de proveedor (decisión 4).
