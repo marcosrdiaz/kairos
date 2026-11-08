@@ -1,0 +1,23 @@
+{
+  "illustrative": true,
+  "id": "dcx_7f3a21",
+  "dca_plan_id": "dca_laura",
+  "scheduled_for": "2026-11-05T00:00:00Z",
+  "status": "pending",
+  "lines": [
+    {
+      "asset_id": "IE00B03HD191",
+      "amount_eur": "210.00",
+      "price": "48.20000000",
+      "price_at": "2026-11-04T00:00:00Z",
+      "units_estimated": "4.35684647"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "amount_eur": "90.00",
+      "price": "95.10000000",
+      "price_at": "2026-11-04T00:00:00Z",
+      "units_estimated": "0.94637224"
+    }
+  ]
+}
