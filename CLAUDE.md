@@ -53,6 +53,17 @@ make betas       # recalcula factor_beta desde data/prices
 
 Antes de dar una tarea por terminada: `make lint && make test` en verde.
 
+## Herramientas
+
+Van en git (`.claude/settings.json`, `.claude/skills/`, `skills-lock.json`); ver D-033.
+
+- **impeccable** (skill): UI en general: diseñar, criticar, pulir, auditar pantallas.
+- **Emil Kowalski** (`emil-design-eng`, `review-animations`): motion y pulido fino de componentes.
+- **playwright-cli** (skill + binario): para que el agente abra la app, la pruebe y haga capturas. No es `@playwright/test`, que se usa para los E2E de T3-02.
+- **superpowers** (plugin): plan, TDD y debugging. Es pesado para 4 días: brainstorming y planes solo en tareas que tocan más de un módulo; en tareas pequeñas, directo.
+
+Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el navegador de playwright-cli) y aceptar los plugins al abrir Claude Code.
+
 ## Convenciones de código
 
 - **Idioma**: identificadores, nombres de fichero y commits en inglés. Textos visibles por el usuario, prompts de los agentes y documentación en español de España.

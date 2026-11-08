@@ -56,6 +56,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-030 | 2026-11-08 | Año de `DEMO_CLOCK` | Aceptada |
 | D-031 | 2026-11-08 | Reloj inyectable y ajuste de demo en la valoración (sustituye a D-009) | Aceptada |
 | D-032 | 2026-11-08 | Avisos mínimos (`event_impact`, 2 por semana ISO) pasan a MVP | Aceptada |
+| D-033 | 2026-11-08 | Herramientas de Claude Code a nivel de proyecto. Añade (solo desarrollo, no entran en la app): plugin superpowers, skills impeccable / emil-design-eng / review-animations / playwright-cli, y `@playwright/cli` global vía `scripts/setup-dev.sh` | Aceptada |
 
 ---
 
@@ -261,3 +262,11 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Contexto: RF-23 era "S" en `INGENIERIA.md`, pero el paso 3 del guion (replay → Atento + aviso) y T2-08 dependen de los avisos de tipo `event_impact`.
 - Decisión: RF-23 pasa a M en versión mínima: avisos `kind=event_impact` con `score = |impact_eur| / max(150, 0,005 · total)`, aviso si `score ≥ 1`, y límite de 2 por semana ISO y cartera según `clock.now()`. `dca_pending` y `drift` siguen en "Si da tiempo". Contrato en el diseño §4.4.
 - Consecuencias: `INGENIERIA.md` (RF-23 y trazabilidad del paso 3) actualizado; T2-08 es MVP.
+
+### D-033 · Herramientas de Claude Code a nivel de proyecto
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: cinco sesiones de Claude Code en paralelo; conviene que todas tengan las mismas skills y plugins sin instalar nada a mano.
+- Decisión: versionar en git `.claude/settings.json` (plugin `superpowers@claude-plugins-official`, que está en el marketplace oficial, y permisos `allow` de `playwright-cli`, `make`, `uv`, `npm run` y `git pull`), `.claude/skills/` y `skills-lock.json` con las skills `impeccable`, `emil-design-eng`, `review-animations` y `playwright-cli`. Del repo de Emil Kowalski solo esas dos skills (cada skill gasta contexto en cada turno; `emilkowalski/skill` y `emilkowalski/skills` tienen el mismo contenido). `scripts/setup-dev.sh` instala el binario `@playwright/cli` y su navegador (idempotente).
+- Motivo: reproducibilidad entre sesiones con un solo paso tras el pull.
+- Dependencias de desarrollo que añade: plugin superpowers; skills impeccable, emil-design-eng, review-animations, playwright-cli; paquete npm global `@playwright/cli` (fuera del repo, distinto de `@playwright/test` de T3-02). Ninguna entra en el código de producción.
+- Consecuencias: `.claude/.gitignore` y `.playwright-cli/.gitignore` ignoran `settings.local.json` y la salida de playwright-cli, para no tocar el `.gitignore` raíz (de T0-01); cuando T0-01 cierre se pueden mover allí. impeccable puede activar un hook de diseño por edición con `impeccable hooks on`, que escribe en `settings.local.json` (no versionado); no está activado.
