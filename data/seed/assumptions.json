@@ -1,0 +1,56 @@
+{
+  "illustrative": true,
+  "as_of": "2025-12-31T00:00:00Z",
+  "scenarios": {
+    "pesimista": {
+      "equity": "0.0417",
+      "fixed_income": "0.0276",
+      "cash": "0.0164",
+      "mixed": "0.0346"
+    },
+    "base": {
+      "equity": "0.0670",
+      "fixed_income": "0.0350",
+      "cash": "0.0180",
+      "mixed": "0.0510"
+    },
+    "optimista": {
+      "equity": "0.0923",
+      "fixed_income": "0.0424",
+      "cash": "0.0196",
+      "mixed": "0.0674"
+    }
+  },
+  "inputs": {
+    "equity": {
+      "benchmark": "World",
+      "expected_return_10y_geometric": "0.067",
+      "simulated_volatility_10y": "0.160"
+    },
+    "fixed_income": {
+      "benchmark": "Euro Aggregate",
+      "expected_return_10y_geometric": "0.035",
+      "simulated_volatility_10y": "0.047"
+    },
+    "cash": {
+      "benchmark": "Euro cash",
+      "expected_return_10y_geometric": "0.018",
+      "simulated_volatility_10y": "0.010"
+    }
+  },
+  "sources": [
+    {
+      "kind": "assumption",
+      "label": "Amundi Investment Institute, Capital Market Assumptions, abril de 2026, p. 18",
+      "ref": "equity, fixed_income, cash",
+      "as_of": "2025-12-31T00:00:00Z",
+      "url": "https://research-center.amundi.com/files/nuxeo/dl/db39deed-c6ca-4577-8a06-43f26ee2804f?inline="
+    }
+  ],
+  "notes": [
+    "base: rentabilidad geométrica esperada a 10 años de Amundi: World (equity), Euro Aggregate (fixed_income) y Euro cash (cash).",
+    "pesimista y optimista: base menos o más media desviación típica del rendimiento anualizado a 10 años (volatilidad simulada / raíz de 10 / 2). La regla es un supuesto del equipo; los datos de entrada son de Amundi.",
+    "mixed: media simple de equity y fixed_income; supuesto del equipo.",
+    "Rentabilidades nominales, antes de comisiones y en divisa local. No incluyen el efecto de la divisa en la renta variable global para un inversor en euros."
+  ]
+}
