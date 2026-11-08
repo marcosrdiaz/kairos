@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1/assets/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup Assets
+         * @description Busca por ISIN, ticker o nombre. Lista vacía si no hay coincidencias.
+         */
+        get: operations["lookup_assets_api_v1_assets_lookup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dca-executions/{execution_id}": {
         parameters: {
             query?: never;
@@ -35,6 +55,26 @@ export interface paths {
         put?: never;
         /** Replay Event */
         post: operations["replay_event_api_v1_demo_replay__event_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/demo/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Demo
+         * @description Recarga Laura y Javier. `preload` aún no reproduce eventos: llega con T1-15 / T2-03.
+         */
+        post: operations["reset_demo_api_v1_demo_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -541,6 +581,32 @@ export interface components {
             value_eur: string;
         };
         /**
+         * AssetOut
+         * @description Activo del catálogo: `GET /assets/lookup?q=` (lista). Completa el alta (RF-01).
+         *
+         *     `id` es el ISIN; sin ISIN, un código propio (`DEP-12M`, `PP-MIXTO`). `ter` es `null` en
+         *     acciones, depósitos y planes. La fuente del precio es interna y no sale en el contrato.
+         */
+        AssetOut: {
+            asset_class: components["schemas"]["AssetClass"];
+            asset_type: components["schemas"]["AssetType"];
+            /** Currency */
+            currency: string;
+            /** Id */
+            id: string;
+            /** Isin */
+            isin: string | null;
+            /** Name */
+            name: string;
+            price_kind: components["schemas"]["PriceKind"];
+            /** Ter */
+            ter: string | null;
+            /** Ticker */
+            ticker: string | null;
+            /** Transferable */
+            transferable: boolean;
+        };
+        /**
          * AssetType
          * @enum {string}
          */
@@ -706,6 +772,28 @@ export interface components {
             impact_eur: string;
             /** Label */
             label: string;
+        };
+        /**
+         * DemoResetOut
+         * @description Qué ha recargado el reset: carteras en su estado inicial y eventos precargados.
+         */
+        DemoResetOut: {
+            /** Portfolio Ids */
+            portfolio_ids: string[];
+            /** Preloaded Event Ids */
+            preloaded_event_ids?: string[];
+        };
+        /**
+         * DemoResetRequest
+         * @description Cuerpo opcional. Con `preload: true` (lo que usa el guion) se reproducen además BCE y
+         *     petróleo con `occurred_at = now() − 96 h` y `silent: true`.
+         */
+        DemoResetRequest: {
+            /**
+             * Preload
+             * @default false
+             */
+            preload: boolean;
         };
         /**
          * ErrorOut
@@ -1624,6 +1712,7 @@ export type AskChannel = components['schemas']['AskChannel'];
 export type AskRequest = components['schemas']['AskRequest'];
 export type AssetClass = components['schemas']['AssetClass'];
 export type AssetImpact = components['schemas']['AssetImpact'];
+export type AssetOut = components['schemas']['AssetOut'];
 export type AssetType = components['schemas']['AssetType'];
 export type CompanyHolding = components['schemas']['CompanyHolding'];
 export type Confidence = components['schemas']['Confidence'];
@@ -1637,6 +1726,8 @@ export type DcaPlanOut = components['schemas']['DcaPlanOut'];
 export type DcaPlanStatus = components['schemas']['DcaPlanStatus'];
 export type DcaPlanUpdateRequest = components['schemas']['DcaPlanUpdateRequest'];
 export type DemoAdjustmentOut = components['schemas']['DemoAdjustmentOut'];
+export type DemoResetOut = components['schemas']['DemoResetOut'];
+export type DemoResetRequest = components['schemas']['DemoResetRequest'];
 export type ErrorOut = components['schemas']['ErrorOut'];
 export type EventImpactOut = components['schemas']['EventImpactOut'];
 export type ExplanationStatus = components['schemas']['ExplanationStatus'];
@@ -1693,6 +1784,37 @@ export type UserRule = components['schemas']['UserRule'];
 export type ValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
 export interface operations {
+    lookup_assets_api_v1_assets_lookup_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     act_on_dca_execution_api_v1_dca_executions__execution_id__post: {
         parameters: {
             query?: never;
@@ -1726,7 +1848,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -1768,6 +1890,48 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_demo_api_v1_demo_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DemoResetRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoResetOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2054,7 +2218,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2099,7 +2263,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2141,7 +2305,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2223,7 +2387,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2307,7 +2471,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2351,7 +2515,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2475,7 +2639,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2559,7 +2723,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2603,7 +2767,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2665,7 +2829,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;

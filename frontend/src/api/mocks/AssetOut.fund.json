@@ -1,0 +1,13 @@
+{
+  "illustrative": true,
+  "id": "IE00B03HD191",
+  "isin": "IE00B03HD191",
+  "ticker": null,
+  "name": "Vanguard Global Stock Index Fund EUR Acc",
+  "asset_type": "fund",
+  "asset_class": "equity",
+  "currency": "EUR",
+  "ter": "0.0018",
+  "transferable": true,
+  "price_kind": "nav_daily"
+}

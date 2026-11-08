@@ -9,6 +9,7 @@ from datetime import datetime
 
 from app.portfolio import mock
 from app.schemas.portfolio import (
+    AssetOut,
     DcaExecutionActionRequest,
     DcaExecutionOut,
     DcaExecutionStatus,
@@ -54,6 +55,16 @@ def list_portfolio_ids() -> list[str]:
 
 def list_portfolios() -> list[PortfolioSummaryOut]:
     return mock.list_portfolios()
+
+
+def lookup_assets(query: str) -> list[AssetOut]:
+    """Autocompletar del alta (`GET /assets/lookup?q=`): por ISIN, ticker o nombre."""
+    return mock.lookup_assets(query)
+
+
+def reset_demo() -> list[str]:
+    """Devuelve Laura y Javier a su estado inicial (`/demo/reset`). Devuelve los IDs recargados."""
+    return mock.list_portfolio_ids()
 
 
 def init_positions(portfolio_id: str, request: PositionsInitRequest) -> PortfolioOut:
