@@ -18,5 +18,4 @@ _ERRORS: dict[int | str, dict[str, Any]] = {403: {"model": ErrorOut}, 404: {"mod
 
 @router.post("/demo/replay/{event_id}", response_model=ReplayOut, responses=_ERRORS)
 def replay_event(event_id: str, body: ReplayRequest | None = None) -> ReplayOut:
-    """Cuerpo aceptado por contrato; T1-15 lo aplica."""
-    return service.replay(event_id)
+    return service.replay(event_id, body)
