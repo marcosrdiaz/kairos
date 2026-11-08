@@ -1,0 +1,54 @@
+{
+  "illustrative": true,
+  "portfolio_id": "laura",
+  "start": "2026-11-01T18:00:00Z",
+  "end": "2026-11-08T18:00:00Z",
+  "start_value_eur": "34825.68",
+  "end_value_eur": "34311.68",
+  "net_flows_eur": "0.00",
+  "by_asset": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "start_value_eur": "11107.88",
+      "end_value_eur": "10877.88",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "start_value_eur": "9745.31",
+      "end_value_eur": "9655.31",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "start_value_eur": "9746.84",
+      "end_value_eur": "9776.84",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "US67066G1040",
+      "start_value_eur": "1438.67",
+      "end_value_eur": "1258.67",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "US0378331005",
+      "start_value_eur": "826.58",
+      "end_value_eur": "786.58",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "ES0148396007",
+      "start_value_eur": "1205.00",
+      "end_value_eur": "1195.00",
+      "flows_eur": "0.00"
+    },
+    {
+      "asset_id": "ES0144580Y14",
+      "start_value_eur": "755.40",
+      "end_value_eur": "761.40",
+      "flows_eur": "0.00"
+    }
+  ],
+  "calc_id": "calc_3af684acebef5032abc0170e78041776"
+}
