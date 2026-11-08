@@ -1,0 +1,17 @@
+{
+  "illustrative": true,
+  "state": "atento",
+  "state_label": "Atento",
+  "total_eur": "34311.68",
+  "change_week_pct": "-0.015",
+  "sentence": "Tus fondos tecnológicos caen tras resultados. Toca para ver por qué.",
+  "sentence_status": "ok",
+  "reason": {
+    "kind": "event",
+    "event_id": "nvda-2025-02",
+    "event_impact_eur": "-470.00"
+  },
+  "price_as_of": "2026-11-06T16:35:00Z",
+  "computed_at": "2026-11-08T18:02:04Z",
+  "calc_id": "calc_5e1b51579424133348ed5bf6b096abc2"
+}

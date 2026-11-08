@@ -1,0 +1,66 @@
+{
+  "illustrative": true,
+  "event_id": "nvda-2025-02",
+  "portfolio_id": "laura",
+  "title": "NVIDIA cae tras presentar resultados",
+  "event_type": "earnings",
+  "occurred_at": "2026-11-08T18:02:00Z",
+  "causal_chain": [
+    "NVIDIA cae tras presentar resultados",
+    "Bajan los fondos con mucho peso en tecnológicas",
+    "Bajan tus fondos de renta variable"
+  ],
+  "impact_eur": "-470.00",
+  "low_eur": "-620.00",
+  "high_eur": "-320.00",
+  "impact_pct": "-0.0137",
+  "confidence": "media",
+  "polarity": "riesgo",
+  "breakdown": [
+    {
+      "asset_id": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "value_eur": "10877.88",
+      "impact_eur": "-210.00",
+      "market_eur": "-210.00",
+      "fx_eur": "0.00",
+      "channel": "resultados NVDA"
+    },
+    {
+      "asset_id": "US67066G1040",
+      "name": "NVIDIA Corp.",
+      "value_eur": "1258.67",
+      "impact_eur": "-180.00",
+      "market_eur": "-180.00",
+      "fx_eur": "0.00",
+      "channel": "resultados NVDA"
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "name": "Vanguard Global Stock Index Fund EUR Acc",
+      "value_eur": "9655.31",
+      "impact_eur": "-80.00",
+      "market_eur": "-80.00",
+      "fx_eur": "0.00",
+      "channel": "resultados NVDA"
+    }
+  ],
+  "surprise": {
+    "label": null,
+    "expected": null,
+    "actual": null,
+    "metric": null
+  },
+  "explanation": null,
+  "explanation_status": "pending",
+  "sources": [
+    {
+      "kind": "event",
+      "label": "Resultados de NVIDIA",
+      "ref": "nvda-2025-02",
+      "as_of": "2026-11-08T18:02:00Z",
+      "url": null
+    }
+  ],
+  "calc_id": "calc_dbc20f11e3115888f2fd8a3c3619c961"
+}

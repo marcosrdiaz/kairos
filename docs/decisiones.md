@@ -64,6 +64,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
+| D-XXX | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 
 ---
 
@@ -374,3 +375,16 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `mock.mp3` (6,7 s, 48 kbps mono) se generó en local con la voz es-ES de Windows (Helena) y ffmpeg. Dice: "Audio de prueba de KAIROS. Soy una inteligencia artificial y esto no es asesoramiento financiero.", para que también valga como aviso de IA mientras no exista `disclaimer.mp3`. No lleva cifras.
   - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
 - Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
+
+### D-XXX · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios.
+- Decisión:
+  - Rutas: `api/impact.py` sirve `GET /portfolios/{id}/events`, `POST /portfolios/{id}/scenarios` y `GET /portfolios/{id}/move`; `api/exposure.py`, `/exposure` y `/radar`; `api/status.py`, `/status`; `api/planning.py`, `/projection` y `/agenda`. T2-05, T2-06 y T2-07 pueden mover las suyas a `api/{radar,agenda,move}.py`.
+  - `schemas/impact.py` añade `ScenarioRequest`, que el diseño solo describía con un JSON. `EventType` y `MovePeriod` son `Literal` para no chocar en el OpenAPI con los enums de T0-05.
+  - `ExplanationStatus`, `SentenceStatus`, `StatusState` y `StatusReasonKind` se importan de `schemas/agents.py` (D-039).
+  - Los mocks comprueban que la cartera existe con `portfolio.service.get_valued` (404).
+  - Ejemplos con los activos y el total de `PortfolioOut.json` (ilustrativos), con desgloses que suman. Variantes: `EventImpactOut.nvda` (sin consenso, `pending`), `StatusOut.tranquilo`, `StatusOut.revisa_plan` y `AgendaItemOut.dca`.
+  - Tres diferencias con los JSON de §4.3, que son ilustrativos: en el evento del BCE, `low_eur` es negativo, porque con `low_eur > 0` y más del 50 % en renta fija (por debajo de objetivo) la regla daría `oportunidad`, no `neutral`; `StatusOut.reason.event_impact_eur` es `-470.00`, igual que `by_event` de `MoveAttributionOut`, y no `-514.00`, que es el cambio semanal total; y el título de `cheaper_contribution` evita la palabra "compra" (regla de producto 2).
+  - Ficheros añadidos fuera de la fila de T0-04: `backend/app/{impact,exposure,status,planning}/__init__.py` y `backend/tests/test_analysis_mocks.py`.
+- Consecuencias: `EventImpactStub` (`schemas/agents.py`) ya se puede sustituir por `EventImpactOut` (D-039).

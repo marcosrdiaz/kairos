@@ -1,0 +1,31 @@
+{
+  "illustrative": true,
+  "items": [
+    {
+      "id": "rad_currency",
+      "kind": "risk",
+      "rule": "currency",
+      "title": "El 61 % de tu dinero está en dólares",
+      "detail": "Si el dólar cae frente al euro, tu cartera pierde aunque la bolsa no se mueva.",
+      "value_eur": "20930.12",
+      "weight": "0.61",
+      "user_rule": null,
+      "calc_id": "calc_c6cf5daa5e98a832108759fc537f991a"
+    },
+    {
+      "id": "rad_cheaper",
+      "kind": "opportunity",
+      "rule": "cheaper_contribution",
+      "title": "Tu aportación de este mes entra a un precio más bajo",
+      "detail": "El fondo de tu plan de aportaciones cotiza un 3,4 % por debajo de hace un mes.",
+      "value_eur": "210.00",
+      "weight": "-0.034",
+      "user_rule": {
+        "source": "dca_plan",
+        "ref": "dca_laura"
+      },
+      "calc_id": "calc_673afb6491e662ec6c91953d47e3a1af"
+    }
+  ],
+  "calc_id": "calc_50b7fe4da64720232c25bc7c6d66f6c5"
+}
