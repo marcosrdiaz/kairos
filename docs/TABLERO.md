@@ -75,7 +75,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | ✅ hecho |
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
 | T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | — | ⬜ |
-| T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | Jaime | 🔄 en curso |
+| T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | Jaime | ✅ hecho |
 | T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | ✅ hecho |
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | Jaime | ✅ hecho |
 | T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | — | ⬜ |
@@ -132,16 +132,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
-
-### T1-11 · Look-through: claves que no son una empresa — Marcos (para quien coja la tarea)
-**Qué deja T1-08:** los CSV de `data/seed/compositions/` (en `main` cuando se mergee el PR #24). Detalle en la decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
-**Claves que no son una empresa:** las que empiezan por `OTROS_`, `GOV_` o `BONOS_` son un residuo o un emisor público. Cuentan en país, sector y divisa, pero **se excluyen de `top_companies` y de los solapamientos** (`overlap`) y de la regla de concentración del radar. Las demás claves son empresas y coinciden entre fondos y con las acciones directas (clave = `ticker` de `assets.json`).
-**Otros detalles:** `country = OTHER` y `currency` vacío significan «desconocido» (se agrupan como `OTHER`). Los nombres de empresa vienen en mayúsculas de iShares: el mismo nombre en todos los ficheros. En eventos de resultados, el residuo de un fondo equivale a «esa empresa no está en el residuo».
-
-### T1-11 · Confianza: cobertura de look-through propuesta — Marcos (para quien coja la tarea)
-**Propuesta (estado Propuesta, la valida quien coja T1-11 o T1-13):** `coverage_pct` = fracción del patrimonio cuyo país se conoce por look-through (no cae en `country = OTHER`). Laura: 94,3 %, así que cumple el umbral «cobertura ≥ 90 %» de `alta`. Está en la decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
-**Efecto en la confianza:** la cobertura a nivel de empresa (Laura: 40 %) no cuenta. El sector tampoco: con país **y** sector conocidos Laura baja a 54,9 % (bonos y residuos de Vanguard llevan `sector = other`) y la confianza nunca sería `alta`.
-**Eventos de resultados:** el peso `w_{i,c}` sale solo de la fila nombrada de la empresa; sin fila, es 0 («no está en el residuo»).
 
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
