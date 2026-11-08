@@ -160,3 +160,21 @@ def test_constant_price_raises_instead_of_inventing_betas() -> None:
 
     with pytest.raises(InsufficientData):
         estimate_betas("DEP-12M", flat, factors)
+
+
+def test_no_factors_raises() -> None:
+    prices, _ = _synthetic({Factor.EQ_GLOBAL: 1.0})
+
+    with pytest.raises(InsufficientData):
+        estimate_betas("X", prices, {})
+
+
+def test_window_end_trims_newer_observations() -> None:
+    prices, factors = _synthetic({Factor.EQ_GLOBAL: 1.0}, noise=0.005)
+    cut = START + timedelta(days=300)
+
+    est = estimate_betas("X", prices, factors, window_end=cut)
+
+    assert est[0].window_start == START
+    assert est[0].window_end == cut
+    assert est[0].n_obs == 300

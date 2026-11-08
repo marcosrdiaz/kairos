@@ -48,8 +48,12 @@ class BetaEstimate:
 
 @dataclass(frozen=True)
 class AlignedReturns:
-    """Rentabilidades en las fechas comunes; `dates[k]` es el final del intervalo k."""
+    """Rentabilidades en las fechas comunes; `dates[k]` es el final del intervalo k.
 
+    `start` es el primer nivel usado (inicio del primer intervalo); `None` si no hay intervalos.
+    """
+
+    start: date | None
     dates: list[date]
     asset: list[float]
     factors: dict[Factor, list[float]]
@@ -78,14 +82,14 @@ def align_returns(
         if (window_start is None or d >= window_start) and (window_end is None or d <= window_end)
     )
     if len(days) < 2:
-        return AlignedReturns(dates=[], asset=[], factors={f: [] for f in factors})
+        return AlignedReturns(start=None, dates=[], asset=[], factors={f: [] for f in factors})
 
     asset = _changes([float(prices[d]) for d in days], absolute=False)
     factor_returns = {
         f: _changes([float(s[d]) for d in days], absolute=f in ABSOLUTE_CHANGE_FACTORS)
         for f, s in factors.items()
     }
-    return AlignedReturns(dates=days[1:], asset=asset, factors=factor_returns)
+    return AlignedReturns(start=days[0], dates=days[1:], asset=asset, factors=factor_returns)
 
 
 def _to_decimal(value: float) -> Decimal:
@@ -123,17 +127,16 @@ def estimate_betas(
 ) -> list[BetaEstimate]:
     """Una estimación por factor de `factors`. Lanza `InsufficientData` si no se puede estimar."""
     order = list(factors)
+    if not order:
+        raise InsufficientData(f"{asset_id}: sin factores")
     aligned = align_returns(prices, factors, window_start, window_end)
     n = len(aligned.dates)
-    if n < max(MIN_OBSERVATIONS, len(order) + 2):
+    if aligned.start is None or n < max(MIN_OBSERVATIONS, len(order) + 2):
         raise InsufficientData(f"{asset_id}: {n} observaciones (mínimo {MIN_OBSERVATIONS})")
 
     y = np.asarray(aligned.asset, dtype=np.float64)
     x = np.column_stack([np.asarray(aligned.factors[f], dtype=np.float64) for f in order])
     coef, std_err, r2 = _ols(y, x)
-
-    common = sorted(set(prices).intersection(*(set(s) for s in factors.values())))
-    first = next(d for d in common if window_start is None or d >= window_start)
     return [
         BetaEstimate(
             asset_id=asset_id,
@@ -142,7 +145,7 @@ def estimate_betas(
             std_err=_to_decimal(float(std_err[i])),
             r2=_to_decimal(r2),
             n_obs=n,
-            window_start=first,
+            window_start=aligned.start,
             window_end=aligned.dates[-1],
         )
         for i, f in enumerate(order)
