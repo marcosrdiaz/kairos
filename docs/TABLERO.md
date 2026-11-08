@@ -58,7 +58,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-07 | Vite + TS + Tailwind + TanStack Query; 3 pestañas (Inicio · Cartera · Pregunta) y ruta `/panel` vacía. El enganche a los mocks espera a T0-03 | Navega sobre mocks | T0-03 (b) | `frontend/` salvo `Dockerfile`, `src/voice/`, `src/api/{generated,mocks}/`; `PRODUCT.md`, `DESIGN.md` | Marcos | ✅ hecho |
 | T0-08 | `assets.json`, `laura.json` / `javier.json` con plan y DCA según §5, y `assumptions.json` (rentabilidad por clase de activo, con fuente y `"illustrative": true`) | Cumple la fila 1 de §5; `assumptions.json` listo para la proyección | — | `data/seed/assets.json`, `data/seed/portfolios/`, `data/seed/assumptions.json` | Jaime | ✅ hecho |
 | T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | 🧪 en PR |
-| T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | Manu | 🔄 en curso |
+| T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | Manu | 🧪 en PR |
 
 ### Fase 1 · Datos y motores (lun 9)
 
@@ -131,6 +131,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T0-10 · Eventos de replay — Manu
+**Estado:** PR #18 abierto (`t0-10/replay-events`). Contiene `data/events/replay/{bce-2025-06,oil-2025-06,nvda-2025-02}.json` sin `observed`, el test `backend/tests/test_replay_events.py` (fuera de la fila de la tarea) y una entrada `D-XXX` en estado *Propuesta* en `docs/decisiones.md`.
+**Siguiente paso exacto:** revisión y merge del PR, y después `docs: done T0-10`. Eso desbloquea T1-09 y T1-15.
+**Para T1-09:** las horas de `occurred_at` son 12:15Z (BCE), 01:42Z del 13 jun (petróleo, primera cotización del Brent tras los ataques del día 12 a las 23:30Z) y 21:20Z del 26 feb (NVIDIA; la caída es del 27 feb). `observed` debe medirse en esos días de mercado.
+**Ficheros tocados:** los de arriba.
 
 ### T0-09 · IDs de voz de ElevenLabs — Marcos
 **Estado:** PR #16 abierto (`t0-09/elevenlabs-ids`): IDs, voz (Ciro), latencia y pronunciación en `docs/decisiones.md` (entrada «IDs de ElevenLabs (T0-09)»), y los tres IDs en `.env.example`.
