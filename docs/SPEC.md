@@ -22,7 +22,7 @@ Especificación técnica viva. Si el código y este documento discrepan, se arre
 | ORM / migraciones | SQLAlchemy 2.0 + Alembic | Modelos tipados (`Mapped[...]`) |
 | Validación / contratos | Pydantic v2 | `backend/app/schemas/` |
 | Base de datos | PostgreSQL 16 | Volumen Docker; `make seed` la llena |
-| Cálculo | pandas, numpy, statsmodels | Solo en `impact/` y `scripts/` |
+| Cálculo | numpy (D-XXX) | Solo en `impact/` y `scripts/` |
 | LLM | API de Anthropic (SDK `anthropic`) | IDs de modelo por variable de entorno (§9) |
 | Voz | ElevenLabs: Scribe v2 Realtime (STT) + Flash v2.5 (TTS) | IDs exactos a verificar en la doc de ElevenLabs (tarea T0-09) |
 | Frontend | React 19 + TypeScript + Vite | `openapi-typescript` para tipos; TanStack Query para datos |
@@ -241,7 +241,7 @@ DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `cloc
 | `OIL` | Brent (`BZ=F`) | variación % |
 | `EURUSD` | Tipo de cambio EUR/USD (`EURUSD=X`) | variación % |
 
-Betas: regresión OLS de rentabilidades diarias del activo (en su divisa local) sobre los factores, ventana de 2-3 años (`scripts/compute_betas.py`, statsmodels). Se guardan beta, error estándar, R² y nº de observaciones. Las betas de `RATES_EUR` se estiman en la misma unidad que el shock (fracción).
+Betas: regresión OLS multivariante (los cinco factores a la vez, con término independiente) de rentabilidades diarias del activo (`adj_close`, en su divisa local) sobre los factores, ventana de 3 años; fechas cruzadas antes de calcular rentabilidades (`scripts/compute_betas.py` → `impact/betas.py`, numpy; D-XXX). Se guardan beta, error estándar, R² del modelo y nº de observaciones. Los activos de precio fijo no tienen betas. Las betas de `RATES_EUR` se estiman en la misma unidad que el shock (fracción).
 
 ### 8.2 Impacto de un evento sobre una posición *i* (valor `V_i` en €)
 
