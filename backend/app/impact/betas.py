@@ -63,7 +63,8 @@ def _changes(levels: list[float], absolute: bool) -> list[float]:
     pairs = list(pairwise(levels))
     if absolute:
         return [b - a for a, b in pairs]
-    return [b / a - 1 for a, b in pairs]
+    # Un nivel a cero no tiene rentabilidad: NaN, y `estimate_betas` descarta la serie.
+    return [b / a - 1 if a != 0 else float("nan") for a, b in pairs]
 
 
 def align_returns(
@@ -136,7 +137,11 @@ def estimate_betas(
 
     y = np.asarray(aligned.asset, dtype=np.float64)
     x = np.column_stack([np.asarray(aligned.factors[f], dtype=np.float64) for f in order])
+    if not (np.isfinite(y).all() and np.isfinite(x).all()):
+        raise InsufficientData(f"{asset_id}: hay niveles a cero o no numéricos en la ventana")
     coef, std_err, r2 = _ols(y, x)
+    if not (np.isfinite(coef).all() and np.isfinite(std_err).all()):
+        raise InsufficientData(f"{asset_id}: la regresión no converge a valores finitos")
     return [
         BetaEstimate(
             asset_id=asset_id,

@@ -10,9 +10,13 @@ from app.impact.models import FactorBeta
 from app.schemas.common import Factor
 
 
-def replace_betas(estimates: Sequence[BetaEstimate]) -> int:
-    """Sustituye todas las betas de los activos presentes en `estimates`. Idempotente."""
-    asset_ids = {e.asset_id for e in estimates}
+def replace_betas(estimates: Sequence[BetaEstimate], clear: Iterable[str] = ()) -> int:
+    """Sustituye las betas de los activos de `estimates` y de `clear`. Idempotente.
+
+    `clear` son activos cuyas betas antiguas se borran aunque ahora no tengan estimación (p. ej.
+    porque sus datos ya no bastan): así no quedan sensibilidades obsoletas en `factor_beta`.
+    """
+    asset_ids = {e.asset_id for e in estimates} | set(clear)
     if not asset_ids:
         return 0
     with session_scope() as session:

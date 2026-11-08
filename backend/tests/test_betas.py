@@ -162,6 +162,14 @@ def test_constant_price_raises_instead_of_inventing_betas() -> None:
         estimate_betas("DEP-12M", flat, factors)
 
 
+def test_zero_price_raises_instead_of_dividing_by_zero() -> None:
+    prices, factors = _synthetic({Factor.EQ_GLOBAL: 1.0}, noise=0.005)
+    prices[START + timedelta(days=10)] = Decimal("0")
+
+    with pytest.raises(InsufficientData):
+        estimate_betas("X", prices, factors)
+
+
 def test_no_factors_raises() -> None:
     prices, _ = _synthetic({Factor.EQ_GLOBAL: 1.0})
 

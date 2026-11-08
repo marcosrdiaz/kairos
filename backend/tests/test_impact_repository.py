@@ -67,3 +67,21 @@ def test_get_betas_round_trips_all_fields(assets: None) -> None:
 
     assert repository.get_betas(["A"]) == [original]
     assert repository.get_betas(["B"]) == []
+
+
+def test_replace_betas_clears_assets_that_no_longer_have_estimates(assets: None) -> None:
+    repository.replace_betas([_est("A", Factor.OIL, "0.1"), _est("B", Factor.OIL, "0.2")])
+
+    written = repository.replace_betas([_est("A", Factor.OIL, "0.3")], clear=["A", "B"])
+
+    assert written == 1
+    assert [(e.asset_id, e.beta) for e in repository.get_betas(["A", "B"])] == [
+        ("A", Decimal("0.3"))
+    ]
+
+
+def test_replace_betas_with_only_clear_empties_those_assets(assets: None) -> None:
+    repository.replace_betas([_est("A", Factor.OIL, "0.1"), _est("B", Factor.OIL, "0.2")])
+
+    assert repository.replace_betas([], clear=["A"]) == 0
+    assert [e.asset_id for e in repository.get_betas(["A", "B"])] == ["B"]

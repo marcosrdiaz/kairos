@@ -5,8 +5,9 @@
   sensibilidad que estimar y se omiten.
 - Factores: `data/factors/<FACTOR>.csv` (`date,value`).
 - Ventana: los últimos `--years` años (3 por defecto) hasta la última fecha común.
-- Cálculo en `app.impact.betas`; escritura en `app.impact.repository` (sustituye las filas de cada
-  activo, así que se puede repetir). Necesita la tabla `asset` sembrada antes (`seed_db.py`).
+- Cálculo en `app.impact.betas`; escritura en `app.impact.repository`: sustituye las filas de todos
+  los activos del catálogo (los que no se pueden estimar se quedan sin betas, no con las antiguas),
+  así que se puede repetir. Necesita la tabla `asset` sembrada antes (`seed_db.py`).
 
 En Docker: `make betas`. En local, desde `backend/`:
 `uv run python ../scripts/compute_betas.py [--dry-run]`.
@@ -45,10 +46,18 @@ def load_factors(data_dir: Path) -> dict[Factor, Series]:
     return {f: read_series(data_dir / "factors" / f"{f.value}.csv", "value") for f in Factor}
 
 
-def yahoo_asset_ids(data_dir: Path) -> list[str]:
+def _catalog(data_dir: Path) -> list[dict[str, object]]:
     raw = json.loads((data_dir / "seed" / "assets.json").read_text(encoding="utf-8"))
-    assets = raw["assets"] if isinstance(raw, dict) else raw
-    return [a["id"] for a in assets if str(a["price_source"]).startswith("yahoo:")]
+    assets: list[dict[str, object]] = raw["assets"] if isinstance(raw, dict) else raw
+    return assets
+
+
+def catalog_asset_ids(data_dir: Path) -> list[str]:
+    return [str(a["id"]) for a in _catalog(data_dir)]
+
+
+def yahoo_asset_ids(data_dir: Path) -> list[str]:
+    return [str(a["id"]) for a in _catalog(data_dir) if str(a["price_source"]).startswith("yahoo:")]
 
 
 def compute_all(data_dir: Path, years: int) -> tuple[list[BetaEstimate], list[str]]:
@@ -100,7 +109,9 @@ def main(argv: list[str] | None = None) -> int:
     _print_table(estimates)
     if not args.dry_run:
         try:
-            written = repository.replace_betas(estimates)
+            # Se limpia todo el catálogo: un activo que ya no se puede estimar pierde sus betas
+            # antiguas en lugar de conservarlas obsoletas.
+            written = repository.replace_betas(estimates, clear=catalog_asset_ids(args.data_dir))
         except IntegrityError:
             msg = "error: faltan activos en la tabla `asset`; siembra antes (make seed)"
             print(msg, file=sys.stderr)
