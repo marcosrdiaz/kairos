@@ -68,7 +68,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
-| D-XXX | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
+| D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
 
 ---
 
@@ -441,7 +441,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: redactar `text` como explicación del impacto (mezcla entrada y salida del analizador); poner la hora de los ataques en el evento del petróleo (cae el 12 de junio en UTC).
 - Consecuencias: T1-09 añade `observed` sin tocar el resto. T1-15 (analizador) recibe `text` como si viniera de una fuente. Si el scraping llega a existir, debe producir `text` con este mismo estilo.
 
-### D-XXX · Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción
+### D-045 · Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
 - Contexto: T1-09 descarga los históricos y calcula `observed` (D-025). `SPEC.md` §8.1 solo proponía las series, ningún documento fijaba el formato de los CSV ni qué sesión recoge un evento.
 - Decisión:
