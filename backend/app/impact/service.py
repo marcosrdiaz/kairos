@@ -4,7 +4,7 @@
 """
 
 from collections import defaultdict
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_HALF_EVEN, Decimal
@@ -260,6 +260,16 @@ def list_event_impacts(portfolio_id: str, days: int) -> list[EventImpactOut]:
             )
         )
     return impacts
+
+
+def default_channel_labels() -> Mapping[Factor, str]:
+    """Etiqueta de cada factor cuando el analizador no da una (análisis de respaldo)."""
+    return engine.DEFAULT_LABELS
+
+
+def reset() -> None:
+    """Borra los impactos guardados (`/demo/reset`)."""
+    repository.delete_event_impacts()
 
 
 def explain_move(portfolio_id: str, period: MovePeriod) -> MoveAttributionOut:

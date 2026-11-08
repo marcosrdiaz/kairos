@@ -1,0 +1,22 @@
+### D-XXX · Pipeline de replay (T1-15): SDK de Anthropic, filtro provisional, fechas y reset
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-15 conecta el replay con el motor real y añade el primer agente con LLM. El guardián (T1-16) aún no existe, `event` no guarda `consensus` ni `observed`, y nadie borraba eventos e impactos en `/demo/reset`.
+- Decisión:
+  - **Dependencia nueva: `anthropic>=1.0`.** El analizador usa `messages.parse` con un modelo propio (`AnalyzerDraft`), que solo incluye lo que escribe el LLM; `event_id`, `schema_version`, `analyzed_model` y `fallback` los pone el código.
+  - **Latencia:** esfuerzo `low`, 4 s de límite por intento, sin reintentos del SDK y un reintento propio. El peor caso del analizador son 8 s, dentro de los 10 s de RF-11, a falta de medirlo contra la API real.
+  - **Filtro provisional hasta T1-16:** `causal_chain`, `label` y `rationale` llegan al usuario, así que se rechazan si contienen una orden de compraventa o un consejo (regla 3 de producto). Un rechazo reintenta y luego usa el respaldo. Lo sustituye `guardian.py`.
+  - **Respaldo:** sin clave, con un rechazo de seguridad o tras dos fallos, se usan todos los factores y empresas observados y la `fallback_chain`. No se activa el `fallbacks` del servidor porque el modelo es configurable por entorno y ya hay un respaldo determinista.
+  - **`build_shockset`:** cruza los canales elegidos con `observed`. Si el analizador no elige nada válido, usa todo lo observado (`all_observed`). En un evento `earnings` conserva siempre el movimiento de la empresa aunque el analizador lo omita, porque es la razón del evento.
+  - **Fechas:** la fila `event` guarda `occurred_at` de la inyección (por defecto, `now()`), y es la que muestra `EventImpactOut`. La fuente de los shocks conserva la fecha real del JSON.
+  - **`get_event`:** lee el JSON de replay y sustituye la fecha por la de la fila si existe. Sin migración: `consensus`, `observed` y `fallback_chain` solo viven en el JSON.
+  - **`/demo/reset`:** borra impactos y eventos, y con `preload` reproduce BCE y petróleo con `occurred_at = now() − 96 h` y `silent`.
+- Motivo: el SDK oficial valida la salida contra el esquema sin código propio. Sin el filtro, un texto del LLM con una orden llegaría a la pantalla hasta que exista el guardián.
+- Alternativas descartadas: hacer T1-16 antes (retrasa el centro del guion); columnas nuevas en `event` (migración para datos que ya están en el JSON).
+- Consecuencias:
+  - T1-16: sustituir `_ORDER` y `_check_no_orders` de `agents/analyzer.py` por el guardián.
+  - T1-17: `write_event_explanation` sigue en mock y recibe `EventImpactStub`; el pipeline convierte desde `EventImpactOut`.
+  - T2-02: `apply_demo_adjustment` se llama en `events/pipeline.py`, tras el impacto.
+  - T2-04 y T2-08: el pipeline ya llama a `status.recompute` y a `alerts.evaluate`, que hoy no hace nada.
+  - T2-09: `events/pipeline.py` ya existe.
+  - La llamada real a Claude no se ha probado contra la API: los tests usan `FakeClaude` y en este entorno no hay clave. Hay que probar un replay con `ANTHROPIC_API_KEY` antes de la demo.
+  - Ficheros añadidos fuera de la fila de T1-15: `backend/app/alerts/service.py`, `backend/app/api/demo.py`, `backend/app/impact/{service,repository}.py`, `backend/pyproject.toml`, `backend/uv.lock` y `backend/tests/fakes/claude.py`.

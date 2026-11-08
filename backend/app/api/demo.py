@@ -10,6 +10,8 @@ from fastapi import APIRouter
 
 from app.config import get_settings
 from app.core.errors import AppError, ErrorCode
+from app.events import service as events_service
+from app.impact import service as impact_service
 from app.portfolio import service as portfolio_service
 from app.schemas.common import ErrorOut
 from app.schemas.demo import DemoResetOut, DemoResetRequest
@@ -26,7 +28,10 @@ def _require_demo_mode() -> None:
 
 @router.post("/demo/reset", response_model=DemoResetOut, responses=_FORBIDDEN)
 def reset_demo(body: DemoResetRequest | None = None) -> DemoResetOut:
-    """Recarga Laura y Javier. `preload` aún no reproduce eventos: llega con T1-15 / T2-03."""
+    """Recarga Laura y Javier y borra eventos e impactos. `preload` reproduce BCE y petróleo."""
     _require_demo_mode()
     portfolio_ids = portfolio_service.reset_demo()
-    return DemoResetOut(portfolio_ids=portfolio_ids, preloaded_event_ids=[])
+    impact_service.reset()
+    events_service.reset()
+    preloaded = events_service.preload() if body is not None and body.preload else []
+    return DemoResetOut(portfolio_ids=portfolio_ids, preloaded_event_ids=preloaded)

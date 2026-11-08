@@ -46,6 +46,11 @@ def save_event_impact(impact: EventImpactOut) -> None:
         )
 
 
+def delete_event_impacts() -> None:
+    with session_scope() as session:
+        session.execute(delete(EventImpact))
+
+
 def set_explanation(event_id: str, portfolio_id: str, text: str, status: ExplanationStatus) -> bool:
     """`False` si no hay impacto guardado para ese evento y esa cartera."""
     with session_scope() as session:

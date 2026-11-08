@@ -7,7 +7,7 @@ implementación real sin cambiar su firma.
 
 from collections.abc import Iterator
 
-from app.agents import mock
+from app.agents import analyzer, mock
 from app.portfolio import service as portfolio_service
 from app.schemas.agents import (
     AskEvent,
@@ -18,8 +18,14 @@ from app.schemas.agents import (
     SentenceStatus,
     StatusFacts,
 )
+from app.schemas.events import EventAnalysis, EventIn
 
 # --- Interfaz entre módulos ---
+
+
+def analyze_event(event: EventIn) -> EventAnalysis:
+    """Lanza `analyzer.AnalyzerError` si falla tras el reintento; `events` usa el respaldo."""
+    return analyzer.analyze(event)
 
 
 def write_event_explanation(impact: EventImpactStub) -> tuple[str, ExplanationStatus]:
