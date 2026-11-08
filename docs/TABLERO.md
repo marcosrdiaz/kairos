@@ -66,7 +66,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
-| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | 🧪 en PR |
+| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | ✅ hecho |
 | T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | 🧪 en PR |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | — | ⬜ |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
@@ -175,12 +175,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** mergear en orden #20, #21, #23; tras cada merge, rebase del siguiente sobre `main` y cambio de base del PR a `main`. Después `docs: done T1-02` y `docs: done T1-03`.
 **Para quien siga:** `get_valued` es real y necesita precios (sin CSV de T1-09 responde 503). Para comprobar que una cartera existe usad `portfolio.service.ensure_exists` (ya lo usan los mocks de `impact`, `exposure`, `planning`, `status`, `alerts` y `agents`). En tests, el fixture `client` ya carga el seed; para valorar, `FakePriceProvider` de `tests/fakes/price_provider.py`.
 **Ficheros tocados:** `backend/app/portfolio/{engine,repository,seed,service,mock}.py`, `scripts/seed_db.py`, `backend/tests/golden/`, `backend/tests/{conftest,test_portfolio_engine,test_portfolio_mock}.py`, una línea en `app/{impact,exposure,planning,status}/mock.py` y `app/{alerts,agents}/service.py`; en #20, `backend/app/api/{assets,demo}.py` y `backend/app/schemas/{portfolio,prices,demo}.py`.
-
-### T1-02 · `prices` offline — Alons
-**Estado:** PR #21 (`t1-02/prices-offline`), apilado sobre el PR de contrato #20 (`t1-03/asset-price-contract`). Decisión «Precios offline (T1-02)» en `docs/decisiones.md`.
-**Siguiente paso exacto:** revisar y mergear #20; después cambiar la base de #21 a `main` (rebase), revisar y mergear.
-**Datos:** lee los CSV de T1-09 tal cual (D-045): `data/prices/<asset_id>.csv` (columna `close`) y `data/factors/EURUSD.csv` para el tipo de cambio. Con esos datos, Laura sale en 42.363,67 € (RV 76 %) y Javier en 180.000,25 € (RF 65 %).
-**Ficheros tocados:** `backend/app/prices/{catalog,provider,service}.py`, `backend/tests/fakes/{__init__,price_provider}.py`, `backend/tests/test_prices.py`, `docs/decisiones.md`, `docs/SPEC.md` §12.
 
 ### T1-12 · Betas de factor — Manu
 **Estado:** PR #25 (`t1-12/compute-betas`). Decisión «Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas» en `docs/decisiones.md`. Añade la dependencia `numpy`.
