@@ -68,6 +68,10 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
+| D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
+| D-XXX | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
+| D-XXX | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
+| D-XXX | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
 | D-XXX | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
 
 ---
@@ -440,6 +444,66 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Motivo: si el texto ya parece una entrada de fuente, el analizador se prueba hoy en las mismas condiciones que tendrá con scraping, y no se le dan pistas de impacto que debería deducir él.
 - Alternativas descartadas: redactar `text` como explicación del impacto (mezcla entrada y salida del analizador); poner la hora de los ataques en el evento del petróleo (cae el 12 de junio en UTC).
 - Consecuencias: T1-09 añade `observed` sin tocar el resto. T1-15 (analizador) recibe `text` como si viniera de una fuente. Si el scraping llega a existir, debe producir `text` con este mismo estilo.
+
+### D-045 · Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-09 descarga los históricos y calcula `observed` (D-025). `SPEC.md` §8.1 solo proponía las series, ningún documento fijaba el formato de los CSV ni qué sesión recoge un evento.
+- Decisión:
+  - `data/prices/<asset_id>.csv`: `date,close,adj_close`, 3 años, en la divisa de cotización y solo para activos `yahoo:`. `data/factors/<FACTOR>.csv`: `date,value`. Los cierres de la sesión aún abierta no se guardan.
+  - Series: `EQ_GLOBAL` = `IWDA.AS` (MSCI World en EUR), `EQ_US_TECH` = `^NDX`, `OIL` = `BZ=F`, `EURUSD` = `EURUSD=X` y `RATES_EUR` = curva AAA a 10 años del BCE, como **fracción** (`0.0264` = 2,64 %), para restar directamente y obtener el shock en la unidad del contrato.
+  - Sesión que recoge el evento: la del día de `occurred_at` en UTC; si es a partir de las 21:00 UTC (tras el cierre de EE. UU.), la del día siguiente. `observed` compara ese cierre con el anterior, con 5 decimales. `companies` se rellena solo en NVIDIA (`NVDA`).
+  - `scripts/fetch_prices.py` no añade dependencias: usa `httpx`, ya presente en el entorno de desarrollo. Con `--observed-only` recalcula sin red.
+- Motivo: Yahoo no publica la rentabilidad del Bund a 10 años. La serie Svensson del Bundesbank marca −5 pb el 5 de junio de 2025 (2,60 → 2,55) y la curva del BCE, con cierre a las 17:00 CET, +2,4 pb. Se usa la del BCE porque recoge la reacción a una decisión publicada a las 14:15 CEST.
+- Alternativas descartadas: Bundesbank (ver motivo); `^TNX` (es el bono de EE. UU.); `yfinance` (dependencia nueva para una sola petición HTTP).
+- Consecuencias:
+  - T1-02 lee estos CSV, y el cambio EUR/USD sale de `data/factors/EURUSD.csv`. T1-12 debería usar `adj_close` para las rentabilidades.
+  - Datos reales que el equipo debe conocer: el día del BCE la rentabilidad a 10 años **sube** 2,4 pb, así que `fallback_chain` de `bce-2025-06` ("bajan… la rentabilidad de los bonos", "tienden a ganar valor") no coincide con `observed`.
+  - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
+  - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
+
+### D-XXX · Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out`
+- Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
+- Contexto: tres interfaces del diseño no tenían modelo en `app/schemas/`: la respuesta de `GET /assets/lookup` (RF-01), el `PriceOut` que devuelven `prices.latest()` y `history()` (§4.1) y el cuerpo y la respuesta de `POST /demo/reset` (§4.6). Los contratos ya estaban cerrados, así que van en un PR de contrato aparte, antes de T1-02 y T1-03.
+- Decisión:
+  - `AssetOut` (en `schemas/portfolio.py`): `id`, `isin`, `ticker`, `name`, `asset_type`, `asset_class`, `currency`, `ter` (fracción o `null`), `transferable` y `price_kind`, los campos de la tabla `asset` salvo `price_source`, que es interno. `GET /assets/lookup?q=` devuelve `list[AssetOut]` y busca por ISIN, ticker o nombre sin distinguir mayúsculas; `q` vacío da 422 y sin coincidencias, `[]`. Ruta en `api/assets.py`.
+  - `PriceOut` (en `schemas/prices.py`, sin endpoint): `asset_id`, `price` (8 decimales, en la divisa del activo), `currency`, `price_at` (instante del dato, no de la consulta), `price_kind` y `source: SourceRef`, para que quien valore lo pase tal cual a la traza.
+  - `DemoResetRequest {preload: bool = false}` (cuerpo opcional) y `DemoResetOut {portfolio_ids, preloaded_event_ids}` (en `schemas/demo.py`). `POST /demo/reset` vive en `api/demo.py` y comprueba `DEMO_MODE` (403 `DEMO_MODE_DISABLED`). `/demo/dca/run` (T1-06) y `PUT /demo/clock` (T2-03) se añaden en ese mismo fichero.
+  - Las rutas nuevas responden ya sobre el mock (como en D-036): `portfolio.service.lookup_assets(q)` busca en los ejemplos `AssetOut*` y `portfolio.service.reset_demo()` devuelve los IDs. `preload` no reproduce eventos todavía y `preloaded_event_ids` sale vacío hasta que existan el pipeline (T1-15) y la integración (T2-03).
+  - Ficheros fuera de la fila de T1-03: `backend/app/schemas/{prices,demo}.py`, los ejemplos nuevos, `backend/app/portfolio/mock.py`, `backend/tests/test_asset_demo_contract.py`, la lista de `test_schema_examples.py` y lo regenerado por `make gen-api`.
+- Motivo: así T1-02, T1-03 y T1-19 (alta en el frontend) trabajan en paralelo contra tipos fijos.
+- Alternativas descartadas: que `/demo/reset` responda 204 sin cuerpo (el frontend no sabría qué eventos quedan precargados); un `AssetLookupOut` envuelto (`GET /portfolios` ya devuelve una lista sin envolver).
+- Consecuencias: T1-02 devuelve `PriceOut` en `latest()` y `history()`. T1-03 sustituye el mock de `lookup_assets` y `reset_demo` por la BD. T1-19 usa `AssetOut` para el autocompletar. T2-03 rellena `preloaded_event_ids` con el `preload`.
+
+### D-XXX · Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria
+- Fecha: 2026-11-08 19:30 · Autor: Alons · Estado: Propuesta
+- Contexto: T1-02 lee sin red (D-014) los CSV de T1-09 (D-045). Además `prices` necesita la divisa, el tipo de precio y la fuente de cada activo, que están en la tabla `asset` de `portfolio`, y `portfolio` llama a `prices` para valorar.
+- Decisión:
+  - Lectura del formato de D-045: de `data/prices/<asset_id>.csv` (`date,close,adj_close`) se usa `close`, el cierre en la divisa del activo; el tipo de cambio sale de `data/factors/<PAR>.csv` (`date,value`; `EURUSD` = dólares por euro). El orden de las filas da igual; las líneas vacías se ignoran; un valor no positivo o no numérico hace fallar la carga con el fichero y la línea. Sin fichero, serie vacía.
+  - `prices` lee divisa, `price_kind` y `price_source` de `data/seed/assets.json` (`prices/catalog.py`), no de la tabla `asset`: así no hay dependencia circular con `portfolio`. Los activos solo existen si están en ese catálogo (el alta usa `/assets/lookup`).
+  - Modo offline: los CSV se leen una vez y se guardan en memoria (`OfflineCsvProvider`). Las tablas `price` y `fx_rate` quedan para el proveedor en directo (D-026), que no existe todavía; con cualquier `MARKET_DATA_PROVIDER` se usa el offline.
+  - `latest()` devuelve el último cierre con fecha no posterior a `clock.now()` (respeta `DEMO_CLOCK`); `price_at` es la fecha del cierre a las 00:00 UTC. `fixed:<valor>` vale lo mismo todos los días, con `price_at` = hoy. Sin dato: 503 `PRICE_UNAVAILABLE`; activo fuera del catálogo: 404 `NOT_FOUND`.
+  - `fx_rate(pair)` busca el par directo y, si no está, el inverso (`USDEUR` = 1 / `EURUSD`, redondeado a 8 decimales como `NUMERIC(20,8)`); misma divisa, `1`. Además de la interfaz de §4.1, `fx_quote(pair, at)` devuelve tipo, fecha y `SourceRef` (`kind: fx`) para las trazas.
+  - Los tests cambian de proveedor con `tests/fakes/price_provider.py` (`FakePriceProvider` + `use_price_provider`). Ficheros fuera de la fila de T1-02: `backend/tests/fakes/__init__.py` y `backend/tests/test_prices.py`.
+- Motivo: es lo mínimo que valora en < 300 ms sin red ni carga previa en BD, y lee los CSV de T1-09 tal cual.
+- Alternativas descartadas: cargar los CSV en la tabla `price` desde `seed_db.py` (la tabla no guarda `price_kind` y haría falta una migración); leer la tabla `asset` desde `prices` (rompe la frontera por `service.py`).
+- Consecuencias: T1-03 valora con `prices.latest` y `fx_quote("USDEUR")` (inverso de `EURUSD`). Un activo `yahoo:` sin CSV responde `PRICE_UNAVAILABLE`. Los tests usan el proveedor falso, salvo uno que comprueba los CSV reales del repo.
+
+### D-XXX · Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks
+- Fecha: 2026-11-08 20:30 · Autor: Alons · Estado: Propuesta
+- Contexto: T1-03 pasa a real la valoración (`get_valued`), el alta, `/assets/lookup`, el seed y `/demo/reset`. Había que fijar cómo se redondea, de dónde sale el cambio semanal y qué pasa con los mocks de otros módulos que llamaban a `get_valued` solo para comprobar que la cartera existe.
+- Decisión:
+  - Redondeo (`portfolio/engine.py`, puro): `value_eur` de cada posición a céntimos (HALF_EVEN) y `total_eur = Σ value_eur`, para que el total cuadre con lo que se ve. `weight`, `allocation` y `change_week_pct` a 4 decimales. `avg_cost_eur` = coste total / participaciones, a céntimos. Posiciones ordenadas por valor descendente.
+  - Cambio semanal: `total_eur` menos el valor de las **mismas participaciones** al último cierre no posterior a `now − 7 días` (con el fx de ese día). Una posición sin dato de esa fecha no aporta cambio. No descuenta flujos (eso es `get_value_change`, T1-07).
+  - Cada valoración deja una traza `valuation` con lotes, precios, fx y las fuentes de `prices` (`kind: price` y `fx`).
+  - Seed (`portfolio/seed.py`, `scripts/seed_db.py`): el catálogo se actualiza siempre; cada cartera del seed se crea si no existe y **no se toca si ya existe** (un reinicio de Compose no borra lo que haya hecho el usuario). Con `--force` o `POST /demo/reset` vuelve al estado inicial: se borran sus lotes, operaciones, plan, DCA y ajustes de demo, sin borrar la fila de la cartera (otras tablas apuntan a ella). Carga también el plan y los planes DCA del seed. Cada lote del seed es una operación `initial` con su lote.
+  - Alta: comprueba cartera, activos (404 `NOT_FOUND` con `asset_id`) y precios (503 `PRICE_UNAVAILABLE`) **antes** de escribir: si algo falla, no guarda nada. `acquired_at` por defecto, `clock.now()`.
+  - `portfolio.service.ensure_exists(id)` (solo BD, sin precios). Los mocks de `impact`, `exposure`, `planning` y `status`, y `alerts.service` y `agents.service`, la usan en lugar de `get_valued` para el 404: así sus endpoints siguen respondiendo aunque no haya precios (hasta T1-09).
+  - El fixture `client` de `tests/conftest.py` crea las tablas y carga el seed; quien valore en un test activa un `FakePriceProvider`.
+  - `/demo/reset` todavía no limpia eventos, impactos, avisos ni la caché de voz: lo hace T2-03 cuando existan esos `reset()`.
+  - Ficheros fuera de la fila de T1-03: `backend/app/portfolio/{seed,mock}.py`, `backend/tests/golden/__init__.py`, `backend/tests/test_portfolio_engine.py`, `backend/tests/test_portfolio_mock.py`, `backend/tests/conftest.py` (fixture `client`) y una línea en `app/{impact,exposure,planning,status}/mock.py` y `app/{alerts,agents}/service.py`.
+- Motivo: totales que cuadran con la suma visible y mocks de otros módulos que no dependen de los precios.
+- Alternativas descartadas: redondear solo el total (el total no coincidiría con la suma de las filas); que el seed recargue siempre (cada `docker compose up` borraría las operaciones de la demo).
+- Consecuencias: T1-04 a T1-07 reutilizan `engine`, `repository.add_initial_lot` y `_quotes`. T2-02 suma los ajustes de demo en `get_valued`. T2-03 llama a los `reset()` del resto desde `/demo/reset`. Los casos dorados están en `backend/tests/golden/portfolio_init_cases.json`.
 
 ### D-XXX · Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa
 - Fecha: 2026-11-08 19:13 · Autor: Marcos · Estado: Propuesta

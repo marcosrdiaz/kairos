@@ -39,10 +39,10 @@ def write_alert_message(impact: EventImpactStub) -> str:
 
 def ask(portfolio_id: str, request: AskRequest) -> Iterator[AskEvent]:
     """Eventos SSE del turno. Falla con NOT_FOUND antes de emitir nada si la cartera no existe."""
-    portfolio_service.get_valued(portfolio_id)
+    portfolio_service.ensure_exists(portfolio_id)
     return mock.ask_events()
 
 
 def get_explainer_context(portfolio_id: str) -> ExplainerContext:
-    portfolio_service.get_valued(portfolio_id)
+    portfolio_service.ensure_exists(portfolio_id)
     return mock.explainer_context(portfolio_id)

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from app.schemas.common import Factor
 from app.schemas.events import EventIn
 
 REPLAY_DIR = Path(__file__).resolve().parents[2] / "data" / "events" / "replay"
@@ -33,8 +34,9 @@ def test_expected_events_exist() -> None:
 def test_event_is_valid(path: Path) -> None:
     event = _load(path)
     assert event.id == path.stem
-    assert event.observed is None
-    assert event.observed_source is None
+    assert event.observed is not None
+    assert set(event.observed.factors) == set(Factor)
+    assert event.observed_source
     assert event.illustrative is False
     assert event.source_urls
     assert all(url.startswith("https://") for url in event.source_urls)

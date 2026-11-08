@@ -160,7 +160,9 @@ Los esquemas son la frontera entre tareas y entre backend y frontend. **Los cont
 | Fichero de esquemas | Contenido | Sección del diseño |
 | --- | --- | --- |
 | `common.py` | `Money`, `SourceRef`, enums compartidos, `ErrorOut` (códigos de `core/errors.py`) | §3 |
-| `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut` | §4.1 |
+| `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut`, `AssetOut` | §4.1 |
+| `prices.py` | `PriceOut` (lo devuelven `prices.latest()` y `history()`; sin endpoint) | §4.1 |
+| `demo.py` | `DemoResetRequest`, `DemoResetOut` (`ReplayOut` está en `events.py`) | §4.6 |
 | `events.py` · `agents.py` · `alerts.py` | `EventAnalysis`, `ShockSet`, `AskRequest` + SSE, `ExplainerContext`, `GuardianRequest/Verdict`, `AlertOut` | §4.2, §4.4 |
 | `impact.py` · `exposure.py` · `radar.py` · `status.py` · `planning.py` | `EventImpactOut`, `ScenarioOut`, `MoveAttributionOut`, `ExposureOut`, `RadarOut`, `StatusOut`, `ProjectionOut`, `AgendaItemOut` | §4.3 |
 | `voice.py` | WebSocket de STT, TTS, disclaimer | §4.5 |
@@ -223,7 +225,7 @@ erDiagram
 | `sell` | Consume lotes por **FIFO**; devuelve plusvalía estimada = Σ (precio − coste) × unidades consumidas | units ≤ unidades disponibles |
 | `transfer` | `transfer_out` del fondo origen (FIFO) + `transfer_in` al destino. Los lotes nuevos **conservan `acquired_at` y el coste total** de los lotes consumidos; las unidades se recalculan con el VL de destino | Origen y destino `asset_type == fund`. Si no: error `TRANSFER_NOT_ALLOWED` con mensaje para ofrecer venta + compra con aviso fiscal |
 
-Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación.
+Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación. Cada `value_eur` se redondea a céntimos y `total_eur` es su suma; pesos y asignación a 4 decimales; el cambio semanal compara con las mismas participaciones a precios de hace 7 días (decisión «Valoración, alta y seed (T1-03)»).
 
 DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `clock.now()`) y crea una ejecución pendiente; el usuario confirma o salta desde la app. En demo se fuerza con `POST /demo/dca/run`.
 
@@ -231,13 +233,13 @@ DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `cloc
 
 ### 8.1 Factores
 
-| Código | Serie de referencia (propuesta) | Shock en un evento |
+| Código | Serie de referencia | Shock en un evento |
 | --- | --- | --- |
-| `EQ_GLOBAL` | MSCI World en EUR | variación % |
-| `EQ_US_TECH` | Nasdaq-100 | variación % |
-| `RATES_EUR` | Rentabilidad Bund 10 años | variación absoluta de la rentabilidad, como fracción (`-0.0010` = −10 pb) |
-| `OIL` | Brent | variación % |
-| `EURUSD` | Tipo de cambio EUR/USD | variación % |
+| `EQ_GLOBAL` | MSCI World en EUR (`IWDA.AS`) | variación % |
+| `EQ_US_TECH` | Nasdaq-100 (`^NDX`) | variación % |
+| `RATES_EUR` | Rentabilidad a 10 años de la curva AAA del área euro (BCE) | variación absoluta de la rentabilidad, como fracción (`-0.0010` = −10 pb) |
+| `OIL` | Brent (`BZ=F`) | variación % |
+| `EURUSD` | Tipo de cambio EUR/USD (`EURUSD=X`) | variación % |
 
 Betas: regresión OLS de rentabilidades diarias del activo (en su divisa local) sobre los factores, ventana de 2-3 años (`scripts/compute_betas.py`, statsmodels). Se guardan beta, error estándar, R² y nº de observaciones. Las betas de `RATES_EUR` se estiman en la misma unidad que el shock (fracción).
 
@@ -359,7 +361,7 @@ sequenceDiagram
 | Método | Ruta | Para |
 | --- | --- | --- |
 | GET | `/health` | Comprobación de Docker |
-| GET | `/assets/lookup?q=` | Autocompletar por ISIN o ticker |
+| GET | `/assets/lookup?q=` | Autocompletar por ISIN, ticker o nombre (`list[AssetOut]`) |
 | GET | `/portfolios` · `/portfolios/{id}` | Lista (Laura, Javier) y detalle valorado |
 | POST | `/portfolios/{id}/positions` | Alta de posiciones |
 | POST | `/portfolios/{id}/transactions` | Compra / venta |
@@ -393,7 +395,8 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | `data/seed/compositions/*.csv` | Composición de los fondos/ETFs (iShares y factsheets de Vanguard), fecha `as_of`; formato en la decisión «Composición de fondos y ETF (T1-08)» | hecho (T1-08) |
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |
-| `data/prices/*.csv` | Histórico diario 2-3 años para betas | pendiente |
+| `data/prices/<asset_id>.csv` | Histórico diario de 3 años (`date,close,adj_close`) | hecho (T1-09) |
+| `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción. `EURUSD` (dólares por euro) es también el tipo de cambio de la valoración (`prices`, T1-02) | hecho (T1-09) |
 | `data/events/replay/*.json` | 3-4 eventos reales: BCE, petróleo, resultados (+ USD si da tiempo) | pendiente |
 | `data/seed/assumptions.json` | Rentabilidad anual por clase de activo para la proyección, con fuente | pendiente |
 | `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | pendiente |

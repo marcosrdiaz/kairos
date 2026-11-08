@@ -10,10 +10,10 @@ from app.schemas.radar import RadarOut
 
 
 def get_exposure(portfolio_id: str) -> ExposureOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return ExposureOut.model_validate(examples.load("ExposureOut"))
 
 
 def get_radar(portfolio_id: str) -> RadarOut:
-    portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    portfolio_service.ensure_exists(portfolio_id)  # 404 si no existe
     return RadarOut.model_validate(examples.load("RadarOut"))

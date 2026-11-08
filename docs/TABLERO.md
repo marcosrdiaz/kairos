@@ -66,17 +66,17 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
-| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | 🧪 en PR |
-| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | 🔄 en curso |
+| T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | ✅ hecho |
+| T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | ✅ hecho |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | — | ⬜ |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | — | ⬜ |
-| T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | 🔄 en curso |
-| T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | 🔄 en curso |
+| T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | 🧪 en PR |
+| T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
 | T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | — | ⬜ |
 | T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | — | ⬜ |
-| T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | — | ⬜ |
+| T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | 🧪 en PR |
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | — | ⬜ |
 | T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | — | ⬜ |
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | — | ⬜ |
@@ -133,6 +133,24 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T1-08 · Composición de fondos y ETF — Marcos
+**Qué estaba haciendo:** PR #24 abierto (`t1-08/fund-compositions`) con los 10 CSV de `data/seed/compositions/`, `backend/tests/test_compositions.py` y la decisión «Composición de fondos y ETF (T1-08)». `make lint && make test` en verde. Falta revisor y merge.
+**Siguiente paso exacto:** que un compañero revise el PR (5 minutos); mergear y marcar `docs: done T1-08`. T1-11 puede empezar al entrar en `main`; las claves `OTROS_`, `GOV_` y `BONOS_` no son una empresa (ver la decisión).
+**Ficheros tocados:** `data/seed/compositions/*.csv`, `backend/tests/test_compositions.py`, `docs/decisiones.md`, `docs/SPEC.md` (§12).
+
+### T1-11 · Look-through: claves que no son una empresa — Marcos (para quien coja la tarea)
+**Qué deja T1-08:** los CSV de `data/seed/compositions/` (en `main` cuando se mergee el PR #24). Detalle en la decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
+**Claves que no son una empresa:** las que empiezan por `OTROS_`, `GOV_` o `BONOS_` son un residuo o un emisor público. Cuentan en país, sector y divisa, pero **se excluyen de `top_companies` y de los solapamientos** (`overlap`) y de la regla de concentración del radar. Las demás claves son empresas y coinciden entre fondos y con las acciones directas (clave = `ticker` de `assets.json`).
+**Otros detalles:** `country = OTHER` y `currency` vacío significan «desconocido» (se agrupan como `OTHER`). Los nombres de empresa vienen en mayúsculas de iShares: el mismo nombre en todos los ficheros. En eventos de resultados, el residuo de un fondo equivale a «esa empresa no está en el residuo».
+
+### T1-13 · Confianza: cobertura de look-through propuesta — Marcos (para quien coja la tarea)
+**Propuesta (estado Propuesta, la valida quien coja T1-11 o T1-13):** `coverage_pct` = fracción del patrimonio cuyo país se conoce por look-through (no cae en `country = OTHER`). Laura: 94,3 %, así que cumple el umbral «cobertura ≥ 90 %» de `alta`. Está en la decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
+**Efecto en la confianza:** la cobertura a nivel de empresa (Laura: 40 %) no cuenta. El sector tampoco: con país **y** sector conocidos Laura baja a 54,9 % (bonos y residuos de Vanguard llevan `sector = other`) y la confianza nunca sería `alta`.
+**Eventos de resultados:** el peso `w_{i,c}` sale solo de la fila nombrada de la empresa; sin fila, es 0 («no está en el residuo»).
+
+### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
+**Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
+
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
 **Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
 **Calentamiento:** la primera llamada con una voz tarda 7–11 s hasta el primer byte; las siguientes, ~150 ms. Haz una llamada de calentamiento al arrancar el backend con `ELEVENLABS_VOICE_ID`.
@@ -152,11 +170,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
 
-### T1-02 · `prices` offline — Alons
-**Estado:** PR #21 (`t1-02/prices-offline`), apilado sobre el PR de contrato #20 (`t1-03/asset-price-contract`). Decisión «Precios offline (T1-02)» en `docs/decisiones.md`.
-**Siguiente paso exacto:** revisar y mergear #20; después cambiar la base de #21 a `main` (rebase), revisar y mergear.
-**Para T1-09:** formato `data/prices/<asset_id>.csv` (`date,close`) y `data/prices/fx/EURUSD.csv` (`date,rate`, dólares por euro). Sin esos CSV, la app responde `PRICE_UNAVAILABLE`.
-**Ficheros tocados:** `backend/app/prices/{catalog,provider,service}.py`, `backend/tests/fakes/{__init__,price_provider}.py`, `backend/tests/test_prices.py`, `docs/decisiones.md`, `docs/SPEC.md` §12.
+### T1-12 · Betas de factor — Manu
+**Estado:** PR #25 (`t1-12/compute-betas`). Decisión «Betas de factor (T1-12): OLS multivariante con numpy, ventana de 3 años y activos sin betas» en `docs/decisiones.md`. Añade la dependencia `numpy`.
+**Siguiente paso exacto:** revisión y merge de #25 → `docs: done T1-12`.
+**Para T1-13:** `impact.repository.get_betas(asset_ids)` devuelve `BetaEstimate`. `DEP-12M` y `PP-MIXTO` no tienen betas: tratarlos como R² 0 en la confianza. `make betas` necesita la tabla `asset` sembrada (T1-03).
+**Ficheros tocados:** `backend/app/impact/{betas,repository}.py`, `scripts/compute_betas.py`, `backend/tests/test_{betas,impact_repository}.py`, `backend/{pyproject.toml,uv.lock}`, `docs/decisiones.md`, `docs/SPEC.md` §2 y §8.1.
 
 ## 5. Bloqueos
 
@@ -173,7 +191,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-08 | Marcos (T0-07) a Alons (T0-01) | Prefijo de la API | Confirmar que `main.py` monta todos los routers bajo `/api/v1` (`SPEC.md` §11). El cliente del frontend usa la base `/api/v1` y el proxy de Vite reenvía `/api` tal cual | T0-01, T0-03, T0-07 y todo el frontend | Confirmado: `main.py` monta todos los routers de `app/api/` bajo `/api/v1` (D-034); todas las rutas del OpenAPI empiezan por `/api/v1/` (lo comprueba `test_gen_api.py`) |
 | 2026-11-08 | Marcos (T0-05) a Jaime (T0-04) | `ExplanationStatus`, `SentenceStatus`, `StatusState`, `StatusFacts` | Importar de `app.schemas.agents` en `schemas/impact.py` y `schemas/status.py` (no redefinirlos). `StatusFacts` es la entrada de `agents.write_status_sentence`; el módulo `status` la rellena | T0-04, T1-17, T2-04 | Pendiente de confirmar |
-| 2026-11-08 | Alons (T1-03) al equipo | `AssetOut` (`GET /assets/lookup`), `PriceOut` (`prices.latest`/`history`), `DemoResetRequest`/`DemoResetOut` (`POST /demo/reset`) | Modelos nuevos, sin cambios en los existentes. PR #20 (solo contrato); decisión «Contratos de activo, precio y reset de demo (T1-03)» | T1-02, T1-03, T1-19, T2-03 | En PR #20 |
+| 2026-11-08 | Alons (T1-03) al equipo | `AssetOut` (`GET /assets/lookup`), `PriceOut` (`prices.latest`/`history`), `DemoResetRequest`/`DemoResetOut` (`POST /demo/reset`) | Modelos nuevos, sin cambios en los existentes. PR #20 (solo contrato); decisión «Contratos de activo, precio y reset de demo (T1-03)» | T1-02, T1-03, T1-19, T2-03 | Hecho: en `main` (#20) |
 
 ## 7. Preguntas abiertas
 

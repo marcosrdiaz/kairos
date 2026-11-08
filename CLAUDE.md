@@ -74,6 +74,7 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 - Ficheros < 300 líneas; funciones puras en los motores (entrada → salida, sin BD), la BD se toca en `repository.py`.
 - Sin dependencias nuevas sin anotarlo en `docs/decisiones.md`.
 - Secretos solo en `.env` (nunca en el repo). Si añades una variable, añádela también a `.env.example`.
+- **Escribe los ficheros con Edit/Write, nunca con el shell de Windows** (`echo`, heredocs, `sed -i`, `python -` leyendo de la entrada estándar): la consola rompe la codificación de tildes y símbolos (`Ã`, `Â`).
 
 ## Tests
 
