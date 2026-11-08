@@ -5,13 +5,13 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 ## Cómo se usa
 
 - **Solo se añade al final.** No se borra ni se reescribe una entrada; si cambia, se crea una nueva que la sustituye y en la antigua solo se cambia *Estado* a `Sustituida por D-xxx`.
-- **IDs correlativos `D-0xx`, asignados al mergear.** En tu rama escribe la decisión con el ID provisional `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros). Si metes varias en el mismo PR, `D-XXX-a`, `D-XXX-b`… **Quien mergea el PR**, justo antes, hace `git fetch`, mira el último ID de `main` y sustituye `D-XXX` por el siguiente libre en el PR (entrada, índice y referencias, incluida la descripción del PR). Así no chocan IDs entre ramas en paralelo. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
+- **IDs correlativos `D-0xx`, asignados por la Action.** Las decisiones nuevas van con `D-XXX` (en la entrada, en la fila del índice y en cualquier referencia desde otros ficheros); si metes varias en la misma rama, `D-XXX-a`, `D-XXX-b`… La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`, por orden de aparición, y actualiza entrada, índice y referencias. No las toques a mano ni renumeres en el PR. Añade siempre al final y actualiza el índice. `docs/decisiones.md` es una excepción a la propiedad por tarea: cualquiera puede añadir.
 - **Estados**: `Propuesta` (falta validar con el equipo en el siguiente checkpoint) · `Aceptada` · `Sustituida por D-xxx` · `Descartada`.
 - Una decisión merece entrada si: cambia un contrato o el modelo de datos, añade una dependencia, afecta a otro módulo, o la vas a olvidar en 2 horas.
 - Plantilla (o usa `/decision`):
 
 ```
-### D-XXX · Título corto   (ID provisional; se sustituye al mergear)
+### D-XXX · Título corto   (ID provisional; la Action lo numera al entrar en main)
 - Fecha: AAAA-MM-DD HH:MM · Autor: nombre · Estado: Propuesta
 - Contexto: qué problema había.
 - Decisión: qué se hace.
@@ -60,8 +60,9 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
 | D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
 | D-036 | 2026-11-08 | Contrato de cartera (T0-02): peticiones, variantes de ejemplo y mock por API | Aceptada |
-| D-XXX | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
-| D-037 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
+| D-037 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
+| D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
+| D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-XXX | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
 
 ---
@@ -317,7 +318,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-02: `backend/app/portfolio/__init__.py`, `backend/app/schemas/examples/__init__.py` y `backend/tests/test_portfolio_mock.py`.
 - Consecuencias: T0-03 copia también las variantes. T1-03 a T1-07 sustituyen las funciones de `service.py` sin cambiar sus firmas. Las cifras de los ejemplos usan los activos del seed de T0-08, pero son ilustrativas: con esos precios, la RV de Laura en el mock sale en 0,72, no en 0,76.
 
-### D-XXX · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
+### D-037 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
 - Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
 - Contexto: T0-03 tiene que generar los tipos TS desde el OpenAPI del backend. `openapi-typescript` estaba aceptado (D-001 / `SPEC.md` §2), pero la última versión (7.13.0) pide `typescript@^5` como peer y el frontend usa TypeScript 6 (D-035): `npm install` falla con `ERESOLVE`.
 - Decisión:
@@ -328,7 +329,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-03: `backend/tests/test_gen_api.py` (copia de mocks y OpenAPI determinista, sin npx) y `frontend/src/api/mocks.test.ts` (el frontend importa los mocks con los tipos generados).
 - Consecuencias: T0-04, T0-05 y T0-06 ejecutan `make gen-api` en su PR para que sus tipos y mocks lleguen al frontend. Si sale una versión de `openapi-typescript` compatible con TS 6, se puede pasar a `devDependencies`.
 
-### D-037 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
+### D-038 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
 - Fecha: 2026-11-08 17:23 · Autor: Jaime · Estado: Propuesta
 - Contexto: T0-08 tenía que crear los datos de semilla, pero ningún documento fijaba su formato ni de dónde salen las rentabilidades de la proyección.
 - Decisión:
@@ -345,6 +346,20 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - T1-02, T1-09 y T1-12: tratan `fixed:<valor>` sin histórico ni betas; T1-09 puede usar el símbolo de `price_source`.
   - T1-14: lee `scenarios` y pondera por la asignación objetivo. Las rentabilidades son brutas, en divisa local y sin efecto divisa en la renta variable global.
   - T2-15: revisa las filas de §5 con el motor real; la fila 2 depende de T1-08.
+
+### D-039 · Contratos de eventos, agentes y avisos (T0-05)
+- Fecha: 2026-11-08 · Autor: Marcos · Estado: Aceptada
+- Contexto: el diseño §4.2 y §4.4 define estos contratos pero deja cabos sueltos: dónde vive `GET /portfolios/{id}/events`, qué entra en `write_status_sentence` y cómo se nombran los ejemplos de una unión SSE.
+- Decisión:
+  - `GET /portfolios/{id}/events` es de impacto (T0-04, `SPEC.md` §11) y devuelve `EventImpactOut`. `api/events.py` solo monta el control de replay: `POST /demo/replay/{event_id}` → `ReplayOut {event_id, portfolios: {laura: calc_id, javier: calc_id}, elapsed_ms}`; con `DEMO_MODE=false` responde 403 `DEMO_MODE_DISABLED`.
+  - `EventImpactStub` (en `schemas/agents.py`) es provisional: solo los campos que necesitan `write_event_explanation` y `write_alert_message`, sin ejemplo propio y con otro nombre para no chocar con `EventImpactOut` de T0-04. Se sustituye por `schemas.impact.EventImpactOut` cuando T0-04 esté en `main`.
+  - `StatusFacts` (entrada de `write_status_sentence`) lleva `state`, `total_eur`, `change_week_pct`, `reason {kind, event_id}` y `calc_id`, más opcionales ya calculados: `event_title`, `top_asset_class`, `main_channel`, `event_impact_eur` (para `atento`) y `equity_current`, `equity_target` (para `revisa_plan`). El LLM no opera con ellos.
+  - `ExplanationStatus`, `SentenceStatus` y `StatusState` viven en `schemas/agents.py`; T0-04 los importa de ahí.
+  - Unión SSE: `AskEvent` es una unión discriminada por `type` (alias, no clase). Los ejemplos van por clase concreta (`AskMetaEvent.json`, `AskSentenceEvent.json`, `AskSentenceEvent.impact.json`, `AskDoneEvent.json`, `AskErrorEvent.json`) para que el test genérico los encuentre sin cambios.
+  - `EventIn.observed` es opcional porque T0-10 escribe los JSON antes de que T1-09 calcule `observed`. `EventAnalysis` rechaza dígitos en `entities[].name`, `channels[].label|rationale`, `companies[].name` y `causal_chain`; los identificadores (`event_id`, `analyzed_model`, claves) pueden llevarlos.
+  - `/ask` mock emite `text/event-stream` real (un `data: {...}` por evento, separados por línea en blanco). La cartera inexistente falla con 404 JSON **antes** de abrir el stream.
+  - Ficheros añadidos fuera de la fila de T0-05: `backend/app/{agents,events,alerts}/__init__.py` y `backend/tests/test_event_agent_examples.py`. Lo regenerado por `make gen-api` (`frontend/src/api/{generated,mocks}/`) va en el mismo PR, como pide la decisión de `make gen-api` (T0-03).
+- Consecuencias: T1-15 y T1-17 sustituyen `mock.py` sin cambiar firmas. Los textos de los mocks de redacción no llevan cifras.
 
 ### D-XXX · Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404
 - Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada

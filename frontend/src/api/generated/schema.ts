@@ -24,6 +24,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/demo/replay/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replay Event */
+        post: operations["replay_event_api_v1_demo_replay__event_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -72,6 +89,40 @@ export interface paths {
         get: operations["get_portfolio_api_v1_portfolios__portfolio_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolio_id}/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Alerts */
+        get: operations["list_alerts_api_v1_portfolios__portfolio_id__alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolio_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask */
+        post: operations["ask_api_v1_portfolios__portfolio_id__ask_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -220,6 +271,35 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AlertKind
+         * @enum {string}
+         */
+        AlertKind: "event_impact" | "dca_pending" | "drift";
+        /** AlertOut */
+        AlertOut: {
+            /** Calc Id */
+            calc_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Delivered */
+            delivered: boolean;
+            /** Event Id */
+            event_id: string | null;
+            /** Id */
+            id: string;
+            kind: components["schemas"]["AlertKind"];
+            /** Message */
+            message: string;
+            /**
+             * Score
+             * @description Fracción: 0.76 = 76 %
+             */
+            score: string;
+        };
         /** AllocationOut */
         AllocationOut: {
             /**
@@ -242,6 +322,19 @@ export interface components {
              * @description Fracción: 0.76 = 76 %
              */
             mixed: string;
+        };
+        /**
+         * AskChannel
+         * @enum {string}
+         */
+        AskChannel: "voice" | "text";
+        /** AskRequest */
+        AskRequest: {
+            channel: components["schemas"]["AskChannel"];
+            /** Question */
+            question: string;
+            /** Session Id */
+            session_id: string;
         };
         /**
          * AssetClass
@@ -661,6 +754,20 @@ export interface components {
          * @enum {string}
          */
         Profile: "conservador" | "moderado" | "dinamico";
+        /**
+         * ReplayOut
+         * @description Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó.
+         */
+        ReplayOut: {
+            /** Elapsed Ms */
+            elapsed_ms: number;
+            /** Event Id */
+            event_id: string;
+            /** Portfolios */
+            portfolios: {
+                [key: string]: string;
+            };
+        };
         /** TargetAllocation */
         TargetAllocation: {
             /**
@@ -784,7 +891,11 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type AlertKind = components['schemas']['AlertKind'];
+export type AlertOut = components['schemas']['AlertOut'];
 export type AllocationOut = components['schemas']['AllocationOut'];
+export type AskChannel = components['schemas']['AskChannel'];
+export type AskRequest = components['schemas']['AskRequest'];
 export type AssetClass = components['schemas']['AssetClass'];
 export type AssetType = components['schemas']['AssetType'];
 export type DcaAllocation = components['schemas']['DcaAllocation'];
@@ -812,6 +923,7 @@ export type PositionOut = components['schemas']['PositionOut'];
 export type PositionsInitRequest = components['schemas']['PositionsInitRequest'];
 export type PriceKind = components['schemas']['PriceKind'];
 export type Profile = components['schemas']['Profile'];
+export type ReplayOut = components['schemas']['ReplayOut'];
 export type TargetAllocation = components['schemas']['TargetAllocation'];
 export type TransactionOut = components['schemas']['TransactionOut'];
 export type TransactionRequest = components['schemas']['TransactionRequest'];
@@ -860,6 +972,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replay_event_api_v1_demo_replay__event_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplayOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -934,6 +1095,79 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_alerts_api_v1_portfolios__portfolio_id__alerts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertOut"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_api_v1_portfolios__portfolio_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
