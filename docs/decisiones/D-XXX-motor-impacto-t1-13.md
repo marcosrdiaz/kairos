@@ -1,0 +1,22 @@
+### D-XXX · Motor de impacto (T1-13): rango, efecto dólar, persistencia y lecturas de otros módulos
+- Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
+- Contexto: T1-13 implementa `SPEC.md` §8.2. La fórmula del rango cancelaba errores entre shocks de signo contrario, la separación bolsa/divisa no decía qué hacer con la beta de `EURUSD`, y `compute_event_impact` necesita datos que su firma no recibe y que ninguna tarea tenía asignados.
+- Decisión:
+  - **Rango:** cada factor aporta `se·|s_f|`, en valor absoluto. Una beta no significativa (|β/se| < 2, D-050) no suma a `impact_eur` y añade además `|β·s_f|` al término de incertidumbre. Los términos se escalan por `(1 − Σ w_c)`: la parte de resultados es un movimiento observado y no aporta error.
+  - **Separación bolsa/divisa:** `market_eur` recoge los factores que no son `EURUSD` y los resultados de empresa. `fx_eur = impact_eur − market_eur`, así que incluye `β_EURUSD·s` (también en activos en EUR con subyacente en USD), `r_fx` y el término cruzado.
+  - **Importes:** el total es la suma de los impactos por activo ya redondeados, para que el desglose cuadre al céntimo.
+  - **R² y confianza:** media ponderada por valor de toda la cartera; un activo sin betas cuenta como 0 (D-050).
+  - **Último eslabón de la cadena:** el motor lo añade al final de `analysis.causal_chain`, no lo sustituye. El prompt del analizador (T1-15) no debe cerrar la cadena hablando de la cartera.
+  - **Sorpresa:** `rate_change_bp` es mejor cuanto más baja; el resto de métricas, cuanto más alta.
+  - **Lecturas nuevas de otros módulos, con mock:** `events.service.get_event(event_id) -> EventIn` lee `data/events/replay/` y `exposure.service.company_weights(asset_ids, companies)` lee `data/seed/compositions/`.
+  - **Persistencia:** `impact/repository.py` guarda las columnas de `event_impact`; el resultado completo va en `outputs` de la traza `calc_id`, y `list_event_impacts` lo reconstruye de ahí con la explicación de la fila. Sin migración. La ventana `days` se mide sobre el momento del cálculo, no sobre `occurred_at`, porque un replay puede tener fecha antigua.
+  - `explain_move` sigue en mock (T2-07). `GET /portfolios/{id}/events` devuelve `[]` hasta el primer `compute_event_impact`.
+- Motivo: sumar `se·s_f` con signo reduciría la incertidumbre solo porque dos shocks van en sentidos opuestos. Sin llevar `β_EURUSD` a `fx_eur`, un ETF en EUR con subyacente en USD mostraría 0 € de dólar.
+- Alternativas descartadas: columnas nuevas en `event_impact` para título, cadena y fuentes (migración sin ganancia en el MVP); dejar la lista en mock (el replay no mostraría impactos reales).
+- Consecuencias:
+  - T1-15: debe insertar la fila `event` antes de llamar a `compute_event_impact` (clave foránea en Postgres) y sustituir `events.mock.get_event`. La fecha que devuelva `get_event` es la que se muestra en `occurred_at`.
+  - T1-11: debe sustituir `exposure.mock.company_weights`. `coverage_pct` sale de `get_exposure` y es el valor fijo del mock hasta entonces, así que la confianza de hoy no es definitiva.
+  - T1-07: la polaridad usa `get_plan().target`, que es el mock de Laura para todas las carteras hasta esa tarea.
+  - T1-10: los dorados de hoja siguen pendientes; `tests/test_impact_engine.py` cubre las fórmulas con casos calculados a mano.
+  - T2-03: la API ya no sirve ejemplos para `/events` y `/scenarios`.
+  - Ficheros añadidos fuera de la fila de T1-13: `backend/app/impact/{repository,mock}.py`, `backend/app/{events,exposure}/{mock,service}.py` y `backend/tests/test_analysis_mocks.py`. `SPEC.md` §8.2 actualizado.

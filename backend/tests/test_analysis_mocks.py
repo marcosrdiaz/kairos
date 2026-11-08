@@ -31,25 +31,9 @@ def test_get_serves_example(client: TestClient, path: str, example: str) -> None
     assert response.json() == examples.load(example)
 
 
-def test_events_lists_examples(client: TestClient) -> None:
-    body = client.get(f"{LAURA}/events", params={"days": 7}).json()
-    assert body == [examples.load("EventImpactOut"), examples.load("EventImpactOut.nvda")]
-
-
-def test_events_carry_the_requested_portfolio(client: TestClient) -> None:
-    body = client.get(f"{API_PREFIX}/portfolios/javier/events").json()
-    assert {e["portfolio_id"] for e in body} == {"javier"}
-
-
 def test_agenda_lists_examples(client: TestClient) -> None:
     body = client.get(f"{LAURA}/agenda").json()
     assert body == [examples.load("AgendaItemOut"), examples.load("AgendaItemOut.dca")]
-
-
-def test_scenario_returns_example(client: TestClient) -> None:
-    response = client.post(f"{LAURA}/scenarios", json=examples.load("ScenarioRequest"))
-    assert response.status_code == 200
-    assert response.json() == examples.load("ScenarioOut")
 
 
 def test_scenario_rejects_unknown_factor(client: TestClient) -> None:
