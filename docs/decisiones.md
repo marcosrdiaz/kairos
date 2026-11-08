@@ -64,6 +64,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
+| D-XXX | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 
 ---
 
@@ -374,3 +375,18 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `mock.mp3` (6,7 s, 48 kbps mono) se generó en local con la voz es-ES de Windows (Helena) y ffmpeg. Dice: "Audio de prueba de KAIROS. Soy una inteligencia artificial y esto no es asesoramiento financiero.", para que también valga como aviso de IA mientras no exista `disclaimer.mp3`. No lleva cifras.
   - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
 - Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
+
+### D-XXX · Eventos de replay (T0-10): formato del texto como entrada de fuente
+- Fecha: 2026-11-08 · Autor: Manu · Estado: Propuesta
+- Contexto: T0-10 redacta los tres eventos de D-020 en `data/events/replay/*.json`. Más adelante la app obtendrá los eventos scrapeando noticias y datos de mercado, y el analizador los interpretará; hoy estos JSON son mocks de esa entrada.
+- Decisión:
+  - `text` imita una noticia o un comunicado tal como lo recibiría la app de una fuente: resumen fiel en español de España de qué pasó, quién, cuándo y los hechos o citas clave, **sin interpretar el impacto** sobre carteras ni decir qué hacer. Solo lleva cifras que aparecen en las fuentes de `source_urls`; ninguna estimada.
+  - Fuentes verificadas: BCE (comunicado oficial en español, Euronews y la encuesta de Reuters recogida por investingLive para el consenso); petróleo (copia de Reuters en The Star, The National e Irish Times); NVIDIA (nota de prensa oficial y Yahoo Finance).
+  - `occurred_at` (UTC): BCE `2025-06-05T12:15:00Z` (comunicado a las 14:15 CEST); petróleo `2025-06-13T01:42:00Z` (primera cotización documentada del salto del Brent según Reuters; los ataques empezaron hacia las 03:00 hora de Teherán, las 23:30Z del día 12, y se usa la reacción del mercado para que la fecha UTC sea el 13); NVIDIA `2025-02-26T21:20:00Z` (nota publicada a las 16:20 ET, tras el cierre).
+  - `consensus` solo en el BCE (D-021): `rate_change_bp` esperado y real `-25`, con la encuesta de Reuters a 81 economistas del 29 de mayo de 2025.
+  - `fallback_chain` describe la cadena causal sin ningún dígito (se convierte en `causal_chain`, que los rechaza) y sin órdenes.
+  - Sin `observed` ni `observed_source`: los calcula T1-09. `illustrative: false` porque son eventos reales.
+  - Fichero añadido fuera de la fila de T0-10: `backend/tests/test_replay_events.py` (valida los JSON contra `EventIn` y estas reglas).
+- Motivo: si el texto ya parece una entrada de fuente, el analizador se prueba hoy en las mismas condiciones que tendrá con scraping, y no se le dan pistas de impacto que debería deducir él.
+- Alternativas descartadas: redactar `text` como explicación del impacto (mezcla entrada y salida del analizador); poner la hora de los ataques en el evento del petróleo (cae el 12 de junio en UTC).
+- Consecuencias: T1-09 añade `observed` sin tocar el resto. T1-15 (analizador) recibe `text` como si viniera de una fuente. Si el scraping llega a existir, debe producir `text` con este mismo estilo.
