@@ -30,6 +30,10 @@ jobs:
           python-version: "3.12"
 
       - name: Renumerar decisiones
+        id: renumber
+        # Con referencias ambiguas el script numera lo que puede y sale con 2: se commitea igual y
+        # el job falla al final (último paso) para que el aviso no pase desapercibido.
+        continue-on-error: true
         # Solo se tocan las referencias de los ficheros que cambió este push (más decisiones.md).
         run: >
           python scripts/renumber_decisions.py
@@ -52,4 +56,11 @@ jobs:
             git pull --rebase origin main
           done
           echo "No se pudo hacer push tras 5 intentos." >&2
+          exit 1
+
+      - name: Avisar si quedaron referencias sin numerar
+        if: steps.renumber.outcome == 'failure'
+        run: |
+          echo "::error::renumber_decisions.py terminó con error (ver el paso «Renumerar decisiones»)." \
+            "Lo que se pudo numerar ya está commiteado; corrige a mano las D-XXX que queden."
           exit 1
