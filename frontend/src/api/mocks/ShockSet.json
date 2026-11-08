@@ -1,0 +1,8 @@
+{
+  "illustrative": true,
+  "event_id": "bce-2025-06",
+  "factor_shocks": {"RATES_EUR": "-0.0010", "EQ_GLOBAL": "0.0040"},
+  "company_moves": {},
+  "selected_by": "analyzer",
+  "source": {"kind": "event", "label": "Movimientos observados el 5 jun 2025", "ref": "bce-2025-06", "as_of": "2025-06-05T00:00:00Z", "url": null}
+}

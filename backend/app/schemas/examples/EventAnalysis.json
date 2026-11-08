@@ -1,0 +1,16 @@
+{
+  "illustrative": true,
+  "schema_version": 1,
+  "event_id": "bce-2025-06",
+  "event_type": "central_bank",
+  "entities": [{"kind": "central_bank", "key": "ECB", "name": "Banco Central Europeo"}],
+  "channels": [
+    {"factor": "RATES_EUR", "direction": "down", "label": "tipos", "rationale": "Bajada de tipos oficiales"},
+    {"factor": "EQ_GLOBAL", "direction": "up", "label": "bolsa", "rationale": "Financiación más barata"}
+  ],
+  "companies": [],
+  "causal_chain": ["El BCE baja los tipos", "Baja la rentabilidad de los bonos", "Suben de precio los fondos de renta fija"],
+  "relevance": "high",
+  "analyzed_model": "claude-sonnet-5-5",
+  "fallback": false
+}

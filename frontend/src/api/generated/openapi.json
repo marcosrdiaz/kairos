@@ -1,6 +1,80 @@
 {
   "components": {
     "schemas": {
+      "AlertKind": {
+        "enum": [
+          "event_impact",
+          "dca_pending",
+          "drift"
+        ],
+        "title": "AlertKind",
+        "type": "string"
+      },
+      "AlertOut": {
+        "additionalProperties": false,
+        "properties": {
+          "calc_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calc Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "delivered": {
+            "title": "Delivered",
+            "type": "boolean"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AlertKind"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "score": {
+            "description": "Fracción: 0.76 = 76 %",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Score",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "kind",
+          "score",
+          "message",
+          "created_at",
+          "delivered",
+          "calc_id"
+        ],
+        "title": "AlertOut",
+        "type": "object"
+      },
       "AllocationOut": {
         "additionalProperties": false,
         "properties": {
@@ -36,6 +110,37 @@
           "mixed"
         ],
         "title": "AllocationOut",
+        "type": "object"
+      },
+      "AskChannel": {
+        "enum": [
+          "voice",
+          "text"
+        ],
+        "title": "AskChannel",
+        "type": "string"
+      },
+      "AskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/AskChannel"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "channel",
+          "session_id"
+        ],
+        "title": "AskRequest",
         "type": "object"
       },
       "AssetClass": {
@@ -973,6 +1078,34 @@
         "title": "Profile",
         "type": "string"
       },
+      "ReplayOut": {
+        "additionalProperties": false,
+        "description": "Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó.",
+        "properties": {
+          "elapsed_ms": {
+            "title": "Elapsed Ms",
+            "type": "integer"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "portfolios": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Portfolios",
+            "type": "object"
+          }
+        },
+        "required": [
+          "event_id",
+          "portfolios",
+          "elapsed_ms"
+        ],
+        "title": "ReplayOut",
+        "type": "object"
+      },
       "TargetAllocation": {
         "additionalProperties": false,
         "properties": {
@@ -1312,12 +1445,74 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Act On Dca Execution",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/demo/replay/{event_id}": {
+      "post": {
+        "operationId": "replay_event_api_v1_demo_replay__event_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplayOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replay Event",
+        "tags": [
+          "events"
         ]
       }
     },
@@ -1431,6 +1626,107 @@
         ]
       }
     },
+    "/api/v1/portfolios/{portfolio_id}/alerts": {
+      "get": {
+        "operationId": "list_alerts_api_v1_portfolios__portfolio_id__alerts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertOut"
+                  },
+                  "title": "Response List Alerts Api V1 Portfolios  Portfolio Id  Alerts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Alerts",
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/ask": {
+      "post": {
+        "operationId": "ask_api_v1_portfolios__portfolio_id__ask_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask",
+        "tags": [
+          "ask"
+        ]
+      }
+    },
     "/api/v1/portfolios/{portfolio_id}/dca-plans": {
       "get": {
         "operationId": "list_dca_plans_api_v1_portfolios__portfolio_id__dca_plans_get",
@@ -1538,7 +1834,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Create Dca Plan",
@@ -1609,7 +1905,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Dca Plan",
@@ -1721,7 +2017,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Plan",
@@ -1783,7 +2079,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Init Positions",
@@ -1845,7 +2141,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transaction",
@@ -1907,7 +2203,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transfer",
