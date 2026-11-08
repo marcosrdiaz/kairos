@@ -1,0 +1,14 @@
+{
+  "illustrative": true,
+  "state": "revisa_plan",
+  "total_eur": "42380.00",
+  "change_week_pct": "0.003",
+  "reason": {"kind": "drift", "event_id": null},
+  "event_title": null,
+  "top_asset_class": null,
+  "main_channel": null,
+  "event_impact_eur": null,
+  "equity_current": "0.76",
+  "equity_target": "0.60",
+  "calc_id": "calc_9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4c"
+}

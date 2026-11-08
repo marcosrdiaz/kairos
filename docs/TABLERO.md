@@ -146,11 +146,17 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
 
+### T0-05 · Contratos de eventos, agentes y avisos — Marcos
+**Qué estaba haciendo:** esquemas, ejemplos, mocks y endpoints hechos; `make lint`/`test` del backend en verde (ruff, mypy, 158 tests). Falta abrir el PR.
+**Siguiente paso exacto:** abrir PR `t0-05/event-agent-alert-schemas` (la decisión va como `D-XXX`), pedir revisor, y al mergear marcar `docs: done T0-05`. Cuando T0-04 esté en `main`, sustituir `EventImpactStub` por `EventImpactOut`.
+**Ficheros tocados:** `backend/app/schemas/{events,agents,alerts}.py`, `schemas/examples/` (16 JSON), `backend/app/{agents,events,alerts}/` (`mock.py`, `service.py`, `__init__.py`), `backend/app/api/{ask,events,alerts}.py`, `backend/tests/test_event_agent_examples.py`.
+
 ## 5. Bloqueos
 
 | Fecha/hora | Tarea bloqueada | Por qué | Necesita de | Estado |
 | --- | --- | --- | --- | --- |
 | 2026-11-08 | Ninguna (tarea menor de setup) | `playwright-cli` no encuentra Chrome en Windows (`chrome.exe` no instalado) y hay que usar `--browser=msedge`. Hay que hacer que `scripts/setup-dev.sh` deje a `playwright-cli` usando su propio Chromium | Quien coja la tarea menor de `scripts/setup-dev.sh` | Abierto |
+| 2026-11-08 | T0-05 | `EventImpactOut` (T0-04) no está en `main`; `agents` usa `EventImpactStub` | T0-04 (Jaime) | Abierto: sustituir `EventImpactStub` por `schemas.impact.EventImpactOut` al subir T0-04 |
 
 ## 6. Peticiones de contrato
 
@@ -159,6 +165,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | Fecha/hora | Pide | Esquema / endpoint | Cambio | Afecta a | Estado |
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-08 | Marcos (T0-07) a Alons (T0-01) | Prefijo de la API | Confirmar que `main.py` monta todos los routers bajo `/api/v1` (`SPEC.md` §11). El cliente del frontend usa la base `/api/v1` y el proxy de Vite reenvía `/api` tal cual | T0-01, T0-03, T0-07 y todo el frontend | Pendiente de confirmar |
+| 2026-11-08 | Marcos (T0-05) a Jaime (T0-04) | `ExplanationStatus`, `SentenceStatus`, `StatusState`, `StatusFacts` | Importar de `app.schemas.agents` en `schemas/impact.py` y `schemas/status.py` (no redefinirlos). `StatusFacts` es la entrada de `agents.write_status_sentence`; el módulo `status` la rellena | T0-04, T1-17, T2-04 | Pendiente de confirmar |
 
 ## 7. Preguntas abiertas
 
