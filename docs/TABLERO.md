@@ -138,6 +138,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** que un compañero revise el PR (5 minutos); mergear y marcar `docs: done T1-08`. T1-11 puede empezar al entrar en `main`; las claves `OTROS_`, `GOV_` y `BONOS_` no son una empresa (ver la decisión).
 **Ficheros tocados:** `data/seed/compositions/*.csv`, `backend/tests/test_compositions.py`, `docs/decisiones.md`, `docs/SPEC.md` (§12).
 
+### T1-11 · Look-through: claves que no son una empresa — Marcos (para quien coja la tarea)
+**QuÃ© deja T1-08:** los CSV de `data/seed/compositions/` (en `main` cuando se mergee el PR #24). Detalle en la decisiÃ³n Â«ComposiciÃ³n de fondos y ETF (T1-08): formato del CSV, residuos por paÃ­s, divisa de los fondos cubiertos y claves de empresaÂ».
+**Claves que no son una empresa:** las que empiezan por `OTROS_`, `GOV_` o `BONOS_` son un residuo o un emisor pÃºblico. Cuentan en paÃ­s, sector y divisa, pero **se excluyen de `top_companies` y de los solapamientos** (`overlap`) y de la regla de concentraciÃ³n del radar. Las demÃ¡s claves son empresas y coinciden entre fondos y con las acciones directas (clave = `ticker` de `assets.json`).
+**Otros detalles:** `country = OTHER` y `currency` vacÃ­o significan Â«desconocidoÂ» (se agrupan como `OTHER`). Los nombres de empresa vienen en mayÃºsculas de iShares: el mismo nombre en todos los ficheros. En eventos de resultados, el residuo de un fondo equivale a Â«esa empresa no estÃ¡ en el residuoÂ».
+
 ### T1-21 · `voice/` backend: requisitos que deja T0-09 — Marcos (para quien coja la tarea)
 **Normalizar cifras antes del TTS:** Flash v2.5 no normaliza texto y lee mal las cifras largas ("42.380 euros" salió distinto en cada repetición). `voice/` debe convertir las cifras a palabras de forma determinista **después del guardián** (que valida los dígitos contra `calc_trace`) y justo antes del TTS: Explicador → guardián → `voice/` → TTS. El texto en pantalla conserva los dígitos. Función pura con tests propios: importes (miles y decimales), porcentajes, puntos y fechas. Detalle en la entrada «IDs de ElevenLabs (T0-09)» de `docs/decisiones.md`.
 **Calentamiento:** la primera llamada con una voz tarda 7–11 s hasta el primer byte; las siguientes, ~150 ms. Haz una llamada de calentamiento al arrancar el backend con `ELEVENLABS_VOICE_ID`.
