@@ -66,7 +66,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
 | D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 | D-042 | 2026-11-08 | Modelo de datos y migración inicial (T1-01): tablas de DCA y de ajuste de demo, columnas añadidas y registro `app.models` | Propuesta |
-| D-XXX | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
+| D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 
 ---
 
@@ -406,7 +406,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: el ajuste de demo agregado por evento (no basta para `value_eur` por posición); `ENUM` de Postgres (cada valor nuevo exigiría una migración y no funcionan igual en SQLite).
 - Consecuencias: T1-02, T1-03, T1-06, T1-11, T1-12, T1-13, T1-15, T2-02 y T2-08 ya tienen sus tablas. Si una tarea cambia un modelo, añade una migración `0002_…` encadenada a la última que haya en `main`; si dos ramas crean migraciones a la vez, la segunda en entrar ajusta su `down_revision`. `SPEC.md` §6 actualizado.
 
-### D-XXX · IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras
+### D-043 · IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras
 - Fecha: 2026-11-08 · Autor: Marcos · Estado: Propuesta
 - Contexto: `SPEC.md` §2 dejaba sin fijar los IDs exactos de los modelos de voz. T1-21 y T0-06 los necesitan para `.env`. Los IDs se verificaron en la documentación oficial y el resto con llamadas reales a la API (clave en `.env`, ignorado por git).
 - Decisión (verificado en la documentación):
