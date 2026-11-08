@@ -69,10 +69,10 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-043 | 2026-11-08 | IDs de ElevenLabs (T0-09): Scribe v2 Realtime, Flash v2.5, voz en español y normalización de cifras | Propuesta |
 | D-044 | 2026-11-08 | Eventos de replay (T0-10): formato del texto como entrada de fuente | Propuesta |
 | D-045 | 2026-11-08 | Históricos y `observed` (T1-09): series de factores, formato CSV y sesión de reacción | Propuesta |
-| D-XXX | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
-| D-XXX | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
-| D-XXX | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
-| D-XXX | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
+| D-046 | 2026-11-08 | Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out` | Propuesta |
+| D-047 | 2026-11-08 | Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria | Propuesta |
+| D-048 | 2026-11-08 | Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks | Propuesta |
+| D-049 | 2026-11-08 | Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa | Propuesta |
 
 ---
 
@@ -461,7 +461,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - `EQ_GLOBAL` cotiza en Ámsterdam y cierra antes que Wall Street: en NVIDIA marca +0,18 % frente a −2,75 % de `^NDX`, y subestima los movimientos de la tarde en EE. UU.
   - `backend/tests/test_replay_events.py` (de T0-10) pasa a exigir `observed`. Fichero añadido fuera de la fila de T1-09: `backend/tests/test_fetch_prices.py`. `SPEC.md` §8.1 y §12 actualizados.
 
-### D-XXX · Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out`
+### D-046 · Contratos de activo, precio y reset de demo (T1-03): `AssetOut`, `PriceOut`, `DemoResetRequest/Out`
 - Fecha: 2026-11-08 19:00 · Autor: Alons · Estado: Propuesta
 - Contexto: tres interfaces del diseño no tenían modelo en `app/schemas/`: la respuesta de `GET /assets/lookup` (RF-01), el `PriceOut` que devuelven `prices.latest()` y `history()` (§4.1) y el cuerpo y la respuesta de `POST /demo/reset` (§4.6). Los contratos ya estaban cerrados, así que van en un PR de contrato aparte, antes de T1-02 y T1-03.
 - Decisión:
@@ -474,7 +474,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: que `/demo/reset` responda 204 sin cuerpo (el frontend no sabría qué eventos quedan precargados); un `AssetLookupOut` envuelto (`GET /portfolios` ya devuelve una lista sin envolver).
 - Consecuencias: T1-02 devuelve `PriceOut` en `latest()` y `history()`. T1-03 sustituye el mock de `lookup_assets` y `reset_demo` por la BD. T1-19 usa `AssetOut` para el autocompletar. T2-03 rellena `preloaded_event_ids` con el `preload`.
 
-### D-XXX · Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria
+### D-047 · Precios offline (T1-02): lectura de `data/prices` y `data/factors/EURUSD.csv`, catálogo desde `assets.json` y precios en memoria
 - Fecha: 2026-11-08 19:30 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-02 lee sin red (D-014) los CSV de T1-09 (D-045). Además `prices` necesita la divisa, el tipo de precio y la fuente de cada activo, que están en la tabla `asset` de `portfolio`, y `portfolio` llama a `prices` para valorar.
 - Decisión:
@@ -488,7 +488,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: cargar los CSV en la tabla `price` desde `seed_db.py` (la tabla no guarda `price_kind` y haría falta una migración); leer la tabla `asset` desde `prices` (rompe la frontera por `service.py`).
 - Consecuencias: T1-03 valora con `prices.latest` y `fx_quote("USDEUR")` (inverso de `EURUSD`). Un activo `yahoo:` sin CSV responde `PRICE_UNAVAILABLE`. Los tests usan el proveedor falso, salvo uno que comprueba los CSV reales del repo.
 
-### D-XXX · Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks
+### D-048 · Valoración, alta y seed (T1-03): redondeo, cambio semanal, seed idempotente y `ensure_exists` para los mocks
 - Fecha: 2026-11-08 20:30 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-03 pasa a real la valoración (`get_valued`), el alta, `/assets/lookup`, el seed y `/demo/reset`. Había que fijar cómo se redondea, de dónde sale el cambio semanal y qué pasa con los mocks de otros módulos que llamaban a `get_valued` solo para comprobar que la cartera existe.
 - Decisión:
@@ -505,7 +505,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 - Alternativas descartadas: redondear solo el total (el total no coincidiría con la suma de las filas); que el seed recargue siempre (cada `docker compose up` borraría las operaciones de la demo).
 - Consecuencias: T1-04 a T1-07 reutilizan `engine`, `repository.add_initial_lot` y `_quotes`. T2-02 suma los ajustes de demo en `get_valued`. T2-03 llama a los `reset()` del resto desde `/demo/reset`. Los casos dorados están en `backend/tests/golden/portfolio_init_cases.json`.
 
-### D-XXX · Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa
+### D-049 · Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa
 - Fecha: 2026-11-08 19:13 · Autor: Marcos · Estado: Propuesta
 - Contexto: T1-08 crea `data/seed/compositions/<ISIN>.csv` para el look-through (T1-11). Ningún documento fijaba las columnas, cómo se reparte lo que no está en el top-N ni cómo se identifican las empresas entre fondos y acciones directas.
 - Decisión:
