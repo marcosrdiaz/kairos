@@ -60,9 +60,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-034 | 2026-11-08 | Esqueleto (T0-01): ficheros extra, servicio `seed` y `calc_trace` en `core` | Aceptada |
 | D-035 | 2026-11-08 | Dependencias y base del frontend (T0-07): `react-router`, proxy `/api` sin reescribir, formato único de cifras | Aceptada |
 | D-036 | 2026-11-08 | Contrato de cartera (T0-02): peticiones, variantes de ejemplo y mock por API | Aceptada |
-| D-038 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
-| D-037 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
-| D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
+| D-037 | 2026-11-08 | `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo | Aceptada |
 
 ---
 
@@ -317,7 +315,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-02: `backend/app/portfolio/__init__.py`, `backend/app/schemas/examples/__init__.py` y `backend/tests/test_portfolio_mock.py`.
 - Consecuencias: T0-03 copia también las variantes. T1-03 a T1-07 sustituyen las funciones de `service.py` sin cambiar sus firmas. Las cifras de los ejemplos usan los activos del seed de T0-08, pero son ilustrativas: con esos precios, la RV de Laura en el mock sale en 0,72, no en 0,76.
 
-### D-038 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
+### D-037 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
 - Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
 - Contexto: T0-03 tiene que generar los tipos TS desde el OpenAPI del backend. `openapi-typescript` estaba aceptado (D-001 / `SPEC.md` §2), pero la última versión (7.13.0) pide `typescript@^5` como peer y el frontend usa TypeScript 6 (D-035): `npm install` falla con `ERESOLVE`.
 - Decisión:
