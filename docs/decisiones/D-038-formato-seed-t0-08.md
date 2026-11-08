@@ -1,0 +1,17 @@
+### D-038 · Formato de `data/seed` y supuestos de rentabilidad (T0-08)
+- Fecha: 2026-11-08 17:23 · Autor: Jaime · Estado: Propuesta
+- Contexto: T0-08 tenía que crear los datos de semilla, pero ningún documento fijaba su formato ni de dónde salen las rentabilidades de la proyección.
+- Decisión:
+  - `assets.json` lleva `illustrative`, `as_of`, `ter_sources` y `assets`, con las columnas de la tabla `asset` (`SPEC.md` §6). El `id` es el ISIN; el depósito y el plan de pensiones, sin ISIN, usan `DEP-12M` y `PP-MIXTO`.
+  - `price_source` es `yahoo:<símbolo>` o `fixed:<valor>` (precio fijo, sin histórico ni betas).
+  - `portfolios/<id>.json` lleva `illustrative`, `id`, `name`, `profile`, `base_currency`, `plan`, `dca_plans` y `positions`. Cada posición tiene `asset_id` y `lots` (`acquired_at`, `units`, `cost_eur_per_unit`), que se corresponden con `tax_lot`. Los decimales van como cadenas.
+  - Las participaciones se calcularon con los precios de Yahoo del 5-6 de noviembre de 2026 y los costes, con el cierre real de cada fecha de compra. Las carteras son ilustrativas.
+  - El DCA de Laura invierte en dos fondos (`IE00B03HD191` 70 % e `IE00B18GC888` 30 %) y no en IWDA como el ejemplo del contrato, porque el producto dice que invierte en "dos fondos indexados".
+  - `assumptions.json` toma el escenario `base` de Amundi CMA de abril de 2026, p. 18 (rentabilidad geométrica a 10 años: World 6,7 %, Euro Aggregate 3,5 %, Euro cash 1,8 %). `pesimista` y `optimista` son la base menos o más media desviación típica del rendimiento anualizado a 10 años (volatilidad simulada / √10 / 2). `mixed` es la media simple de `equity` y `fixed_income`.
+- Motivo: Amundi es la única fuente primaria localizada con renta variable, renta fija y liquidez en la misma tabla y con las clases en euros. Con esta regla, Laura alcanza su meta de 150.000 € en el escenario base y no en el pesimista, como en el ejemplo del contrato.
+- Alternativas descartadas: Vanguard Outlook 2026 (sin cifras en euros y sin rango primario para bonos); J.P. Morgan LTCMA y Fidelity CMA (no se pudo descargar el documento para contrastar la tabla); el tipo de depósito del BCE como rentabilidad de la liquidez (no es una previsión a 10 años).
+- Consecuencias:
+  - T1-03: `seed_db.py` lee este formato y crea los lotes.
+  - T1-02, T1-09 y T1-12: tratan `fixed:<valor>` sin histórico ni betas; T1-09 puede usar el símbolo de `price_source`.
+  - T1-14: lee `scenarios` y pondera por la asignación objetivo. Las rentabilidades son brutas, en divisa local y sin efecto divisa en la renta variable global.
+  - T2-15: revisa las filas de §5 con el motor real; la fila 2 depende de T1-08.

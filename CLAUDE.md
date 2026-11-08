@@ -10,7 +10,7 @@ Este fichero se carga en todas las sesiones. Es corto a propósito: el detalle e
 2. Si continúa una tarea: lee su fila y su subsección en *Notas para retomar* de `docs/TABLERO.md`.
 3. Si coge una nueva: lista las tareas **disponibles de la fase actual** (la primera fase no cerrada): estado `⬜`, sin nadie en *Cogida por*, con todas sus dependencias hechas y sin ficheros en común con una tarea en curso. Que elija una y cógela con `/coger <ID>` antes de empezar.
 4. Lee la tabla de *Bloqueos* del tablero.
-5. Lee las últimas ~10 entradas de `docs/decisiones.md`.
+5. Lee las últimas ~10 decisiones: los 10 ficheros de `docs/decisiones/` con mayor ID (`ls docs/decisiones | sort | tail -10`). El índice está en `docs/decisiones.md`.
 6. Lee solo la sección de `docs/SPEC.md` del módulo en el que vas a trabajar, más los contratos (diseño del MVP §3 y §4).
 7. Resume en 3-5 líneas qué vas a hacer y espera confirmación si toca más de un módulo.
 
@@ -33,11 +33,11 @@ No hay roles ni carpetas con dueño. Cualquiera hace cualquier tarea del pool de
 - **Adelantar.** Se puede coger una tarea de la fase siguiente solo si **todas** sus dependencias están hechas. Si una tarea depende de otra, se hace antes la dependencia.
 - **Claim.** Coger una tarea es un commit al tablero (`docs: claim T1-04`) **antes de empezar**. Si ya está cogida, se elige otra. Usa `/coger <ID>`.
 - **Propiedad por tarea.** Mientras una tarea está en curso, quien la tiene es dueño de los ficheros de su columna *Ficheros que toca*. Otra sesión no los edita: si necesita algo de ellos, apunta un bloqueo en el tablero. No se coge una tarea cuyos ficheros solapen con los de otra en curso.
-- **Excepciones a la propiedad:** `docs/decisiones.md` (solo se añade al final) y tu propia fila del tablero.
+- **Excepciones a la propiedad:** `docs/decisiones/` (se crea un fichero nuevo por decisión) y tu propia fila del tablero.
 - **Tablero: solo commits directos a `main` (excepción a "todo por PR").** `docs/TABLERO.md` se modifica únicamente con commits directos a `main`, nunca dentro de un PR, y el commit toca solo ese fichero. Mensaje `docs: claim|release|done|block|note T<x>-<nn>`: `claim`, `release` y `done` cambian la fila de la tarea (*Cogida por* y *Estado*); `block` apunta o cierra una fila de *Bloqueos* (y marca la tarea `⛔`); `note` actualiza *Notas para retomar* o *Peticiones de contrato* (y marca `🧪 en PR`). Flujo: `git pull --rebase` → comprobar (p. ej. que la tarea sigue libre) → commit → `git push` justo después. Si el push falla, se repite desde el pull. Excepción puntual: `docs: tablero rules` para cambios de reglas del propio tablero (la sección *Reglas* de `docs/TABLERO.md`), también directo a `main`. Todo lo demás va por PR.
 - **Arquitectura (no es propiedad).** Los módulos de backend se llaman entre sí solo a través de su `service.py`. Nunca consultes las tablas de otro módulo directamente. Si necesitas algo de otro módulo que aún no existe, usa su mock (`*/mock.py` o `frontend/src/api/mocks/`).
 - **Contratos.** `backend/app/schemas/` y `frontend/src/api/generated/` se cierran en la fase 0. Después solo se cambian con un PR propio (sin mezclar implementación), una fila en *Peticiones de contrato* y aviso al equipo. Añadir un campo opcional es aceptable; renombrar o quitar, no.
-- **Decisiones.** Qué "Si da tiempo" entra lo decide el equipo en el checkpoint del martes 10 a las 18:00 y se apunta en `docs/decisiones.md`.
+- **Decisiones.** Qué "Si da tiempo" entra lo decide el equipo en el checkpoint del martes 10 a las 18:00 y se apunta en una decisión nueva de `docs/decisiones/`.
 
 ## Comandos
 
@@ -72,7 +72,7 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 - **Fechas** siempre con zona horaria (UTC en BD). Usa `app.core.clock.now()`, nunca `datetime.now()`: en modo demo el reloj se puede fijar.
 - **TypeScript estricto**, React + Vite, componentes funcionales. Llamadas al backend solo desde `src/api/` con los tipos generados.
 - Ficheros < 300 líneas; funciones puras en los motores (entrada → salida, sin BD), la BD se toca en `repository.py`.
-- Sin dependencias nuevas sin anotarlo en `docs/decisiones.md`.
+- Sin dependencias nuevas sin anotarlo en una decisión (`docs/decisiones/`).
 - Secretos solo en `.env` (nunca en el repo). Si añades una variable, añádela también a `.env.example`.
 - **Escribe los ficheros con Edit/Write, nunca con el shell de Windows** (`echo`, heredocs, `sed -i`, `python -` leyendo de la entrada estándar): la consola rompe la codificación de tildes y símbolos (`Ã`, `Â`).
 
@@ -86,14 +86,15 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 
 - Rama por tarea: `t<fase>-<nn>/<descripcion-corta>` (p. ej. `t1-13/impact-fx-split`). PR pequeño a `main`, CI en verde y un revisor del equipo (vale con un vistazo de 5 minutos). El merge lo hace quien abre el PR, tras la aprobación.
 - Commits: Conventional Commits (`feat(impact): ...`, `fix(portfolio): ...`, `docs: ...`). Los cambios del tablero usan `docs: claim|release|done|block|note T<x>-<nn>` y van directos a `main`, nunca en un PR (ver arriba).
-- **IDs de decisiones.** Las decisiones nuevas van con `D-XXX` (`D-XXX-a`, `D-XXX-b`… si hay varias en la misma rama). La Action `renumber-decisions` (`scripts/renumber_decisions.py`) las numera al entrar en `main`. No las toques a mano. La Action solo sustituye `D-XXX` en `docs/decisiones.md` y en los ficheros que cambia ese mismo PR. **Fuera del propio PR** (por ejemplo, en el tablero), una decisión aún sin mergear se cita **por título**, nunca como `D-XXX`: no se renumeraría o, peor, se confundiría con la de otro PR.
+- **Decisiones: un fichero cada una.** Cada decisión es `docs/decisiones/D-NNN-slug.md` (ID + slug corto del título, en minúsculas y sin tildes). Las nuevas se crean como `docs/decisiones/D-XXX-<slug>.md` (`D-XXX-a-<slug>.md`, `D-XXX-b-<slug>.md`… si hay varias en la misma rama), con `### D-XXX · Título` en la primera línea. `docs/decisiones.md` solo tiene la cabecera y un índice **generado**: no lo edites (el CI lo comprueba). Cambiar el *Estado* de una antigua es editar su fichero; el índice lo recoge solo.
+- **IDs de decisiones.** La Action `renumber-decisions` (`scripts/renumber_decisions.py`) renombra el fichero, cambia el ID dentro y regenera el índice al entrar en `main`. No las numeres a mano. La Action solo sustituye `D-XXX` en las decisiones que numera y en los ficheros que cambia ese mismo PR. **Fuera del propio PR** (por ejemplo, en el tablero), una decisión aún sin mergear se cita **por título**, nunca como `D-XXX`: no se renumeraría o, peor, se confundiría con la de otro PR.
 - Nunca `push --force` a `main`. No mezcles en un PR cambios de contrato con cambios de implementación.
 - **Congelación**: el miércoles 11 a las 16:00 solo se aceptan fixes. Entrega antes de las 21:00 (cierre oficial 23:59). Lo que se entrega es el ZIP de `main`.
 
 ## Al terminar una sesión (o antes de `/clear`)
 
 1. Actualiza en `docs/TABLERO.md` la subsección de tu tarea en *Notas para retomar* (qué estabas haciendo, siguiente paso exacto, ficheros tocados) con un commit directo a `main`: `docs: note T<x>-<nn>`. Si la tarea ya está en `main`, márcala `✅ hecho` con `docs: done T<x>-<nn>` y borra sus notas. Si la abandonas, `docs: release T<x>-<nn>`.
-2. Si se tomó una decisión de diseño, añádela a `docs/decisiones.md` con el ID provisional `D-XXX` (entrada e índice). La Action le pone el ID real al entrar en `main` (ver *Git*).
+2. Si se tomó una decisión de diseño, crea su fichero `docs/decisiones/D-XXX-<slug>.md` con el ID provisional `D-XXX` (con `/decision`). La Action le pone el ID real y actualiza el índice al entrar en `main` (ver *Git*).
 3. Si cambió algo de arquitectura, contrato o modelo de datos, actualiza `docs/SPEC.md`.
 4. Commit de los docs (menos el tablero, que va aparte en un commit directo a `main`) junto al código, en tu rama (`docs: update notas T<x>-<nn>`).
 
@@ -102,7 +103,7 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 - No generes datos financieros "realistas" inventados en código de producción. Los datos de ejemplo viven en `data/seed/` y llevan la marca `"illustrative": true`.
 - No pongas cifras en los prompts como ejemplo de respuesta (el modelo las copia). Usa `<IMPORTE>` como marcador.
 - No añadas features fuera de la tabla de `docs/INGENIERIA.md` §4. Si parece necesaria, se propone en el tablero.
-- No toques `docs/decisiones.md` salvo para añadir al final (solo se cambia el campo *Estado* de entradas anteriores).
+- No edites `docs/decisiones.md` (el índice es generado) ni reescribas una decisión antigua: solo se añade un fichero nuevo en `docs/decisiones/`, y de las antiguas solo se cambia el campo *Estado*.
 
 ## Mapa de documentos
 
@@ -112,5 +113,5 @@ Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el naveg
 | `docs/INGENIERIA.md` | Requisitos, casos de uso, diagramas, trazabilidad, plan de pruebas |
 | `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md` | Diseño técnico del MVP (aprobado): contratos exactos, fases y tareas. Manda sobre `SPEC.md` |
 | `docs/SPEC.md` | Stack, estructura del repo, modelo de datos, API, algoritmos, agentes |
-| `docs/decisiones.md` | Registro de decisiones (qué, cuándo, por qué) |
+| `docs/decisiones/` | Registro de decisiones (qué, cuándo, por qué): un fichero `D-NNN-slug.md` por decisión. `docs/decisiones.md` es la cabecera y el índice generado |
 | `docs/TABLERO.md` | Pool de tareas por fase, quién ha cogido cada una, bloqueos, notas para retomar |

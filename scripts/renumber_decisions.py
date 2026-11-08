@@ -1,37 +1,38 @@
 #!/usr/bin/env python3
-"""Numera las decisiones provisionales de `docs/decisiones.md`.
+"""Numera las decisiones provisionales de `docs/decisiones/` y regenera el índice.
 
-Las ramas escriben las decisiones nuevas con `D-XXX` (y `D-XXX-a`, `D-XXX-b`… si hay varias en la
-misma rama). Al entrar en `main`, este script (lo lanza la Action `renumber-decisions`) asigna los
-siguientes IDs correlativos `D-NNN` y los sustituye en la entrada, en la fila del índice y en las
-referencias de los ficheros que ese mismo commit ha modificado.
+Cada decisión es un fichero `docs/decisiones/D-NNN-slug.md`. Las ramas crean los nuevos como
+`D-XXX-slug.md` (y `D-XXX-a-slug.md`, `D-XXX-b-slug.md`… si una rama trae varios), con
+`### D-XXX · Título` en la primera línea. Al entrar en `main`, este script (lo lanza la Action
+`renumber-decisions`) asigna los siguientes IDs correlativos, renombra el fichero (`git mv`), cambia
+el ID dentro y en las referencias de los ficheros que ese commit modificó, y regenera el índice de
+`docs/decisiones.md` (entre `<!-- INDICE:INICIO -->` y `<!-- INDICE:FIN -->`, no se edita a mano).
 
 Reglas:
-- El siguiente ID es el mayor `D-NNN` ya usado en entradas e índice, más uno.
-- Se numera por orden de aparición de las entradas (`### D-XXX · …`). Los sufijos de una misma rama
-  mantienen su orden. Varias `D-XXX` sin sufijo (de ramas distintas) se emparejan con su fila del
-  índice por orden.
+- El siguiente ID es el mayor `D-NNN` ya usado, más uno. Se numera primero lo que quedó pendiente de
+  pushes anteriores y luego lo que añade este push; dentro de cada grupo, por sufijo (`-a`, `-b`) y
+  slug.
+- La fecha, el título y el estado del índice se leen de cada fichero (`- Fecha: … Estado: …`).
+  El índice solo lista las decisiones ya numeradas: un PR que añade una `D-XXX` no toca
+  `decisiones.md`, así que dos PRs no entran en conflicto.
 - Una referencia con sufijo (`D-XXX-b`) siempre es inequívoca. Una `D-XXX` sin sufijo en el texto
-  solo se sustituye si el push que dispara la Action (`--before` y `--after`) añade **una sola**
-  entrada `D-XXX`; si añade varias o ninguna, se deja y se avisa. Las `D-XXX` que `decisiones.md`
-  arrastra de pushes anteriores sin numerar (p. ej. porque su Action no llegó a correr) no cuentan:
-  se numeran igual, pero no hacen ambigua la referencia del push actual. Sin `--before` y
-  `--after` no se sabe qué entradas son nuevas y basta con que haya una sola en el fichero.
-- Las referencias solo se sustituyen en `docs/decisiones.md` y en los ficheros del commit que
-  dispara la Action (`--before` y `--after`, lo que da `git diff --name-only`). Un `D-XXX` en
-  cualquier otro fichero (p. ej. el tablero, que cita decisiones de PRs aún sin mergear) no se toca:
-  pertenece a otra decisión pendiente y numerarlo ahora lo apuntaría a la equivocada. Solo se avisa.
-  Fuera del propio PR, las decisiones sin mergear se citan por título, no como `D-XXX`.
-- No se tocan los textos que explican la convención: la cabecera de `docs/decisiones.md` (antes de
-  `## Índice`) y los ficheros de `PROTECTED`.
-- Idempotente: sin `D-XXX` no cambia nada y sale con 0.
-- Códigos de salida: 1 si hay IDs repetidos o una entrada sin fila de índice (o al revés); no se
-  escribe nada. 2 si quedan referencias `D-XXX` ambiguas (en `decisiones.md` o en los ficheros del
-  diff): antes de salir se escribe todo lo que sí se pudo numerar, para que la Action lo
-  commitee, y el job termina en rojo para que el aviso no pase desapercibido.
+  solo se sustituye si el push (`--before` y `--after`) añade **un solo** fichero `D-XXX-slug.md`;
+  si añade varios o ninguno, se deja y se avisa. Las pendientes de pushes anteriores se numeran,
+  pero no hacen ambigua la referencia del push actual. Sin `--before` y `--after` basta con que
+  haya un solo fichero `D-XXX-slug.md`.
+- Las referencias solo se sustituyen en las decisiones que se numeran y en los ficheros del commit
+  que dispara la Action (`git diff --name-only`). Un `D-XXX` en cualquier otro fichero (p. ej. el
+  tablero) no se toca: solo se avisa. No se tocan `PROTECTED` ni las decisiones ya numeradas.
+- Idempotente: sin `D-XXX` y con el índice al día no cambia nada y sale con 0.
+- Códigos de salida: 1 si el estado es inconsistente (nombre o cabecera de un fichero mal formados,
+  IDs o sufijos repetidos, marcadores del índice ausentes, `--check-index` con diferencias); no se
+  escribe nada. 2 si quedan referencias `D-XXX` ambiguas: antes de salir se escribe todo lo que sí
+  se pudo numerar, para que la Action lo commitee, y el job termina en rojo.
 
 Uso: `python scripts/renumber_decisions.py [--root RUTA] [--before SHA --after SHA]`.
-Sin `--before` y `--after` solo se procesa `docs/decisiones.md`. Solo biblioteca estándar.
+`--index-only` solo regenera el índice. `--check-index [--base SHA]` comprueba que el índice
+coincide con el generado; con `--base` se ignoran las filas de las decisiones que cambia el PR
+(la Action las regenera al entrar en `main`). Solo biblioteca estándar.
 """
 
 import argparse
@@ -42,32 +43,54 @@ import subprocess
 import sys
 from collections import Counter
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 DECISIONS = "docs/decisiones.md"
-INDEX_MARKER = "## Índice"
+DIR_NAME = "decisiones"
+DECISIONS_DIR = f"docs/{DIR_NAME}"
+INDEX_START = "<!-- INDICE:INICIO -->"
+INDEX_END = "<!-- INDICE:FIN -->"
 MAX_FILE_BYTES = 2_000_000
 AMBIGUOUS_WARNING = "AVISO: referencias ambiguas a"
 EXIT_AMBIGUOUS = 2
 
-# Ficheros que explican la convención `D-XXX`: se dejan tal cual.
+# Ficheros que explican la convención `D-XXX` o son decisiones ya numeradas: se dejan tal cual.
 PROTECTED = (
     "CLAUDE.md",
     ".claude/commands/*",
     "scripts/renumber_decisions.py",
     "backend/tests/test_renumber_decisions.py",
     ".github/workflows/renumber-decisions.yml",
+    DECISIONS,
+    f"{DECISIONS_DIR}/D-[0-9][0-9][0-9]-*.md",
 )
 
 _TOKEN = r"D-XXX(?:-[a-z])?"
 _REF = re.compile(rf"(?<![\w-])({_TOKEN})(?![\w-])")
-_HEADING = re.compile(rf"^### ({_TOKEN}|D-\d{{3}})(?=\s)")
-_ROW = re.compile(rf"^\| ({_TOKEN}|D-\d{{3}}) \|")
-_NUMBER = re.compile(r"^D-(\d{3})$")
+_NAME = re.compile(r"^(D-(?:\d{3}|XXX(?:-[a-z])?))-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$")
+_HEADING = re.compile(r"^### (D-\d{3}|D-XXX(?:-[a-z])?) · (.+?)\s*$")
+_META = re.compile(r"^- Fecha: (\d{4}-\d{2}-\d{2})\b.*\bEstado: ([^·]+?)\s*$")
+_ROW_ID = re.compile(r"^\| \[(D-\d{3})\]")
 
 
 class RenumberError(Exception):
-    """Estado inconsistente de `decisiones.md` (IDs repetidos, entrada sin fila de índice…)."""
+    """Estado inconsistente de `docs/decisiones/` (nombres, IDs repetidos, índice…)."""
+
+
+@dataclass(frozen=True)
+class Decision:
+    path: Path
+    token: str  # `D-001`, `D-XXX` o `D-XXX-a`
+    slug: str
+    title: str
+    date: str
+    state: str
+    text: str
+
+    @property
+    def numbered(self) -> bool:
+        return not self.token.startswith("D-XXX")
 
 
 def _tracked_files(root: Path) -> list[Path]:
@@ -109,13 +132,12 @@ def changed_files(root: Path, before: str, after: str) -> list[Path]:
     return [root / name for name in out.split("\0") if name]
 
 
-def added_headings(root: Path, before: str, after: str) -> set[str]:
-    """Líneas `### D-XXX…` que añade el rango `before..after` a `docs/decisiones.md`."""
-    out = _git_diff(root, before, after, "-U0", paths=[DECISIONS])
-    added = (line[1:].rstrip() for line in out.splitlines() if line.startswith("+###"))
-    return {
-        line for line in added if (m := _HEADING.match(line)) and m.group(1).startswith("D-XXX")
-    }
+def added_files(root: Path, before: str, after: str) -> set[str]:
+    """Nombres de los ficheros de `docs/decisiones/` que añade el rango `before..after`."""
+    out = _git_diff(
+        root, before, after, "--name-only", "-z", "--diff-filter=A", paths=[DECISIONS_DIR]
+    )
+    return {Path(name).name for name in out.split("\0") if name}
 
 
 def _is_protected(rel: str) -> bool:
@@ -135,70 +157,112 @@ def _write_text(path: Path, text: str) -> None:
     path.write_bytes(text.encode("utf-8"))
 
 
-class _Plan:
-    """IDs asignados a cada `D-XXX` de las entradas, por orden de aparición."""
-
-    def __init__(self, lines: list[str], start: int, added: set[str] | None = None) -> None:
-        headings: list[str] = []
-        rows: list[str] = []
-        numbered_headings: list[str] = []
-        numbered_rows: list[str] = []
-        fresh: list[int] = []  # posición (entre las `D-XXX` sin sufijo) de las que añade el push
-        for line in lines[start:]:
-            if m := _HEADING.match(line):
-                (headings if m.group(1).startswith("D-XXX") else numbered_headings).append(
-                    m.group(1)
-                )
-                if m.group(1) == "D-XXX" and added is not None and line.rstrip() in added:
-                    fresh.append(Counter(headings)["D-XXX"] - 1)
-            if m := _ROW.match(line):
-                (rows if m.group(1).startswith("D-XXX") else numbered_rows).append(m.group(1))
-        self.headings = headings
-        self._check(numbered_headings, numbered_rows, headings, rows)
-        used = [
-            int(n.group(1)) for t in numbered_headings + numbered_rows if (n := _NUMBER.match(t))
-        ]
-        nxt = max(used, default=0) + 1
-        self.ids: dict[tuple[str, int], str] = {}
-        seen: Counter[str] = Counter()
-        for token in headings:
-            self.ids[(token, seen[token])] = f"D-{nxt:03d}"
-            seen[token] += 1
-            nxt += 1
-        # Con `added` (modo Action) la `D-XXX` sin sufijo de una referencia es la única que añade
-        # este push; sin él, la única que hay en el fichero.
-        self.bare = Counter(headings)["D-XXX"] if added is None else len(fresh)
-        self._bare_id = (
-            self.ids.get(("D-XXX", fresh[0] if added is not None and fresh else 0))
-            if self.bare == 1
-            else None
-        )
-
-    @staticmethod
-    def _check(
-        numbered_headings: list[str],
-        numbered_rows: list[str],
-        headings: list[str],
-        rows: list[str],
-    ) -> None:
-        for what, ids in (("entradas", numbered_headings), ("filas del índice", numbered_rows)):
-            repeated = sorted(i for i, n in Counter(ids).items() if n > 1)
-            if repeated:
-                raise RenumberError(f"IDs repetidos en {what}: {', '.join(repeated)}")
-        for what, ids in (("entradas", headings), ("filas del índice", rows)):
-            repeated = sorted(i for i, n in Counter(ids).items() if n > 1 and i != "D-XXX")
-            if repeated:
-                raise RenumberError(f"Sufijos repetidos en {what}: {', '.join(repeated)}")
-        if Counter(headings) != Counter(rows):
+def load_decisions(root: Path) -> list[Decision]:
+    """Lee y valida todos los ficheros de `docs/decisiones/`, ordenados por nombre."""
+    directory = root / DECISIONS_DIR
+    found: list[Decision] = []
+    for path in sorted(directory.glob("D-*.md")) if directory.is_dir() else []:
+        name = _NAME.match(path.name)
+        if not name:
             raise RenumberError(
-                f"Las entradas {sorted(headings)} y las filas del índice {sorted(rows)} no cuadran"
+                f"{path.name}: el nombre debe ser D-NNN-slug.md o D-XXX[-a]-slug.md "
+                "(slug en minúsculas, sin tildes ni espacios)"
             )
+        text = _read_text(path)
+        if text is None:
+            raise RenumberError(f"No se puede leer {path.name}")
+        lines = text.splitlines()
+        head = _HEADING.match(lines[0]) if lines else None
+        if not head or head.group(1) != name.group(1):
+            raise RenumberError(f"{path.name}: la primera línea debe ser «### {name.group(1)} · …»")
+        meta = next((m for line in lines[1:6] if (m := _META.match(line))), None)
+        if not meta:
+            raise RenumberError(f"{path.name}: falta «- Fecha: AAAA-MM-DD … Estado: …»")
+        found.append(
+            Decision(path, name.group(1), name.group(2), head.group(2), *meta.groups(), text)
+        )
+    for what, tokens in (
+        ("IDs repetidos entre ficheros", [d.token for d in found if d.numbered]),
+        ("Sufijos repetidos", [d.token for d in found if d.token != "D-XXX" and not d.numbered]),
+    ):
+        repeated = sorted(t for t, n in Counter(tokens).items() if n > 1)
+        if repeated:
+            raise RenumberError(f"{what}: {', '.join(repeated)}")
+    return found
+
+
+def render_index(decisions: Iterable[Decision]) -> list[str]:
+    rows = [
+        f"| [{d.token}]({DIR_NAME}/{d.path.name}) | {d.date} | {d.title} | {d.state} |"
+        for d in sorted(decisions, key=lambda d: d.token)
+        if d.numbered
+    ]
+    return ["| ID | Fecha | Título | Estado |", "| --- | --- | --- | --- |", *rows]
+
+
+def _split_index(root: Path) -> tuple[str, list[str], str]:
+    text = _read_text(root / DECISIONS)
+    if text is None or INDEX_START not in text or INDEX_END not in text:
+        raise RenumberError(f"Faltan los marcadores {INDEX_START} / {INDEX_END} en {DECISIONS}")
+    before, _, rest = text.partition(INDEX_START)
+    block, _, after = rest.partition(INDEX_END)
+    return before, [line for line in block.splitlines() if line.strip()], after
+
+
+def write_index(root: Path) -> bool:
+    """Regenera el índice de `decisiones.md`. Devuelve `True` si cambió."""
+    before, current, after = _split_index(root)
+    table = render_index(load_decisions(root))
+    if current == table:
+        return False
+    body = "\n" + "\n".join(table) + "\n"
+    _write_text(root / DECISIONS, before + INDEX_START + body + INDEX_END + after)
+    return True
+
+
+def check_index(root: Path, base: str | None = None) -> list[str]:
+    """Diferencias entre el índice de `decisiones.md` y el que salen de los ficheros.
+
+    Con `base` se ignoran las filas de las decisiones que cambian entre `base` y `HEAD`: un PR no
+    regenera el índice, lo hace la Action al entrar en `main`.
+    """
+    _, current, _ = _split_index(root)
+    expected = render_index(load_decisions(root))
+    if base:
+        names = _git_diff(root, base, "HEAD", "--name-only", "-z", paths=[DECISIONS_DIR])
+        touched = {
+            f"D-{m.group(1)}"
+            for n in names.split("\0")
+            if n and (m := re.match(r"D-(\d{3})-", Path(n).name))
+        }
+
+        def untouched(lines: list[str]) -> list[str]:
+            return [x for x in lines if not ((m := _ROW_ID.match(x)) and m.group(1) in touched)]
+
+        current, expected = untouched(current), untouched(expected)
+    return [f"sobra o difiere: {x}" for x in current if x not in expected] + [
+        f"falta o difiere: {x}" for x in expected if x not in current
+    ]
+
+
+class _Plan:
+    """ID asignado a cada decisión pendiente y a qué ID apunta una `D-XXX` sin sufijo."""
+
+    def __init__(self, decisions: list[Decision], added: set[str] | None) -> None:
+        pending = [d for d in decisions if not d.numbered]
+        pending.sort(key=lambda d: (added is not None and d.path.name in added, d.token, d.slug))
+        nxt = max((int(d.token[2:]) for d in decisions if d.numbered), default=0) + 1
+        self.order = pending
+        self.ids = {d.path: f"D-{nxt + i:03d}" for i, d in enumerate(pending)}
+        self._by_token = {d.token: self.ids[d.path] for d in pending}
+        fresh = [
+            d for d in pending if d.token == "D-XXX" and (added is None or d.path.name in added)
+        ]
+        self._bare = self.ids[fresh[0].path] if len(fresh) == 1 else None
 
     def ref(self, token: str) -> str | None:
         """ID de una referencia, o `None` si es ambigua."""
-        if token == "D-XXX":
-            return self._bare_id
-        return self.ids.get((token, 0))
+        return self._bare if token == "D-XXX" else self._by_token.get(token)
 
 
 def _sub_refs(text: str, plan: _Plan, ambiguous: list[str]) -> str:
@@ -212,57 +276,52 @@ def _sub_refs(text: str, plan: _Plan, ambiguous: list[str]) -> str:
     return _REF.sub(replace, text)
 
 
+def _move(root: Path, src: Path, dst: Path) -> None:
+    try:
+        subprocess.run(["git", "mv", str(src), str(dst)], cwd=root, check=True, capture_output=True)
+    except (OSError, subprocess.CalledProcessError):
+        src.rename(dst)
+
+
 def renumber(
     root: Path, files: Iterable[Path] | None = None, added: set[str] | None = None
 ) -> list[str]:
-    """Renumera y devuelve un informe (una línea por ID asignado). Vacío si no había nada.
+    """Numera, regenera el índice y devuelve un informe. Vacío si no había nada que hacer.
 
-    `files` son los ficheros (además de `docs/decisiones.md`) donde se sustituyen las referencias:
-    los que cambió el commit que dispara la Action. Los demás ficheros con `D-XXX` no se tocan.
-    `added` son las líneas `### D-XXX…` que añade ese commit (ver `added_headings`); decide a cuál
-    se refiere una `D-XXX` sin sufijo.
+    `files` son los ficheros (además de las decisiones que se numeran) donde se sustituyen las
+    referencias: los que cambió el commit que dispara la Action. `added` son los nombres de los
+    ficheros de decisión que añade ese commit (ver `added_files`).
     """
-    decisions_path = root / DECISIONS
-    text = _read_text(decisions_path)
-    if text is None:
-        raise RenumberError(f"No se puede leer {DECISIONS}")
-    lines = text.splitlines(keepends=True)
-    start = next((i for i, line in enumerate(lines) if line.startswith(INDEX_MARKER)), 0)
-    plan = _Plan(lines, start, added)  # también valida IDs repetidos aunque no haya D-XXX
-    if not plan.headings:
-        return []
-
+    decisions = load_decisions(root)
+    _split_index(root)  # falla antes de escribir nada si faltan los marcadores
+    plan = _Plan(decisions, added)
     ambiguous: list[str] = []
-    seen_heading: Counter[str] = Counter()
-    seen_row: Counter[str] = Counter()
     report: list[str] = []
-    out = lines[:start]
-    for line in lines[start:]:
-        new_line = line
-        for pattern, seen in ((_HEADING, seen_heading), (_ROW, seen_row)):
-            m = pattern.match(line)
-            if m and m.group(1).startswith("D-XXX"):
-                token = m.group(1)
-                new_id = plan.ids[(token, seen[token])]
-                seen[token] += 1
-                rest = _sub_refs(line[m.end(1) :], plan, ambiguous)
-                new_line = line[: m.start(1)] + new_id + rest
-                if pattern is _HEADING:
-                    title = line[m.end(1) :].lstrip(" ·").strip()
-                    report.append(f"{token} → {new_id}  {title}")
-                break
-        else:
-            new_line = _sub_refs(line, plan, ambiguous)
-        out.append(new_line)
-    _write_text(decisions_path, "".join(out))
+    for d in plan.order:
+        new_id = plan.ids[d.path]
+        first, sep, rest = d.text.partition("\n")
+        text = re.sub(rf"^### {_TOKEN}", f"### {new_id}", first) + sep
+        _move(root, d.path, d.path.with_name(f"{new_id}-{d.slug}.md"))
+        _write_text(
+            d.path.with_name(f"{new_id}-{d.slug}.md"), text + _sub_refs(rest, plan, ambiguous)
+        )
+        report.append(f"{d.token} → {new_id}  {d.title}")
+    if plan.order:
+        report += _other_files(root, files or [], plan, ambiguous)
+    if write_index(root):
+        report.append("Índice de decisiones regenerado")
+    for token in sorted(set(ambiguous)):
+        report.append(f"{AMBIGUOUS_WARNING} {token} (no hay una única D-XXX nueva)")
+    return report
 
+
+def _other_files(root: Path, files: Iterable[Path], plan: _Plan, ambiguous: list[str]) -> list[str]:
+    report: list[str] = []
     processed: set[str] = set()
-    for path in files or []:
+    for path in files:
         rel = path.relative_to(root).as_posix()
         processed.add(rel)
-        if rel == DECISIONS or _is_protected(rel):
-            continue
-        original = _read_text(path)
+        original = None if _is_protected(rel) else _read_text(path)
         if original is None or "D-XXX" not in original:
             continue
         updated = _sub_refs(original, plan, ambiguous)
@@ -271,13 +330,11 @@ def renumber(
             report.append(f"  referencias actualizadas en {rel}")
     for path in _tracked_files(root):
         rel = path.relative_to(root).as_posix()
-        if rel == DECISIONS or rel in processed or _is_protected(rel):
+        if rel in processed or _is_protected(rel):
             continue
         other = _read_text(path)
         if other is not None and _REF.search(other):
             report.append(f"AVISO: {rel} cita D-XXX pero no está en el diff; no se toca")
-    for token in sorted(set(ambiguous)):
-        report.append(f"{AMBIGUOUS_WARNING} {token} (no hay una única D-XXX nueva)")
     return report
 
 
@@ -286,6 +343,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--before", help="commit anterior al push (github.event.before)")
     parser.add_argument("--after", help="commit del push (github.sha)")
+    parser.add_argument("--index-only", action="store_true", help="solo regenera el índice")
+    parser.add_argument("--check-index", action="store_true", help="comprueba el índice y sale")
+    parser.add_argument("--base", help="con --check-index: commit base del PR")
     args = parser.parse_args(argv)
     if bool(args.before) != bool(args.after):
         parser.error("--before y --after van juntos")
@@ -293,8 +353,24 @@ def main(argv: list[str] | None = None) -> int:
         if isinstance(stream, io.TextIOWrapper):
             stream.reconfigure(encoding="utf-8")
     try:
+        if args.check_index:
+            problems = check_index(args.root, args.base)
+            if problems:
+                print("\n".join(problems), file=sys.stderr)
+                print(
+                    "ERROR: el índice de docs/decisiones.md no coincide con los ficheros. "
+                    "Se genera solo (scripts/renumber_decisions.py --index-only): "
+                    "no lo edites a mano.",
+                    file=sys.stderr,
+                )
+                return 1
+            print("El índice de decisiones está al día.")
+            return 0
+        if args.index_only:
+            print("Índice regenerado." if write_index(args.root) else "El índice ya estaba al día.")
+            return 0
         files = changed_files(args.root, args.before, args.after) if args.before else []
-        added = added_headings(args.root, args.before, args.after) if args.before else None
+        added = added_files(args.root, args.before, args.after) if args.before else None
         report = renumber(args.root, files, added)
     except RenumberError as error:
         print(f"ERROR: {error}", file=sys.stderr)

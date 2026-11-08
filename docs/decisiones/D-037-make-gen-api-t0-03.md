@@ -1,0 +1,10 @@
+### D-037 · `make gen-api` (T0-03): `openapi-typescript` por `npx` con versión fija, tipos raíz y salida en el repo
+- Fecha: 2026-11-08 · Autor: Alons · Estado: Aceptada
+- Contexto: T0-03 tiene que generar los tipos TS desde el OpenAPI del backend. `openapi-typescript` estaba aceptado (D-001 / `SPEC.md` §2), pero la última versión (7.13.0) pide `typescript@^5` como peer y el frontend usa TypeScript 6 (D-035): `npm install` falla con `ERESOLVE`.
+- Decisión:
+  - `scripts/gen_api.py` llama a `npx --yes openapi-typescript@7.13.0`, con la versión fija y sin añadirlo a `package.json`. npx lo instala aparte, con su propio TypeScript 5. Así no hace falta `--legacy-peer-deps` en el frontend.
+  - Salida en `frontend/src/api/generated/`: `openapi.json` (volcado determinista de `create_app().openapi()`) y `schema.ts`, generado con `--root-types --root-types-no-schema-prefix --alphabetize`. Cada esquema se puede importar por su nombre: `import type { PortfolioOut } from "./generated/schema"` (desde `src/api/`). Todo con LF.
+  - `frontend/src/api/mocks/` se **vacía y se rellena** con todos los `schemas/examples/*.json`, variantes incluidas y con `illustrative` intacto. Se copian también los ejemplos sin ruta todavía (p. ej. `TraceOut`), aunque su tipo no salga en `schema.ts` hasta que haya un endpoint que lo use.
+  - Lo generado **va al repo**. CI, Docker y quien solo toque el frontend no necesitan ni Python ni npx. Quien cambie un esquema o un ejemplo ejecuta `make gen-api` y sube el resultado en el mismo PR. Sin Node: `make gen-api GEN_API_ARGS=--skip-ts`.
+  - Ficheros añadidos fuera de la fila de T0-03: `backend/tests/test_gen_api.py` (copia de mocks y OpenAPI determinista, sin npx) y `frontend/src/api/mocks.test.ts` (el frontend importa los mocks con los tipos generados).
+- Consecuencias: T0-04, T0-05 y T0-06 ejecutan `make gen-api` en su PR para que sus tipos y mocks lleguen al frontend. Si sale una versión de `openapi-typescript` compatible con TS 6, se puede pasar a `devDependencies`.
