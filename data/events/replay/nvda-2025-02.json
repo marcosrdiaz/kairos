@@ -1,0 +1,18 @@
+{
+  "id": "nvda-2025-02",
+  "type": "earnings",
+  "title": "NVIDIA cae un 8,5 % pese a sus ingresos récord",
+  "occurred_at": "2025-02-26T21:20:00Z",
+  "text": "NVIDIA publicó el miércoles 26 de febrero de 2025, tras el cierre de Wall Street, los resultados del cuarto trimestre de su ejercicio fiscal 2025. Los ingresos trimestrales alcanzaron un récord de 39.300 millones de dólares, un 12 % más que en el trimestre anterior y un 78 % más que un año antes. El negocio de centros de datos ingresó 35.600 millones, un 93 % más interanual. En el conjunto del ejercicio, los ingresos sumaron 130.500 millones, un 114 % más. Para el primer trimestre del ejercicio 2026, la compañía prevé unos ingresos de 43.000 millones, con una horquilla de más o menos un 2 %, y un margen bruto del 70,6 % (71,0 % en términos ajustados), frente al 73,0 % (73,5 % ajustado) del cuarto trimestre. Su consejero delegado, Jensen Huang, afirmó que «la demanda de Blackwell es extraordinaria». El jueves 27 de febrero, la acción de NVIDIA cayó un 8,5 % y su capitalización bursátil bajó de los 3 billones de dólares.",
+  "source_urls": [
+    "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025",
+    "https://finance.yahoo.com/news/nvidia-stock-rises-modestly-as-wall-street-applauds-blackwell-ai-sales-but-notes-gross-margin-miss-135629897.html"
+  ],
+  "consensus": null,
+  "fallback_chain": [
+    "NVIDIA publica unos ingresos trimestrales récord, pero prevé un margen bruto menor para el siguiente trimestre.",
+    "El mercado se fija en el margen y la acción de NVIDIA cae con fuerza en la sesión siguiente.",
+    "Por su peso en los índices, la caída arrastra a las tecnológicas de Estados Unidos y a los fondos que las replican."
+  ],
+  "illustrative": false
+}
