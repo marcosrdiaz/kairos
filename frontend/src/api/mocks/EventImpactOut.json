@@ -1,0 +1,66 @@
+{
+  "illustrative": true,
+  "event_id": "bce-2025-06",
+  "portfolio_id": "laura",
+  "title": "El BCE baja los tipos 0,25 puntos",
+  "event_type": "central_bank",
+  "occurred_at": "2026-11-08T18:02:00Z",
+  "causal_chain": [
+    "El BCE baja los tipos",
+    "Baja la rentabilidad de los bonos",
+    "Suben tus fondos de renta fija"
+  ],
+  "impact_eur": "90.00",
+  "low_eur": "-10.00",
+  "high_eur": "190.00",
+  "impact_pct": "0.0026",
+  "confidence": "media",
+  "polarity": "neutral",
+  "breakdown": [
+    {
+      "asset_id": "IE00B18GC888",
+      "name": "Vanguard Global Bond Index Fund EUR Hedged Acc",
+      "value_eur": "9776.84",
+      "impact_eur": "61.00",
+      "market_eur": "61.00",
+      "fx_eur": "0.00",
+      "channel": "tipos"
+    },
+    {
+      "asset_id": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "value_eur": "10877.88",
+      "impact_eur": "18.00",
+      "market_eur": "18.00",
+      "fx_eur": "0.00",
+      "channel": "tipos"
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "name": "Vanguard Global Stock Index Fund EUR Acc",
+      "value_eur": "9655.31",
+      "impact_eur": "11.00",
+      "market_eur": "11.00",
+      "fx_eur": "0.00",
+      "channel": "tipos"
+    }
+  ],
+  "surprise": {
+    "label": "en_linea",
+    "expected": "-25",
+    "actual": "-25",
+    "metric": "rate_change_bp"
+  },
+  "explanation": "Poco. Tus fondos de renta fija suben ligeramente; en total, unos 90 euros a tu favor.",
+  "explanation_status": "ok",
+  "sources": [
+    {
+      "kind": "event",
+      "label": "Decisión de tipos del BCE",
+      "ref": "bce-2025-06",
+      "as_of": "2026-11-08T18:02:00Z",
+      "url": null
+    }
+  ],
+  "calc_id": "calc_6d0f2df456d7489ca07db3a5e2e05d9b"
+}

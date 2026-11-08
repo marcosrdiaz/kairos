@@ -1,0 +1,10 @@
+{
+  "illustrative": true,
+  "date": "2026-11-12T13:15:00Z",
+  "kind": "central_bank",
+  "title": "Reunión del BCE",
+  "factor": "RATES_EUR",
+  "exposed_weight": "0.285",
+  "exposed_eur": "9776.84",
+  "calc_id": "calc_f6edf784a7b6a8418e91671c1bfc41cb"
+}
