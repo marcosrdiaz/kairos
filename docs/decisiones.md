@@ -64,7 +64,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | D-038 | 2026-11-08 | Formato de `data/seed` y supuestos de rentabilidad (T0-08) | Propuesta |
 | D-039 | 2026-11-08 | Contratos de eventos, agentes y avisos (T0-05): `/events` fuera, `EventImpactStub`, `StatusFacts`, nombres de ejemplos SSE | Aceptada |
 | D-040 | 2026-11-08 | Contrato y mock de voz (T0-06): mensajes STT por clase, caché de frases aprobadas y `SENTENCE_NOT_APPROVED` → 404 | Aceptada |
-| D-XXX | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
+| D-041 | 2026-11-08 | Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos | Propuesta |
 
 ---
 
@@ -376,7 +376,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
   - Ficheros añadidos fuera de la fila de T0-06: `backend/app/voice/__init__.py`, `backend/tests/test_voice.py` y `backend/app/core/errors.py` (solo el estado HTTP de `SENTENCE_NOT_APPROVED`). Lo regenerado por `make gen-api` va en el mismo PR.
 - Consecuencias: T1-17 (`agents`) llama a `voice.service.register_approved` con cada frase aprobada antes de emitir el evento `sentence`. T1-21 cambia `transcribe`, `synthesize` y `disclaimer` a ElevenLabs sin cambiar firmas, y genera `disclaimer.mp3`. T2-03 llama a `voice.service.reset()` desde `/demo/reset` y borra `voice/mock.py`. T2-14 tipa los mensajes del WebSocket desde los mocks.
 
-### D-XXX · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
+### D-041 · Contrato de impacto y exposición (T0-04): rutas, modelos añadidos y ejemplos
 - Fecha: 2026-11-08 · Autor: Jaime · Estado: Propuesta
 - Contexto: §4.3 define las respuestas, pero no en qué módulo de `api/` vive cada ruta ni el cuerpo de los escenarios.
 - Decisión:
