@@ -22,7 +22,11 @@ Reglas:
   haya un solo fichero `D-XXX-slug.md`.
 - Las referencias solo se sustituyen en las decisiones que se numeran y en los ficheros del commit
   que dispara la Action (`git diff --name-only`). Un `D-XXX` en cualquier otro fichero (p. ej. el
-  tablero) no se toca: solo se avisa. No se tocan `PROTECTED` ni las decisiones ya numeradas.
+  tablero) no se toca: solo se avisa. No se tocan los ficheros `PROTECTED`.
+- Una decisión ya numerada nunca se renombra ni se renumera. Si está en el diff del push, sí se
+  sustituyen sus referencias `D-XXX` (p. ej. «Estado: Sustituida por D-XXX» de una antigua que va
+  en el mismo PR que la nueva); si no está en el diff, no se toca y se avisa como a cualquier otro
+  fichero.
 - Idempotente: sin `D-XXX` y con el índice al día no cambia nada y sale con 0.
 - Códigos de salida: 1 si el estado es inconsistente (nombre o cabecera de un fichero mal formados,
   IDs o sufijos repetidos, marcadores del índice ausentes, `--check-index` con diferencias); no se
@@ -55,7 +59,7 @@ MAX_FILE_BYTES = 2_000_000
 AMBIGUOUS_WARNING = "AVISO: referencias ambiguas a"
 EXIT_AMBIGUOUS = 2
 
-# Ficheros que explican la convención `D-XXX` o son decisiones ya numeradas: se dejan tal cual.
+# Ficheros que explican la convención `D-XXX`: se dejan tal cual, estén o no en el diff.
 PROTECTED = (
     "CLAUDE.md",
     ".claude/commands/*",
@@ -63,8 +67,11 @@ PROTECTED = (
     "backend/tests/test_renumber_decisions.py",
     ".github/workflows/renumber-decisions.yml",
     DECISIONS,
-    f"{DECISIONS_DIR}/D-[0-9][0-9][0-9]-*.md",
 )
+# Las decisiones ya numeradas (`D-NNN-*.md`) no están aquí a propósito: nunca se renombran ni se
+# renumeran (`_Plan` solo numera las `D-XXX`), pero sí se sustituyen las referencias `D-XXX` de su
+# texto si el fichero está en el diff del push (caso típico: «Estado: Sustituida por D-XXX» en una
+# antigua que va en el PR de la nueva).
 
 _TOKEN = r"D-XXX(?:-[a-z])?"
 _REF = re.compile(rf"(?<![\w-])({_TOKEN})(?![\w-])")

@@ -54,7 +54,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-022](decisiones/D-022-umbral-desviacion-plan.md) | 2026-11-08 | Umbral de desviación del plan: `drift_threshold` = 0,10 | Aceptada |
 | [D-023](decisiones/D-023-f11-f13-mvp.md) | 2026-11-08 | F11 y F13 en versión mínima pasan a MVP | Aceptada |
 | [D-024](decisiones/D-024-hito-guion-completo.md) | 2026-11-08 | Hito del guion completo: martes 10 a las 18:00 | Aceptada |
-| [D-025](decisiones/D-025-magnitudes-de-los-datos.md) | 2026-11-08 | Las magnitudes de un evento salen de los datos | Sustituida por D-XXX (solo en lo de «el LLM elige canales»; las magnitudes siguen saliendo de `observed`) |
+| [D-025](decisiones/D-025-magnitudes-de-los-datos.md) | 2026-11-08 | Las magnitudes de un evento salen de los datos | Sustituida por D-083 (solo en lo de «el LLM elige canales»; las magnitudes siguen saliendo de `observed`) |
 | [D-026](decisiones/D-026-precios-directo-clave.md) | 2026-11-08 | Precios en directo solo con clave de mercado | Aceptada |
 | [D-027](decisiones/D-027-zip-sin-claves.md) | 2026-11-08 | El ZIP sin claves de Claude y ElevenLabs | Aceptada |
 | [D-028](decisiones/D-028-paso-1-cartera-ejemplo.md) | 2026-11-08 | El paso 1 del guion carga la cartera de ejemplo | Aceptada |
