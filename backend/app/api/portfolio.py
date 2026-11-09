@@ -9,6 +9,7 @@ from app.schemas.common import ErrorOut
 from app.schemas.portfolio import (
     DcaExecutionActionRequest,
     DcaExecutionOut,
+    DcaExecutionStatus,
     DcaPlanCreateRequest,
     DcaPlanOut,
     DcaPlanUpdateRequest,
@@ -105,6 +106,19 @@ def create_dca_plan(portfolio_id: str, body: DcaPlanCreateRequest) -> DcaPlanOut
 )
 def update_dca_plan(portfolio_id: str, plan_id: str, body: DcaPlanUpdateRequest) -> DcaPlanOut:
     return service.update_dca_plan(portfolio_id, plan_id, body)
+
+
+@router.get(
+    "/portfolios/{portfolio_id}/dca-executions",
+    response_model=list[DcaExecutionOut],
+    responses=_NOT_FOUND,
+)
+def list_dca_executions(
+    portfolio_id: str, status: DcaExecutionStatus | None = None
+) -> list[DcaExecutionOut]:
+    """Aportaciones de la cartera, de la más reciente a la más antigua. `?status=pending` para
+    las que esperan confirmar o saltar."""
+    return service.list_dca_executions(portfolio_id, status)
 
 
 @router.post(

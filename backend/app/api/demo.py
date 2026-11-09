@@ -1,7 +1,7 @@
-"""Control de demo: `POST /demo/reset` (diseño del MVP §4.6). Solo con `DEMO_MODE=true`.
+"""Control de demo: `POST /demo/reset` y `/demo/dca/run` (diseño del MVP §4.6). Solo con
+`DEMO_MODE=true`.
 
-`/demo/replay` vive en `api/events.py`. `/demo/dca/run` (T1-06) y `PUT /demo/clock` (T2-03) se
-añaden aquí.
+`/demo/replay` vive en `api/events.py`. `PUT /demo/clock` (T2-03) se añade aquí.
 """
 
 from typing import Any
@@ -15,6 +15,7 @@ from app.impact import service as impact_service
 from app.portfolio import service as portfolio_service
 from app.schemas.common import ErrorOut
 from app.schemas.demo import DemoResetOut, DemoResetRequest
+from app.schemas.portfolio import DcaExecutionOut
 
 router = APIRouter(tags=["demo"])
 
@@ -35,3 +36,10 @@ def reset_demo(body: DemoResetRequest | None = None) -> DemoResetOut:
     events_service.reset()
     preloaded = events_service.preload() if body is not None and body.preload else []
     return DemoResetOut(portfolio_ids=portfolio_ids, preloaded_event_ids=preloaded)
+
+
+@router.post("/demo/dca/run", response_model=list[DcaExecutionOut], responses=_FORBIDDEN)
+def run_dca() -> list[DcaExecutionOut]:
+    """Crea las aportaciones pendientes de hoy de los planes DCA activos y las devuelve."""
+    _require_demo_mode()
+    return portfolio_service.run_dca_demo()

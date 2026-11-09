@@ -2936,7 +2936,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -2945,9 +2945,44 @@
         ]
       }
     },
+    "/api/v1/demo/dca/run": {
+      "post": {
+        "description": "Crea las aportaciones pendientes de hoy de los planes DCA activos y las devuelve.",
+        "operationId": "run_dca_api_v1_demo_dca_run_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DcaExecutionOut"
+                  },
+                  "title": "Response Run Dca Api V1 Demo Dca Run Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Run Dca",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
     "/api/v1/demo/replay/{event_id}": {
       "post": {
-        "description": "Cuerpo aceptado por contrato; T1-15 lo aplica.",
         "operationId": "replay_event_api_v1_demo_replay__event_id__post",
         "parameters": [
           {
@@ -3027,7 +3062,7 @@
     },
     "/api/v1/demo/reset": {
       "post": {
-        "description": "Recarga Laura y Javier. `preload` aún no reproduce eventos: llega con T1-15 / T2-03.",
+        "description": "Recarga Laura y Javier y borra eventos e impactos. `preload` reproduce BCE y petróleo.",
         "operationId": "reset_demo_api_v1_demo_reset_post",
         "requestBody": {
           "content": {
@@ -3352,6 +3387,79 @@
         ]
       }
     },
+    "/api/v1/portfolios/{portfolio_id}/dca-executions": {
+      "get": {
+        "description": "Aportaciones de la cartera, de la más reciente a la más antigua. `?status=pending` para\nlas que esperan confirmar o saltar.",
+        "operationId": "list_dca_executions_api_v1_portfolios__portfolio_id__dca_executions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DcaExecutionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DcaExecutionOut"
+                  },
+                  "title": "Response List Dca Executions Api V1 Portfolios  Portfolio Id  Dca Executions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Dca Executions",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
     "/api/v1/portfolios/{portfolio_id}/dca-plans": {
       "get": {
         "operationId": "list_dca_plans_api_v1_portfolios__portfolio_id__dca_plans_get",
@@ -3459,7 +3567,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -3530,7 +3638,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
@@ -3597,7 +3705,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "List Event Impacts",
@@ -3717,7 +3825,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Explain Move",
@@ -3829,7 +3937,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -3891,7 +3999,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
@@ -4058,7 +4166,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Estimate Scenario",
@@ -4172,7 +4280,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -4234,7 +4342,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
@@ -4298,7 +4406,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Tts",

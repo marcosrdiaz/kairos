@@ -1,0 +1,11 @@
+### D-XXX · Contrato de las ejecuciones DCA (T1-06): listar las aportaciones de una cartera y respuesta de `/demo/dca/run`
+- Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
+- Contexto: el contrato de DCA (diseño del MVP §4.1) permite confirmar o saltar una aportación (`POST /dca-executions/{id}`), pero ninguna ruta devuelve las aportaciones pendientes. El frontend (T1-20) solo vería el id en la respuesta de `/demo/dca/run` y lo perdería al recargar la página. Además, §4.6 no decía qué devuelve `/demo/dca/run`.
+- Decisión:
+  - Nueva ruta `GET /portfolios/{id}/dca-executions?status=` que devuelve `list[DcaExecutionOut]`, de la más reciente a la más antigua. `status` es opcional (`pending`, `confirmed` o `skipped`). 404 `NOT_FOUND` si no existe la cartera.
+  - `POST /demo/dca/run` devuelve `list[DcaExecutionOut]` con las ejecuciones pendientes que ha creado.
+  - No hay modelos nuevos: se reutiliza `DcaExecutionOut`. Por ahora las dos rutas sirven el mock; T1-06 las pasa a real.
+  - PR solo de contrato, sin implementación.
+- Motivo: el usuario tiene que poder ver y resolver su aportación pendiente en cualquier momento, no solo justo después de crearla.
+- Alternativas descartadas: que solo `/demo/dca/run` devuelva la ejecución (el id se pierde al recargar); esperar a los avisos `dca_pending` de T2-08 (`AlertOut` no lleva el id de la ejecución, y fuera de demo no hay avisos).
+- Consecuencias: T1-20 lista las pendientes con `?status=pending`. T2-08 puede enlazar un aviso `dca_pending` con esta lista.
