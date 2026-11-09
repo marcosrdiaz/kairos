@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { BrandBanner } from "../components/BrandBanner";
 import { ChatIcon, HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
+import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
   { to: "/inicio", label: "Inicio", Icon: HomeIcon },
@@ -80,6 +81,14 @@ export function AppShell() {
           <PanelIcon className="size-6" />
           Panel de contexto
         </Link>
+
+        {/* Selector de cartera (T1-19): en escritorio, siempre a mano; en móvil, en Cartera. */}
+        <div className="hidden lg:block lg:px-1">
+          <p className="m-0 mb-2 px-3 text-sm font-medium text-ink-muted" aria-hidden="true">
+            Cartera
+          </p>
+          <PortfolioPicker compact />
+        </div>
 
         <div className="ml-auto lg:hidden">
           <ThemeToggle />
