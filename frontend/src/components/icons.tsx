@@ -116,7 +116,25 @@ export const ArrowRightIcon = (p: IconProps) => (
   </Icon>
 );
 
-export const ArrowUpIcon = (p: IconProps) => (
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M19 12H5M11 6l-6 6 6 6" />
+  </Icon>
+);
+
+export const PauseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 5v14M15 5v14" strokeWidth={2.4} />
+  </Icon>
+);
+
+export const PlayIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 5l11 7-11 7z" />
+  </Icon>
+);
+
+export const ArrowUpIcon =(p: IconProps) => (
   <Icon {...p}>
     <path d="M12 19V5M6 11l6-6 6 6" />
   </Icon>
