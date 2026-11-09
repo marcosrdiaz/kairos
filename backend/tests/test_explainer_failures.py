@@ -13,9 +13,12 @@ import httpx2
 import pytest
 
 from app.agents import claude, context, explainer, templates, tools
+from app.agents.emitter import META_DETAIL, Emitter
+from app.agents.fact_format import as_evidence
+from app.agents.facts import move_facts
 from app.config import get_settings
 from app.impact import service as impact_service
-from app.schemas.agents import AskChannel, AskRequest
+from app.schemas.agents import AskChannel, AskRequest, GuardianChannel, QuestionKind
 from app.voice import service as voice_service
 from tests.fakes import explainer as fx
 from tests.fakes.claude_stream import FakeStreamingClaude, Reply
@@ -118,6 +121,60 @@ def test_max_tokens_without_sentences_uses_template() -> None:
     events = _run()
     assert events[-1]["fallback_used"] is True
     assert _sentences(events)[0] == f"Esta semana tu cartera ha bajado {_WEEK}."
+
+
+def test_meta_sentence_in_retry_is_dropped_and_template_follows() -> None:
+    fake = FakeStreamingClaude(
+        Reply(f"Esta semana tu cartera ha bajado {_WEEK}. Te ha restado 999 euros."),
+        Reply("Tienes razón, esos rangos no vienen de los datos que tengo, así que no los uso."),
+    )
+    claude.set_client(fake)
+    events = _run()
+    texts = _sentences(events)
+    assert texts[0] == f"Esta semana tu cartera ha bajado {_WEEK}."
+    assert texts[1].startswith("La mayor parte viene de")
+    assert not any("razón" in t for t in texts)
+    assert events[-1]["fallback_used"] is True
+    assert events[-1]["blocked_count"] == 2
+    retry = fake.messages.calls[1]["messages"][-1]["content"][-1]
+    assert retry["type"] == "text"
+    assert retry["text"].startswith("[Instrucción interna del sistema")
+    assert "No menciones esta corrección" in retry["text"]
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Tienes razón, no lo uso.",
+        "Perdón, me he equivocado.",
+        "Lo siento, no tengo ese dato.",
+        "Esos rangos no vienen de los datos.",
+        "Con los datos que tengo, vas bien.",
+        "Según el contexto, vas bien.",
+        "Para responder necesito comparar la proyección con tu objetivo.",
+        "El contexto ya tiene esos datos.",
+        "Voy a consultar la atribución de la semana.",
+        "Consulto tu plan.",
+        "Uso la herramienta de exposición.",
+        "Sigo la instrucción.",
+        "La frase anterior era incorrecta.",
+    ],
+)
+def test_meta_sentences_are_blocked(sentence: str) -> None:
+    out = Emitter("turn_meta", GuardianChannel.TEXT, QuestionKind.GENERAL, [], 0.0)
+    assert out.approve(sentence) == META_DETAIL
+    assert out.emitted == []
+
+
+@pytest.mark.parametrize(
+    "question", ["¿Por qué ha bajado?", "¿Me afecta lo del BCE?", "¿Voy bien?"]
+)
+def test_templates_are_not_meta(question: str) -> None:
+    pre = fx.preloaded()
+    out = Emitter("turn_tpl", GuardianChannel.TEXT, QuestionKind.GENERAL, pre.evidence(), 0.0)
+    for sentence in templates.answer(pre, question, fx.move()):
+        out.evidence = pre.evidence() + as_evidence(move_facts(fx.move()))
+        assert out.approve(sentence) != META_DETAIL, sentence
 
 
 def test_placeholder_counts_as_blocked() -> None:

@@ -2,7 +2,9 @@
 
 Una frase aprobada se convierte en `AskSentenceEvent` con los `calc_ids` que casó el guardián y
 se registra en `voice` para que el TTS pueda leerla. Una frase con un marcador sin sustituir
-(`<IMPORTE>`) cuenta como bloqueada aunque el guardián no vea cifras en ella.
+(`<IMPORTE>`) cuenta como bloqueada aunque el guardián no vea cifras en ella, igual que una
+frase meta: la que contesta a la corrección del reintento, habla del contexto o narra lo que va
+a consultar ("tienes razón…", "según el contexto…", "voy a consultar…").
 """
 
 import re
@@ -22,6 +24,14 @@ MAX_VOICE_SENTENCES = guardian.MAX_VOICE_SENTENCES
 MAX_TEXT_SENTENCES = 5
 _PLACEHOLDER = re.compile(r"<[^<>\n]{1,40}>")
 PLACEHOLDER_DETAIL = "lleva un marcador sin sustituir; escribe el `display` del fact"
+_META = re.compile(
+    r"\btienes razon\b|\b(?:disculpa\w*|perdon\w*|lo siento)\b|\bno vienen? de los datos\b"
+    r"|\blos datos que tengo\b|\bsegun (?:el|mi) contexto\b"
+    r"|\bel contexto (?:ya )?(?:tiene|incluye|dice)\b"
+    r"|\b(?:voy a|necesito) (?:consultar|comparar|mirar|revisar)\b|\bconsulto\b|\bherramienta"
+    r"|\bla instruccion\b|\bfrase anterior\b"
+)
+META_DETAIL = "habla de la conversación, del contexto o de las correcciones en vez de responder"
 
 
 class Emitter:
@@ -51,6 +61,8 @@ class Emitter:
         """El evento de la frase si se aprueba; si no, el motivo."""
         if _PLACEHOLDER.search(text):
             return PLACEHOLDER_DETAIL
+        if _META.search(guardian.normalize(text)):
+            return META_DETAIL
         index = len(self.emitted)
         request = GuardianRequest(
             text=text,

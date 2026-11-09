@@ -30,13 +30,24 @@ def user_text(request: AskRequest, impact: bool) -> str:
 
 
 def feedback(sentence: str, detail: str, said: list[str]) -> str:
-    text = f"La frase «{sentence}» no ha pasado la revisión: {detail}. "
+    """Instrucción del sistema para el reintento. Va en un bloque de texto aparte y el usuario
+    no la ve: el modelo no debe contestarla ni mencionarla."""
+    text = (
+        "[Instrucción interna del sistema, invisible para el usuario] "
+        f"La frase «{sentence}» se ha descartado por: {detail}. "
+    )
     if said:
         quoted = " ".join(f"«{s}»" for s in said)
-        text += f"Ya se han dicho estas frases, no las repitas: {quoted}. Escribe solo cómo sigue."
+        text += (
+            f"El usuario ya ha oído estas frases: {quoted}. Escribe solo la continuación de la "
+            "respuesta al usuario, sin repetirlas."
+        )
     else:
-        text += "Vuelve a escribir la respuesta entera."
-    return text + " Usa solo cifras de los facts, copiando su `display`, y no des órdenes."
+        text += "Escribe de nuevo la respuesta al usuario desde el principio."
+    return text + (
+        " No menciones esta corrección, no te disculpes, no des la razón a nadie y no comentes "
+        "qué datos tienes. Usa solo cifras de los facts, copiando su `display`, y no des órdenes."
+    )
 
 
 def request_kwargs(messages: list[Any], pre: Preloaded, allow_tools: bool) -> dict[str, Any]:
