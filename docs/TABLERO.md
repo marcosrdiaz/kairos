@@ -93,7 +93,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2-01 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T1-01 | `backend/app/core/trace.py`, `backend/app/api/traces.py` | Marcos | 🔄 en curso |
+| T2-01 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T1-01 | `backend/app/core/trace.py`, `backend/app/api/traces.py` | Marcos | 🧪 en PR |
 | T2-02 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(...)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T1-03, T1-13 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/demo.py` | — | ⬜ |
 | T2-03 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API | Smoke en verde (`scripts/demo_smoke.py`) | Todas las de la fase 1 | `backend/app/*/mock.py` (borrar), `backend/app/api/demo.py`, `scripts/demo_smoke.py` | — | ⬜ |
 | T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | — | ⬜ |
@@ -157,6 +157,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - La tabla `agent_log` (`SPEC.md` §6, modelo `AgentLog`) existe pero no se rellena: ni el explicador ni el redactor guardan sus turnos. Hoy solo van al log de la aplicación (uso de tokens, frases bloqueadas, plantilla).
 - `GUARDIAN_LLM_CHECK` (`settings.guardian_llm_check`) se carga en `config.py`, pero nada lo usa: el chequeo con modelo tras un `ok` del guardián no está hecho. O se implementa o se quita.
 - Detalle en la decisión D-066 (explicador de T1-17).
+
+### T2-01 · `/traces/{calc_id}` — Marcos
+**Qué estaba haciendo:** PR #57 abierto (`t2-01/traces-endpoint`) con `GET /api/v1/traces/{calc_id}` (`api/traces.py`), el arreglo de zona UTC en `core/trace.get()`, 24 tests nuevos y el cliente TS regenerado. `make lint && make test` en verde. Falta revisor y merge.
+**Siguiente paso exacto:** que un compañero revise el PR; mergear y marcar `docs: done T2-01`. T2-11 (la pantalla «¿De dónde sale?») puede empezar al entrar en `main`: sigue `parent_calc_ids` llamando de nuevo con cada uno; un padre que no existe (calc_id de un mock) no rompe la traza hija.
+**Ficheros tocados:** `backend/app/api/traces.py`, `backend/app/core/trace.py`, `backend/tests/test_traces_api.py`, `frontend/src/api/generated/` (regenerado con `make gen-api`; trae también la documentación de errores de otras rutas que estaba desfasada).
 
 ### T1-19 · Alta de cartera y selector — Alons
 **Qué estaba haciendo:** PR #50 (`t1-19/portfolio-onboarding`): selector Laura/Javier en `?p=` (barra lateral y Cartera), «Cargar carteras de ejemplo» (`/demo/reset`) y alta de posiciones con buscador de activos. `make lint && make test` en verde y probado en el navegador con mocks.
