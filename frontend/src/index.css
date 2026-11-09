@@ -80,6 +80,24 @@
   --radius-control: var(--kairos-radius-sm);
 }
 
+/* Entrada de una noticia en el carrusel (T2-19). Con prefers-reduced-motion se anula abajo. */
+@theme {
+  --animate-news-in-next: news-in-next 0.4s ease-out;
+  --animate-news-in-prev: news-in-prev 0.4s ease-out;
+  @keyframes news-in-next {
+    from {
+      opacity: 0;
+      transform: translateX(2rem);
+    }
+  }
+  @keyframes news-in-prev {
+    from {
+      opacity: 0;
+      transform: translateX(-2rem);
+    }
+  }
+}
+
 @layer base {
   html {
     font-size: 100%; /* respeta el zoom del usuario */

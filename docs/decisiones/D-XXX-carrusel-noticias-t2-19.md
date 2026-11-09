@@ -1,0 +1,11 @@
+### D-XXX · Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19)
+- Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
+- Contexto: Javi pide un resumen de noticias en Inicio, debajo de las tarjetas de cifras: galería de imágenes a la izquierda, texto a la derecha, flechas a los lados y avance automático cada 10 s. Los eventos (`EventImpactOut`) no traen imágenes, y un contenido que se mueve solo más de 5 s exige poder pausarlo (WCAG 2.2.2).
+- Decisión:
+  - Datos: `GET /portfolios/{id}/events?days=30`, del más reciente al más antiguo. Solo salen los eventos que afectan a esa cartera. En modo mock se juntan los ejemplos `EventImpactOut*.json`.
+  - "Imagen": ilustración SVG por `event_type` (banco central, materias primas, resultados, divisas, macro) con los tokens de color, decorativa (`aria-hidden`). No se usan fotos de terceros.
+  - Contenido de cada noticia: tipo, fecha, titular, explicación (o la cadena causal si aún está `pending`), impacto como rango (`formatEurRange`), polaridad con palabra y sin rojo, confianza, fuente y "Ver en el panel". Lleva `data-calc-id`.
+  - Patrón "auto-rotating carousel" de WAI-ARIA: `section` con `aria-roledescription="carrusel"`, cada noticia con `role="group"`, `aria-roledescription="noticia"` y "N de M". Botón de pausa y reanudación. Se detiene con el ratón encima o con el foco de teclado dentro. Empieza en pausa con `prefers-reduced-motion`. `aria-live="off"` mientras rota y `"polite"` en pausa. Hay puntos para ir a cada noticia, con `aria-current`.
+  - En móvil, las flechas bajan junto a los puntos (`grid-template-areas`). Es un solo juego de botones, así que no se duplica para el lector de pantalla.
+- Motivo: cumple la petición sin inventar imágenes ni cifras y sin romper WCAG 2.2.2 ni el principio de "rangos, no cifras exactas".
+- Consecuencias: Inicio crece por debajo de las tarjetas; el ticker (T2-17) y la gráfica (T2-18) irán entre la cabecera y las tarjetas cuando haya endpoints. Si el equipo quiere fotos reales, hará falta un campo nuevo en el contrato del evento (petición de contrato).

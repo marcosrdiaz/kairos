@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ArrowRightIcon, ChatIcon, PanelIcon, WalletIcon } from "../components/icons";
 import { EmptyNote, PageTitle } from "../components/PageTitle";
+import { NewsSection } from "./news/NewsSection";
 import { StatusCard } from "../widget/StatusCard";
 import { StatusTiles } from "../widget/StatusTiles";
 import { useStatus } from "../widget/useStatus";
@@ -99,12 +100,10 @@ export function InicioPage() {
             segundos.
           </EmptyNote>
         )}
-        {data && (
-          <>
-            <StatusCard status={data} detailHref={`/panel${query}`} />
-            <StatusTiles status={data} />
-          </>
-        )}
+        {data && <StatusCard status={data} detailHref={`/panel${query}`} />}
+        {/* Aquí irán el ticker de mercado (T2-17) y la gráfica interactiva (T2-18) cuando haya datos. */}
+        {data && <StatusTiles status={data} />}
+        <NewsSection portfolioId={portfolioId} panelHref={`/panel${query}`} />
         <Shortcuts query={query} />
       </div>
     </>
