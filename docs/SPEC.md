@@ -372,6 +372,7 @@ sequenceDiagram
 - Las claves de ElevenLabs y Anthropic no salen del backend.
 - El aviso de IA del inicio de la voz es un audio pregenerado (`GET /voice/disclaimer`, `data/voice/disclaimer.mp3`) que suena mientras Claude genera la primera frase: "Soy el asistente de KAIROS, una IA. No es asesoramiento financiero." Solo la primera vez de la sesión.
 - Plan B si falla el STT: botón de preguntas sugeridas que manda texto a `/ask` con la misma respuesta hablada. Si falla el TTS, la respuesta se muestra solo en texto.
+- **Frontend** (`src/voice/`, pestaña Pregunta): mantener pulsado (ratón, dedo, o Espacio/Intro) → AudioWorklet a PCM 16 kHz → `WS /voice/stt`. Cada frase de `/ask` se muestra al llegar y su audio se pide a `/voice/tts` en paralelo; una cola lo reproduce en orden. Las preguntas sugeridas y el campo de texto están siempre visibles (RF-15). Las llamadas viven en `src/api/ask.ts` y `src/api/voice.ts`.
 
 ## 11. API (`/api/v1`)
 

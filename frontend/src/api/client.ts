@@ -28,7 +28,7 @@ export class ApiError extends Error {
 }
 
 /** Convierte una respuesta no-OK en `ApiError` leyendo el `ErrorOut` si lo hay. */
-async function toApiError(method: string, path: string, res: Response): Promise<ApiError> {
+export async function toApiError(method: string, path: string, res: Response): Promise<ApiError> {
   let code: string | undefined;
   let details: Record<string, unknown> | undefined;
   try {

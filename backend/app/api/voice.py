@@ -87,4 +87,7 @@ async def stt(ws: WebSocket) -> None:
             ErrorCode.UPSTREAM_UNAVAILABLE,
             "No se ha podido transcribir el audio. Prueba con una de las preguntas sugeridas.",
         )
-    await ws.close()
+    try:
+        await ws.close()
+    except (WebSocketDisconnect, RuntimeError):
+        pass  # el cliente ya cerró al recibir el `final`: no es un error

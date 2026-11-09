@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 5173,
       proxy: {
-        "/api": { target, changeOrigin: true },
+        // ws: también el WebSocket de voz (`/api/v1/voice/stt`).
+        "/api": { target, changeOrigin: true, ws: true },
       },
     },
     test: {
