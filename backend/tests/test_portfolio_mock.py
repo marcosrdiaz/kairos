@@ -35,14 +35,6 @@ def test_plan_and_dca_plans(client: TestClient) -> None:
     assert dca == [examples.load("DcaPlanOut")]
 
 
-def test_transaction_returns_example(client: TestClient) -> None:
-    response = client.post(
-        f"{API_PREFIX}/portfolios/laura/transactions", json=examples.load("TransactionRequest.sell")
-    )
-    assert response.status_code == 201
-    assert response.json() == examples.load("TransactionOut")
-
-
 def test_transaction_requires_exactly_one_of_amount_or_units(client: TestClient) -> None:
     body = {"type": "buy", "asset_id": "IE00B4L5Y983", "amount_eur": "300.00", "units": "1"}
     response = client.post(f"{API_PREFIX}/portfolios/laura/transactions", json=body)

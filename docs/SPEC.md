@@ -228,6 +228,8 @@ erDiagram
 
 Valoración: `value_eur = units × price × fx(price_currency→EUR)`, con el último precio disponible; se expone `price_at` y `price_kind` para que la app muestre "VL a fecha X". Objetivo < 300 ms tras una operación. Cada `value_eur` se redondea a céntimos y `total_eur` es su suma; pesos y asignación a 4 decimales; el cambio semanal compara con las mismas participaciones a precios de hace 7 días (decisión «Valoración, alta y seed (T1-03)»).
 
+Compra y venta (T1-04, decisión «Compra y venta FIFO (T1-04)»): `unit_eur = price × fx` a 8 decimales es el coste del lote comprado. Por participaciones, `amount_eur = units × price × fx` a céntimos; por importe, `units = amount_eur / unit_eur` a 8 decimales y se respeta el importe pedido. Plusvalía = `amount_eur − Σ units consumidas × coste del lote` (a céntimos, puede ser negativa). Vender más de lo que hay → 422 `INSUFFICIENT_UNITS`. Cada operación deja una traza `transaction`. Código: `lots.py` (puro), `operations.py` (orquesta), `ledger.py` (tablas `transaction` y `tax_lot`), `quotes.py` (precio y fx) y `errors.py`; `service.py` solo delega.
+
 DCA: un job (`portfolio/dca.py`) comprueba planes cuyo día es hoy (según `clock.now()`) y crea una ejecución pendiente; el usuario confirma o salta desde la app. En demo se fuerza con `POST /demo/dca/run`.
 
 ## 8. Motor de impacto y exposición

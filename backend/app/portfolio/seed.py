@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core import clock
 from app.core.db import session_scope
-from app.portfolio import repository
+from app.portfolio import ledger, repository
 from app.schemas.common import Profile
 
 SEED_DIR = Path(__file__).resolve().parents[3] / "data" / "seed"
@@ -49,7 +49,7 @@ def _load_portfolio(session: Session, raw: dict[str, Any], now: datetime) -> Non
         repository.add_dca_plan(session, pid, dca)
     for position in raw["positions"]:
         for lot in position["lots"]:
-            repository.add_initial_lot(
+            ledger.add_initial_lot(
                 session,
                 pid,
                 position["asset_id"],

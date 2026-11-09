@@ -1,20 +1,17 @@
 """Interfaz pública del gestor de cartera (diseño del MVP §4.1).
 
 Otros módulos importan solo las funciones de *Interfaz entre módulos*. El resto las usa la API.
-Reales desde T1-03: valoración, alta, catálogo, seed y reset. Lo demás aún delega en `mock.py`;
-T1-04 a T1-07 lo cambian sin cambiar las firmas.
+Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta.
+Lo demás aún delega en `mock.py`; T1-05 a T1-07 lo cambian sin cambiar las firmas.
 """
 
-from collections.abc import Iterable
-from datetime import datetime, timedelta
-from decimal import Decimal
+from datetime import datetime
 
 from app.core import clock, trace
 from app.core.db import session_scope
-from app.core.errors import AppError, ErrorCode
-from app.portfolio import engine, mock, repository, seed
-from app.prices import service as prices
-from app.schemas.common import Profile, SourceRef, TraceKind
+from app.portfolio import engine, errors, ledger, mock, operations, repository, seed
+from app.portfolio import quotes as pricing
+from app.schemas.common import Profile, TraceKind
 from app.schemas.portfolio import (
     AssetOut,
     DcaExecutionActionRequest,
@@ -35,15 +32,6 @@ from app.schemas.portfolio import (
 )
 
 LOOKUP_LIMIT = 20
-WEEK = timedelta(days=7)
-
-
-def _not_found(portfolio_id: str) -> AppError:
-    return AppError(
-        ErrorCode.NOT_FOUND,
-        f"No existe la cartera «{portfolio_id}».",
-        details={"portfolio_id": portfolio_id},
-    )
 
 
 # --- Interfaz entre módulos (§4.1) ---
@@ -54,11 +42,11 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
     with session_scope() as session:
         row = repository.get_portfolio(session, portfolio_id)
         if row is None:
-            raise _not_found(portfolio_id)
+            raise errors.portfolio_not_found(portfolio_id)
         name, profile = row.name, Profile(row.profile)
-        lots = repository.open_lots(session, portfolio_id)
+        lots = ledger.open_lots(session, portfolio_id)
         assets = repository.get_assets(session, {lot.asset_id for lot in lots})
-    quotes, sources = _quotes(assets)
+    quotes, sources = pricing.quotes(assets)
     valuation = engine.value_portfolio(lots, assets, quotes)
     calc_id = trace.record(
         TraceKind.VALUATION,
@@ -92,40 +80,6 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
     )
 
 
-def _quotes(asset_ids: Iterable[str]) -> tuple[dict[str, engine.QuoteIn], list[SourceRef]]:
-    """Precio actual, fx y valor unitario de hace 7 días de cada activo, con sus fuentes."""
-    week_at = clock.now() - WEEK
-    quotes: dict[str, engine.QuoteIn] = {}
-    sources: dict[tuple[str, str], SourceRef] = {}
-    for asset_id in sorted(asset_ids):
-        price = prices.latest(asset_id)
-        pair = f"{price.currency}EUR"
-        fx = prices.fx_quote(pair)
-        sources.setdefault((price.source.kind, price.source.ref), price.source)
-        if price.currency != "EUR":
-            sources.setdefault((fx.source.kind, fx.source.ref), fx.source)
-        quotes[asset_id] = engine.QuoteIn(
-            price=price.price,
-            currency=price.currency,
-            price_at=price.price_at,
-            price_kind=price.price_kind,
-            fx_rate=fx.rate,
-            week_ago_unit_eur=_week_ago_unit_eur(asset_id, pair, week_at),
-        )
-    return quotes, list(sources.values())
-
-
-def _week_ago_unit_eur(asset_id: str, pair: str, at: datetime) -> Decimal | None:
-    """`price × fx` del último cierre no posterior a `at`. `None` si no hay dato."""
-    history = prices.history(asset_id, (at - timedelta(days=10)).date(), at.date())
-    if not history:
-        return None
-    try:
-        return history[-1].price * prices.fx_rate(pair, at)
-    except AppError:
-        return None
-
-
 def get_plan(portfolio_id: str) -> PlanOut:
     return mock.get_plan(portfolio_id)
 
@@ -150,7 +104,7 @@ def ensure_exists(portfolio_id: str) -> None:
     """404 `NOT_FOUND` si la cartera no existe. No valora: no necesita precios."""
     with session_scope() as session:
         if repository.get_portfolio(session, portfolio_id) is None:
-            raise _not_found(portfolio_id)
+            raise errors.portfolio_not_found(portfolio_id)
 
 
 # --- Para la API de cartera ---
@@ -173,26 +127,27 @@ def lookup_assets(query: str) -> list[AssetOut]:
         return repository.search_assets(session, query, LOOKUP_LIMIT)
 
 
+def register_transaction(portfolio_id: str, request: TransactionRequest) -> TransactionOut:
+    """Compra (lote nuevo) o venta (FIFO) al último precio (RF-04, RF-05). Ver `operations.py`."""
+    return operations.register_transaction(portfolio_id, request, get_valued)
+
+
 def init_positions(portfolio_id: str, request: PositionsInitRequest) -> PortfolioOut:
     """Alta (`initial`): un lote por línea. Si un activo no existe o no tiene precio, no guarda
     nada (404 `NOT_FOUND` o 503 `PRICE_UNAVAILABLE`)."""
     asset_ids = [line.asset_id for line in request.positions]
     with session_scope() as session:
         if repository.get_portfolio(session, portfolio_id) is None:
-            raise _not_found(portfolio_id)
+            raise errors.portfolio_not_found(portfolio_id)
         known = repository.get_assets(session, asset_ids)
     for asset_id in asset_ids:
         if asset_id not in known:
-            raise AppError(
-                ErrorCode.NOT_FOUND,
-                f"No conocemos el activo «{asset_id}».",
-                details={"asset_id": asset_id},
-            )
-    _quotes(set(asset_ids))  # PRICE_UNAVAILABLE antes de escribir nada
+            raise errors.unknown_asset(asset_id)
+    pricing.quotes(set(asset_ids))  # PRICE_UNAVAILABLE antes de escribir nada
     now = clock.now()
     with session_scope() as session:
         for line in request.positions:
-            repository.add_initial_lot(
+            ledger.add_initial_lot(
                 session,
                 portfolio_id,
                 line.asset_id,
@@ -217,11 +172,7 @@ def reset_demo() -> list[str]:
     return seed.load(force=True)
 
 
-# --- Aún sobre el mock (T1-04 a T1-07) ---
-
-
-def register_transaction(portfolio_id: str, request: TransactionRequest) -> TransactionOut:
-    return mock.register_transaction(portfolio_id)
+# --- Aún sobre el mock (T1-05 a T1-07) ---
 
 
 def register_transfer(portfolio_id: str, request: TransferRequest) -> TransactionOut:

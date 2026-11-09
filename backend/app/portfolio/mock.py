@@ -72,11 +72,6 @@ def get_value_change(portfolio_id: str, start: datetime, end: datetime) -> Value
     return change.model_copy(update={"portfolio_id": portfolio_id, "start": start, "end": end})
 
 
-def register_transaction(portfolio_id: str) -> TransactionOut:
-    _ensure_exists(portfolio_id)
-    return TransactionOut.model_validate(examples.load("TransactionOut"))
-
-
 def register_transfer(portfolio_id: str, request: TransferRequest) -> TransactionOut:
     """Si alguno de los dos activos de la cartera no es fondo, 422 `TRANSFER_NOT_ALLOWED`."""
     portfolio = get_valued(portfolio_id)
