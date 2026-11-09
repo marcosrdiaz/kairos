@@ -140,8 +140,7 @@ def build(portfolio_id: str, state: StatusState | None = None) -> Preloaded:
     allocation = portfolio.allocation
     context = ExplainerContext(
         portfolio_id=portfolio_id,
-        as_of=portfolio.valued_at,  # no `clock.now()`: así el bloque no cambia y la caché del
-        # prompt sigue valiendo mientras no cambien los datos
+        as_of=portfolio.valued_at,  # cambia en cada valoración: `get` lo ignora al comparar
         persona_hint=portfolio.profile,
         facts=all_facts,
         allocation={
@@ -158,15 +157,30 @@ def build(portfolio_id: str, state: StatusState | None = None) -> Preloaded:
     return Preloaded(context, evidence, impacts, projection, has_plan)
 
 
+def _comparable(context: ExplainerContext) -> ExplainerContext:
+    """El contexto sin lo que cambia en cada reconstrucción aunque los datos sean los mismos:
+    `as_of` (la hora de valorar) y los `calc_id` (cada valoración guarda su propia traza)."""
+    comparable_facts = [f.model_copy(update={"calc_id": ""}) for f in context.facts]
+    return context.model_copy(update={"as_of": None, "facts": comparable_facts})
+
+
 def get(portfolio_id: str) -> Preloaded:
-    """Contexto de la caché si sigue vigente; si no, lo reconstruye."""
+    """Contexto de la caché si sigue vigente; si no, lo reconstruye. Si al pasar el TTL los datos
+    son los mismos, conserva el anterior: otro texto recrearía la caché del prompt (D-071)."""
     state, status_calc_id = _status(portfolio_id)
     now = _monotonic()
     with _lock:
         entry = _cache.get(portfolio_id)
-    if entry and entry.status_calc_id == status_calc_id and now - entry.built_at < TTL_S:
+    same_status = entry is not None and entry.status_calc_id == status_calc_id
+    if entry and same_status and now - entry.built_at < TTL_S:
         return entry.preloaded
     preloaded = build(portfolio_id, state)
+    if (
+        entry
+        and same_status
+        and _comparable(entry.preloaded.context) == _comparable(preloaded.context)
+    ):
+        preloaded = entry.preloaded
     with _lock:
         _cache[portfolio_id] = _Entry(status_calc_id, now, preloaded)
     return preloaded

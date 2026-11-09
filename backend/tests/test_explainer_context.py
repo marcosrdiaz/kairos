@@ -2,6 +2,8 @@
 `calc_id` de `status`, al pasar el TTL o al invalidarla."""
 
 from collections.abc import Iterator
+from dataclasses import replace
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -27,7 +29,16 @@ def env(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
 
     def build(_pid: str, _state: object = None) -> context.Preloaded:
         state["builds"] += 1
-        return fx.preloaded()
+        pre = fx.preloaded()
+        update: dict[str, Any] = {}
+        if "persona" in state:
+            update["persona_hint"] = state["persona"]
+        if state.get("volatile"):
+            update["as_of"] = pre.context.as_of + timedelta(minutes=1)
+            update["facts"] = [
+                f.model_copy(update={"calc_id": "calc_nuevo"}) for f in pre.context.facts
+            ]
+        return replace(pre, context=pre.context.model_copy(update=update))
 
     def status(_pid: str) -> StatusOut:
         out = StatusOut.model_validate(examples.load("StatusOut"))
@@ -49,10 +60,23 @@ def test_cached_while_status_and_ttl_hold(env: dict[str, Any]) -> None:
 
 
 def test_rebuilt_after_ttl(env: dict[str, Any]) -> None:
+    context.get("laura")
+    env["clock"].now += context.TTL_S + 1
+    env["persona"] = "otro perfil"
+    assert context.get("laura").context.persona_hint == "otro perfil"
+    assert env["builds"] == 2
+
+
+def test_same_data_after_ttl_keeps_the_context_for_the_prompt_cache(env: dict[str, Any]) -> None:
+    """Cada reconstrucción trae `calc_id` y `as_of` nuevos: si se usaran, el prompt cambiaría."""
     first = context.get("laura")
     env["clock"].now += context.TTL_S + 1
-    assert context.get("laura") is not first
+    env["volatile"] = True
+    assert context.get("laura") is first
     assert env["builds"] == 2
+    env["clock"].now += context.TTL_S - 1
+    assert context.get("laura") is first
+    assert env["builds"] == 2, "el TTL vuelve a contar desde la última comprobación"
 
 
 def test_rebuilt_when_status_calc_id_changes(env: dict[str, Any]) -> None:

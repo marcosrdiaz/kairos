@@ -2,7 +2,7 @@
 
 import json
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.agents import claude, context
 from app.agents import service as agents_service
+from app.agents.explainer_prompt import context_block
 from app.core import clock
 from app.events import service
 from app.main import API_PREFIX
@@ -91,6 +92,22 @@ def test_context_is_invalidated_after_recomputing_status(
         ("recompute", "javier"),
         ("invalidate", "javier"),
     ]
+
+
+def test_prompt_block_is_stable_after_ttl_until_an_event_arrives(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-071: sin cambios en los datos, el bloque no cambia y la caché del prompt sigue valiendo."""
+    service.replay("oil-2025-06")
+    elapsed = [0.0]
+    monkeypatch.setattr(context, "_monotonic", lambda: elapsed[0])
+    context.invalidate()
+    before = context_block(context.get("laura"))
+    elapsed[0] += context.TTL_S + 1
+    clock.set_now(NOW + timedelta(seconds=61))
+    assert context_block(context.get("laura")) == before
+    service.replay("bce-2025-06")
+    assert context_block(context.get("laura")) != before
 
 
 def test_demo_reset_forgets_the_events_in_the_context(client: TestClient) -> None:
