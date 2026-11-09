@@ -1,4 +1,4 @@
-### D-XXX · Alta de posiciones y selector de cartera en la UI (T1-19)
+### D-067 · Alta de posiciones y selector de cartera en la UI (T1-19)
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-19 pide el alta de posiciones (RF-01) y el selector Laura/Javier con un clic para cargar la cartera de ejemplo (RF-02). El backend no tiene ruta para crear carteras: `POST /portfolios/{id}/positions` añade posiciones a una cartera que ya existe (Laura o Javier). El cliente de la API solo tenía `apiGet`.
 - Decisión:
