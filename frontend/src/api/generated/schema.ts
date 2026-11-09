@@ -45,6 +45,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/demo/clock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Clock
+         * @description Fija el reloj de la demo o, con `now: null`, vuelve al reloj real.
+         */
+        put: operations["set_clock_api_v1_demo_clock_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/demo/dca/run": {
         parameters: {
             query?: never;
@@ -828,6 +848,25 @@ export interface components {
             impact_eur: string;
             /** Label */
             label: string;
+        };
+        /**
+         * DemoClockOut
+         * @description Instante del reloj tras aplicar el cambio.
+         */
+        DemoClockOut: {
+            /**
+             * Now
+             * Format: date-time
+             */
+            now: string;
+        };
+        /**
+         * DemoClockRequest
+         * @description `now` fija el reloj de la demo; `null` vuelve al reloj real.
+         */
+        DemoClockRequest: {
+            /** Now */
+            now: string | null;
         };
         /**
          * DemoResetOut
@@ -1829,6 +1868,8 @@ export type DcaPlanOut = components['schemas']['DcaPlanOut'];
 export type DcaPlanStatus = components['schemas']['DcaPlanStatus'];
 export type DcaPlanUpdateRequest = components['schemas']['DcaPlanUpdateRequest'];
 export type DemoAdjustmentOut = components['schemas']['DemoAdjustmentOut'];
+export type DemoClockOut = components['schemas']['DemoClockOut'];
+export type DemoClockRequest = components['schemas']['DemoClockRequest'];
 export type DemoResetOut = components['schemas']['DemoResetOut'];
 export type DemoResetRequest = components['schemas']['DemoResetRequest'];
 export type ErrorOut = components['schemas']['ErrorOut'];
@@ -1961,6 +2002,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    set_clock_api_v1_demo_clock_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoClockRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoClockOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

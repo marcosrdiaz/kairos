@@ -764,6 +764,45 @@
         "title": "DemoAdjustmentOut",
         "type": "object"
       },
+      "DemoClockOut": {
+        "additionalProperties": false,
+        "description": "Instante del reloj tras aplicar el cambio.",
+        "properties": {
+          "now": {
+            "format": "date-time",
+            "title": "Now",
+            "type": "string"
+          }
+        },
+        "required": [
+          "now"
+        ],
+        "title": "DemoClockOut",
+        "type": "object"
+      },
+      "DemoClockRequest": {
+        "additionalProperties": false,
+        "description": "`now` fija el reloj de la demo; `null` vuelve al reloj real.",
+        "properties": {
+          "now": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Now"
+          }
+        },
+        "required": [
+          "now"
+        ],
+        "title": "DemoClockRequest",
+        "type": "object"
+      },
       "DemoResetOut": {
         "additionalProperties": false,
         "description": "Qué ha recargado el reset: carteras en su estado inicial y eventos precargados.",
@@ -3019,6 +3058,58 @@
         "summary": "Act On Dca Execution",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/demo/clock": {
+      "put": {
+        "description": "Fija el reloj de la demo o, con `now: null`, vuelve al reloj real.",
+        "operationId": "set_clock_api_v1_demo_clock_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoClockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoClockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Clock",
+        "tags": [
+          "demo"
         ]
       }
     },
