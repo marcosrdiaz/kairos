@@ -18,7 +18,7 @@ _UNIT = Decimal("0.00000001")
 
 
 def _quantize(value: Decimal, step: Decimal) -> str:
-    return str(value.quantize(step, rounding=ROUND_HALF_EVEN))
+    return format(value.quantize(step, rounding=ROUND_HALF_EVEN), "f")
 
 
 def _decimal_string(description: str, pattern: str) -> WithJsonSchema:
