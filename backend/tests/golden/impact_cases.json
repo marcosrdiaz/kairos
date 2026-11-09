@@ -1,0 +1,392 @@
+{
+  "illustrative": true,
+  "now": "2026-11-08T18:00:00Z",
+  "prices": "closes y fx de portfolio_init_cases.json",
+  "description": "Impacto (SPEC §8.2, D-051) de los 3 eventos con todos los factores observados (fallback del analizador) y betas de prueba. Hoja: impact_sheet.csv.",
+  "betas": {
+    "IE00B4L5Y983": {
+      "r2": "0.95",
+      "betas": {
+        "EQ_GLOBAL": {
+          "beta": "1.00",
+          "std_err": "0.01"
+        },
+        "EURUSD": {
+          "beta": "-0.10",
+          "std_err": "0.10"
+        }
+      }
+    },
+    "IE00B18GC888": {
+      "r2": "0.55",
+      "betas": {
+        "RATES_EUR": {
+          "beta": "-6.0",
+          "std_err": "0.5"
+        },
+        "EQ_GLOBAL": {
+          "beta": "0.02",
+          "std_err": "0.02"
+        }
+      }
+    },
+    "IE00B03HD191": {
+      "r2": "0.85",
+      "betas": {
+        "EQ_GLOBAL": {
+          "beta": "0.90",
+          "std_err": "0.02"
+        },
+        "EQ_US_TECH": {
+          "beta": "0.15",
+          "std_err": "0.03"
+        },
+        "EURUSD": {
+          "beta": "-0.60",
+          "std_err": "0.05"
+        }
+      }
+    },
+    "US67066G1040": {
+      "r2": "0.45",
+      "betas": {
+        "EQ_US_TECH": {
+          "beta": "1.80",
+          "std_err": "0.10"
+        },
+        "OIL": {
+          "beta": "0.05",
+          "std_err": "0.10"
+        }
+      }
+    },
+    "US0378331005": {
+      "r2": "0.30",
+      "betas": {
+        "EQ_US_TECH": {
+          "beta": "1.10",
+          "std_err": "0.08"
+        },
+        "RATES_EUR": {
+          "beta": "-0.40",
+          "std_err": "1.40"
+        }
+      }
+    },
+    "ES0148396007": {
+      "r2": "0.35",
+      "betas": {
+        "EQ_GLOBAL": {
+          "beta": "0.80",
+          "std_err": "0.05"
+        }
+      }
+    },
+    "ES0144580Y14": {
+      "r2": "0.40",
+      "betas": {
+        "EQ_GLOBAL": {
+          "beta": "0.50",
+          "std_err": "0.05"
+        },
+        "RATES_EUR": {
+          "beta": "-3.0",
+          "std_err": "0.8"
+        }
+      }
+    },
+    "IE0007472115": {
+      "r2": "0.70",
+      "betas": {
+        "RATES_EUR": {
+          "beta": "-7.0",
+          "std_err": "0.4"
+        }
+      }
+    }
+  },
+  "expected": {
+    "bce-2025-06": {
+      "laura": {
+        "impact_eur": "-59.38",
+        "low_eur": "-70.71",
+        "high_eur": "-48.05",
+        "impact_pct": "-0.0017",
+        "confidence": "alta",
+        "polarity": "riesgo",
+        "breakdown": [
+          {
+            "impact_eur": "9.25",
+            "market_eur": "9.25",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B4L5Y983"
+          },
+          {
+            "impact_eur": "-14.08",
+            "market_eur": "-14.08",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "-23.36",
+            "market_eur": "-4.24",
+            "fx_eur": "-19.12",
+            "asset_id": "IE00B03HD191"
+          },
+          {
+            "impact_eur": "-22.27",
+            "market_eur": "-18.19",
+            "fx_eur": "-4.08",
+            "asset_id": "US67066G1040"
+          },
+          {
+            "impact_eur": "0.81",
+            "market_eur": "0.81",
+            "fx_eur": "0.00",
+            "asset_id": "ES0148396007"
+          },
+          {
+            "impact_eur": "-9.51",
+            "market_eur": "-6.95",
+            "fx_eur": "-2.56",
+            "asset_id": "US0378331005"
+          },
+          {
+            "impact_eur": "-0.22",
+            "market_eur": "-0.22",
+            "fx_eur": "0.00",
+            "asset_id": "ES0144580Y14"
+          }
+        ]
+      },
+      "javier": {
+        "impact_eur": "-238.71",
+        "low_eur": "-254.14",
+        "high_eur": "-223.28",
+        "impact_pct": "-0.0013",
+        "confidence": "media",
+        "polarity": "riesgo",
+        "breakdown": [
+          {
+            "impact_eur": "-143.01",
+            "market_eur": "-143.01",
+            "fx_eur": "0.00",
+            "asset_id": "IE0007472115"
+          },
+          {
+            "impact_eur": "-62.29",
+            "market_eur": "-62.29",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "DEP-12M"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "PP-MIXTO"
+          },
+          {
+            "impact_eur": "-33.41",
+            "market_eur": "-6.07",
+            "fx_eur": "-27.34",
+            "asset_id": "IE00B03HD191"
+          }
+        ]
+      }
+    },
+    "oil-2025-06": {
+      "laura": {
+        "impact_eur": "-204.89",
+        "low_eur": "-236.35",
+        "high_eur": "-173.43",
+        "impact_pct": "-0.0060",
+        "confidence": "alta",
+        "polarity": "riesgo",
+        "breakdown": [
+          {
+            "impact_eur": "-36.01",
+            "market_eur": "-36.01",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B4L5Y983"
+          },
+          {
+            "impact_eur": "-14.67",
+            "market_eur": "-14.67",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "-93.18",
+            "market_eur": "-47.42",
+            "fx_eur": "-45.76",
+            "asset_id": "IE00B03HD191"
+          },
+          {
+            "impact_eur": "-38.82",
+            "market_eur": "-29.18",
+            "fx_eur": "-9.64",
+            "asset_id": "US67066G1040"
+          },
+          {
+            "impact_eur": "-3.16",
+            "market_eur": "-3.16",
+            "fx_eur": "0.00",
+            "asset_id": "ES0148396007"
+          },
+          {
+            "impact_eur": "-17.22",
+            "market_eur": "-11.14",
+            "fx_eur": "-6.08",
+            "asset_id": "US0378331005"
+          },
+          {
+            "impact_eur": "-1.83",
+            "market_eur": "-1.83",
+            "fx_eur": "0.00",
+            "asset_id": "ES0144580Y14"
+          }
+        ]
+      },
+      "javier": {
+        "impact_eur": "-347.11",
+        "low_eur": "-370.48",
+        "high_eur": "-323.74",
+        "impact_pct": "-0.0019",
+        "confidence": "media",
+        "polarity": "riesgo",
+        "breakdown": [
+          {
+            "impact_eur": "-148.97",
+            "market_eur": "-148.97",
+            "fx_eur": "0.00",
+            "asset_id": "IE0007472115"
+          },
+          {
+            "impact_eur": "-64.88",
+            "market_eur": "-64.88",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "DEP-12M"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "PP-MIXTO"
+          },
+          {
+            "impact_eur": "-133.26",
+            "market_eur": "-67.81",
+            "fx_eur": "-65.45",
+            "asset_id": "IE00B03HD191"
+          }
+        ]
+      }
+    },
+    "nvda-2025-02": {
+      "laura": {
+        "impact_eur": "-193.51",
+        "low_eur": "-208.85",
+        "high_eur": "-178.17",
+        "impact_pct": "-0.0056",
+        "confidence": "alta",
+        "polarity": "riesgo",
+        "breakdown": [
+          {
+            "impact_eur": "-25.25",
+            "market_eur": "-25.25",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B4L5Y983"
+          },
+          {
+            "impact_eur": "5.28",
+            "market_eur": "5.28",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "-52.06",
+            "market_eur": "-70.40",
+            "fx_eur": "18.34",
+            "asset_id": "IE00B03HD191"
+          },
+          {
+            "impact_eur": "-102.82",
+            "market_eur": "-106.71",
+            "fx_eur": "3.89",
+            "asset_id": "US67066G1040"
+          },
+          {
+            "impact_eur": "1.71",
+            "market_eur": "1.71",
+            "fx_eur": "0.00",
+            "asset_id": "ES0148396007"
+          },
+          {
+            "impact_eur": "-21.26",
+            "market_eur": "-23.83",
+            "fx_eur": "2.57",
+            "asset_id": "US0378331005"
+          },
+          {
+            "impact_eur": "0.89",
+            "market_eur": "0.89",
+            "fx_eur": "0.00",
+            "asset_id": "ES0144580Y14"
+          }
+        ]
+      },
+      "javier": {
+        "impact_eur": "2.54",
+        "low_eur": "-16.20",
+        "high_eur": "21.28",
+        "impact_pct": "0.0000",
+        "confidence": "media",
+        "polarity": "neutral",
+        "breakdown": [
+          {
+            "impact_eur": "53.63",
+            "market_eur": "53.63",
+            "fx_eur": "0.00",
+            "asset_id": "IE0007472115"
+          },
+          {
+            "impact_eur": "23.36",
+            "market_eur": "23.36",
+            "fx_eur": "0.00",
+            "asset_id": "IE00B18GC888"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "DEP-12M"
+          },
+          {
+            "impact_eur": "0.00",
+            "market_eur": "0.00",
+            "fx_eur": "0.00",
+            "asset_id": "PP-MIXTO"
+          },
+          {
+            "impact_eur": "-74.45",
+            "market_eur": "-100.67",
+            "fx_eur": "26.22",
+            "asset_id": "IE00B03HD191"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "illustrative": true,
+  "now": "2026-11-08T18:00:00Z",
+  "prices": "closes y fx de portfolio_init_cases.json",
+  "description": "Proyección con DCA (D-064): meses hasta el 31-dic del año meta, tipo mensual geométrico, aportación a fin de mes. Hoja: projection_sheet.csv (mes 1 y último mes).",
+  "expected": {
+    "laura": {
+      "goal_amount_eur": "150000.00",
+      "goal_year": 2040,
+      "months": 169,
+      "current_value_eur": "34311.60",
+      "monthly_contribution_eur": "300.00",
+      "scenarios": [
+        {
+          "name": "pesimista",
+          "annual_return": "0.03747",
+          "value_at_goal_eur": "123926.76",
+          "reaches_goal": false
+        },
+        {
+          "name": "base",
+          "annual_return": "0.05740",
+          "value_at_goal_eur": "152181.52",
+          "reaches_goal": true
+        },
+        {
+          "name": "optimista",
+          "annual_return": "0.07733",
+          "value_at_goal_eur": "187321.29",
+          "reaches_goal": true
+        }
+      ],
+      "on_track": true,
+      "gap_eur": "0.00"
+    },
+    "javier": {
+      "goal_amount_eur": "200000.00",
+      "goal_year": 2031,
+      "months": 61,
+      "current_value_eur": "187189.79",
+      "monthly_contribution_eur": "200.00",
+      "scenarios": [
+        {
+          "name": "pesimista",
+          "annual_return": "0.02748",
+          "value_at_goal_eur": "227913.25",
+          "reaches_goal": true
+        },
+        {
+          "name": "base",
+          "annual_return": "0.03640",
+          "value_at_goal_eur": "237857.39",
+          "reaches_goal": true
+        },
+        {
+          "name": "optimista",
+          "annual_return": "0.04532",
+          "value_at_goal_eur": "248152.88",
+          "reaches_goal": true
+        }
+      ],
+      "on_track": true,
+      "gap_eur": "0.00"
+    }
+  }
+}
