@@ -1,7 +1,7 @@
-"""Control de demo: `POST /demo/reset` y `/demo/dca/run` (diseño del MVP §4.6). Solo con
-`DEMO_MODE=true`.
+"""Control de demo: `POST /demo/reset`, `/demo/dca/run` y `PUT /demo/clock` (diseño del MVP
+§4.6). Solo con `DEMO_MODE=true`.
 
-`/demo/replay` vive en `api/events.py`. `PUT /demo/clock` (T2-03) se añade aquí.
+`/demo/replay` vive en `api/events.py`.
 """
 
 from typing import Any
@@ -9,12 +9,13 @@ from typing import Any
 from fastapi import APIRouter
 
 from app.config import get_settings
+from app.core import clock
 from app.core.errors import AppError, ErrorCode
 from app.events import service as events_service
 from app.impact import service as impact_service
 from app.portfolio import service as portfolio_service
 from app.schemas.common import ErrorOut
-from app.schemas.demo import DemoResetOut, DemoResetRequest
+from app.schemas.demo import DemoClockOut, DemoClockRequest, DemoResetOut, DemoResetRequest
 from app.schemas.portfolio import DcaExecutionOut
 from app.status import service as status_service
 
@@ -45,3 +46,11 @@ def run_dca() -> list[DcaExecutionOut]:
     """Crea las aportaciones pendientes de hoy de los planes DCA activos y las devuelve."""
     _require_demo_mode()
     return portfolio_service.run_dca_demo()
+
+
+@router.put("/demo/clock", response_model=DemoClockOut, responses=_FORBIDDEN)
+def set_clock(body: DemoClockRequest) -> DemoClockOut:
+    """Fija el reloj de la demo o, con `now: null`, vuelve al reloj real."""
+    _require_demo_mode()
+    clock.set_now(body.now)
+    return DemoClockOut(now=clock.now())

@@ -1,11 +1,12 @@
-"""Contrato de `POST /demo/reset` (diseño del MVP §4.6). Solo con `DEMO_MODE=true`.
+"""Contrato de `POST /demo/reset` y `PUT /demo/clock` (diseño del MVP §4.6). Solo con
+`DEMO_MODE=true`.
 
 El resto del control de demo vive en su módulo: `ReplayOut` en `schemas/events.py`.
 """
 
 from pydantic import Field
 
-from app.schemas.common import ContractModel
+from app.schemas.common import ContractModel, UtcDatetime
 
 
 class DemoResetRequest(ContractModel):
@@ -20,3 +21,15 @@ class DemoResetOut(ContractModel):
 
     portfolio_ids: list[str]
     preloaded_event_ids: list[str] = Field(default_factory=list)
+
+
+class DemoClockRequest(ContractModel):
+    """`now` fija el reloj de la demo; `null` vuelve al reloj real."""
+
+    now: UtcDatetime | None
+
+
+class DemoClockOut(ContractModel):
+    """Instante del reloj tras aplicar el cambio."""
+
+    now: UtcDatetime
