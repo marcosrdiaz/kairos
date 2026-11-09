@@ -24,8 +24,10 @@ services:
       timeout: 3s
       retries: 30
 
-  # Migraciones + carga de data/seed. Se ejecuta una vez en cada `up` y con `make seed`.
-  # Usa la imagen del backend; los pasos que aún no existen (alembic, seed_db.py) se saltan.
+  # Migraciones + carga de data/seed + betas. Se ejecuta una vez en cada `up` y con `make seed`.
+  # Usa la imagen del backend; los pasos que aún no existen (alembic, seed_db.py,
+  # compute_betas.py) se saltan. Las betas van después del seed (necesitan la tabla `asset`):
+  # sin ellas el motor de impacto no tiene incertidumbre y todos los rangos salen colapsados.
   seed:
     build: ./backend
     <<: *backend-env
@@ -42,6 +44,7 @@ services:
         set -e
         if [ -f alembic.ini ]; then alembic upgrade head; else echo "seed: sin alembic todavía (T1-01)"; fi
         if [ -f /scripts/seed_db.py ]; then python /scripts/seed_db.py; else echo "seed: sin scripts/seed_db.py todavía (T1-03)"; fi
+        if [ -f /scripts/compute_betas.py ]; then python /scripts/compute_betas.py; else echo "seed: sin scripts/compute_betas.py todavía (T1-12)"; fi
     restart: "no"
 
   backend:
