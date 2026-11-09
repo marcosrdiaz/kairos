@@ -134,8 +134,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 ### T1-06 · DCA — Alons
-**Qué estaba haciendo:** dos PR en cadena. #34, solo de contrato: `GET /portfolios/{id}/dca-executions?status=` y respuesta de `/demo/dca/run`; sin modelos nuevos. #35, la implementación, tiene como base la rama de #34. Las dos tienen lint y tests en verde en local.
-**Siguiente paso exacto:** revisión y merge de #34. Después, comprobar que #35 ha cambiado su base a `main` (si no, cambiarla a mano), hacer merge de `main` en `t1-06/portfolio-dca` para recoger el ID real de la decisión de contrato, CI en verde, revisión y merge. Al final, `docs: done T1-06` y marcar como hecha la fila de *Peticiones de contrato*.
+**Qué estaba haciendo:** el contrato (#34, D-055) ya está en `main`. La implementación está en **#36**, contra `main`. #35 se mergeó por error en la rama del contrato y no llegó a `main`: no cuenta.
+**Siguiente paso exacto:** CI en verde, revisión y merge de #36. Después, `docs: done T1-06` y borrar estas notas (deja la línea «Para T1-20» en una nota para T1-20).
 **Ficheros tocados:** `backend/app/portfolio/{dca,dca_flow,dca_store,errors,mock,service}.py`, `backend/app/api/{portfolio,demo}.py`, `backend/tests/{test_dca,test_dca_executions,test_dca_contract,test_portfolio_mock}.py`, `frontend/src/api/generated/` (#34), `docs/SPEC.md`, `docs/decisiones/` (dos ficheros nuevos). Las rutas siguen en `api/portfolio.py`, no en `api/dca.py`: ver la decisión «DCA real (T1-06)».
 **Para T1-20 (UI de DCA):** lista las pendientes con `GET /portfolios/{id}/dca-executions?status=pending`; confirma o salta con `POST /dca-executions/{id}`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo.
 
@@ -179,7 +179,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | 2026-11-08 | Alons (T1-03) al equipo | `AssetOut` (`GET /assets/lookup`), `PriceOut` (`prices.latest`/`history`), `DemoResetRequest`/`DemoResetOut` (`POST /demo/reset`) | Modelos nuevos, sin cambios en los existentes. PR #20 (solo contrato); decisión «Contratos de activo, precio y reset de demo (T1-03)» | T1-02, T1-03, T1-19, T2-03 | Hecho: en `main` (#20) |
 | 2026-11-08 | Jaime (T1-15) al equipo | `ReplayRequest` (`POST /demo/replay/{event_id}`) | Modelo nuevo y cuerpo opcional (`occurred_at`, `silent`), definido en el diseño §4.6. PR propio, solo contrato | T1-15, T2-03 | Hecho: en `main` (#30) |
 | 2026-11-09 | Alons (T1-04) al equipo | `Money`, `Units`, `Price` (`schemas/common.py`) | Arreglo de serialización: el cero salía como `0E-8`; ahora sale en coma fija (`0.00000000`). No cambia la forma ni el OpenAPI. PR #32 (solo contrato) | T1-04 y cualquier respuesta con importes o participaciones a cero | Hecho: en `main` (#32) |
-| 2026-11-09 | Alons (T1-06) al equipo | `GET /portfolios/{id}/dca-executions?status=`, `POST /demo/dca/run` | Ruta nueva para listar las aportaciones de una cartera (`list[DcaExecutionOut]`, `?status=pending` para las pendientes) y respuesta de `/demo/dca/run` (`list[DcaExecutionOut]`). Sin modelos nuevos. PR #34 (solo contrato); decisión «Contrato de las ejecuciones DCA (T1-06)» | T1-06, T1-20, T2-08 | En PR (#34) |
+| 2026-11-09 | Alons (T1-06) al equipo | `GET /portfolios/{id}/dca-executions?status=`, `POST /demo/dca/run` | Ruta nueva para listar las aportaciones de una cartera (`list[DcaExecutionOut]`, `?status=pending` para las pendientes) y respuesta de `/demo/dca/run` (`list[DcaExecutionOut]`). Sin modelos nuevos. PR #34 (solo contrato); D-055 | T1-06, T1-20, T2-08 | Hecho: en `main` (#34) |
 
 ## 7. Preguntas abiertas
 
