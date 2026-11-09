@@ -54,6 +54,18 @@ def test_fraction_never_uses_exponent() -> None:
     assert _sample(weight=Decimal("1E-7")).model_dump(mode="json")["weight"] == "0.0000001"
 
 
+def test_zero_keeps_fixed_point_with_contract_precision() -> None:
+    """`Decimal(0).quantize(...)` es `0E-8`: el contrato exige `0.00000000` (venta total, T1-04)."""
+    dumped = _sample(amount=Decimal(0), units=Decimal(0), price=Decimal("0E-12")).model_dump(
+        mode="json"
+    )
+    assert (dumped["amount"], dumped["units"], dumped["price"]) == (
+        "0.00",
+        "0.00000000",
+        "0.00000000",
+    )
+
+
 def test_values_stay_decimal_in_python() -> None:
     sample = _sample()
     assert isinstance(sample.amount, Decimal)
