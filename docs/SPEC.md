@@ -291,7 +291,9 @@ Precedencia: `atento` > `revisa_plan` > `tranquilo`.
 - `revisa_plan`: `|equity − target_equity| > drift_threshold` (fracción; por defecto 0,10, D-022).
 - `tranquilo`: en otro caso.
 
-La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validada por el guardián) para responder en < 1 s.
+La ventana de 72 h se mide con la fecha del evento (`occurred_at`), no con la del cálculo.
+
+La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validada por el guardián) para responder en < 1 s. El estado se guarda en memoria por cartera: `recompute`, tras cada evento, redacta con el modelo; `GET /status` nunca llama al modelo y cada 10 s comprueba si han cambiado los datos (si es así, usa la plantilla validada). El `calc_id` solo cambia si cambian los datos.
 
 ## 9. Agentes
 
