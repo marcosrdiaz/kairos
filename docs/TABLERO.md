@@ -82,7 +82,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | Jaime | ✅ hecho |
 | T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` | Manu | ✅ hecho |
 | T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | Manu | 🔄 en curso |
-| T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` | Javi | 🔄 en curso |
+| T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` | Javi | 🧪 en PR |
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | — | ⬜ |
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
@@ -177,7 +177,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 ### T1-18 · Widget de la pantalla de inicio del móvil — Javi
 **Qué estaba haciendo:** la parte 1 está en `main` (#40, D-059): Inicio de la app con la tarjeta de estado. Encima entraron T1-22 (#41, D-060: tema claro/oscuro, tokens, shell nuevo) y T2-19 (#42, D-061: carrusel de noticias).
-**Siguiente paso exacto:** rama nueva desde `main` para el widget de la pantalla de inicio del móvil simulada (D-004) en `frontend/src/widget/`. Reutilizar `StatusBadge` y `states.ts`; mostrar la frase completa, sin `withoutTapHint`.
+**Siguiente paso exacto:** revisión y merge del PR de `t1-18/phone-widget`: ruta `/widget` con el móvil simulado y el widget (`HomeWidget`, `PhoneHomePage`), con la frase completa; al tocarlo abre `/inicio` y conserva `?p=`. Tras el merge, `docs: done T1-18`. El polling cada 5 s es de T2-13.
 **Para el resto del frontend:**
 - Los colores se definen en `frontend/src/styles/tokens.css` (`--kairos-color-*`, modo claro y oscuro). Las clases de Tailwind de siempre (`bg-paper`, `text-ink`, `text-accent`…) siguen funcionando. Un color nuevo va en los dos modos y debe pasar `src/styles/contrast.test.ts`.
 - El contenido de escritorio ocupa todo el ancho (barra lateral de 19 rem); hay que diseñar las pantallas para ese ancho.
