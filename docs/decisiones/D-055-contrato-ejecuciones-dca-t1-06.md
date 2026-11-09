@@ -1,4 +1,4 @@
-### D-XXX · Contrato de las ejecuciones DCA (T1-06): listar las aportaciones de una cartera y respuesta de `/demo/dca/run`
+### D-055 · Contrato de las ejecuciones DCA (T1-06): listar las aportaciones de una cartera y respuesta de `/demo/dca/run`
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: el contrato de DCA (diseño del MVP §4.1) permite confirmar o saltar una aportación (`POST /dca-executions/{id}`), pero ninguna ruta devuelve las aportaciones pendientes. El frontend (T1-20) solo vería el id en la respuesta de `/demo/dca/run` y lo perdería al recargar la página. Además, §4.6 no decía qué devuelve `/demo/dca/run`.
 - Decisión:
