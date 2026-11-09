@@ -125,5 +125,6 @@ def list_dca_executions(
     "/dca-executions/{execution_id}", response_model=DcaExecutionOut, responses=_UNPROCESSABLE
 )
 def act_on_dca_execution(execution_id: str, body: DcaExecutionActionRequest) -> DcaExecutionOut:
-    """Confirmar o saltar una aportación pendiente. T1-06 puede moverlo a `api/dca.py`."""
+    """Confirmar (compra `dca_buy` al precio de ahora) o saltar una aportación pendiente. 422 si
+    ya está resuelta."""
     return service.act_on_dca_execution(execution_id, body)
