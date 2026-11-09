@@ -11,6 +11,7 @@ from app.schemas import examples
 from app.schemas.common import AssetType, ErrorOut
 from app.schemas.portfolio import (
     DcaExecutionOut,
+    DcaExecutionStatus,
     DcaPlanOut,
     PlanOut,
     PortfolioOut,
@@ -87,3 +88,15 @@ def register_transfer(portfolio_id: str, request: TransferRequest) -> Transactio
 def get_dca_execution(execution_id: str) -> DcaExecutionOut:
     execution = DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))
     return execution.model_copy(update={"id": execution_id})
+
+
+def list_dca_executions(
+    portfolio_id: str, status: DcaExecutionStatus | None = None
+) -> list[DcaExecutionOut]:
+    _ensure_exists(portfolio_id)
+    execution = DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))
+    return [execution] if status in (None, execution.status) else []
+
+
+def run_dca_demo() -> list[DcaExecutionOut]:
+    return [DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))]

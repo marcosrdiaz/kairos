@@ -370,6 +370,7 @@ sequenceDiagram
 | POST | `/portfolios/{id}/transactions` | Compra / venta |
 | POST | `/portfolios/{id}/transfers` | Traspaso fondo → fondo |
 | GET/POST/PATCH | `/portfolios/{id}/dca-plans` | Planes DCA |
+| GET | `/portfolios/{id}/dca-executions?status=` | Aportaciones de la cartera (`list[DcaExecutionOut]`); `status=pending` para las que esperan respuesta |
 | POST | `/dca-executions/{id}` | Confirmar o saltar aportación |
 | GET/PUT | `/portfolios/{id}/plan` | Asignación objetivo y meta |
 | GET | `/portfolios/{id}/exposure` | Look-through y radiografía |
@@ -386,7 +387,7 @@ sequenceDiagram
 | POST | `/voice/tts` | Texto a voz, solo frases aprobadas |
 | GET | `/voice/disclaimer` | Audio pregenerado del aviso de IA |
 | GET | `/traces/{calc_id}` | Pantalla de trazabilidad |
-| POST | `/demo/replay/{event_id}` · `/demo/reset` · `/demo/dca/run` · PUT `/demo/clock` | Control de la demo (solo con `DEMO_MODE=true`; si no, 403 `DEMO_MODE_DISABLED`) |
+| POST | `/demo/replay/{event_id}` · `/demo/reset` · `/demo/dca/run` · PUT `/demo/clock` | Control de la demo (solo con `DEMO_MODE=true`; si no, 403 `DEMO_MODE_DISABLED`). `/demo/dca/run` devuelve `list[DcaExecutionOut]` |
 
 Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` con HTTP 4xx. Códigos en `core/errors.py`.
 

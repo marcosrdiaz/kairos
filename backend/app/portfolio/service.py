@@ -194,6 +194,18 @@ def update_dca_plan(portfolio_id: str, plan_id: str, request: DcaPlanUpdateReque
     return plan.model_copy(update={"id": plan_id, **request.model_dump(exclude_unset=True)})
 
 
+def list_dca_executions(
+    portfolio_id: str, status: DcaExecutionStatus | None = None
+) -> list[DcaExecutionOut]:
+    """Ejecuciones DCA de la cartera (todas o solo las de `status`)."""
+    return mock.list_dca_executions(portfolio_id, status)
+
+
+def run_dca_demo() -> list[DcaExecutionOut]:
+    """`POST /demo/dca/run`: crea las ejecuciones pendientes de hoy y las devuelve."""
+    return mock.run_dca_demo()
+
+
 def act_on_dca_execution(execution_id: str, request: DcaExecutionActionRequest) -> DcaExecutionOut:
     status = (
         DcaExecutionStatus.CONFIRMED if request.action == "confirm" else DcaExecutionStatus.SKIPPED
