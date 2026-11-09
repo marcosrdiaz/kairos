@@ -106,7 +106,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | — | ⬜ |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
 | T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | — | ⬜ |
-| T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | 🔄 en curso |
+| T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | 🧪 en PR |
 | T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` | — | ⬜ |
 | T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | — | ⬜ |
 | T2-17 | Ticker de mercado en Inicio (entre la cabecera de estado y las tarjetas): barra que se desplaza sola con el último precio y la variación de los activos de la cartera | Precios reales con fecha (sin cifras inventadas); se pausa al pasar el ratón, con el foco y con un botón (WCAG 2.2.2); sin movimiento con `prefers-reduced-motion`. Necesita un endpoint de precios nuevo: petición de contrato en un PR propio | T1-02 | `backend/app/api/prices.py` (nuevo), `frontend/src/app/market/ticker/` | — | ⬜ |
@@ -191,6 +191,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - Hasta T0-03 no hay tipos generados ni mocks en `src/api/{generated,mocks}/`.
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
+
+### T2-14 · Voz en el frontend — Javi
+**Qué está hecho:** rama `t2-14/voice-frontend`, subida. Pestaña Pregunta: mantener pulsado para hablar (ratón, dedo o Espacio/Intro), transcripción parcial, frases según llegan, audio por frase en orden, aviso de IA, «Parar», y el plan B siempre visible (3 preguntas sugeridas + campo de texto). Probado de punta a punta en Chromium con micrófono falso y ElevenLabs real. `make lint` y `make test` en verde. Decisión «Voz en el frontend (T2-14)».
+**Siguiente paso exacto:** abrir el PR desde la rama (no hay `gh` en local), revisión, CI en verde y merge; después `docs: done T2-14` y borrar esta subsección.
+**Ficheros tocados:** `frontend/src/voice/`; fuera de la fila: `frontend/src/api/{ask,voice}.ts` (+ `ask.test.ts`), `frontend/src/api/client.ts` (exporta `toApiError`), `frontend/src/app/PreguntaPage.tsx`, `frontend/vite.config.ts` (`ws: true`), `backend/app/api/voice.py` (cierre del WebSocket), `docs/SPEC.md` §10.
+**Para el equipo:** al probar en local hay que reiniciar Vite (o `make up`) para que el proxy reenvíe el WebSocket de voz.
 
 ## 5. Bloqueos
 
