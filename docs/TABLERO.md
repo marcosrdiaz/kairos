@@ -219,6 +219,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | 2026-11-08 | Jaime (T1-15) al equipo | `ReplayRequest` (`POST /demo/replay/{event_id}`) | Modelo nuevo y cuerpo opcional (`occurred_at`, `silent`), definido en el diseño §4.6. PR propio, solo contrato | T1-15, T2-03 | Hecho: en `main` (#30) |
 | 2026-11-09 | Alons (T1-04) al equipo | `Money`, `Units`, `Price` (`schemas/common.py`) | Arreglo de serialización: el cero salía como `0E-8`; ahora sale en coma fija (`0.00000000`). No cambia la forma ni el OpenAPI. PR #32 (solo contrato) | T1-04 y cualquier respuesta con importes o participaciones a cero | Hecho: en `main` (#32) |
 | 2026-11-09 | Alons (T1-06) al equipo | `GET /portfolios/{id}/dca-executions?status=`, `POST /demo/dca/run` | Ruta nueva para listar las aportaciones de una cartera (`list[DcaExecutionOut]`, `?status=pending` para las pendientes) y respuesta de `/demo/dca/run` (`list[DcaExecutionOut]`). Sin modelos nuevos. PR #34 (solo contrato); D-055 | T1-06, T1-20, T2-08 | Hecho: en `main` (#34) |
+| 2026-11-10 | Jaime (T2-03) al equipo | `PUT /demo/clock`, `DemoClockRequest`, `DemoClockOut` | Ruta y modelos nuevos definidos en el diseño §4.6 (la respuesta `{now}` no estaba fijada). Sin cambios en los existentes. PR #76 (solo contrato) | T2-03 | En PR (#76) |
 
 ## 7. Preguntas abiertas
 
