@@ -2,16 +2,28 @@
 
 Otros módulos importan solo las funciones de *Interfaz entre módulos*. El resto las usa la API.
 Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta; desde
-T1-06, DCA. Lo demás aún delega en `mock.py`; T1-05 y T1-07 lo cambian sin cambiar las firmas.
+T1-06, DCA; desde T1-07, plan y variación de valor. El traspaso aún delega en `mock.py` (T1-05).
 """
 
 from datetime import datetime
+from decimal import Decimal
 
 from app.core import clock, trace
 from app.core.db import session_scope
-from app.portfolio import dca_flow, engine, errors, ledger, mock, operations, repository, seed
+from app.portfolio import (
+    dca_flow,
+    engine,
+    errors,
+    ledger,
+    mock,
+    operations,
+    plan_flow,
+    repository,
+    seed,
+    value_change,
+)
 from app.portfolio import quotes as pricing
-from app.schemas.common import Profile, TraceKind
+from app.schemas.common import Profile, SourceRef, TraceKind
 from app.schemas.portfolio import (
     AssetOut,
     DcaExecutionActionRequest,
@@ -81,7 +93,8 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
 
 
 def get_plan(portfolio_id: str) -> PlanOut:
-    return mock.get_plan(portfolio_id)
+    """Plan con la asignación actual y la desviación (RF-22). Deja traza `plan`."""
+    return plan_flow.get(portfolio_id, get_valued)
 
 
 def list_dca_plans(portfolio_id: str) -> list[DcaPlanOut]:
@@ -89,7 +102,55 @@ def list_dca_plans(portfolio_id: str) -> list[DcaPlanOut]:
 
 
 def get_value_change(portfolio_id: str, start: datetime, end: datetime) -> ValueChangeOut:
-    return mock.get_value_change(portfolio_id, start, end)
+    """Valor en `start` y en `end` y flujos entre medias, por activo (para `explain_move`).
+    Precios reales, sin ajustes de demo. Deja traza `move`. Ver `value_change.py`."""
+    if start >= end:
+        raise errors.invalid_window(start, end)
+    with session_scope() as session:
+        if repository.get_portfolio(session, portfolio_id) is None:
+            raise errors.portfolio_not_found(portfolio_id)
+        txs = ledger.transactions_until(session, portfolio_id, end)
+    start_units = value_change.units_at(txs, start)
+    end_units = value_change.units_at(txs, end)
+    flows = value_change.flows_between(txs, start, end)
+    sources: dict[tuple[str, str, str], SourceRef] = {}
+    unit_eur: list[dict[str, Decimal]] = [{}, {}]
+    for slot, (at, units) in enumerate(((start, start_units), (end, end_units))):
+        for asset_id in sorted(units):
+            unit_eur[slot][asset_id], refs = pricing.unit_eur_at(asset_id, at)
+            for ref in refs:
+                sources.setdefault((ref.kind, ref.ref, str(ref.as_of)), ref)
+    totals = value_change.summarize(start_units, end_units, flows, unit_eur[0], unit_eur[1])
+    calc_id = trace.record(
+        TraceKind.MOVE,
+        value_change.FORMULA,
+        inputs={
+            "portfolio_id": portfolio_id,
+            "start": start,
+            "end": end,
+            "units_start": start_units,
+            "units_end": end_units,
+            "unit_eur_start": unit_eur[0],
+            "unit_eur_end": unit_eur[1],
+        },
+        outputs={
+            "start_value_eur": totals.start_value_eur,
+            "end_value_eur": totals.end_value_eur,
+            "net_flows_eur": totals.net_flows_eur,
+            "by_asset": totals.by_asset,
+        },
+        sources=list(sources.values()),
+    )
+    return ValueChangeOut(
+        portfolio_id=portfolio_id,
+        start=start,
+        end=end,
+        start_value_eur=totals.start_value_eur,
+        end_value_eur=totals.end_value_eur,
+        net_flows_eur=totals.net_flows_eur,
+        by_asset=totals.by_asset,
+        calc_id=calc_id,
+    )
 
 
 def list_portfolio_ids() -> list[str]:
@@ -172,7 +233,7 @@ def reset_demo() -> list[str]:
     return seed.load(force=True)
 
 
-# --- Aún sobre el mock (T1-05, T1-07) ---
+# --- Plan (T1-07) y traspaso (aún sobre el mock, T1-05) ---
 
 
 def register_transfer(portfolio_id: str, request: TransferRequest) -> TransactionOut:
@@ -180,8 +241,8 @@ def register_transfer(portfolio_id: str, request: TransferRequest) -> Transactio
 
 
 def update_plan(portfolio_id: str, request: PlanUpdateRequest) -> PlanOut:
-    plan = mock.get_plan(portfolio_id)
-    return plan.model_copy(update=request.model_dump(exclude_unset=True))
+    """`PUT /plan`: guarda el objetivo (debe sumar 1) y devuelve el plan evaluado."""
+    return plan_flow.update(portfolio_id, request, get_valued)
 
 
 # --- DCA (T1-06, RF-07). Ver `dca_flow.py` ---
