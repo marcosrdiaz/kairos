@@ -1,4 +1,4 @@
-### D-XXX · UI de operaciones y DCA (T1-20): registro sin vista previa, reparto exacto en porcentaje y `apiPatch`
+### D-068 · UI de operaciones y DCA (T1-20): registro sin vista previa, reparto exacto en porcentaje y `apiPatch`
 - Fecha: 2026-11-09 · Autor: Manu · Estado: Propuesta
 - Contexto: T1-20 lleva RF-04 a RF-07 a la UI (`frontend/src/app/operations/` y `frontend/src/app/dca/`). UC-03 describe "el sistema muestra precio y efecto → el usuario confirma", pero el contrato no tiene ruta de vista previa: `POST /transactions` y `POST /transfers` registran directamente. El reparto del plan DCA se envía como fracción (`weight`) y el backend exige Σ = 1 exacto. El PATCH de planes no tenía función en el cliente.
 - Decisión:

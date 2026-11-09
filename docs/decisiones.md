@@ -97,4 +97,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-065](decisiones/D-065-modo-demo-produccion-precios.md) | 2026-11-09 | Modo demo y modo producción: precios en directo y proveedor | Propuesta |
 | [D-066](decisiones/D-066-explicador-t1-17.md) | 2026-11-09 | Explicador (T1-17): contexto precargado, frase a frase, plantillas y textos de otros módulos | Propuesta |
 | [D-067](decisiones/D-067-alta-cartera-y-selector-t1-19.md) | 2026-11-09 | Alta de posiciones y selector de cartera en la UI (T1-19) | Propuesta |
+| [D-068](decisiones/D-068-ui-operaciones-dca-t1-20.md) | 2026-11-09 | UI de operaciones y DCA (T1-20): registro sin vista previa, reparto exacto en porcentaje y `apiPatch` | Propuesta |
 <!-- INDICE:FIN -->
