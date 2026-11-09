@@ -351,6 +351,7 @@ dependencies = [
     { name = "alembic" },
     { name = "anthropic" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "numpy" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
@@ -358,11 +359,11 @@ dependencies = [
     { name = "pyyaml" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "websockets" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -375,6 +376,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.14" },
     { name = "anthropic", specifier = ">=1.0" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.28" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
     { name = "pydantic", specifier = ">=2.9" },
@@ -382,11 +384,11 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "sqlalchemy", specifier = ">=2.0.36" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+    { name = "websockets", specifier = ">=14.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx", specifier = ">=0.28" },
     { name = "mypy", specifier = ">=1.13" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
