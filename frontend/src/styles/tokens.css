@@ -1,0 +1,148 @@
+/*
+ * Tokens de diseño de KAIROS (ver DESIGN.md).
+ *
+ * - Colores: prefijo --kairos-color-*. Modo claro en :root; modo oscuro en [data-theme="dark"].
+ *   El tema lo fija frontend/index.html antes de pintar (sin parpadeo) y lo cambia src/theme/.
+ * - Resto de tokens (radios, tipografía, tamaños): prefijo --kairos-*.
+ * - Cada par texto/fondo cumple WCAG AA: ≥ 4,5:1 para texto y ≥ 3:1 para bordes de control y
+ *   foco. Lo comprueba src/styles/contrast.test.ts en los dos modos: si cambias un color, pasa el test.
+ * - Los estados del mercado (tranquilo · atento · revisa_plan) nunca usan rojo y siempre van con
+ *   palabra. El rojo (--kairos-color-error-*) es solo para errores del sistema o de un formulario.
+ * - Valores como #rrggbb (sin alfa, sin funciones): el test de contraste los lee tal cual.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Marca */
+  --kairos-color-primary: #765600;
+  --kairos-color-primary-hover: #5e4400;
+  --kairos-color-on-primary: #ffffff;
+  --kairos-color-primary-tint: #f7edd5;
+  --kairos-color-primary-tint-strong: #efdcab;
+  --kairos-color-gold: #f2c14e; /* solo decorativo: ilustraciones y franjas, nunca texto */
+
+  /* Superficies y texto */
+  --kairos-color-bg: #f5f3ee;
+  --kairos-color-surface: #ffffff;
+  --kairos-color-surface-muted: #fbf8f2;
+  --kairos-color-border: #e6e0d4;
+  --kairos-color-border-strong: #857b6b;
+  --kairos-color-text: #1d1a15;
+  --kairos-color-text-muted: #5a5246;
+  --kairos-color-focus: #765600;
+
+  /* Estados del widget: color + palabra, sin rojo */
+  --kairos-color-state-tranquilo-bg: #e2f2e8;
+  --kairos-color-state-tranquilo-fg: #145c33;
+  --kairos-color-state-tranquilo-solid: #1e7b4a;
+  --kairos-color-state-atento-bg: #fcefcf;
+  --kairos-color-state-atento-fg: #6e4700;
+  --kairos-color-state-atento-solid: #b07a00;
+  --kairos-color-state-revisa-plan-bg: #ede8fb;
+  --kairos-color-state-revisa-plan-fg: #4f2fa8;
+  --kairos-color-state-revisa-plan-solid: #6941c6;
+
+  /* Chips de sistema (éxito, aviso, error, información, sin datos) */
+  --kairos-color-chip-success-bg: #e2f2e8;
+  --kairos-color-chip-success-fg: #145c33;
+  --kairos-color-chip-warn-bg: #fcefcf;
+  --kairos-color-chip-warn-fg: #6e4700;
+  --kairos-color-chip-error-bg: #fbe4e2;
+  --kairos-color-chip-error-fg: #962018;
+  --kairos-color-chip-info-bg: #e5eefc;
+  --kairos-color-chip-info-fg: #1647a8;
+  --kairos-color-chip-nodata-bg: #ecebe8;
+  --kairos-color-chip-nodata-fg: #4a4740;
+
+  /* Variación: sube / baja. Siempre con flecha y signo, no solo color */
+  --kairos-color-trend-up: #145c33;
+  --kairos-color-trend-down: #5a5246;
+
+  /* Iconos de tarjeta: fondo suave + trazo del mismo tono */
+  --kairos-color-icon-gold-bg: #f7edd5;
+  --kairos-color-icon-gold-fg: #765600;
+  --kairos-color-icon-green-bg: #e2f2e8;
+  --kairos-color-icon-green-fg: #145c33;
+  --kairos-color-icon-purple-bg: #ede8fb;
+  --kairos-color-icon-purple-fg: #4f2fa8;
+  --kairos-color-icon-blue-bg: #e5eefc;
+  --kairos-color-icon-blue-fg: #1647a8;
+
+  /* Categorías de gráficos (marcas ≥ 3:1 sobre la superficie) */
+  --kairos-color-chart-1: #8a6500;
+  --kairos-color-chart-2: #087e78;
+  --kairos-color-chart-3: #6941c6;
+  --kairos-color-chart-4: #175cd3;
+
+  /* Resto de tokens */
+  --kairos-font: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --kairos-radius: 16px;
+  --kairos-radius-sm: 12px;
+  --kairos-radius-pill: 999px;
+  --kairos-gutter: clamp(1rem, 4vw, 2rem);
+  --kairos-max-width: 72rem;
+  --kairos-tap-min: 2.75rem;
+  --kairos-header-height: 4rem;
+  --kairos-sidebar-width: 16rem;
+  --kairos-bottom-nav-height: calc(var(--kairos-tap-min) + 1.25rem + 1px + env(safe-area-inset-bottom));
+  --kairos-transition: 0.15s ease-out;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --kairos-color-primary: #f2c14e;
+  --kairos-color-primary-hover: #f6d27c;
+  --kairos-color-on-primary: #1d1a15;
+  --kairos-color-primary-tint: #2e2613;
+  --kairos-color-primary-tint-strong: #42351a;
+  --kairos-color-gold: #f2c14e;
+
+  --kairos-color-bg: #11100e;
+  --kairos-color-surface: #1b1916;
+  --kairos-color-surface-muted: #161512;
+  --kairos-color-border: #34302a;
+  --kairos-color-border-strong: #857c6e;
+  --kairos-color-text: #f4efe6;
+  --kairos-color-text-muted: #b8afa1;
+  --kairos-color-focus: #f2c14e;
+
+  --kairos-color-state-tranquilo-bg: #143021;
+  --kairos-color-state-tranquilo-fg: #86dba8;
+  --kairos-color-state-tranquilo-solid: #3fae6e;
+  --kairos-color-state-atento-bg: #3a2b0a;
+  --kairos-color-state-atento-fg: #f5c869;
+  --kairos-color-state-atento-solid: #d9a21f;
+  --kairos-color-state-revisa-plan-bg: #2a2246;
+  --kairos-color-state-revisa-plan-fg: #c8b8f7;
+  --kairos-color-state-revisa-plan-solid: #8b6be0;
+
+  --kairos-color-chip-success-bg: #143021;
+  --kairos-color-chip-success-fg: #86dba8;
+  --kairos-color-chip-warn-bg: #3a2b0a;
+  --kairos-color-chip-warn-fg: #f5c869;
+  --kairos-color-chip-error-bg: #3d1714;
+  --kairos-color-chip-error-fg: #f6a9a1;
+  --kairos-color-chip-info-bg: #142849;
+  --kairos-color-chip-info-fg: #a3c4ff;
+  --kairos-color-chip-nodata-bg: #2a2825;
+  --kairos-color-chip-nodata-fg: #cbc4b9;
+
+  --kairos-color-trend-up: #86dba8;
+  --kairos-color-trend-down: #b8afa1;
+
+  --kairos-color-icon-gold-bg: #2e2613;
+  --kairos-color-icon-gold-fg: #f2c14e;
+  --kairos-color-icon-green-bg: #143021;
+  --kairos-color-icon-green-fg: #86dba8;
+  --kairos-color-icon-purple-bg: #2a2246;
+  --kairos-color-icon-purple-fg: #c8b8f7;
+  --kairos-color-icon-blue-bg: #142849;
+  --kairos-color-icon-blue-fg: #a3c4ff;
+
+  --kairos-color-chart-1: #f2c14e;
+  --kairos-color-chart-2: #2fb8b0;
+  --kairos-color-chart-3: #a68af0;
+  --kairos-color-chart-4: #6ea2ff;
+}
