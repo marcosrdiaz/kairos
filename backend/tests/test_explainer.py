@@ -205,6 +205,34 @@ def test_context_error_ends_with_error_event(monkeypatch: pytest.MonkeyPatch) ->
     assert events[1]["code"] == "PRICE_UNAVAILABLE"
 
 
+def test_text_of_tool_use_rounds_is_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(portfolio_service, "get_plan", lambda _pid: fx.plan())
+    monkeypatch.setattr(planning_service, "get_projection", lambda _pid: fx.projection())
+    week = _display("change_week")
+    narration = f"Tu cartera ha bajado {week}. Para responder, consulto tu plan."
+    answer = "Con tus aportaciones de 300 euros al mes llegas a tu objetivo en 2040. Bien."
+    fake = _install(Reply(narration, tool_uses=[("check_plan", {})]), Reply(answer))
+    events = _run(PLAN)
+    assert _done(events)["fallback_used"] is False
+    sentences = [e for e in events if e["type"] == "sentence"]
+    assert [s["text"] for s in sentences] == [
+        "Con tus aportaciones de 300 euros al mes llegas a tu objetivo en 2040.",
+        "Bien.",
+    ]
+    assert [s["index"] for s in sentences] == [0, 1]
+    turn_id = events[0]["turn_id"]
+    assert voice_service.get_approved(turn_id, 0) == sentences[0]["text"]
+    with pytest.raises(AppError):
+        voice_service.get_approved(turn_id, 2)  # nada de la ronda descartada
+    assert len(fake.messages.calls) == 2
+
+
+def test_prompt_forbids_narrating_tool_calls() -> None:
+    prompt = Path(claude.PROMPT_PATH).read_text(encoding="utf-8")
+    assert "sin escribir nada antes" in prompt
+    assert "usa la de la herramienta" in prompt
+
+
 def test_prompt_has_no_example_figures() -> None:
     prompt = Path(claude.PROMPT_PATH).read_text(encoding="utf-8")
     assert "<IMPORTE>" in prompt

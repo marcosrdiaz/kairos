@@ -115,33 +115,38 @@ class Turn:
 
     def _stream(self, client: Any, messages: list[Any], pre: Preloaded) -> Stream:
         """Una respuesta completa (con sus rondas de herramientas). Devuelve el motivo si una
-        frase se bloquea; `None` si ha terminado bien."""
+        frase se bloquea; `None` si ha terminado bien.
+
+        Las frases de cada ronda se retienen hasta conocer su `stop_reason`: el texto de una ronda
+        que acaba llamando a herramientas («voy a consultar…», o una cifra que la herramienta
+        puede corregir) nunca se emite."""
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             splitter = SentenceSplitter()
+            pending: list[str] = []
             kwargs = prompt.request_kwargs(messages, pre, allow_tools=round_ < MAX_TOOL_ROUNDS)
             with client.messages.stream(**kwargs) as stream:
                 for event in stream:
                     self._check_deadline()
-                    if getattr(event, "type", "") != "text":
-                        continue
-                    blocked = yield from self._sentences(splitter.feed(event.text))
-                    if blocked is not None or self.out.full:
-                        return blocked
+                    if getattr(event, "type", "") == "text":
+                        pending += splitter.feed(event.text)
                 final = stream.get_final_message()
             self._record_usage(final)
             stop = final.stop_reason
-            if stop == "max_tokens":
-                splitter.discard()  # la última frase está a medias: no se dice
-            blocked = yield from self._sentences(splitter.flush())
-            if blocked is not None or self.out.full:
-                return blocked
             if stop == "refusal":
                 raise _Fallback("rechazo del modelo")
+            if stop == "max_tokens":
+                splitter.discard()  # la última frase está a medias: no se dice
+            pending += splitter.flush()
             results = self._run_tools(final) if stop == "tool_use" else []
             if not results:
+                blocked = yield from self._sentences(pending)
+                if blocked is not None or self.out.full:
+                    return blocked
                 if not self.out.emitted:
                     raise _Fallback(f"respuesta sin frases ({stop})")
                 return None
+            if pending:
+                logger.info("Explicador %s: texto antes de herramientas descartado", self.turn_id)
             messages.append({"role": "assistant", "content": final.content})
             messages.append({"role": "user", "content": results})
             self._check_deadline()
