@@ -5,7 +5,15 @@ import type { DcaPlanOut, Frequency } from "../../api/generated/schema";
 import { buttonPrimary, buttonSecondary } from "../../components/button";
 import { ChoiceGroup, SelectField, TextField } from "../operations/fields";
 import { AllocationFields } from "./AllocationFields";
-import { buildPlan, type PlanBody, type PlanDraft, type PlanErrors } from "./planDraft";
+import {
+  buildPlan,
+  carryLineErrors,
+  countPlanErrors,
+  type AllocationLine,
+  type PlanBody,
+  type PlanDraft,
+  type PlanErrors,
+} from "./planDraft";
 
 const MONTH_DAYS = Array.from({ length: 28 }, (_, i) => ({ value: String(i + 1), label: `Día ${i + 1}` }));
 const WEEK_DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"].map(
@@ -37,7 +45,7 @@ export function DcaPlanForm({ portfolioId, initial, plan, onDone, onCancel }: Dc
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<PlanDraft>(initial);
   const [errors, setErrors] = useState<PlanErrors>({ lines: [] });
-  const [errorCount, setErrorCount] = useState(0);
+  const errorCount = countPlanErrors(errors);
   const summaryRef = useRef<HTMLDivElement>(null);
   const base = `/portfolios/${encodeURIComponent(portfolioId)}/dca-plans`;
 
@@ -57,13 +65,17 @@ export function DcaPlanForm({ portfolioId, initial, plan, onDone, onCancel }: Dc
     const built = buildPlan(draft);
     if (!built.ok) {
       setErrors(built.errors);
-      setErrorCount(built.count);
       requestAnimationFrame(() => summaryRef.current?.focus());
       return;
     }
     setErrors({ lines: [] });
-    setErrorCount(0);
     save.mutate(built.body);
+  }
+
+  // Al corregir una fila desaparece su error (y el del total), y el resumen se actualiza.
+  function changeLines(lines: AllocationLine[]) {
+    setErrors((e) => carryLineErrors(e, draft.lines, lines));
+    setDraft((d) => ({ ...d, lines }));
   }
 
   const title = plan ? "Editar plan de aportaciones" : "Nuevo plan de aportaciones";
@@ -91,7 +103,14 @@ export function DcaPlanForm({ portfolioId, initial, plan, onDone, onCancel }: Dc
         inputMode="decimal"
         autoComplete="off"
         value={draft.amount}
-        onValue={(amount) => setDraft((d) => ({ ...d, amount }))}
+        onValue={(amount) => {
+          setDraft((d) => ({ ...d, amount }));
+          setErrors((e) => {
+            const next = { ...e };
+            delete next.amount;
+            return next;
+          });
+        }}
         error={errors.amount}
       />
       <ChoiceGroup<Frequency>
@@ -116,7 +135,7 @@ export function DcaPlanForm({ portfolioId, initial, plan, onDone, onCancel }: Dc
         lines={draft.lines}
         errors={errors.lines}
         total={errors.total}
-        onChange={(lines) => setDraft((d) => ({ ...d, lines }))}
+        onChange={(lines) => changeLines(lines)}
       />
       <div className="flex flex-wrap gap-3">
         <button type="submit" className={buttonPrimary} disabled={save.isPending} aria-disabled={save.isPending}>

@@ -20,10 +20,12 @@ interface DcaPlanCardProps {
   plan: DcaPlanOut;
   portfolioId: string;
   portfolio: PortfolioOut | undefined;
+  /** Tras guardar la edición, para anunciarlo en el bloque. */
+  onUpdated: () => void;
 }
 
 /** Un plan de aportaciones: qué, cuándo y a qué activos; pausar, reanudar o editar (RF-07). */
-export function DcaPlanCard({ plan, portfolioId, portfolio }: DcaPlanCardProps) {
+export function DcaPlanCard({ plan, portfolioId, portfolio, onUpdated }: DcaPlanCardProps) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const paused = plan.status === "paused";
@@ -44,7 +46,10 @@ export function DcaPlanCard({ plan, portfolioId, portfolio }: DcaPlanCardProps) 
         portfolioId={portfolioId}
         plan={plan}
         initial={draftFromPlan(plan, portfolio)}
-        onDone={() => setEditing(false)}
+        onDone={() => {
+          setEditing(false);
+          onUpdated();
+        }}
         onCancel={() => setEditing(false)}
       />
     );

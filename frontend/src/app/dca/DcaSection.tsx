@@ -4,7 +4,7 @@ import { usePortfolio } from "../operations/usePortfolio";
 import { usePortfolioId } from "../portfolio-picker/usePortfolioId";
 import { DcaPlanCard } from "./DcaPlanCard";
 import { DcaPlanForm } from "./DcaPlanForm";
-import { PendingExecutions } from "./PendingExecutions";
+import { PendingExecutions, type DcaNotice } from "./PendingExecutions";
 import { emptyPlan } from "./planDraft";
 import { useDcaPlans, usePendingExecutions } from "./useDca";
 
@@ -14,12 +14,15 @@ export function DcaPanel({ portfolioId }: { portfolioId: string }) {
   const plans = useDcaPlans(portfolioId);
   const pending = usePendingExecutions(portfolioId);
   const [creating, setCreating] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<DcaNotice | null>(null);
 
   return (
     <div className="flex flex-col gap-6">
-      <p role="status" className="m-0 text-base font-semibold text-success empty:hidden">
-        {notice}
+      <p
+        role="status"
+        className={`m-0 text-base font-semibold empty:hidden ${notice?.tone === "neutral" ? "text-ink" : "text-success"}`}
+      >
+        {notice?.text ?? ""}
       </p>
       {pending.data && pending.data.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -49,7 +52,13 @@ export function DcaPanel({ portfolioId }: { portfolioId: string }) {
           <p className="m-0 text-base text-ink-muted">Esta cartera aún no tiene ningún plan de aportaciones.</p>
         )}
         {plans.data?.map((plan) => (
-          <DcaPlanCard key={plan.id} plan={plan} portfolioId={portfolioId} portfolio={portfolio.data} />
+          <DcaPlanCard
+            key={plan.id}
+            plan={plan}
+            portfolioId={portfolioId}
+            portfolio={portfolio.data}
+            onUpdated={() => setNotice({ tone: "success", text: "Plan de aportaciones actualizado." })}
+          />
         ))}
         {creating ? (
           <DcaPlanForm
@@ -57,7 +66,7 @@ export function DcaPanel({ portfolioId }: { portfolioId: string }) {
             initial={emptyPlan()}
             onDone={() => {
               setCreating(false);
-              setNotice("Plan de aportaciones creado.");
+              setNotice({ tone: "success", text: "Plan de aportaciones creado." });
             }}
             onCancel={() => setCreating(false)}
           />
@@ -66,7 +75,7 @@ export function DcaPanel({ portfolioId }: { portfolioId: string }) {
             type="button"
             className={`${buttonSecondary} self-start`}
             onClick={() => {
-              setNotice("");
+              setNotice(null);
               setCreating(true);
             }}
           >

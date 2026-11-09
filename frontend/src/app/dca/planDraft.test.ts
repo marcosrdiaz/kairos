@@ -19,6 +19,7 @@ describe("weightToPercent", () => {
     ["1", "100"],
     ["0.05", "5"],
     ["0.333333", "33,3333"],
+    ["0.33333333", "33,333333"],
   ])("%s -> %s", (weight, percent) => {
     expect(weightToPercent(weight)).toBe(percent);
   });
@@ -37,6 +38,20 @@ describe("buildPlan", () => {
 
   it("0,1 + 0,2 + 99,7 suma 100 % exacto (donde un float fallaría)", () => {
     expect(buildPlan(draft(["0,1", "0,2", "99,7"])).ok).toBe(true);
+  });
+
+  it("acepta los 8 decimales de peso que guarda la BD (6 de porcentaje)", () => {
+    const built = buildPlan(draft(["33,333333", "33,333333", "33,333334"]));
+    expect(built.ok && built.body.allocations.map((a) => a.weight)).toEqual([
+      "0.33333333",
+      "0.33333333",
+      "0.33333334",
+    ]);
+  });
+
+  it("33,33 × 3 no llega a 100 %", () => {
+    const built = buildPlan(draft(["33,33", "33,33", "33,33"]));
+    expect(!built.ok && built.errors.total).toBe("El reparto suma 99,99 % y tiene que sumar 100 %.");
   });
 
   it("si no suma 100 % lo dice con el total", () => {

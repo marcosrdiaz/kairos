@@ -72,28 +72,30 @@ export function refFromId(portfolio: PortfolioOut | undefined, assetId: string):
 }
 
 /*
- * Pesos exactos sin coma flotante: el porcentaje (hasta 4 decimales) se pasa a un entero de
- * millonésimas (100 % = 1 000 000) moviendo la coma en el texto. Así "Σ = 100 %" se comprueba
- * sin redondeos, igual que el backend con `Decimal` (Σ weight = 1 exacto).
+ * Pesos exactos sin coma flotante: el porcentaje (hasta 6 decimales, que con los 2 del "%"
+ * son los 8 de `Numeric(10,8)` en BD) se pasa a un entero de cienmillonésimas
+ * (100 % = 10^8) moviendo la coma en el texto. Así "Σ = 100 %" se comprueba sin redondeos,
+ * igual que el backend con `Decimal` (Σ weight = 1 exacto). 10^8 cabe de sobra en un entero
+ * exacto de JavaScript.
  */
-const PERCENT_DECIMALS = 4;
-const FULL = 1_000_000;
+const PERCENT_DECIMALS = 6;
+const FULL = 100_000_000;
 
-function percentToMillionths(value: string): number {
+function percentToUnits(value: string): number {
   const [int = "0", frac = ""] = value.split(".");
-  return Number(int) * 10_000 + Number(frac.padEnd(PERCENT_DECIMALS, "0"));
+  return Number(int) * 10 ** PERCENT_DECIMALS + Number(frac.padEnd(PERCENT_DECIMALS, "0"));
 }
 
-/** 700000 -> "0.7" (fracción para `DcaAllocation.weight`). */
-function millionthsToWeight(m: number): string {
+/** 70000000 -> "0.7" (fracción para `DcaAllocation.weight`). */
+function unitsToWeight(m: number): string {
+  const s = String(m).padStart(9, "0");
+  return `${s.slice(0, -8)}.${s.slice(-8)}`.replace(/\.?0+$/, "");
+}
+
+/** 90000000 -> "90" ; 33330000 -> "33,33" (para mensajes). */
+function unitsToPercent(m: number): string {
   const s = String(m).padStart(7, "0");
-  return `${s.slice(0, -6)}.${s.slice(-6)}`.replace(/\.?0+$/, "");
-}
-
-/** 900000 -> "90" ; 333300 -> "33,33" (para mensajes y para editar). */
-function millionthsToPercent(m: number): string {
-  const s = String(m).padStart(5, "0");
-  return `${s.slice(0, -4)},${s.slice(-4)}`.replace(/,?0+$/, "");
+  return `${s.slice(0, -6)},${s.slice(-6)}`.replace(/,?0+$/, "");
 }
 
 /** Fracción del backend ("0.7") al porcentaje que se edita ("70"). */
@@ -135,20 +137,20 @@ export function buildPlan(draft: PlanDraft): BuiltPlan {
     else seen.add(line.asset.id);
     const pct = parseDecimalInput(line.percent, PERCENT_DECIMALS);
     if (!pct.ok) e.percent = pct.error;
-    else if (percentToMillionths(pct.value) > FULL) e.percent = "Como mucho 100 %.";
+    else if (percentToUnits(pct.value) > FULL) e.percent = "Como mucho 100 %.";
     if (e.asset || e.percent) {
       count += Number(Boolean(e.asset)) + Number(Boolean(e.percent));
       linesOk = false;
       return;
     }
     if (pct.ok && line.asset) {
-      const m = percentToMillionths(pct.value);
+      const m = percentToUnits(pct.value);
       total += m;
-      allocations.push({ asset_id: line.asset.id, weight: millionthsToWeight(m) });
+      allocations.push({ asset_id: line.asset.id, weight: unitsToWeight(m) });
     }
   });
   if (linesOk && total !== FULL) {
-    errors.total = `El reparto suma ${millionthsToPercent(total)} % y tiene que sumar 100 %.`;
+    errors.total = `El reparto suma ${unitsToPercent(total)} % y tiene que sumar 100 %.`;
     count++;
   }
   if (count > 0 || !amount.ok) return { ok: false, errors, count };
@@ -156,4 +158,28 @@ export function buildPlan(draft: PlanDraft): BuiltPlan {
     ok: true,
     body: { amount_eur: amount.value, frequency: draft.frequency, day: Number(draft.day), allocations },
   };
+}
+
+/** Errores que quedan por revisar (para el resumen del formulario). */
+export function countPlanErrors(e: PlanErrors): number {
+  const lines = e.lines.reduce((n, l) => n + Number(Boolean(l.asset)) + Number(Boolean(l.percent)), 0);
+  return Number(Boolean(e.amount)) + Number(Boolean(e.total)) + lines;
+}
+
+/**
+ * Tras editar el reparto, conserva solo los errores de las filas que no han cambiado (misma
+ * referencia) y quita el del total, que depende de todas: el usuario está corrigiendo.
+ */
+export function carryLineErrors(
+  errors: PlanErrors,
+  before: AllocationLine[],
+  after: AllocationLine[],
+): PlanErrors {
+  const lines = after.map((line) => {
+    const i = before.indexOf(line);
+    return i >= 0 ? (errors.lines[i] ?? {}) : {};
+  });
+  const next: PlanErrors = { ...errors, lines };
+  delete next.total;
+  return next;
 }

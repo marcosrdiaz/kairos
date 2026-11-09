@@ -20,7 +20,8 @@ type FetchArgs = [string, RequestInit?];
 
 interface Stub {
   plans?: unknown[];
-  pending?: unknown[];
+  /** Lista pendiente; una función permite cambiarla tras una escritura. */
+  pending?: unknown[] | (() => unknown[]);
   write?: (url: string, init: RequestInit) => Response;
 }
 
@@ -31,7 +32,7 @@ function stubApi({ plans = [plan], pending = [], write }: Stub = {}) {
     }
     if (url.startsWith("/api/v1/assets/lookup")) return json(url.includes("IWDA") ? [etf] : [fund]);
     if (url.endsWith("/dca-plans")) return json(plans);
-    if (url.includes("/dca-executions")) return json(pending);
+    if (url.includes("/dca-executions")) return json(typeof pending === "function" ? pending() : pending);
     return json(portfolio);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -124,7 +125,8 @@ describe("DcaSection · planes", () => {
     expect((screen.getByLabelText("Porcentaje del activo 2 (%)") as HTMLInputElement).value).toBe("30");
     type("Importe de cada aportación (€)", "400");
     fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
-    await waitFor(() => expect(writes(fetchMock)).toHaveLength(1));
+    expect(await screen.findByText("Plan de aportaciones actualizado.")).toBeTruthy();
+    expect(writes(fetchMock)).toHaveLength(1);
     expect(writes(fetchMock)[0]?.body).toEqual({
       amount_eur: "400",
       frequency: "monthly",
@@ -143,6 +145,25 @@ describe("DcaSection · planes", () => {
     expect(await screen.findByText("El reparto suma 90 % y tiene que sumar 100 %.")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toContain("Hay 1 dato por revisar.");
     expect(writes(fetchMock)).toHaveLength(0);
+    // Al corregir, el error del total y el resumen desaparecen.
+    type("Porcentaje del activo 2 (%)", "30");
+    expect(screen.queryByText(/El reparto suma/)).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("un activo repetido se marca y se asocia a su fila", async () => {
+    stubApi({ plans: [] });
+    renderSection();
+    fireEvent.click(await screen.findByRole("button", { name: "Crear un plan de aportaciones" }));
+    type("Importe de cada aportación (€)", "300");
+    await pickAsset("Activo 1", "Vanguard", /Vanguard Global Stock/);
+    type("Porcentaje del activo 1 (%)", "50");
+    fireEvent.click(screen.getByRole("button", { name: "Añadir otro activo" }));
+    await pickAsset("Activo 2", "Vanguard", /Vanguard Global Stock/);
+    type("Porcentaje del activo 2 (%)", "50");
+    fireEvent.click(screen.getByRole("button", { name: "Crear plan" }));
+    const error = await screen.findByText("Este activo ya está en el reparto.");
+    expect(screen.getByRole("group", { name: "Activo 2" }).getAttribute("aria-describedby")).toBe(error.id);
   });
 
   it("crea el plan con pesos como fracción", async () => {
@@ -214,13 +235,21 @@ describe("DcaSection · aportaciones pendientes", () => {
     expect(writes(fetchMock)[0]?.body).toEqual({ action: "skip" });
   });
 
-  it("si ya estaba resuelta (422) lo dice", async () => {
+  it("si ya estaba resuelta (422) lo dice aunque desaparezca de la lista", async () => {
+    let resolved = false;
     stubApi({
-      pending: [execution],
-      write: () => json({ code: "VALIDATION_ERROR", message: "Esta aportación ya está confirmada." }, 422),
+      pending: () => (resolved ? [] : [execution]),
+      write: () => {
+        resolved = true;
+        return json({ code: "VALIDATION_ERROR", message: "Esta aportación ya está confirmada." }, 422);
+      },
     });
     renderSection();
     fireEvent.click(await screen.findByRole("button", { name: "Confirmar aportación" }));
-    expect(await screen.findByText("Esta aportación ya estaba confirmada o saltada.")).toBeTruthy();
+    const text =
+      "La aportación del 5 de noviembre de 2026 ya estaba confirmada o saltada. No se ha cambiado nada.";
+    expect(await screen.findByText(text)).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Confirmar aportación" })).toBeNull());
+    expect(screen.getByText(text)).toBeTruthy();
   });
 });

@@ -7,9 +7,16 @@ import { assetName, findPosition, formatPrice } from "../operations/usePortfolio
 
 type Action = DcaExecutionActionRequest["action"];
 
+/** Aviso del bloque de aportaciones: sobrevive a que la aportación salga de la lista. */
+export interface DcaNotice {
+  text: string;
+  tone: "success" | "neutral";
+}
+
+const alreadyResolved = (error: unknown) => error instanceof ApiError && error.status === 422;
+
 function actionErrorText(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 422) return "Esta aportación ya estaba confirmada o saltada.";
     if (error.code === "PRICE_UNAVAILABLE") {
       return "Ahora mismo no hay precio para registrar la compra. No se ha registrado nada.";
     }
@@ -20,7 +27,7 @@ function actionErrorText(error: unknown): string {
 interface ExecutionProps {
   execution: DcaExecutionOut;
   portfolio: PortfolioOut | undefined;
-  onResolved: (text: string) => void;
+  onResolved: (notice: DcaNotice) => void;
 }
 
 function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) {
@@ -33,15 +40,24 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
         { mock: "DcaExecutionOut" },
       ),
     onSuccess: (done, action) => {
-      onResolved(
-        action === "confirm"
-          ? `Aportación del ${formatDate(done.scheduled_for)} confirmada y registrada en la cartera al precio del momento.`
-          : `Aportación del ${formatDate(done.scheduled_for)} saltada. El plan sigue igual.`,
-      );
+      onResolved({
+        tone: "success",
+        text:
+          action === "confirm"
+            ? `Aportación del ${formatDate(done.scheduled_for)} confirmada y registrada en la cartera al precio del momento.`
+            : `Aportación del ${formatDate(done.scheduled_for)} saltada. El plan sigue igual.`,
+      });
       void queryClient.invalidateQueries();
     },
     onError: (error) => {
-      if (error instanceof ApiError && error.status === 422) void queryClient.invalidateQueries();
+      // Ya resuelta (p. ej. en otra pestaña): al recargar sale de la lista, así que el aviso
+      // va al bloque y no a esta tarjeta.
+      if (!alreadyResolved(error)) return;
+      onResolved({
+        tone: "neutral",
+        text: `La aportación del ${formatDate(execution.scheduled_for)} ya estaba confirmada o saltada. No se ha cambiado nada.`,
+      });
+      void queryClient.invalidateQueries();
     },
   });
   const date = formatDate(execution.scheduled_for);
@@ -89,7 +105,7 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
         </button>
       </div>
       <p role="status" className="m-0 text-base font-medium text-error empty:hidden">
-        {act.isError ? actionErrorText(act.error) : ""}
+        {act.isError && !alreadyResolved(act.error) ? actionErrorText(act.error) : ""}
       </p>
     </li>
   );
@@ -98,7 +114,7 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
 interface PendingExecutionsProps {
   executions: DcaExecutionOut[];
   portfolio: PortfolioOut | undefined;
-  onResolved: (text: string) => void;
+  onResolved: (notice: DcaNotice) => void;
 }
 
 /** Aportaciones pendientes de confirmar o saltar (UC-12). Confirmar crea un `dca_buy`. */
