@@ -1,4 +1,4 @@
-### D-XXX · Voz con ElevenLabs (T1-21): mock sin clave, cifras a palabras en `voice/numbers.py`, calentamiento desde el router y `httpx` + `websockets` como dependencias
+### D-069 · Voz con ElevenLabs (T1-21): mock sin clave, cifras a palabras en `voice/numbers.py`, calentamiento desde el router y `httpx` + `websockets` como dependencias
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: T1-21 cambia `transcribe`, `synthesize` y `disclaimer` de `voice/service.py` del mock a ElevenLabs sin cambiar firmas (D-040), con los IDs, la conversión de cifras y el calentamiento que pide D-043. Había que decidir cómo convive con el mock en tests y CI, dónde se convierten las cifras, cómo se calienta la voz sin tocar `main.py` y con qué librerías se habla con ElevenLabs.
 - Decisión:
