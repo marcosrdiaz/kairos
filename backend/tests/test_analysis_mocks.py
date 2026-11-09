@@ -20,7 +20,6 @@ READ_PATHS = ["events", "exposure", "radar", "status", "projection", "agenda", "
     [
         ("radar", "RadarOut"),
         ("status", "StatusOut"),
-        ("projection", "ProjectionOut"),
         ("move?period=week", "MoveAttributionOut"),
     ],
 )
