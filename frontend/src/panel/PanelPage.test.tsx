@@ -117,3 +117,13 @@ describe("PanelPage · cambio de cartera", () => {
     expect(document.querySelector("header [role=status]")?.textContent).toContain("Javier");
   });
 });
+
+describe("PanelPage · rango colapsado", () => {
+  it("si low == high muestra «≈ importe» y no «entre X y X»", async () => {
+    const collapsed = { ...bce, low_eur: "-223.69", impact_eur: "-223.69", high_eur: "-223.69" };
+    stubApi({ laura: [collapsed], javier: [] });
+    renderPanel();
+    expect(await screen.findByText(/^≈ -224\s€$/)).toBeTruthy();
+    expect(screen.queryByText(/entre -224/)).toBeNull();
+  });
+});

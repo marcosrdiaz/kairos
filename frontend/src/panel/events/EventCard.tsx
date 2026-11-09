@@ -1,7 +1,8 @@
 import type { EventImpactOut, SurpriseLabel } from "../../api/generated/schema";
 import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL, POLARITY } from "../../app/news/labels";
 import { ArrowRightIcon } from "../../components/icons";
-import { formatDate, formatEurRange } from "../../lib/format";
+import { formatDate } from "../../lib/format";
+import { impactRange } from "../figures";
 import { Traced } from "../Traced";
 
 const SURPRISE_TEXT: Record<SurpriseLabel, string> = {
@@ -65,7 +66,7 @@ export function EventCard({ event }: { event: EventImpactOut }) {
         <div>
           <dt className="text-sm font-medium text-ink-muted">Impacto estimado en tu cartera</dt>
           <dd className="m-0 text-2xl font-semibold tabular-nums text-ink">
-            <Traced calcId={event.calc_id}>{formatEurRange(event.low_eur, event.high_eur)}</Traced>
+            <Traced calcId={event.calc_id}>{impactRange(event.low_eur, event.high_eur)}</Traced>
           </dd>
         </div>
         <div>
