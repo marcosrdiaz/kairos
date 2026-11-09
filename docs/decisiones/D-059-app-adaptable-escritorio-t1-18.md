@@ -1,0 +1,11 @@
+### D-059 · App adaptable a escritorio y tarjeta de estado en Inicio (T1-18)
+- Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
+- Contexto: T1-18 pedía una pantalla de inicio de móvil simulada con el widget (D-004). El equipo quiere que la app web sirva igual en escritorio y en móvil, y dejar el widget de la pantalla de inicio del móvil para después.
+- Decisión:
+  - `AppShell` es adaptable. Por debajo de `lg` (1024 px) no cambia: columna de 576 px y pestañas abajo. Desde `lg`, la barra de pestañas pasa a ser una cabecera fija con la marca, las pestañas y el enlace al panel, y el contenido llega a 1152 px. Es un único `<nav aria-label="Secciones">` que se reordena con CSS, para no duplicar la navegación en el lector de pantalla.
+  - Las pestañas y los atajos conservan `?p=` (cartera elegida, T1-19).
+  - Inicio muestra la tarjeta de estado (`frontend/src/widget/StatusCard.tsx`) con `StatusOut`: estado (color + palabra, `aria-live="polite"`), valor total, variación semanal con signo, frase, fecha del precio y "Ver por qué" hacia el panel si hay motivo. En escritorio va a dos columnas con atajos a Pregunta, Cartera y Panel.
+  - Lectura única del estado con `useStatus` (en `src/widget/`); el polling sigue siendo de T2-13.
+  - La simulación de la pantalla de inicio del móvil con el widget reutilizará `StatusBadge` y `states.ts`.
+- Motivo: la demo se enseña en un portátil y en el móvil; con una columna de 576 px el escritorio se veía vacío. Reordenar con CSS evita mantener dos navegaciones.
+- Consecuencias: cambia la sección *Layout* de `DESIGN.md`. `App.test.tsx` envuelve la app en un `QueryClientProvider`. T1-19, T1-20 y T2-10 deben tener en cuenta el ancho de escritorio (hasta 1152 px).

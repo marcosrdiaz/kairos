@@ -88,4 +88,11 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-056](decisiones/D-056-dca-real-t1-06.md) | 2026-11-09 | DCA real (T1-06): calendario, reparto en céntimos, ejecución forzada en demo y precio al confirmar | Propuesta |
 | [D-057](decisiones/D-057-plan-variacion-valor-t1-07.md) | 2026-11-09 | Plan y variación de valor (T1-07): asignación actual con `mixed`, desviación, `PUT /plan` y `get_value_change` | Propuesta |
 | [D-058](decisiones/D-058-guardian-reglas-cifras-forma.md) | 2026-11-09 | Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma | Propuesta |
+| [D-059](decisiones/D-059-app-adaptable-escritorio-t1-18.md) | 2026-11-09 | App adaptable a escritorio y tarjeta de estado en Inicio (T1-18) | Propuesta |
+| [D-060](decisiones/D-060-tema-claro-oscuro-t1-22.md) | 2026-11-09 | Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22) | Propuesta |
+| [D-061](decisiones/D-061-carrusel-noticias-t2-19.md) | 2026-11-09 | Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19) | Propuesta |
+| [D-062](decisiones/D-062-traspaso-fondo-fondo-t1-05.md) | 2026-11-09 | Traspaso fondo → fondo (T1-05): participaciones y coste de los lotes nuevos, libro y error con alternativa | Propuesta |
+| [D-063](decisiones/D-063-tests-backend-en-paralelo.md) | 2026-11-09 | Tests del backend en paralelo con pytest-xdist (T1-23) | Propuesta |
+| [D-064](decisiones/D-064-proyeccion-dca-t1-14.md) | 2026-11-09 | Proyección con DCA (T1-14): horizonte, capitalización, aportación y meta ausente | Propuesta |
+| [D-065](decisiones/D-065-modo-demo-produccion-precios.md) | 2026-11-09 | Modo demo y modo producción: precios en directo y proveedor | Propuesta |
 <!-- INDICE:FIN -->

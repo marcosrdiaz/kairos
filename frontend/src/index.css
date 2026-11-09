@@ -1,12 +1,16 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 /*
- * Tokens de diseño de KAIROS (ver DESIGN.md).
- * Calma antes que alarma: sin rojos. Cada estado lleva color + palabra.
- * Todos los pares texto/fondo cumplen WCAG AA (ratios en DESIGN.md).
+ * Utilidades de Tailwind sobre los tokens --kairos-* (src/styles/tokens.css, ver DESIGN.md).
+ * `@theme inline` hace que cada clase lea la variable en tiempo de ejecución: al cambiar
+ * data-theme en <html>, toda la app cambia de modo sin recompilar.
+ * Los nombres de clase (bg-paper, text-ink, text-accent…) se mantienen para no romper pantallas.
  */
-@theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: var(--kairos-font);
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --text-base: 1.125rem; /* 18 px */
@@ -16,42 +20,114 @@
   --text-2xl: 2rem;
   --text-hero: 2.75rem;
 
-  --color-paper: #faf8f4;
-  --color-surface: #ffffff;
-  --color-ink: #1b2430;
-  --color-ink-muted: #4a5565;
-  --color-line: #ddd8ce;
-  --color-line-strong: #8a8f98;
-  --color-accent: #2f4b7c;
-  --color-on-accent: #ffffff;
+  --color-paper: var(--kairos-color-bg);
+  --color-surface: var(--kairos-color-surface);
+  --color-surface-muted: var(--kairos-color-surface-muted);
+  --color-ink: var(--kairos-color-text);
+  --color-ink-muted: var(--kairos-color-text-muted);
+  --color-line: var(--kairos-color-border);
+  --color-line-strong: var(--kairos-color-border-strong);
+  --color-accent: var(--kairos-color-primary);
+  --color-accent-hover: var(--kairos-color-primary-hover);
+  --color-on-accent: var(--kairos-color-on-primary);
+  --color-accent-tint: var(--kairos-color-primary-tint);
+  --color-accent-tint-strong: var(--kairos-color-primary-tint-strong);
+  --color-gold: var(--kairos-color-gold);
+  --color-focus: var(--kairos-color-focus);
 
-  /* Estados del widget: tranquilo · atento · revisa_plan */
-  --color-tranquilo: #1f5f46;
-  --color-tranquilo-bg: #e3f1ea;
-  --color-atento: #7a4b00;
-  --color-atento-bg: #fbefd2;
-  --color-revisa-plan: #4b3a9a;
-  --color-revisa-plan-bg: #e9e6f8;
+  --color-tranquilo: var(--kairos-color-state-tranquilo-fg);
+  --color-tranquilo-bg: var(--kairos-color-state-tranquilo-bg);
+  --color-tranquilo-solid: var(--kairos-color-state-tranquilo-solid);
+  --color-atento: var(--kairos-color-state-atento-fg);
+  --color-atento-bg: var(--kairos-color-state-atento-bg);
+  --color-atento-solid: var(--kairos-color-state-atento-solid);
+  --color-revisa-plan: var(--kairos-color-state-revisa-plan-fg);
+  --color-revisa-plan-bg: var(--kairos-color-state-revisa-plan-bg);
+  --color-revisa-plan-solid: var(--kairos-color-state-revisa-plan-solid);
 
-  --spacing-touch: 2.75rem; /* 44 px: objetivo táctil mínimo */
-  --radius-card: 1rem;
+  --color-success: var(--kairos-color-chip-success-fg);
+  --color-success-bg: var(--kairos-color-chip-success-bg);
+  --color-warn: var(--kairos-color-chip-warn-fg);
+  --color-warn-bg: var(--kairos-color-chip-warn-bg);
+  --color-error: var(--kairos-color-chip-error-fg);
+  --color-error-bg: var(--kairos-color-chip-error-bg);
+  --color-info: var(--kairos-color-chip-info-fg);
+  --color-info-bg: var(--kairos-color-chip-info-bg);
+  --color-nodata: var(--kairos-color-chip-nodata-fg);
+  --color-nodata-bg: var(--kairos-color-chip-nodata-bg);
+
+  --color-trend-up: var(--kairos-color-trend-up);
+  --color-trend-down: var(--kairos-color-trend-down);
+
+  --color-icon-gold: var(--kairos-color-icon-gold-fg);
+  --color-icon-gold-bg: var(--kairos-color-icon-gold-bg);
+  --color-icon-green: var(--kairos-color-icon-green-fg);
+  --color-icon-green-bg: var(--kairos-color-icon-green-bg);
+  --color-icon-purple: var(--kairos-color-icon-purple-fg);
+  --color-icon-purple-bg: var(--kairos-color-icon-purple-bg);
+  --color-icon-blue: var(--kairos-color-icon-blue-fg);
+  --color-icon-blue-bg: var(--kairos-color-icon-blue-bg);
+  --color-icon-red: var(--kairos-color-icon-red-fg);
+  --color-icon-red-bg: var(--kairos-color-icon-red-bg);
+
+  --color-chart-1: var(--kairos-color-chart-1);
+  --color-chart-2: var(--kairos-color-chart-2);
+  --color-chart-3: var(--kairos-color-chart-3);
+  --color-chart-4: var(--kairos-color-chart-4);
+
+  --spacing-touch: var(--kairos-tap-min); /* 44 px: objetivo táctil mínimo */
+  --radius-card: var(--kairos-radius);
+  --radius-control: var(--kairos-radius-sm);
+}
+
+/* Entrada de una noticia en el carrusel (T2-19). Con prefers-reduced-motion se anula abajo. */
+@theme {
+  --animate-news-in-next: news-in-next 0.4s ease-out;
+  --animate-news-in-prev: news-in-prev 0.4s ease-out;
+  @keyframes news-in-next {
+    from {
+      opacity: 0;
+      transform: translateX(2rem);
+    }
+  }
+  @keyframes news-in-prev {
+    from {
+      opacity: 0;
+      transform: translateX(-2rem);
+    }
+  }
 }
 
 @layer base {
   html {
     font-size: 100%; /* respeta el zoom del usuario */
     -webkit-text-size-adjust: 100%;
+    /* Que la cabecera y la barra inferior fijas no tapen el elemento con foco (WCAG 2.4.11). */
+    scroll-padding-top: calc(var(--kairos-header-height) + 0.5rem);
+    scroll-padding-bottom: calc(var(--kairos-bottom-nav-height) + 0.5rem);
+  }
+  @media (min-width: 64rem) {
+    html {
+      scroll-padding-top: 1rem;
+      scroll-padding-bottom: 1rem;
+    }
   }
   body {
     margin: 0;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
+    background: var(--kairos-color-bg);
+    color: var(--kairos-color-text);
+    font-family: var(--kairos-font);
     font-size: var(--text-base);
     line-height: 1.5;
   }
+  /* Al cambiar de tema (src/theme/theme.ts) se cortan las transiciones para que no haya fundidos a destiempo. */
+  .theme-switching *:not([data-keep-transition]),
+  .theme-switching *:not([data-keep-transition])::before,
+  .theme-switching *:not([data-keep-transition])::after {
+    transition: none !important;
+  }
   :focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 3px solid var(--kairos-color-focus);
     outline-offset: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -62,6 +138,12 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+  }
+  /* Modo de alto contraste de Windows: los bordes y el foco siguen viéndose. */
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline-color: Highlight;
     }
   }
 }
