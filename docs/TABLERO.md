@@ -71,7 +71,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | ✅ hecho |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | Alons | ✅ hecho |
-| T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | Alons | 🔄 en curso |
+| T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | Alons | 🧪 en PR |
 | T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | ✅ hecho |
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
 | T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | — | ⬜ |
@@ -136,6 +136,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T1-07 · `/plan` + `get_value_change` — Alons
+**Qué estaba haciendo:** implementación terminada; PR #37 abierto (rama `t1-07/plan-value-change`), con tests, ruff y mypy en verde. Decisión «Plan y variación de valor (T1-07)», aún sin mergear.
+**Siguiente paso exacto:** que alguien revise el PR #37, mergearlo con el CI en verde y marcar `docs: done T1-07`.
+**Ficheros tocados:** `backend/app/portfolio/{plan,plan_flow,plan_store,value_change,service,ledger,quotes,errors,mock}.py`, `backend/tests/{test_plan,test_portfolio_mock}.py`, `docs/SPEC.md` §7 y la decisión nueva. Para T1-14 y T2-07: `get_plan` y `get_value_change` ya son reales en esa rama.
 
 ### T1-20 · DCA en la UI: API real que deja T1-06 — Alons (para quien coja la tarea)
 **Endpoints (reales en `main`, D-055 y D-056):** lista las aportaciones pendientes con `GET /portfolios/{id}/dca-executions?status=pending` y confirma o salta con `POST /dca-executions/{id}` (`{"action": "confirm" | "skip"}`; 422 si ya está resuelta). Los planes están en `GET/POST/PATCH /portfolios/{id}/dca-plans`; si el reparto no suma 1, responde 422 `DCA_ALLOCATION_INVALID`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo. Confirmar compra al precio del momento, así que las participaciones de la respuesta pueden diferir de las estimadas.
