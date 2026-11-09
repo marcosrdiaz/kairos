@@ -85,4 +85,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-053](decisiones/D-053-pipeline-replay-t1-15.md) | 2026-11-08 | Pipeline de replay (T1-15): SDK de Anthropic, filtro provisional, fechas y reset | Propuesta |
 | [D-054](decisiones/D-054-compraventa-fifo-t1-04.md) | 2026-11-09 | Compra y venta FIFO (T1-04): redondeos, plusvalía, operaciones por importe y reparto de `portfolio/` en submódulos | Propuesta |
 | [D-055](decisiones/D-055-contrato-ejecuciones-dca-t1-06.md) | 2026-11-09 | Contrato de las ejecuciones DCA (T1-06): listar las aportaciones de una cartera y respuesta de `/demo/dca/run` | Propuesta |
+| [D-056](decisiones/D-056-dca-real-t1-06.md) | 2026-11-09 | DCA real (T1-06): calendario, reparto en céntimos, ejecución forzada en demo y precio al confirmar | Propuesta |
 <!-- INDICE:FIN -->

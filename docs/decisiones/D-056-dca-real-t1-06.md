@@ -1,4 +1,4 @@
-### D-XXX · DCA real (T1-06): calendario, reparto en céntimos, ejecución forzada en demo y precio al confirmar
+### D-056 · DCA real (T1-06): calendario, reparto en céntimos, ejecución forzada en demo y precio al confirmar
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-06 pasa a real los planes DCA y sus ejecuciones (RF-07). El diseño solo decía «un job comprueba planes cuyo día es hoy» y «en demo se fuerza con `/demo/dca/run`». Había que fijar cómo se calculan las fechas, cómo se reparte el importe con `Decimal`, qué fuerza la demo, a qué precio se compra y qué pasa con el calendario del plan después. Además, las fechas del seed (Laura el 5, Javier el 10) no caen en el día de la demo, así que sin forzar el paso no mostraría nada.
 - Decisión:
