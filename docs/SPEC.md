@@ -312,9 +312,9 @@ La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validad
 
 **Guardián** (`agents/guardian.py`):
 
-1. **Patrones prohibidos** (regex, sin acentos y en minúsculas): imperativos y recomendaciones de compraventa (`compra`, `vende`, `vendas`, `compres`, `te recomiendo`, `deberias (comprar|vender|invertir)`, `es buen momento para`, `invierte en`, `sal de`…). Lista en `prompts/forbidden.yaml`, con tests.
-2. **Cifras**: cada número del texto (€, %, puntos) debe coincidir con algún valor de los resultados de herramientas o del contexto del turno, con tolerancia de redondeo (±1 € o ±0,5 € de cada 100 €; ±0,5 pp). Cifra no encontrada → bloqueo.
-3. **Forma**: ≤ 3 frases en voz, ≥ 1 cifra en € si la pregunta es sobre impacto.
+1. **Patrones prohibidos** (regex, sin acentos y en minúsculas): imperativos y recomendaciones de compraventa (`compra`, `vende`, `vendas`, `compres`, `te recomiendo`, `deberias (comprar|vender|invertir)`, `es buen momento para`, `invierte en`, `sal de`…). Lista en `prompts/forbidden.yaml`, con tests: cada patrón lleva frases que debe bloquear (`blocks`) y frases del dominio que no (`allows`). "Compra", "vende" e "invierte" solo se bloquean como imperativo (inicio de cláusula o pronombre pegado), para no bloquear "tu plan compra cada mes".
+2. **Cifras**: cada número del texto (€, %, puntos, puntos básicos, sin unidad) debe coincidir en valor absoluto con algún valor de los resultados de herramientas o del contexto del turno, con tolerancia de redondeo (el mayor de ±1 € y ±0,5 € de cada 100 €; ±0,5 pp; ±0,5 pb; y siempre el redondeo de lo escrito). Cifra no encontrada → bloqueo. Años fuera de las evidencias y números en palabras mayores que diez → bloqueo. No son cifras los enteros sin unidad de 0 a 10, días del mes, horas y nombres de índices ("S&P 500").
+3. **Forma**: ≤ 3 frases en voz (contando las ya emitidas, `sentence_index`), ≥ 1 cifra en € en la primera frase si la pregunta es sobre impacto.
 4. Bloqueo → un reintento con el motivo como feedback → si falla, respuesta de plantilla construida con los datos de las herramientas.
 5. En streaming se valida **frase a frase** antes de mandarla al TTS.
 
