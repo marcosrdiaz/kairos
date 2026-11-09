@@ -39,5 +39,5 @@ def estimate_scenario(portfolio_id: str, body: ScenarioRequest) -> ScenarioOut:
     "/portfolios/{portfolio_id}/move", response_model=MoveAttributionOut, responses=_RESPONSES
 )
 def explain_move(portfolio_id: str, period: MovePeriod = "week") -> MoveAttributionOut:
-    """T2-07 puede moverlo a `api/move.py`."""
+    """«¿Por qué ha bajado?» (`explain_move`, T2-07)."""
     return service.explain_move(portfolio_id, period)

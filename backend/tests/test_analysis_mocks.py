@@ -17,10 +17,7 @@ READ_PATHS = ["events", "exposure", "radar", "status", "projection", "agenda", "
 
 @pytest.mark.parametrize(
     ("path", "example"),
-    [
-        ("radar", "RadarOut"),
-        ("move?period=week", "MoveAttributionOut"),
-    ],
+    [("radar", "RadarOut")],  # `move` ya es real (T2-07): ver `test_move.py`
 )
 def test_get_serves_example(client: TestClient, path: str, example: str) -> None:
     response = client.get(f"{LAURA}/{path}")

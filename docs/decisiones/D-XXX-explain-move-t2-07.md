@@ -1,0 +1,14 @@
+### D-XXX · «¿Por qué ha bajado?» (T2-07): ventana, flujos y ajustes de demo del periodo
+- Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
+- Contexto: el diseño (§4.3) fija la forma de `MoveAttributionOut` y que `by_asset` lleve precios reales, sin flujos y con los ajustes de demo (decisión 17, D-031). No dice cuánto dura cada periodo, qué ajustes entran si el evento es anterior a la ventana ni sobre qué base se calcula `change_pct`.
+- Decisión:
+  - **Ventana** `[now − periodo, now]` con el reloj de demo: `day` = 1 día, `week` = 7 (como `change_week_*`), `month` = 30.
+  - **Cambio por activo** = valor final − valor inicial − flujos del periodo + ajuste de demo. Las compras, ventas, DCA y traspasos no cuentan como movimiento.
+  - **Ajustes de demo**: solo los de los eventos cuyo impacto se calculó dentro de la ventana (los mismos que salen en `by_event`) y solo en activos que siguen en cartera (D-075). Así, `by_event` y `by_asset` hablan del mismo periodo.
+  - **`change_pct`** = cambio / valor inicial, a 4 decimales; 0 si no había valor inicial.
+  - **`by_asset`** omite los activos sin cambio y va de mayor a menor |cambio|. Los vendidos en el periodo salen con su nombre del catálogo.
+  - **Traza `move`**: `parent_calc_ids` es la traza de `get_value_change` más la de cada impacto del periodo; fuentes, las de los eventos.
+  - El endpoint se queda en `api/impact.py` (misma ruta y contrato; no hace falta `api/move.py`). La orquestación va en `impact/move_flow.py` porque `service.py` rozaba las 300 líneas.
+- Motivo: que la suma de `by_asset` sea `change_eur` y que `unexplained_eur` no mezcle eventos de fuera del periodo.
+- Alternativas descartadas: sumar todos los ajustes de demo sea cual sea el periodo (en `day` aparecería un evento que no está en `by_event`); rentabilidad ponderada por flujos (Modified Dietz), que es más exacta pero innecesaria para la demo.
+- Consecuencias: con `period=week` tras un replay, `change_eur` coincide con el cambio real más el ajuste, igual que `change_week_eur` salvo la diferencia entre el último cierre y el precio intradía.
