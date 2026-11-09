@@ -4,6 +4,7 @@ import { CarteraPage } from "./app/CarteraPage";
 import { InicioPage } from "./app/InicioPage";
 import { PreguntaPage } from "./app/PreguntaPage";
 import { PanelPage } from "./panel/PanelPage";
+import { PhoneHomePage } from "./widget/PhoneHomePage";
 
 export function App() {
   return (
@@ -15,6 +16,7 @@ export function App() {
         <Route path="pregunta" element={<PreguntaPage />} />
       </Route>
       <Route path="panel" element={<PanelPage />} />
+      <Route path="widget" element={<PhoneHomePage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
   );
