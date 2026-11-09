@@ -224,6 +224,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 | Fecha/hora | Tarea bloqueada | Por qué | Necesita de | Estado |
 | --- | --- | --- | --- | --- |
 | 2026-11-08 | Ninguna (tarea menor de setup) | `playwright-cli` no encuentra Chrome en Windows (`chrome.exe` no instalado) y hay que usar `--browser=msedge`. Hay que hacer que `scripts/setup-dev.sh` deje a `playwright-cli` usando su propio Chromium | Quien coja la tarea menor de `scripts/setup-dev.sh` | Abierto |
+| 2026-11-09 | Paso 5 del guion (datos de T2-15) | Paso 5 sin oportunidades con el seed actual: Laura solo recibe riesgos en el radar y Javier sale vacío, porque `last_execution_at` de `dca_laura` (2026-11-05) coincide con el último precio. Valor propuesto: 2026-10-05 (−4,01 %). Detalle en *Notas para retomar* (T2-15) | Quien coja T2-15 (ajustar `data/seed/portfolios/laura.json`) | Abierto |
+| 2026-11-09 | Ninguna (mejora de T2-05) | `exposure/templates.py` importa `agents.fact_format`: rompe un poco la regla de hablar solo por `service.py`. Mover el formato a `core/format.py` obliga a tocar `agents/context.py`, que declara T2-09 (🧪 en PR). Se deja como está | Jaime (T2-09): cuando esté en `main`, mover `fact_format` a `core/format.py` y apuntar `agents` y `exposure` ahí | Abierto |
 | 2026-11-08 | T0-05 | `EventImpactOut` (T0-04) no está en `main`; `agents` usa `EventImpactStub` | T0-04 (Jaime) | Abierto: sustituir `EventImpactStub` por `schemas.impact.EventImpactOut` al subir T0-04 |
 
 ## 6. Peticiones de contrato
