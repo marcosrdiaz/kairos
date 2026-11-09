@@ -1,0 +1,123 @@
+{
+  "illustrative": true,
+  "description": "Compras y ventas FIFO (T1-04) sobre la cartera de Laura de data/seed, con los precios de portfolio_init_cases.json (6-nov-2026). Valores calculados aparte con Decimal: unit_eur = price × fx a 8 decimales (fx USD→EUR = 1/1.16 = 0.86206897); por participaciones, amount_eur = units × price × fx a céntimos; por importe, units = amount_eur / unit_eur a 8 decimales y amount_eur es el pedido; plusvalía = amount_eur − Σ(units × coste del lote) a céntimos; avg_cost_eur_after = coste de los lotes que quedan / participaciones, a céntimos. Todo HALF_EVEN.",
+  "cases": [
+    {
+      "name": "venta de IWDA que consume el primer lote entero y parte del segundo",
+      "request": {"type": "sell", "asset_id": "IE00B4L5Y983", "units": "80"},
+      "expected": {
+        "units": "80.00000000",
+        "price": "95.42000000",
+        "price_currency": "EUR",
+        "fx_rate": "1",
+        "amount_eur": "7633.60",
+        "effect": {
+          "units_after": "34.00000000",
+          "avg_cost_eur_after": "91.34",
+          "realized_gain_eur": "1588.45",
+          "lots_consumed": [
+            {"acquired_at": "2023-03-06T00:00:00Z", "units": "70.00000000", "cost_eur_per_unit": "73.31"},
+            {"acquired_at": "2024-06-03T00:00:00Z", "units": "10.00000000", "cost_eur_per_unit": "91.34"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "venta de NVIDIA en USD: solo el lote más antiguo",
+      "request": {"type": "sell", "asset_id": "US67066G1040", "units": "5"},
+      "expected": {
+        "units": "5.00000000",
+        "price": "182.50000000",
+        "price_currency": "USD",
+        "fx_rate": "0.86206897",
+        "amount_eur": "786.64",
+        "effect": {
+          "units_after": "3.00000000",
+          "avg_cost_eur_after": "88.88",
+          "realized_gain_eur": "465.06",
+          "lots_consumed": [
+            {"acquired_at": "2024-02-05T00:00:00Z", "units": "5.00000000", "cost_eur_per_unit": "64.32"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "venta de IWDA por importe: participaciones = importe / precio",
+      "request": {"type": "sell", "asset_id": "IE00B4L5Y983", "amount_eur": "1000.00"},
+      "expected": {
+        "units": "10.47998323",
+        "price": "95.42000000",
+        "price_currency": "EUR",
+        "fx_rate": "1",
+        "amount_eur": "1000.00",
+        "effect": {
+          "units_after": "103.52001677",
+          "avg_cost_eur_after": "80.98",
+          "realized_gain_eur": "231.71",
+          "lots_consumed": [
+            {"acquired_at": "2023-03-06T00:00:00Z", "units": "10.47998323", "cost_eur_per_unit": "73.31"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "venta de todo Apple: la posición desaparece",
+      "request": {"type": "sell", "asset_id": "US0378331005", "units": "4"},
+      "expected": {
+        "units": "4.00000000",
+        "price": "228.10000000",
+        "price_currency": "USD",
+        "fx_rate": "0.86206897",
+        "amount_eur": "786.55",
+        "effect": {
+          "units_after": "0.00000000",
+          "avg_cost_eur_after": "0.00",
+          "realized_gain_eur": "82.39",
+          "lots_consumed": [
+            {"acquired_at": "2023-09-04T00:00:00Z", "units": "4.00000000", "cost_eur_per_unit": "176.04"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "compra de IWDA por importe: nuevo lote al precio actual",
+      "request": {"type": "buy", "asset_id": "IE00B4L5Y983", "amount_eur": "300.00"},
+      "expected": {
+        "units": "3.14399497",
+        "price": "95.42000000",
+        "price_currency": "EUR",
+        "fx_rate": "1",
+        "amount_eur": "300.00",
+        "effect": {
+          "units_after": "117.14399497",
+          "avg_cost_eur_after": "80.68",
+          "realized_gain_eur": null,
+          "lots_consumed": [],
+          "lots_created": [
+            {"acquired_at": "2026-11-08T18:00:00Z", "units": "3.14399497", "cost_eur_per_unit": "95.42"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "compra de NVIDIA por participaciones, en USD",
+      "request": {"type": "buy", "asset_id": "US67066G1040", "units": "3.5"},
+      "expected": {
+        "units": "3.50000000",
+        "price": "182.50000000",
+        "price_currency": "USD",
+        "fx_rate": "0.86206897",
+        "amount_eur": "550.65",
+        "effect": {
+          "units_after": "11.50000000",
+          "avg_cost_eur_after": "99.03",
+          "realized_gain_eur": null,
+          "lots_consumed": [],
+          "lots_created": [
+            {"acquired_at": "2026-11-08T18:00:00Z", "units": "3.50000000", "cost_eur_per_unit": "157.33"}
+          ]
+        }
+      }
+    }
+  ]
+}
