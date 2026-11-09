@@ -4139,7 +4139,6 @@
     },
     "/api/v1/portfolios/{portfolio_id}/radar": {
       "get": {
-        "description": "T2-05 puede moverlo a `api/radar.py`.",
         "operationId": "get_radar_api_v1_portfolios__portfolio_id__radar_get",
         "parameters": [
           {
