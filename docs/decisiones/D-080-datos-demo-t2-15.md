@@ -1,4 +1,4 @@
-### D-XXX · Datos de la demo (T2-15): reloj, última aportación de Laura y formato de la agenda
+### D-080 · Datos de la demo (T2-15): reloj, última aportación de Laura y formato de la agenda
 - Fecha: 2026-11-09 · Autor: Jaime · Estado: Propuesta
 - Contexto: T2-15 revisa los datos contra §5 del diseño. El paso 5 no tenía ninguna oportunidad para Laura, el reloj de demo estaba sin fijar y faltaba `agenda.json`.
 - Decisión:

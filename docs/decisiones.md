@@ -109,4 +109,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-077](decisiones/D-077-explain-move-t2-07.md) | 2026-11-09 | «¿Por qué ha bajado?» (T2-07): ventana, flujos y ajustes de demo del periodo | Propuesta |
 | [D-078](decisiones/D-078-radar-t2-05.md) | 2026-11-09 | Radar (T2-05): reglas, divisa desconocida y traspaso sin tributar ligado al plan | Propuesta |
 | [D-079](decisiones/D-079-asistente-flotante-y-aviso-ia-sin-audio.md) | 2026-11-09 | Asistente flotante en vez de pestaña «Pregunta», modo conversación por voz y aviso de IA sin audio | Propuesta |
+| [D-080](decisiones/D-080-datos-demo-t2-15.md) | 2026-11-09 | Datos de la demo (T2-15): reloj, última aportación de Laura y formato de la agenda | Propuesta |
 <!-- INDICE:FIN -->
