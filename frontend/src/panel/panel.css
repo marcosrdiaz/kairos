@@ -14,4 +14,13 @@
       transform: translateY(6px);
     }
   }
+  /* Cambio de filtro: solo fundido, sin movimiento (se dispara también con el teclado). */
+  .panel-fade {
+    animation: panel-fade 140ms ease-out both;
+  }
+  @keyframes panel-fade {
+    from {
+      opacity: 0;
+    }
+  }
 }
