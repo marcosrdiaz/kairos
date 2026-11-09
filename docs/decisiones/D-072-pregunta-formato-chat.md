@@ -1,4 +1,4 @@
-### D-XXX · Pregunta en formato chat: historial, barra fija abajo, «Leer en voz alta» para todas las respuestas y texto línea a línea
+### D-072 · Pregunta en formato chat: historial, barra fija abajo, «Leer en voz alta» para todas las respuestas y texto línea a línea
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: la primera versión de la pestaña Pregunta (T2-14, D-070) mostraba solo la última respuesta, con el micrófono grande arriba, el campo de texto en medio de la página y una casilla para leer en voz alta las respuestas escritas. Tras probarla, se pide una interfaz de chat más ordenada que funcione igual en escritorio y en móvil.
 - Decisión:

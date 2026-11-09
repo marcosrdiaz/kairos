@@ -101,4 +101,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-069](decisiones/D-069-voz-elevenlabs-t1-21.md) | 2026-11-09 | Voz con ElevenLabs (T1-21): mock sin clave, cifras a palabras en `voice/numbers.py`, calentamiento desde el router y `httpx` + `websockets` como dependencias | Propuesta |
 | [D-070](decisiones/D-070-voz-frontend-t2-14.md) | 2026-11-09 | Voz en el frontend (T2-14): PCM 16 kHz con AudioWorklet, cola de audio por frase, plan B siempre visible y clientes en `src/api/` | Propuesta |
 | [D-071](decisiones/D-071-latencia-voz-t2-16.md) | 2026-11-09 | Latencia de voz (T2-16): 9/10 por debajo de 2 s con una primera frase corta en el prompt del explicador; sin cambiar de modelo ni de voz | Propuesta |
+| [D-072](decisiones/D-072-pregunta-formato-chat.md) | 2026-11-09 | Pregunta en formato chat: historial, barra fija abajo, «Leer en voz alta» para todas las respuestas y texto línea a línea | Propuesta |
 <!-- INDICE:FIN -->
