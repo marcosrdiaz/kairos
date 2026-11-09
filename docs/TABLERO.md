@@ -78,7 +78,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | Jaime | ✅ hecho |
 | T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | ✅ hecho |
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | Jaime | ✅ hecho |
-| T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | Alons | 🧪 en PR |
+| T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | Alons | ✅ hecho |
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | Jaime | ✅ hecho |
 | T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` | Manu | ✅ hecho |
 | T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | Manu | 🔄 en curso |
@@ -141,11 +141,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
-
-### T1-14 · Proyección con DCA — Alons
-**Qué estaba haciendo:** PR #46 (`t1-14/dca-projection`): `GET /portfolios/{id}/projection` real con `planning/projection.py` (puro) y `planning/service.py`. Reproduce al céntimo el ejemplo del contrato; Laura `on_track: true`. Lint, mypy y 1090 tests en verde.
-**Siguiente paso exacto:** revisión de otra persona, CI en verde, merge y `docs: done T1-14`.
-**Ficheros tocados:** `backend/app/planning/{projection,service}.py`, `backend/tests/test_projection.py`, `backend/tests/test_analysis_mocks.py` (fuera de la fila: se quita el caso `projection` del mock), decisión nueva *Proyección con DCA (T1-14): horizonte, capitalización, aportación y meta ausente*.
 
 ### T1-16 · Seguimiento: `pyproject.toml` — Manu
 **Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
