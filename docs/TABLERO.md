@@ -68,7 +68,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
 | T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | ✅ hecho |
 | T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | ✅ hecho |
-| T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | — | ⬜ |
+| T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | 🔄 en curso |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | — | ⬜ |
