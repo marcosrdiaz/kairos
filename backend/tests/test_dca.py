@@ -91,7 +91,7 @@ def test_seed_plans_are_listed(seeded: None) -> None:
             {"asset_id": MSCI_EUR, "weight": "0.7"},
             {"asset_id": BONDS, "weight": "0.3"},
         ],
-        "last_execution_at": "2026-11-05T00:00:00Z",
+        "last_execution_at": "2026-10-05T00:00:00Z",
         "next_execution_at": "2026-12-05T00:00:00Z",
     }
 
@@ -194,7 +194,7 @@ def test_update_plan_day_recomputes_next_execution(seeded: None) -> None:
     plan = service.update_dca_plan("laura", "dca_laura", DcaPlanUpdateRequest(day=20))
     assert plan.day == 20
     assert plan.next_execution_at == datetime(2026, 11, 20, tzinfo=UTC)
-    assert plan.last_execution_at == datetime(2026, 11, 5, tzinfo=UTC)
+    assert plan.last_execution_at == datetime(2026, 10, 5, tzinfo=UTC)
 
 
 def test_update_plan_replaces_allocations(seeded: None) -> None:

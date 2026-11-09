@@ -1,0 +1,39 @@
+{
+  "illustrative": true,
+  "note": "Próximos eventos de ejemplo para la agenda del panel. Las fechas son relativas al reloj de demo (offset_days) y no son las del calendario real.",
+  "events": [
+    {
+      "id": "macro-us-cpi",
+      "offset_days": 4,
+      "time_utc": "13:30",
+      "kind": "macro",
+      "title": "Dato de inflación de EE. UU.",
+      "factor": "EQ_GLOBAL"
+    },
+    {
+      "id": "ecb-meeting",
+      "offset_days": 6,
+      "time_utc": "13:15",
+      "kind": "central_bank",
+      "title": "Reunión del BCE",
+      "factor": "RATES_EUR"
+    },
+    {
+      "id": "opec-meeting",
+      "offset_days": 12,
+      "time_utc": "12:00",
+      "kind": "commodity",
+      "title": "Reunión de la OPEP+",
+      "factor": "OIL"
+    },
+    {
+      "id": "nvda-earnings",
+      "offset_days": 13,
+      "time_utc": "21:20",
+      "kind": "earnings",
+      "title": "Resultados de NVIDIA",
+      "factor": "EQ_US_TECH",
+      "company": "NVDA"
+    }
+  ]
+}

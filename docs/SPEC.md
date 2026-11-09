@@ -424,7 +424,7 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 | `data/factors/<FACTOR>.csv` | Series de los factores (`date,value`); `RATES_EUR` como fracción. `EURUSD` (dólares por euro) es también el tipo de cambio de la valoración (`prices`, T1-02) | hecho (T1-09) |
 | `data/events/replay/*.json` | 3-4 eventos reales: BCE, petróleo, resultados (+ USD si da tiempo) | pendiente |
 | `data/seed/assumptions.json` | Rentabilidad anual por clase de activo para la proyección, con fuente | pendiente |
-| `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | pendiente |
+| `data/events/agenda.json` | Próximos eventos con fechas relativas al reloj de demo (`offset_days`) | hecho (T2-15) |
 | `data/voice/disclaimer.mp3` | Aviso de IA pregenerado | pendiente |
 
 Formato de un evento replay (contrato completo en el diseño §4.2):
