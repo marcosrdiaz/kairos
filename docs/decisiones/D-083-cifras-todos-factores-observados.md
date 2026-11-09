@@ -1,4 +1,4 @@
-### D-XXX · Las cifras usan todos los factores observados; el analizador solo redacta (T2-26)
+### D-083 · Las cifras usan todos los factores observados; el analizador solo redacta (T2-26)
 - Fecha: 2026-11-10 00:30 · Autor: Marcos · Estado: Propuesta
 - Contexto: la decisión 11 del diseño (§8) y D-025 dicen que las magnitudes salen de `observed` pero que «el LLM elige canales», y `events/pipeline.py` usa `analysis.channels` para decidir qué factores entran en el `ShockSet` (`selected_by = analyzer`). Con `ANTHROPIC_API_KEY` puesta se comprobó (replay de los 3 eventos y llamadas directas al analizador) que eso deja al modelo influir en una cifra: en el BCE dejó fuera `EQ_US_TECH` y en NVIDIA todo salvo bolsa y tecnológicas, así que el impacto de las carteras dejaba de ser el de «todos los factores observados». Además, la dirección que da el modelo contradice `observed` (BCE: `RATES_EUR` y `EURUSD`; NVIDIA: `EQ_GLOBAL`) y la cadena causal cuenta lo contrario del dato. Y con 4 s de timeout, BCE y petróleo agotaban los dos intentos y caían en `fallback` según la latencia.
 - Decisión:

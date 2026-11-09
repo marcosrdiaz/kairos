@@ -54,7 +54,7 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-022](decisiones/D-022-umbral-desviacion-plan.md) | 2026-11-08 | Umbral de desviación del plan: `drift_threshold` = 0,10 | Aceptada |
 | [D-023](decisiones/D-023-f11-f13-mvp.md) | 2026-11-08 | F11 y F13 en versión mínima pasan a MVP | Aceptada |
 | [D-024](decisiones/D-024-hito-guion-completo.md) | 2026-11-08 | Hito del guion completo: martes 10 a las 18:00 | Aceptada |
-| [D-025](decisiones/D-025-magnitudes-de-los-datos.md) | 2026-11-08 | Las magnitudes de un evento salen de los datos | Aceptada |
+| [D-025](decisiones/D-025-magnitudes-de-los-datos.md) | 2026-11-08 | Las magnitudes de un evento salen de los datos | Sustituida por D-XXX (solo en lo de «el LLM elige canales»; las magnitudes siguen saliendo de `observed`) |
 | [D-026](decisiones/D-026-precios-directo-clave.md) | 2026-11-08 | Precios en directo solo con clave de mercado | Aceptada |
 | [D-027](decisiones/D-027-zip-sin-claves.md) | 2026-11-08 | El ZIP sin claves de Claude y ElevenLabs | Aceptada |
 | [D-028](decisiones/D-028-paso-1-cartera-ejemplo.md) | 2026-11-08 | El paso 1 del guion carga la cartera de ejemplo | Aceptada |
@@ -112,4 +112,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-080](decisiones/D-080-datos-demo-t2-15.md) | 2026-11-09 | Datos de la demo (T2-15): reloj, última aportación de Laura y formato de la agenda | Propuesta |
 | [D-081](decisiones/D-081-traza-en-la-ui-t2-11.md) | 2026-11-10 | «¿De dónde sale?» en la UI (T2-11) | Propuesta |
 | [D-082](decisiones/D-082-integracion-t2-03.md) | 2026-11-10 | Integración (T2-03): mocks que se quedan, patrones del guardián en el analizador y `GUARDIAN_LLM_CHECK` fuera | Propuesta |
+| [D-083](decisiones/D-083-cifras-todos-factores-observados.md) | 2026-11-10 | Las cifras usan todos los factores observados; el analizador solo redacta (T2-26) | Propuesta |
 <!-- INDICE:FIN -->
