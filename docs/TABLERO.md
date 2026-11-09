@@ -105,7 +105,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` | — | ⬜ |
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | — | ⬜ |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
-| T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | Jaime | 🔄 en curso |
+| T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | Jaime | 🧪 en PR |
 | T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | ✅ hecho |
 | T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` | — | ⬜ |
 | T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | Javi | ✅ hecho |
@@ -151,6 +151,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ### T3-04 · Umbrales de avisos y de estado: cambiarlos a la vez — Marcos (para quien coja la tarea)
 **Qué hay que saber:** `alerts/config.py` (`MIN_EUR`, `MIN_SHARE`) y `status/config.py` (`ATENTO_MIN_EUR`, `ATENTO_MIN_SHARE`) tienen que valer lo mismo: el paso 3 del guion necesita el widget en «Atento» y el aviso a la vez. Dos tests lo comprueban (`backend/tests/test_alerts_engine.py`); si cambias uno y no el otro, fallan.
 **Siguiente paso exacto:** al calibrar, cambia los dos ficheros en el mismo PR. Ver D-076.
+
+### T2-13 · Polling y aviso en Inicio — Jaime
+**Qué estaba haciendo:** PR #67 (`t2-13/status-alerts-polling`, https://github.com/marcosrdiaz/kairos/pull/67), CI en verde. `useStatus` y `useAlerts` consultan cada 5 s; el aviso sale en `/widget` y en `/inicio`. Probado con backend real en el navegador: pasa a Atento y llega el aviso a los 4 s del replay, sin recargar.
+**Siguiente paso exacto:** revisión de otra persona, merge de #67 y `docs: done T2-13`.
+**Ficheros tocados:** `frontend/src/api/hooks/`, `frontend/src/widget/{AlertNotice.tsx,PhoneHomePage.tsx,polling.test.tsx}` y, fuera de la fila, `frontend/src/app/InicioPage.tsx`. `useStatus` se ha movido de `src/widget/` a `src/api/hooks/`.
 
 ### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
 **Qué estaba haciendo:** #58 y #59 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador, y el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071).
