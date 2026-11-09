@@ -27,6 +27,9 @@ def _isolated_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Itera
     get_engine.cache_clear()
     get_sessionmaker.cache_clear()
     clock.reset()
+    from app.status import service as status_service
+
+    status_service.reset()  # el estado precalculado vive en memoria, no en el SQLite del test
     yield
     if get_engine.cache_info().currsize:
         get_engine().dispose()

@@ -1,0 +1,13 @@
+### D-XXX · Estado del widget (T2-04): precalculado en memoria, lectura sin modelo y refresco cada 10 s
+- Fecha: 2026-11-09 · Autor: Jaime · Estado: Propuesta
+- Contexto: T2-04 pasa a real `GET /portfolios/{id}/status`, con objetivo < 200 ms. El diseño (§4.3) y `SPEC.md` §8.6 fijan las reglas y que se lee precalculado, pero no dónde se guarda, qué pasa la primera vez que se lee, cómo se entera el estado de una operación del usuario ni qué fecha cuenta para las 72 h.
+- Decisión:
+  - **Almacén:** en memoria, por cartera, como el contexto del explicador (D-066). Sin tabla ni migración; el backend corre con un solo proceso. Tras reiniciar, la primera lectura lo recalcula.
+  - **El modelo solo se llama en `recompute`** (tras cada evento). `GET /status` nunca lo llama: si no hay estado o han cambiado los datos, usa la plantilla validada por el guardián. Para ello `agents.service.write_status_sentence` admite `use_model=False` (argumento opcional; la firma anterior sigue valiendo).
+  - **Refresco:** cada `status.config.REFRESH_S` (10 s) `GET /status` relee valoración, plan e impactos. Así aparecen, sin llamadas entre módulos, una operación del usuario y el cierre de la ventana de 72 h. Coste medido con SQLite: 19 ms de mediana y 20 ms de máximo.
+  - **`calc_id` estable:** la traza `status` solo se crea si cambian los datos (`StatusFacts` y `price_as_of`). El contexto del explicador se invalida con ese `calc_id`, y el sondeo de T2-13 no añade trazas `status`.
+  - **Ventana de 72 h con `occurred_at`:** `impact.list_event_impacts` filtra por fecha de cálculo, y la precarga del guion se calcula hoy con fecha de hace 96 h. `status` filtra además por la fecha del evento. Si hay varios eventos significativos, el motivo es el más reciente.
+  - **`recompute` sin cambios** no reescribe una frase que ya sea del modelo.
+- Motivo: es lo mínimo que cumple < 200 ms también en la primera lectura y mantiene la regla 3 de producto (toda frase pasa por el guardián).
+- Alternativas descartadas: tabla `status` (migración para un dato derivado); calcular en cada lectura (un `calc_id` nuevo cada 5 s rompería la caché del contexto); que `portfolio` avise a `status` tras cada operación (dependencia circular `status` → `portfolio` → `status`).
+- Consecuencias: una operación tarda hasta 10 s en verse en el widget. T2-02 debe aplicar el ajuste de demo antes de `status.recompute`. Con varios procesos de backend habría que mover el estado a la BD.

@@ -133,10 +133,12 @@ def write(
     *,
     kind: QuestionKind | None = None,
     extra_evidence: list[Evidence] | None = None,
+    use_model: bool = True,
 ) -> tuple[str, bool]:
-    """Texto validado y si lo ha escrito el modelo (`True`) o es de plantilla (`False`)."""
+    """Texto validado y si lo ha escrito el modelo (`True`) o es de plantilla (`False`).
+    Con `use_model=False` no llama al modelo: para quien no puede esperar sus segundos."""
     evidence = [*as_evidence(found), *(extra_evidence or [])]
-    text = _by_model(channel, task, found, kind, evidence)
+    text = _by_model(channel, task, found, kind, evidence) if use_model else None
     if text is not None:
         return text, True
     if _check(template, channel, kind, evidence).ok:

@@ -69,7 +69,10 @@ def write_event_explanation(impact: EventImpactStub) -> tuple[str, ExplanationSt
     return text, ExplanationStatus.OK if by_model else ExplanationStatus.TEMPLATE
 
 
-def write_status_sentence(facts: StatusFacts) -> tuple[str, SentenceStatus]:
+def write_status_sentence(
+    facts: StatusFacts, *, use_model: bool = True
+) -> tuple[str, SentenceStatus]:
+    """Con `use_model=False`, directamente la plantilla validada (lectura de `GET /status`)."""
     detail = f"Evento: «{facts.event_title}»." if facts.event_title else ""
     task = _STATUS_TASK.format(state=facts.state.value, detail=detail)
     source = f"event:{facts.reason.event_id}" if facts.reason.event_id else "status"
@@ -79,6 +82,7 @@ def write_status_sentence(facts: StatusFacts) -> tuple[str, SentenceStatus]:
         status_facts(facts),
         templates.status_sentence(facts),
         extra_evidence=text_evidence([facts.event_title], source),
+        use_model=use_model,
     )
     return text, SentenceStatus.OK if by_model else SentenceStatus.TEMPLATE
 
