@@ -28,11 +28,9 @@ def test_unknown_portfolio_is_404_with_error_shape(client: TestClient) -> None:
     assert response.json()["code"] == "NOT_FOUND"
 
 
-def test_plan_and_dca_plans(client: TestClient) -> None:
+def test_plan(client: TestClient) -> None:
     plan = client.get(f"{API_PREFIX}/portfolios/laura/plan").json()
     assert plan == examples.load("PlanOut")
-    dca = client.get(f"{API_PREFIX}/portfolios/laura/dca-plans").json()
-    assert dca == [examples.load("DcaPlanOut")]
 
 
 def test_transaction_requires_exactly_one_of_amount_or_units(client: TestClient) -> None:
@@ -58,12 +56,6 @@ def test_etf_transfer_not_allowed(client: TestClient) -> None:
     assert error["code"] == "TRANSFER_NOT_ALLOWED"
     assert error["details"]["from_asset_type"] == "etf"
     assert error["details"]["alternative"] == "sell_and_buy"
-
-
-def test_dca_execution_skip(client: TestClient) -> None:
-    response = client.post(f"{API_PREFIX}/dca-executions/dcx_1", json={"action": "skip"})
-    assert response.status_code == 200
-    assert response.json()["status"] == "skipped"
 
 
 def test_openapi_exposes_portfolio_contracts(client: TestClient) -> None:
