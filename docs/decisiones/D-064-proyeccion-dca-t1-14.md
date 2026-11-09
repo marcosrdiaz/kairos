@@ -1,4 +1,4 @@
-### D-XXX · Proyección con DCA (T1-14): horizonte, capitalización, aportación y meta ausente
+### D-064 · Proyección con DCA (T1-14): horizonte, capitalización, aportación y meta ausente
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-14 pasa a real `GET /portfolios/{id}/projection` (RF-22, paso 7 "¿Voy bien?"). El diseño (§4.3) fija la capitalización mensual, la aportación del DCA activo, la media ponderada por la asignación objetivo y que `on_track` es el escenario base. No fijaba cuántos meses hay hasta la meta, cómo se pasa la rentabilidad anual a mensual, qué pasa con un DCA semanal o pausado ni qué responde una cartera sin meta.
 - Decisión:
