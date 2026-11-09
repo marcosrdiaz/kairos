@@ -21,8 +21,10 @@ seed:  ## migraciones + carga de data/seed (Laura y Javier)
 
 test: test-backend test-frontend
 
+# En paralelo con pytest-xdist (un proceso por núcleo). Para un solo fichero, `uv run pytest <fichero>`
+# sin -n arranca antes.
 test-backend:
-	cd $(BACKEND) && $(UV) run pytest
+	cd $(BACKEND) && $(UV) run pytest -n auto
 
 test-frontend:
 ifneq ($(HAS_FRONTEND),)

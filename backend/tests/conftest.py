@@ -38,12 +38,14 @@ def _isolated_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Itera
 
 @pytest.fixture
 def db() -> Iterator[None]:
-    """Base de datos vacía con todas las tablas."""
+    """Base de datos vacía con todas las tablas.
+
+    Sin `drop_all` al terminar: el SQLite vive en el `tmp_path` del test y se descarta entero.
+    """
     import app.models  # noqa: F401  (registra todas las tablas en Base.metadata)
 
     Base.metadata.create_all(get_engine())
     yield
-    Base.metadata.drop_all(get_engine())
 
 
 @pytest.fixture
