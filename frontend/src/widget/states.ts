@@ -1,4 +1,5 @@
-import type { StatusState } from "../api/generated/schema";
+import type { StatusReasonKind, StatusState } from "../api/generated/schema";
+import { formatPercent } from "../lib/format";
 
 /** Colores por estado (tokens de index.css). Siempre van junto a la palabra: nunca solo color. */
 const STATE_CLASSES: Record<StatusState, string> = {
@@ -8,9 +9,9 @@ const STATE_CLASSES: Record<StatusState, string> = {
 };
 
 const STATE_BAND: Record<StatusState, string> = {
-  tranquilo: "bg-tranquilo",
-  atento: "bg-atento",
-  revisa_plan: "bg-revisa-plan",
+  tranquilo: "bg-tranquilo-solid",
+  atento: "bg-atento-solid",
+  revisa_plan: "bg-revisa-plan-solid",
 };
 
 /** Palabra por defecto si el backend no trae `state_label`. */
@@ -22,6 +23,37 @@ export const STATE_WORD: Record<StatusState, string> = {
 
 export function stateClasses(state: StatusState): string {
   return STATE_CLASSES[state];
+}
+
+/** Motivo del estado en palabras (sin cifras: el impacto en € va con rango en el panel). */
+export const REASON_TEXT: Record<StatusReasonKind, string> = {
+  event: "Un evento reciente",
+  drift: "Desvío de tu plan",
+  none: "Nada destacable",
+};
+
+/** "-0.015" -> "-1,5 %"; "0.012" -> "+1,2 %"; "0" -> "0,0 %". El signo explícito no depende del color. */
+export function signedPercent(fraction: string): string {
+  const v = fraction.trim();
+  const text = formatPercent(v);
+  const isZero = /^[+-]?0*(\.0*)?$/.test(v);
+  return v.startsWith("-") || isZero ? text : `+${text}`;
+}
+
+export function trendOf(fraction: string): "up" | "down" | "flat" {
+  const v = fraction.trim();
+  if (/^[+-]?0*(\.0*)?$/.test(v)) return "flat";
+  return v.startsWith("-") ? "down" : "up";
+}
+
+/**
+ * Quita la llamada final "Toca para ver…" de la frase de estado. En la app ya hay un botón
+ * "Ver por qué"; el widget del móvil (spec de producto) sí conserva la frase completa.
+ * Solo recorta la última oración si empieza por "Toca para": no reescribe ni añade nada.
+ */
+export function withoutTapHint(sentence: string): string {
+  const trimmed = sentence.replace(/\s*Toca para [^.]*\.\s*$/u, "").trim();
+  return trimmed || sentence;
 }
 
 /** Franja de color sólido del estado (decorativa: la palabra va en la insignia). */
