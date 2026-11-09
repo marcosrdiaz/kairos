@@ -21,6 +21,7 @@
   --kairos-color-primary-tint: #f7edd5;
   --kairos-color-primary-tint-strong: #efdcab;
   --kairos-color-gold: #f2c14e; /* solo decorativo: ilustraciones y franjas, nunca texto */
+  --kairos-color-gold-deep: #8a6200; /* fin del degradado del logo y del banner */
 
   /* Superficies y texto */
   --kairos-color-bg: #f5f3ee;
@@ -86,7 +87,7 @@
   --kairos-max-width: 72rem;
   --kairos-tap-min: 2.75rem;
   --kairos-header-height: 4rem;
-  --kairos-sidebar-width: 16rem;
+  --kairos-sidebar-width: 19rem;
   --kairos-bottom-nav-height: calc(var(--kairos-tap-min) + 1.25rem + 1px + env(safe-area-inset-bottom));
   --kairos-transition: 0.15s ease-out;
 }
@@ -100,6 +101,7 @@
   --kairos-color-primary-tint: #2e2613;
   --kairos-color-primary-tint-strong: #42351a;
   --kairos-color-gold: #f2c14e;
+  --kairos-color-gold-deep: #b98516;
 
   --kairos-color-bg: #11100e;
   --kairos-color-surface: #1b1916;

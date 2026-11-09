@@ -115,6 +115,7 @@ El texto es grande por defecto (18 px de base) porque una parte de los usuarios 
 Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-color-`: modo claro en `:root`, modo oscuro en `[data-theme="dark"]`, con los mismos nombres. Tailwind los expone con los nombres de siempre (`bg-paper`, `bg-surface`, `text-ink`, `text-ink-muted`, `border-line`, `text-accent`, `bg-accent-tint`…) mediante `@theme inline` en `src/index.css`, así que las pantallas no saben en qué modo están.
 
 ### Marca
+- **Logo** (`LogoMark` / `LogoTile` en `src/components/icons.tsx`): dos barras crecientes y una K cuyo trazo vertical es la tercera barra, con un degradado de `gold` a `gold-deep`. Siempre dentro de su cuadrado redondeado (`LogoTile`, fondo `bg`: crema en claro, negro en oscuro), para que la K no se confunda con el nombre "Kairos" que va al lado.
 - **Oro Viejo** (`primary`, #765600 en claro) y **Oro Miel** (#f2c14e en oscuro): elemento activo de la navegación, botón principal, enlaces y anillo de foco. Menos del 10 % de la pantalla.
 - **Tinte de oro** (`primary-tint`): fondo de la cabecera de Inicio, iconos de atajo y pestaña activa en móvil.
 - **Oro** (`gold`, #f2c14e): solo decorativo (ilustraciones, degradados). Nunca para texto sobre claro.
@@ -180,7 +181,7 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 Móvil primero, pero la app también se usa en escritorio.
 
 - **Móvil (< 1024 px):** cabecera fija de 64 px con la marca y el botón de modo oscuro; contenido en una columna de 36 rem (576 px) con 16 px de margen; barra inferior fija con tres pestañas (icono + texto; la activa con una píldora de tinte de oro detrás del icono).
-- **Escritorio (≥ 1024 px, `lg`):** barra lateral de 16 rem con la marca, las secciones (la activa rellena de oro), un separador, el enlace al panel y, al pie, el interruptor de modo oscuro. Contenido hasta 72 rem (1152 px) con 40 px de margen.
+- **Escritorio (≥ 1024 px, `lg`):** barra lateral de 19 rem. Arriba, a sangre, el banner de marca (`BrandBanner`: logo en su cuadrado, "Kairos" y el lema "Analiza · comprende · decide" sobre ondas doradas). Debajo, las secciones (la activa rellena de oro), un separador, el enlace al panel y, al pie, el interruptor de modo oscuro. El contenido ocupa todo el ancho restante con 40 px de margen (56 px en pantallas muy anchas).
 - Es un único `<nav aria-label="Secciones">`, recolocado con CSS. Los landmarks (`header`, `nav`, `main`) permiten saltar de zona con el lector de pantalla.
 - `scroll-padding` evita que la cabecera o la barra fijas tapen el elemento con foco.
 - **Inicio:** cabecera con degradado de tinte de oro (estado, frase como titular, botón "Ver por qué" y, a la derecha, la ilustración `HeroArt`: un globo con una órbita de eventos que desemboca en una moneda en euros, con los colores de los tokens; en oscuro añade estrellas y halo), cuatro tarjetas de cifras (2 columnas en móvil, 4 en escritorio ancho) y una tarjeta de atajos. Previsto: ticker de mercado y gráfica interactiva entre la cabecera y las tarjetas (T2-17, T2-18) y carrusel de noticias debajo de las tarjetas (T2-19).

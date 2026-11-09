@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from "react";
+import { useId, type ReactNode, type SVGProps } from "react";
 
 /**
  * Iconos en SVG en línea (sin librería: DESIGN.md). Son decorativos: aria-hidden y sin foco.
@@ -25,18 +25,48 @@ function Icon({ children, className = "size-6", ...rest }: IconProps & { childre
   );
 }
 
-/** Marca: tres barras crecientes. */
-export function LogoMark({ className = "size-8" }: IconProps) {
+/**
+ * Marca: dos barras crecientes y una K cuyo trazo vertical es la tercera barra.
+ * Degradado oro → oro profundo con tokens (cambia con el modo). Decorativa: el nombre va en texto.
+ */
+export function LogoMark({ className = "h-8 w-auto" }: IconProps) {
+  // useId puede devolver ":r1:" o "«r1»": esos caracteres rompen url(#…) en fill.
+  const id = `kairos-logo-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false" className={className}>
-      <rect x="4" y="16" width="6" height="12" rx="2" fill="var(--kairos-color-primary)" opacity="0.55" />
-      <rect x="13" y="10" width="6" height="18" rx="2" fill="var(--kairos-color-primary)" opacity="0.8" />
-      <rect x="22" y="4" width="6" height="24" rx="2" fill="var(--kairos-color-primary)" />
+    <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false" className={className}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--kairos-color-gold)" />
+          <stop offset="1" stopColor="var(--kairos-color-gold-deep)" />
+        </linearGradient>
+      </defs>
+      <g fill={`url(#${id})`}>
+        <rect x="1" y="29" width="8" height="17" rx="1.5" />
+        <rect x="12" y="20" width="8" height="26" rx="1.5" />
+        <rect x="23" y="4" width="9" height="42" rx="1.5" />
+        <path d="M32 27 50.5 4H62L37.5 32.5z" />
+        <path d="M37 25.5 43.5 19 63 46H51.5z" />
+      </g>
     </svg>
   );
 }
 
-export const HomeIcon = (p: IconProps) => (
+/**
+ * Logo en su cuadrado redondeado (como un icono de app), para que la K no se confunda con el
+ * nombre que va al lado. Fondo papel: crema en claro y negro en oscuro.
+ */
+export function LogoTile({ className = "size-10" }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-flex shrink-0 items-center justify-center rounded-[28%] border border-line bg-paper ${className}`}
+    >
+      <LogoMark className="block h-auto w-[70%]" />
+    </span>
+  );
+}
+
+export const HomeIcon =(p: IconProps) => (
   <Icon {...p}>
     <path d="M3 10.5 12 3l9 7.5" />
     <path d="M5 9.5V20h5v-6h4v6h5V9.5" />

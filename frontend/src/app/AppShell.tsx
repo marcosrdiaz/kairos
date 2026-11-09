@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
-import { ChatIcon, HomeIcon, LogoMark, PanelIcon, WalletIcon } from "../components/icons";
+import { BrandBanner } from "../components/BrandBanner";
+import { ChatIcon, HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
@@ -20,13 +21,21 @@ export function AppShell() {
   const { search } = useLocation();
   return (
     <div className="min-h-dvh bg-paper lg:grid lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)]">
-      <header className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:py-6">
+      <header className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:pb-6 lg:pt-0">
+        {/* Móvil: logo compacto. Escritorio: banner de marca a sangre en la cabecera de la barra. */}
         <Link
           to={`/inicio${search}`}
-          className="flex min-h-touch items-center gap-2 text-xl font-bold tracking-wide text-accent no-underline lg:px-2 lg:text-2xl"
+          className="flex min-h-touch items-center gap-2 text-xl font-semibold tracking-tight text-ink no-underline lg:hidden"
         >
-          <LogoMark className="size-8 lg:size-9" />
-          KAIROS
+          <LogoTile className="size-10" />
+          Kairos
+        </Link>
+        <Link
+          to={`/inicio${search}`}
+          aria-label="Kairos, ir a Inicio"
+          className="-mx-4 hidden border-b border-line no-underline lg:block"
+        >
+          <BrandBanner />
         </Link>
 
         <nav
@@ -82,7 +91,7 @@ export function AppShell() {
 
       <main
         id="contenido"
-        className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 lg:max-w-(--kairos-max-width) lg:px-10 lg:pb-12 lg:pt-10"
+        className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 lg:max-w-none lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
       >
         <Outlet />
       </main>
