@@ -1,4 +1,4 @@
-### D-XXX · Asistente flotante en vez de pestaña «Pregunta», modo conversación por voz y aviso de IA sin audio
+### D-079 · Asistente flotante en vez de pestaña «Pregunta», modo conversación por voz y aviso de IA sin audio
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: la pantalla «Pregunta» (T2-14) era una pestaña más. Para preguntar había que salir de lo que se estaba mirando, y para hablar había que mantener pulsado el micrófono en cada pregunta, sin control cómodo de cuánto dura el prompt. Además, el aviso de IA pregenerado (`GET /voice/disclaimer`, diseño del MVP §4.5) se leía en voz alta antes de la primera respuesta de la sesión, y el equipo lo encuentra molesto.
 - Decisión:
