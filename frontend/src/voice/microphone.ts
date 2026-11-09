@@ -50,6 +50,8 @@ registerProcessor("pcm16k", Pcm16kProcessor);
 export interface Microphone {
   /** Para la captura, manda lo pendiente y libera el micrófono. */
   stop(): Promise<void>;
+  /** Volumen actual de la voz, de 0 a 1 (para animar la esfera). */
+  level?: () => number;
 }
 
 export class MicrophoneDeniedError extends Error {
@@ -90,8 +92,19 @@ export async function startMicrophone(onChunk: (pcm: ArrayBuffer) => void): Prom
   mute.gain.value = 0;
   source.connect(node);
   node.connect(mute).connect(context.destination);
+  // Solo lectura del volumen (no altera lo que se manda al STT).
+  const analyser = context.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  const samples = new Float32Array(analyser.fftSize);
 
   return {
+    level() {
+      analyser.getFloatTimeDomainData(samples);
+      let sum = 0;
+      for (const s of samples) sum += s * s;
+      return Math.min(1, Math.sqrt(sum / samples.length) * 6);
+    },
     async stop() {
       await new Promise<void>((resolve) => {
         onFlushed = resolve;
@@ -99,6 +112,7 @@ export async function startMicrophone(onChunk: (pcm: ArrayBuffer) => void): Prom
         setTimeout(resolve, 300); // por si el contexto ya no procesa
       });
       source.disconnect();
+      analyser.disconnect();
       node.disconnect();
       mute.disconnect();
       for (const track of stream.getTracks()) track.stop();

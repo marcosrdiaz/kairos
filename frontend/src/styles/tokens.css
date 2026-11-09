@@ -88,6 +88,7 @@
   --kairos-tap-min: 2.75rem;
   --kairos-header-height: 4rem;
   --kairos-sidebar-width: 19rem;
+  --kairos-chat-width: clamp(22rem, 30vw, 28rem); /* panel del asistente en escritorio */
   --kairos-bottom-nav-height: calc(var(--kairos-tap-min) + 1.25rem + 1px + env(safe-area-inset-bottom));
   --kairos-transition: 0.15s ease-out;
 }

@@ -1,0 +1,25 @@
+### D-XXX · Asistente flotante en vez de pestaña «Pregunta», modo conversación por voz y aviso de IA sin audio
+- Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
+- Contexto: la pantalla «Pregunta» (T2-14) era una pestaña más. Para preguntar había que salir de lo que se estaba mirando, y para hablar había que mantener pulsado el micrófono en cada pregunta, sin control cómodo de cuánto dura el prompt. Además, el aviso de IA pregenerado (`GET /voice/disclaimer`, diseño del MVP §4.5) se leía en voz alta antes de la primera respuesta de la sesión, y el equipo lo encuentra molesto.
+- Decisión:
+  - **Asistente flotante.** «Pregunta» deja de ser una pestaña. Un botón fijo abajo a la derecha, visible en todas las pantallas de AppShell, abre el asistente. En escritorio se abre como una columna a la derecha que estrecha el contenido (la barra lateral no cambia) y, en móvil, como un modal a pantalla completa. La conversación se conserva al cerrar y al navegar, y se borra con «Reiniciar el chat». `/pregunta` abre el asistente sobre Inicio.
+  - **Modo conversación.** La esfera, siempre arriba del chat, activa un modo en el que se habla por turnos sin pulsar nada:
+    - La pregunta termina tras 2 s de silencio, con un tope de 45 s.
+    - Al acabar cada respuesta, vuelve a escuchar solo.
+    - Si el usuario habla mientras se lee la respuesta, se corta el audio, el texto se termina de escribir y empieza a escuchar.
+    - Si no oye a nadie en 8 s, queda en pausa.
+    - Mientras está activo se oculta la barra de texto. Se sale con «Terminar la conversación».
+  - **Sin preguntas sugeridas.** Se quitan las tres sugeridas («¿Por qué ha bajado?», etc.). Si falla la voz, el plan B es la barra de texto, que vuelve sola si no hay micrófono.
+  - **Respuesta palabra a palabra.** Las frases aprobadas por el guardián se muestran palabra a palabra y seguidas en un párrafo. Solo es presentación: el texto y los `calc_id` no cambian.
+  - **Aviso de IA sin audio.** El frontend ya no reproduce `GET /voice/disclaimer`. El aviso sigue siendo visible: en la primera respuesta de la sesión (`meta.disclaimer`) y en el pie del asistente, siempre a la vista. El endpoint y el MP3 se quedan como están.
+  - **Scroll en escritorio.** Se desplaza el `<main>` y no la ventana, con una barra de scroll propia (`components/Scrollbar.tsx`), para que la barra quede pegada al contenido cuando el asistente está abierto.
+- Motivo: el asistente queda a mano sin perder el contexto de la pantalla, y la voz se parece a una conversación de verdad. La regla 6 de producto (AI Act, art. 50) pide un aviso *visible*: se cumple sin audio.
+- Alternativas descartadas: mantener la pestaña junto al botón flotante (dos entradas para lo mismo); mantener pulsado para hablar (no deja controlar la duración con comodidad); botones de «Empezar» y «Terminar» en cada turno (rompen la conversación); seguir leyendo el aviso solo en la primera pregunta por voz (sigue siendo la queja).
+- Impacto:
+  - El diseño del MVP §4.5 dice que el frontend reproduce el aviso cuando `disclaimer: true`. Con esta decisión, solo lo muestra. Se pierde el audio que cubría la espera hasta la primera frase. T2-16 midió la latencia de voz contando con ese audio, así que conviene repetir la medición si la espera se nota en la demo.
+  - **La voz del usuario tiene prioridad.** En el modo conversación, mientras se prepara o se lee la respuesta, queda un micrófono abierto. Mide el volumen y guarda lo último que ha oído (0,8 s), sin enviar nada. Si el usuario habla por encima:
+    - El audio se corta al momento y se cancelan los audios de las frases que faltaban.
+    - Ese mismo micrófono pasa a la transcripción con lo que acababa de grabar, así que no se pierden las primeras palabras.
+    - La respuesta queda entera en texto, marcada como «lectura cortada».
+    - El detector aprende cuánto de la respuesta se cuela por el micrófono y cuál es el ruido de fondo, porque la cancelación de eco del navegador no es perfecta. Corta cuando la voz del usuario los supera con margen. Los ajustes están en `BARGE_IN`, en `voice/bargeIn.ts`.
+    - Tocar la esfera mientras responde también corta, como alternativa que siempre funciona.

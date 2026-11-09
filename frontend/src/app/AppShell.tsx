@@ -1,15 +1,32 @@
-import type { ComponentType } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { BrandBanner } from "../components/BrandBanner";
-import { ChatIcon, HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
+import { Scrollbar } from "../components/Scrollbar";
+import { HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
+import { ChatLauncher, ChatPanel } from "../voice/ChatDock";
+import { ChatDockContext } from "../voice/chatDockContext";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
   { to: "/inicio", label: "Inicio", Icon: HomeIcon },
   { to: "/cartera", label: "Cartera", Icon: WalletIcon },
-  { to: "/pregunta", label: "Pregunta", Icon: ChatIcon },
 ];
+
+const DESKTOP = "(min-width: 64rem)";
+
+/** Si la pantalla es de escritorio (≥ lg): ahí el asistente es un panel, no un modal. */
+function useIsDesktop(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      if (typeof window.matchMedia !== "function") return () => undefined;
+      const query = window.matchMedia(DESKTOP);
+      query.addEventListener("change", notify);
+      return () => query.removeEventListener("change", notify);
+    },
+    () => typeof window.matchMedia === "function" && window.matchMedia(DESKTOP).matches,
+  );
+}
 
 /**
  * Marco de la app, adaptable (DESIGN.md § Layout):
@@ -17,12 +34,29 @@ const TABS: { to: string; label: string; Icon: ComponentType<{ className?: strin
  * - Escritorio (≥ lg): barra lateral con la marca, las secciones, el panel y el modo oscuro.
  * Hay un único <nav aria-label="Secciones">, recolocado con CSS, para no duplicarlo en el lector.
  * NavLink pone aria-current="page" en la sección activa. Conserva `?p=` al navegar.
+ * El asistente (Pregunta) no es una sección: es el botón flotante y su panel (`voice/ChatDock`).
+ * En escritorio abre una tercera columna que estrecha el contenido; en móvil, un modal que deja
+ * el resto de la app `inert` mientras está abierto.
+ * En escritorio la ventana no se desplaza: lo hace el <main>, con la barra de scroll propia
+ * (`components/Scrollbar`), así la barra queda pegada al contenido y no al borde de la pantalla.
  */
 export function AppShell() {
   const { search } = useLocation();
+  const [chatOpen, setChatOpen] = useState(false);
+  const dock = useMemo(() => ({ open: chatOpen, setOpen: setChatOpen }), [chatOpen]);
+  const desktop = useIsDesktop();
+  const modal = chatOpen && !desktop;
+  const mainRef = useRef<HTMLElement>(null);
   return (
-    <div className="min-h-dvh bg-paper lg:grid lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)]">
-      <header className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:pb-6 lg:pt-0">
+    <ChatDockContext value={dock}>
+    <div
+      className={`min-h-dvh bg-paper lg:grid lg:h-dvh lg:overflow-hidden lg:transition-[grid-template-columns] lg:duration-300 lg:ease-out motion-reduce:transition-none ${
+        chatOpen
+          ? "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_var(--kairos-chat-width)]"
+          : "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_0rem]"
+      }`}
+    >
+      <header inert={modal} className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:pb-6 lg:pt-0">
         {/* Móvil: logo compacto. Escritorio: banner de marca a sangre en la cabecera de la barra. */}
         <Link
           to={`/inicio${search}`}
@@ -98,12 +132,21 @@ export function AppShell() {
         </div>
       </header>
 
-      <main
-        id="contenido"
-        className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 lg:max-w-none lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
-      >
-        <Outlet />
-      </main>
+      <div className="min-w-0 lg:relative lg:h-dvh">
+        <main
+          ref={mainRef}
+          id="contenido"
+          inert={modal}
+          className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
+        >
+          <Outlet />
+        </main>
+        <Scrollbar target={mainRef} className="hidden lg:flex" />
+      </div>
+
+      <ChatPanel />
+      <ChatLauncher />
     </div>
+    </ChatDockContext>
   );
 }
