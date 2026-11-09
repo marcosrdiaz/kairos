@@ -467,7 +467,6 @@ MARKET_DATA_API_KEY=
 DATABASE_URL=postgresql+psycopg://kairos:kairos@db:5432/kairos
 DEMO_MODE=true
 DEMO_CLOCK=                  # ISO 8601 opcional para fijar la fecha
-GUARDIAN_LLM_CHECK=false
 ```
 
 El umbral de desviación del plan no es una variable de entorno: es el campo `plan.drift_threshold` (fracción, por defecto 0,10; D-022).

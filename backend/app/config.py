@@ -26,7 +26,6 @@ class Settings(BaseSettings):
 
     demo_mode: bool = True
     demo_clock: datetime | None = None
-    guardian_llm_check: bool = False
 
     @field_validator("demo_clock", mode="before")
     @classmethod
