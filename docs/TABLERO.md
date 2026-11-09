@@ -86,7 +86,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | — | ⬜ |
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
-| T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | 🧪 en PR |
+| T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | ✅ hecho |
 
 ### Fase 2 · Experiencia e integración (hasta el mar 10, 18:00)
 
@@ -175,14 +175,13 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
 
-### T1-18 · T1-22 · T2-19 · Inicio, tema claro/oscuro y noticias — Javi
-**Qué estaba haciendo:** tres ramas apiladas y subidas, cada una con su PR: `t1-18/home-widget` → `main`; `t1-22/theme-toggle` → `t1-18/home-widget`; `t2-19/news-carousel` → `t1-22/theme-toggle`. Se mergean en ese orden; tras cada merge, la base del PR siguiente pasa a `main`.
-**Siguiente paso exacto:** revisión y merge de los tres PRs. Después, en T1-18, falta el widget de la pantalla de inicio del móvil simulada (reutilizar `StatusBadge` y `src/widget/states.ts`; con la frase completa, sin `withoutTapHint`).
+### T1-18 · Widget de la pantalla de inicio del móvil — Javi
+**Qué estaba haciendo:** la parte 1 está en `main` (#40, D-059): Inicio de la app con la tarjeta de estado. Encima entraron T1-22 (#41, D-060: tema claro/oscuro, tokens, shell nuevo) y T2-19 (#42, D-061: carrusel de noticias).
+**Siguiente paso exacto:** rama nueva desde `main` para el widget de la pantalla de inicio del móvil simulada (D-004) en `frontend/src/widget/`. Reutilizar `StatusBadge` y `states.ts`; mostrar la frase completa, sin `withoutTapHint`.
 **Para el resto del frontend:**
 - Los colores se definen en `frontend/src/styles/tokens.css` (`--kairos-color-*`, modo claro y oscuro). Las clases de Tailwind de siempre (`bg-paper`, `text-ink`, `text-accent`…) siguen funcionando. Un color nuevo va en los dos modos y debe pasar `src/styles/contrast.test.ts`.
 - El contenido de escritorio ocupa todo el ancho (barra lateral de 19 rem); hay que diseñar las pantallas para ese ancho.
-- T2-12 comparte `frontend/src/index.css` con T1-22: esperar a que T1-22 esté en `main`.
-**Ficheros tocados:** `frontend/index.html`, `frontend/src/{index.css,App.test.tsx}`, `frontend/src/app/{AppShell,InicioPage}.tsx`, `frontend/src/app/news/`, `frontend/src/components/`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/widget/`, `DESIGN.md`, tres decisiones nuevas en `docs/decisiones/`.
+**Ficheros tocados:** `frontend/src/widget/`, `frontend/src/app/InicioPage.tsx`.
 
 ## 5. Bloqueos
 
