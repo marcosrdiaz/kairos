@@ -162,6 +162,7 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
             value={draft.asset}
             onChange={(asset) => update({ asset })}
             error={errors.asset}
+            selectedError={errors.asset}
           />
         )}
         <ChoiceGroup

@@ -44,6 +44,8 @@ export interface PlanBody {
   allocations: DcaAllocation[];
 }
 
+export const DUPLICATE_ASSET = "Este activo ya está en el reparto.";
+
 let nextKey = 0;
 export const emptyLine = (asset: AssetRef | null = null, percent = ""): AllocationLine => ({
   key: nextKey++,
@@ -133,7 +135,7 @@ export function buildPlan(draft: PlanDraft): BuiltPlan {
   draft.lines.forEach((line, i) => {
     const e = errors.lines[i]!;
     if (!line.asset) e.asset = "Elige el activo.";
-    else if (seen.has(line.asset.id)) e.asset = "Este activo ya está en el reparto.";
+    else if (seen.has(line.asset.id)) e.asset = DUPLICATE_ASSET;
     else seen.add(line.asset.id);
     const pct = parseDecimalInput(line.percent, PERCENT_DECIMALS);
     if (!pct.ok) e.percent = pct.error;
@@ -169,15 +171,21 @@ export function countPlanErrors(e: PlanErrors): number {
 /**
  * Tras editar el reparto, conserva solo los errores de las filas que no han cambiado (misma
  * referencia) y quita el del total, que depende de todas: el usuario está corrigiendo.
+ * "Activo repetido" depende de las demás filas: se mantiene solo si una fila anterior sigue
+ * teniendo el mismo activo (la misma regla que `buildPlan`).
  */
 export function carryLineErrors(
   errors: PlanErrors,
   before: AllocationLine[],
   after: AllocationLine[],
 ): PlanErrors {
-  const lines = after.map((line) => {
+  const lines = after.map((line, j) => {
     const i = before.indexOf(line);
-    return i >= 0 ? (errors.lines[i] ?? {}) : {};
+    const kept = i >= 0 ? { ...(errors.lines[i] ?? {}) } : {};
+    const id = line.asset?.id;
+    const stillRepeated = id !== undefined && after.slice(0, j).some((l) => l.asset?.id === id);
+    if (kept.asset === DUPLICATE_ASSET && !stillRepeated) delete kept.asset;
+    return kept;
   });
   const next: PlanErrors = { ...errors, lines };
   delete next.total;

@@ -232,7 +232,11 @@ describe("OperationsForm · traspaso", () => {
     stubApi(() => json(notAllowed, 422));
     renderForm();
     await fillTransfer("IE00B4L5Y983", true);
-    fireEvent.click(await screen.findByRole("button", { name: "Registrar como venta" }));
+    const sellButton = await screen.findByRole("button", { name: "Registrar como venta" });
+    // El borrador cambia después del 422: la venta debe salir de lo que se envió.
+    fireEvent.click(screen.getByRole("radio", { name: "Por participaciones" }));
+    typeQty("Participaciones", "7");
+    fireEvent.click(sellButton);
     expect((screen.getByRole("radio", { name: "Por importe (€)" }) as HTMLInputElement).checked).toBe(true);
     expect((screen.getByLabelText("Importe (€)") as HTMLInputElement).value).toBe("1234,5");
   });

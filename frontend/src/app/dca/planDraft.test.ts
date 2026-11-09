@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildPlan, emptyLine, weightToPercent, type PlanDraft } from "./planDraft";
+import {
+  buildPlan,
+  carryLineErrors,
+  DUPLICATE_ASSET,
+  emptyLine,
+  weightToPercent,
+  type PlanDraft,
+} from "./planDraft";
 
 const ref = (id: string) => ({ id, name: id, details: null });
 
@@ -68,6 +75,26 @@ describe("buildPlan", () => {
       { percent: "Escribe una cifra." },
       { percent: "Como mucho 100 %." },
       { asset: "Este activo ya está en el reparto." },
+    ]);
+  });
+});
+
+describe("carryLineErrors", () => {
+  it("al cambiar el activo de una fila, quita el «repetido» de la que ya no lo está", () => {
+    const before = [emptyLine(ref("A"), "50"), emptyLine(ref("A"), "50")];
+    const errors = { lines: [{}, { asset: DUPLICATE_ASSET }], total: "x" };
+    const after = [{ ...before[0]!, asset: ref("B") }, before[1]!];
+    expect(carryLineErrors(errors, before, after)).toEqual({ lines: [{}, {}] });
+  });
+
+  it("mantiene el «repetido» si una fila anterior sigue con el mismo activo", () => {
+    const before = [emptyLine(ref("A")), emptyLine(ref("A")), emptyLine(ref("A"))];
+    const errors = { lines: [{}, { asset: DUPLICATE_ASSET }, { asset: DUPLICATE_ASSET, percent: "p" }] };
+    const after = [before[0]!, { ...before[1]!, asset: ref("B") }, before[2]!];
+    expect(carryLineErrors(errors, before, after).lines).toEqual([
+      {},
+      {},
+      { asset: DUPLICATE_ASSET, percent: "p" },
     ]);
   });
 });
