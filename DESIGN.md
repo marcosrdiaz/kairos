@@ -136,7 +136,7 @@ Paleta de papel y tinta con un azul sobrio como único acento y tres colores de 
 
 ## Layout
 
-Móvil primero. La app es una columna de un máximo de 36 rem (576 px) centrada, con 16 px de margen lateral y una barra de tres pestañas fija abajo (Inicio · Cartera · Pregunta). El panel (`/panel`) es un layout de escritorio independiente: cabecera con la marca, contenido hasta 72 rem (1152 px) y 24 px de margen lateral, sin barra inferior.
+Móvil primero, pero la app también se usa en escritorio. En móvil (< 1024 px) es una columna de un máximo de 36 rem (576 px) centrada, con 16 px de margen lateral y una barra de tres pestañas fija abajo (Inicio · Cartera · Pregunta). En escritorio (≥ 1024 px, `lg`) la misma barra sube arriba como cabecera fija con la marca a la izquierda, las pestañas marcadas con un filo inferior de 4 px y el enlace al panel a la derecha; el contenido llega a 72 rem (1152 px) con 24 px de margen y puede ir a dos columnas (en Inicio: estado a la izquierda, atajos a la derecha). Es un único `<nav>`, reordenado con CSS. El widget de la pantalla de inicio del móvil es un componente aparte que se hará después. El panel (`/panel`) es un layout de escritorio independiente: cabecera con la marca, contenido hasta 72 rem (1152 px) y 24 px de margen lateral, sin barra inferior.
 
 El ritmo de espacio usa pasos de 8, 16 y 24 px. La altura de pestaña es de 56 px y todo objetivo táctil mide al menos 44×44 px. El texto debe poder ampliarse al 200 % sin perder contenido ni producir desplazamiento horizontal.
 
