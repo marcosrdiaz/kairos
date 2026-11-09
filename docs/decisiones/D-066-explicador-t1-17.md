@@ -1,4 +1,4 @@
-### D-XXX · Explicador (T1-17): contexto precargado, frase a frase, plantillas y textos de otros módulos
+### D-066 · Explicador (T1-17): contexto precargado, frase a frase, plantillas y textos de otros módulos
 - Fecha: 2026-11-09 · Autor: Manu · Estado: Propuesta
 - Contexto: T1-17 sustituye el `/ask` mock por el explicador real y las funciones mock de `agents/service.py` (`write_event_explanation`, `write_status_sentence`, `write_alert_message`). El diseño del MVP §4.4 fija el contrato SSE, el contexto precargado (D-011), las herramientas y el guardián frase a frase (D-010), pero deja abiertos el uso del SDK, qué evidencias se pasan, cómo se reintenta a mitad de respuesta y cómo son las plantillas.
 - Decisión:

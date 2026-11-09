@@ -95,4 +95,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-063](decisiones/D-063-tests-backend-en-paralelo.md) | 2026-11-09 | Tests del backend en paralelo con pytest-xdist (T1-23) | Propuesta |
 | [D-064](decisiones/D-064-proyeccion-dca-t1-14.md) | 2026-11-09 | Proyección con DCA (T1-14): horizonte, capitalización, aportación y meta ausente | Propuesta |
 | [D-065](decisiones/D-065-modo-demo-produccion-precios.md) | 2026-11-09 | Modo demo y modo producción: precios en directo y proveedor | Propuesta |
+| [D-066](decisiones/D-066-explicador-t1-17.md) | 2026-11-09 | Explicador (T1-17): contexto precargado, frase a frase, plantillas y textos de otros módulos | Propuesta |
 <!-- INDICE:FIN -->
