@@ -1,0 +1,17 @@
+/*
+ * Entrada de los bloques del panel (y al cambiar de cartera). Un solo movimiento, corto y de
+ * salida suave: sube 6 px mientras aparece. Solo se define si el usuario no pide menos
+ * movimiento; con prefers-reduced-motion el contenido simplemente está ahí.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .panel-reveal {
+    animation: panel-reveal 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation-delay: calc(var(--panel-step, 0) * 45ms);
+  }
+  @keyframes panel-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+}
