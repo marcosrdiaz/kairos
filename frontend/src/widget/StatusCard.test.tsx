@@ -7,7 +7,7 @@ import revisaPlan from "../api/mocks/StatusOut.revisa_plan.json";
 import tranquilo from "../api/mocks/StatusOut.tranquilo.json";
 import { StatusCard } from "./StatusCard";
 import { StatusTiles } from "./StatusTiles";
-import { signedPercent, trendOf } from "./states";
+import { signedPercent, trendOf, withoutTapHint } from "./states";
 
 afterEach(cleanup);
 
@@ -37,7 +37,9 @@ describe("StatusCard + StatusTiles", () => {
     const { container } = renderStatus(status);
     const badge = container.querySelector(`[data-state="${state}"]`);
     expect(badge?.textContent).toContain(word);
-    expect(screen.getByRole("heading", { level: 2, name: status.sentence })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { level: 2, name: withoutTapHint(status.sentence) }),
+    ).toBeTruthy();
     expect(container.querySelector(`[data-calc-id="${status.calc_id}"]`)).not.toBeNull();
   });
 
@@ -68,6 +70,23 @@ describe("StatusCard + StatusTiles", () => {
     for (const svg of container.querySelectorAll("svg")) {
       expect(svg.getAttribute("aria-hidden")).toBe("true");
     }
+  });
+});
+
+describe("withoutTapHint", () => {
+  it.each([
+    [
+      "Tus fondos tecnológicos caen tras resultados. Toca para ver por qué.",
+      "Tus fondos tecnológicos caen tras resultados.",
+    ],
+    [
+      "Tu cartera se ha alejado de tu plan. Toca para ver cuánto.",
+      "Tu cartera se ha alejado de tu plan.",
+    ],
+    ["Tu cartera sigue en línea con tu plan.", "Tu cartera sigue en línea con tu plan."],
+    ["Toca para ver por qué.", "Toca para ver por qué."],
+  ])("%s -> %s", (input, expected) => {
+    expect(withoutTapHint(input)).toBe(expected);
   });
 });
 

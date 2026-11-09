@@ -46,6 +46,16 @@ export function trendOf(fraction: string): "up" | "down" | "flat" {
   return v.startsWith("-") ? "down" : "up";
 }
 
+/**
+ * Quita la llamada final "Toca para ver…" de la frase de estado. En la app ya hay un botón
+ * "Ver por qué"; el widget del móvil (spec de producto) sí conserva la frase completa.
+ * Solo recorta la última oración si empieza por "Toca para": no reescribe ni añade nada.
+ */
+export function withoutTapHint(sentence: string): string {
+  const trimmed = sentence.replace(/\s*Toca para [^.]*\.\s*$/u, "").trim();
+  return trimmed || sentence;
+}
+
 /** Franja de color sólido del estado (decorativa: la palabra va en la insignia). */
 export function stateBandClass(state: StatusState): string {
   return STATE_BAND[state];

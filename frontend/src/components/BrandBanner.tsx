@@ -20,12 +20,6 @@ function Waves() {
           opacity={0.18 + d / 120}
         />
       ))}
-      <path
-        d="M-10 132 C 80 96, 150 150, 230 100 S 300 70, 320 80"
-        stroke="var(--kairos-color-gold-deep)"
-        strokeWidth="1.6"
-        opacity="0.45"
-      />
     </svg>
   );
 }

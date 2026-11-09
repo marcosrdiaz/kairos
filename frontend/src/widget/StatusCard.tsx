@@ -4,7 +4,7 @@ import { buttonPrimary } from "../components/button";
 import { ArrowRightIcon } from "../components/icons";
 import { HeroArt } from "./HeroArt";
 import { StatusBadge } from "./StatusBadge";
-import { stateBandClass } from "./states";
+import { stateBandClass, withoutTapHint } from "./states";
 
 interface StatusCardProps {
   status: StatusOut;
@@ -34,7 +34,7 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
           id="status-heading"
           className="mb-0 mt-5 max-w-[26ch] text-2xl font-semibold leading-tight text-ink lg:text-[2.25rem]"
         >
-          {status.sentence}
+          {withoutTapHint(status.sentence)}
         </h2>
         {hasReason && (
           <Link to={detailHref} className={`${buttonPrimary} mt-6`}>
