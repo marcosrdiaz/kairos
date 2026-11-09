@@ -1,5 +1,6 @@
 import type { Ref } from "react";
 import type { PortfolioOut } from "../../api/generated/schema";
+import { TraceFigure } from "../../components/trace/TraceFigure";
 import { formatDate, formatEur, formatPercent } from "../../lib/format";
 import { ASSET_CLASS_LABEL, ASSET_CLASS_ORDER } from "./labels";
 
@@ -30,7 +31,9 @@ export function OnboardingResult({ portfolio, ref }: OnboardingResultProps) {
       </h3>
       <dl className="m-0 grid gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr]">
         <dt className="text-ink-muted">Valor total</dt>
-        <dd className="m-0 font-semibold text-ink tabular-nums">{formatEur(portfolio.total_eur)}</dd>
+        <dd className="m-0 font-semibold text-ink tabular-nums">
+          <TraceFigure calcId={portfolio.calc_id}>{formatEur(portfolio.total_eur)}</TraceFigure>
+        </dd>
         <dt className="text-ink-muted">Posiciones</dt>
         <dd className="m-0 text-ink tabular-nums">{portfolio.positions.length}</dd>
         <dt className="text-ink-muted">Valorada a</dt>

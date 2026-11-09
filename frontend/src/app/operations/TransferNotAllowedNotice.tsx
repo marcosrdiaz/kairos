@@ -1,6 +1,7 @@
 import type { Ref } from "react";
 import type { AssetType } from "../../api/generated/schema";
 import { buttonSecondary } from "../../components/button";
+import { TraceFigure } from "../../components/trace/TraceFigure";
 import { formatEur } from "../../lib/format";
 import type { TransferNotAllowed } from "./operationError";
 
@@ -54,8 +55,8 @@ export function TransferNotAllowedNotice({ info, onSellInstead, ref }: TransferN
           <>
             con el precio de ahora, la {isLoss ? "minusvalía" : "plusvalía"} estimada de esas
             participaciones es de{" "}
-            <strong className="tabular-nums" data-calc-id={info.calcId ?? undefined}>
-              {formatEur(gain)}
+            <strong className="tabular-nums">
+              <TraceFigure calcId={info.calcId}>{formatEur(gain)}</TraceFigure>
             </strong>
             .
           </>

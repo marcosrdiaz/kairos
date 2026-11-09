@@ -1,0 +1,12 @@
+### D-XXX · «¿De dónde sale?» en la UI (T2-11)
+- Fecha: 2026-11-10 · Autor: Jaime · Estado: Propuesta
+- Contexto: RF-19 pide llegar a la traza desde cualquier cifra del panel. El panel ya envolvía sus cifras en `Traced` a la espera de esta tarea, y el resto de pantallas solo tenían `data-calc-id`.
+- Decisión:
+  - **La cifra es el botón.** `TraceFigure` convierte la cifra en un botón con subrayado punteado. Un enlace «¿De dónde sale?» junto a cada cifra llenaría las tablas. `TraceLink` queda para frases y tarjetas sin una cifra tocable: el estado de Inicio, los avisos y las respuestas del asistente.
+  - **Hoja única con `<dialog>` nativo.** `TraceProvider` (en `App.tsx`) monta una sola hoja. `showModal` da gratis el atrapado del foco, Esc, el resto de la app inerte y la vuelta del foco a la cifra. Sin dependencias nuevas.
+  - **Cadena completa de una vez.** `loadTraceChain` recorre `parent_calc_ids` por niveles, sin repetir cálculos, con un tope de 40 por cifra. Si falta un padre, se muestra «Traza no disponible» y el resto sigue.
+  - **Formato por nombre de clave.** `inputs` y `outputs` son JSON libre. Las claves `*_eur` se muestran en euros y las de fracción (`*_pct`, pesos y las de `PERCENT_KEYS`) en porcentaje. Una clave sin nombre en `labels.ts` se muestra tal cual.
+  - **El widget de la pantalla de inicio no lleva traza.** Todo él es un enlace y un botón dentro de un enlace es HTML inválido. Sus cifras tienen traza en Inicio, a un toque.
+- Motivo: cumplir la regla 4 de producto sin recargar las pantallas ni obligar a cada pantalla a gestionar su propia hoja.
+- Alternativas descartadas: ruta propia `/traza/:id` (saca al usuario de lo que estaba mirando); cargar los padres uno a uno al desplegarlos (más estado por cálculo y no se ve de qué tipo es cada uno hasta abrirlo).
+- Impacto: fuera de un `TraceProvider`, `TraceFigure` pinta un `span` con `data-calc-id` y `TraceLink` no pinta nada, así que los tests de pantalla siguen igual. Si el backend añade una clave nueva a una traza, hay que darle nombre en `labels.ts`, y unidad en `traceFields.ts` si es una fracción sin sufijo.

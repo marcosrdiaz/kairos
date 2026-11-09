@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { EventImpactOut } from "../../api/generated/schema";
 import { ArrowRightIcon } from "../../components/icons";
+import { TraceFigure } from "../../components/trace/TraceFigure";
 import { formatDate, formatEurRange } from "../../lib/format";
 import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL, POLARITY } from "./labels";
 
@@ -42,7 +43,9 @@ export function NewsSlide({ event, position, total, direction, panelHref }: News
           <div>
             <dt className="text-sm font-medium text-ink-muted">Impacto estimado en tu cartera</dt>
             <dd className="m-0 text-lg font-semibold tabular-nums text-ink">
-              {formatEurRange(event.low_eur, event.high_eur)}
+              <TraceFigure calcId={event.calc_id}>
+                {formatEurRange(event.low_eur, event.high_eur)}
+              </TraceFigure>
             </dd>
           </div>
           <div className="flex flex-wrap gap-2">
