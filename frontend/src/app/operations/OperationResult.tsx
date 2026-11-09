@@ -10,7 +10,8 @@ const TITLE: Record<TransactionOut["type"], string> = {
   dca_buy: "Aportación registrada",
 };
 
-function Row({ label, children, calcId }: { label: string; children: ReactNode; calcId?: string }) {
+/** Toda cifra lleva su `calc_id` (regla 4): el de la operación o, si sale de la cartera, el suyo. */
+function Row({ label, children, calcId }: { label: string; children: ReactNode; calcId: string }) {
   return (
     <>
       <dt className="text-ink-muted">{label}</dt>
@@ -64,9 +65,13 @@ export function OperationResult({ tx, fallbackName, fallbackToName, ref }: Opera
         )}
       </p>
       <dl className="m-0 grid gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr]">
-        <Row label="Participaciones">{formatUnits(tx.units)}</Row>
-        <Row label="Importe">{formatEur(tx.amount_eur)}</Row>
-        <Row label="Precio usado">
+        <Row label="Participaciones" calcId={tx.calc_id}>
+          {formatUnits(tx.units)}
+        </Row>
+        <Row label="Importe" calcId={tx.calc_id}>
+          {formatEur(tx.amount_eur)}
+        </Row>
+        <Row label="Precio usado" calcId={tx.calc_id}>
           {formatPrice(tx.price, tx.price_currency)}{" "}
           <span className="font-normal text-ink-muted">del {formatDate(tx.price_at)}</span>
         </Row>
@@ -75,13 +80,19 @@ export function OperationResult({ tx, fallbackName, fallbackToName, ref }: Opera
             {formatEur(gain)}
           </Row>
         )}
-        <Row label={toName ? `Te quedan en «${name}»` : "Participaciones ahora"}>
+        <Row label={toName ? `Te quedan en «${name}»` : "Participaciones ahora"} calcId={tx.calc_id}>
           {formatUnits(tx.effect.units_after)}
         </Row>
         {tx.type !== "sell" && !toName && (
-          <Row label="Precio medio ahora">{formatEur(tx.effect.avg_cost_eur_after)}</Row>
+          <Row label="Precio medio ahora" calcId={tx.calc_id}>
+            {formatEur(tx.effect.avg_cost_eur_after)}
+          </Row>
         )}
-        {toPosition && <Row label={`Ahora en «${toPosition.name}»`}>{formatUnits(toPosition.units)}</Row>}
+        {toPosition && (
+          <Row label={`Ahora en «${toPosition.name}»`} calcId={p.calc_id}>
+            {formatUnits(toPosition.units)}
+          </Row>
+        )}
         <Row label="Valor de la cartera" calcId={p.calc_id}>
           {formatEur(p.total_eur)}
         </Row>
