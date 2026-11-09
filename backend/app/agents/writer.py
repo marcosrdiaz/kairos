@@ -9,6 +9,7 @@ pipeline de eventos.
 
 import json
 import logging
+import time
 from typing import Any
 
 from app.agents import claude, guardian, templates
@@ -23,6 +24,8 @@ from app.schemas.agents import (
 )
 
 ATTEMPTS = 2
+DEADLINE_S = 6.0
+"""Plazo total del modelo en un texto (los dos intentos): el pipeline de eventos espera."""
 LIMITS: dict[GuardianChannel, tuple[int, int]] = {
     GuardianChannel.WIDGET: (2, 22),
     GuardianChannel.ALERT: (1, 25),
@@ -32,6 +35,11 @@ LIMITS: dict[GuardianChannel, tuple[int, int]] = {
 de unas 15 palabras, más el «Toca para ver por qué» si toca (producto, §Widget)."""
 
 logger = logging.getLogger(__name__)
+_monotonic = time.monotonic  # reloj del plazo; los tests lo sustituyen
+
+
+class _DeadlineExceeded(Exception):
+    """Se ha agotado `DEADLINE_S`: se pasa a la plantilla."""
 
 
 def _check(
@@ -68,13 +76,19 @@ def _message(task: str, found: list[Fact], feedback: str | None) -> str:
     return "\n".join(parts)
 
 
-def _complete(client: Any, task: str, found: list[Fact], feedback: str | None) -> str:
+def _complete(
+    client: Any, task: str, found: list[Fact], feedback: str | None, deadline: float
+) -> str:
+    """En streaming para poder cortar al agotar el plazo (el timeout de httpx es por lectura)."""
     kwargs = {
         **claude.base_kwargs(),
         "system": claude.writer_prompt(),
         "messages": [{"role": "user", "content": _message(task, found, feedback)}],
     }
     with client.messages.stream(**kwargs) as stream:
+        for _ in stream:
+            if _monotonic() > deadline:
+                raise _DeadlineExceeded
         return claude.final_text(stream.get_final_message())
 
 
@@ -87,9 +101,13 @@ def _by_model(
 ) -> str | None:
     client = claude.get_client()
     feedback: str | None = None
+    deadline = _monotonic() + DEADLINE_S
     for _ in range(ATTEMPTS if client is not None else 0):
         try:
-            text = _complete(client, task, found, feedback)
+            text = _complete(client, task, found, feedback, deadline)
+        except _DeadlineExceeded:
+            logger.warning("Redactor (%s): plazo agotado, plantilla", channel)
+            return None
         except claude.UPSTREAM_ERRORS:
             logger.warning("Redactor (%s): fallo del modelo, plantilla", channel, exc_info=True)
             return None

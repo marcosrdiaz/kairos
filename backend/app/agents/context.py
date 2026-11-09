@@ -47,6 +47,9 @@ class Preloaded:
     event_evidence: list[Evidence] = field(default_factory=list)
     events: list[EventImpactOut] = field(default_factory=list)
     projection: ProjectionOut | None = None
+    has_plan: bool = True
+    """`False` si no hay plan ni proyección: el prompt no lleva `plan` (el contrato exige
+    `on_track` y `goal_year`, que serían inventados)."""
 
     def evidence(self) -> list[Evidence]:
         return [*fact_format.as_evidence(self.context.facts), *self.event_evidence]
@@ -116,13 +119,13 @@ def _plan(plan: PlanOut | None, projection: ProjectionOut | None) -> ExplainerPl
     return ExplainerPlan(on_track=on_track, goal_year=goal_year or 0, drift_exceeded=drift)
 
 
-def build(portfolio_id: str) -> Preloaded:
-    """Construye el contexto sin caché. Lanza `AppError` si la cartera no se puede valorar."""
+def build(portfolio_id: str, state: StatusState | None = None) -> Preloaded:
+    """Construye el contexto sin caché con el estado de `status` ya leído por `get`.
+    Lanza `AppError` si la cartera no se puede valorar."""
     portfolio = portfolio_service.get_valued(portfolio_id)
     plan = _optional_plan(portfolio_id)
     projection = _optional_projection(portfolio_id)
     impacts = impact_service.list_event_impacts(portfolio_id, EVENTS_DAYS)
-    state, _ = _status(portfolio_id)
 
     all_facts = facts.portfolio_facts(portfolio)
     if plan is not None:
@@ -151,18 +154,19 @@ def build(portfolio_id: str) -> Preloaded:
         events_7d=[_event(impact) for impact in impacts],
         status=ExplainerStatus(state=state or StatusState.TRANQUILO),
     )
-    return Preloaded(context, evidence, impacts, projection)
+    has_plan = plan is not None or projection is not None
+    return Preloaded(context, evidence, impacts, projection, has_plan)
 
 
 def get(portfolio_id: str) -> Preloaded:
     """Contexto de la caché si sigue vigente; si no, lo reconstruye."""
-    _, status_calc_id = _status(portfolio_id)
+    state, status_calc_id = _status(portfolio_id)
     now = _monotonic()
     with _lock:
         entry = _cache.get(portfolio_id)
     if entry and entry.status_calc_id == status_calc_id and now - entry.built_at < TTL_S:
         return entry.preloaded
-    preloaded = build(portfolio_id)
+    preloaded = build(portfolio_id, state)
     with _lock:
         _cache[portfolio_id] = _Entry(status_calc_id, now, preloaded)
     return preloaded

@@ -25,7 +25,7 @@ class _Clock:
 def env(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
     state: dict[str, Any] = {"builds": 0, "calc_id": "calc_status_a", "clock": _Clock()}
 
-    def build(_pid: str) -> context.Preloaded:
+    def build(_pid: str, _state: object = None) -> context.Preloaded:
         state["builds"] += 1
         return fx.preloaded()
 

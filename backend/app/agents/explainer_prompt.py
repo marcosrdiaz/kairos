@@ -16,7 +16,10 @@ def context_block(pre: Preloaded) -> str:
         for e in pre.events
         if e.surprise.metric
     ]
-    payload = {"contexto": pre.context.model_dump(mode="json"), "consenso_eventos": consensus}
+    contexto = pre.context.model_dump(mode="json")
+    if not pre.has_plan:
+        contexto["plan"] = None  # sin plan, `on_track` y `goal_year` serían inventados
+    payload = {"contexto": contexto, "consenso_eventos": consensus}
     body = json.dumps(payload, ensure_ascii=False)
     return f"<contexto_cartera>\n{body}\n</contexto_cartera>"
 

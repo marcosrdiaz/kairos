@@ -5,6 +5,7 @@ Otros módulos importan `analyze_event`, `write_event_explanation`, `write_statu
 (regla 3 de producto); si el modelo no está o se bloquea dos veces, sale de plantilla.
 """
 
+from collections import OrderedDict
 from collections.abc import Iterator
 from threading import Lock
 
@@ -13,6 +14,7 @@ from app.agents.fact_format import text_evidence
 from app.agents.facts import status_facts, stub_facts
 from app.portfolio import service as portfolio_service
 from app.schemas.agents import (
+    AskChannel,
     AskEvent,
     AskRequest,
     EventImpactStub,
@@ -41,7 +43,9 @@ _ALERT_TASK = (
     "afecta a la cartera en euros. Evento: «{title}»."
 )
 
-_sessions: set[str] = set()
+MAX_SESSIONS = 10_000
+"""Sesiones recordadas para el aviso de IA; las más antiguas se olvidan (vuelven a verlo)."""
+_sessions: OrderedDict[tuple[str, bool], None] = OrderedDict()
 _sessions_lock = Lock()
 
 # --- Interfaz entre módulos ---
@@ -99,19 +103,33 @@ def invalidate_context(portfolio_id: str | None = None) -> None:
 # --- Uso de `api/ask.py` ---
 
 
-def _first_time(session_id: str) -> bool:
-    """`True` la primera vez que se ve la sesión: toca el aviso de IA (AI Act art. 50)."""
+def needs_disclaimer(session_id: str, channel: AskChannel) -> bool:
+    """Aviso de IA (AI Act art. 50, regla 6): la primera vez que se ve la sesión y, además, al
+    empezar la voz en ella aunque antes haya preguntado por texto."""
+    voice = channel is AskChannel.VOICE
+    keys = [(session_id, False), (session_id, True)] if voice else [(session_id, False)]
     with _sessions_lock:
-        if session_id in _sessions:
-            return False
-        _sessions.add(session_id)
-        return True
+        first = any(key not in _sessions for key in keys)
+        for key in keys:
+            _sessions[key] = None
+            _sessions.move_to_end(key)
+        while len(_sessions) > MAX_SESSIONS:
+            _sessions.popitem(last=False)
+    return first
+
+
+def reset_sessions() -> None:
+    """Olvida las sesiones (tests)."""
+    with _sessions_lock:
+        _sessions.clear()
 
 
 def ask(portfolio_id: str, request: AskRequest) -> Iterator[AskEvent]:
     """Eventos SSE del turno. Falla con NOT_FOUND antes de emitir nada si la cartera no existe."""
     portfolio_service.ensure_exists(portfolio_id)
-    turn = explainer.Turn(portfolio_id, request, disclaimer=_first_time(request.session_id))
+    turn = explainer.Turn(
+        portfolio_id, request, disclaimer=needs_disclaimer(request.session_id, request.channel)
+    )
     return turn.events()
 
 

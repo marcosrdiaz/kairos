@@ -67,13 +67,6 @@ def test_split(text: str, expected: list[str]) -> None:
     assert by_char == expected, "el streaming carácter a carácter debe dar lo mismo"
 
 
-def test_discard_drops_the_unfinished_sentence() -> None:
-    splitter = SentenceSplitter()
-    assert splitter.feed("Ha bajado. Por las tecnol") == ["Ha bajado."]
-    splitter.discard()
-    assert splitter.flush() == []
-
-
 def test_streaming_waits_for_the_next_character() -> None:
     splitter = SentenceSplitter()
     assert splitter.feed("Ha bajado.") == []

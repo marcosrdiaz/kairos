@@ -69,6 +69,11 @@ def _more_less(value: Decimal) -> str:
     return "más" if value >= 0 else "menos"
 
 
+def _amount(value: Decimal) -> str:
+    """Importe con su sentido; 0 es «0 euros», sin «a tu favor»."""
+    return format_eur(value) if value == 0 else f"{format_eur(value)} {_side(value)}"
+
+
 def _change(value: Decimal) -> str:
     if value == 0:
         return "se ha quedado igual"
@@ -91,11 +96,11 @@ def match_event(events: list[EventImpactOut], question: str) -> EventImpactOut |
 
 def _event_sentences(event: EventImpactOut) -> list[str]:
     impact = event.impact_eur
-    first = (
-        f"«{event.title}» te afecta en unos {format_eur(impact)} {_side(impact)}, en un rango "
-        f"que va de {format_eur(event.low_eur)} {_side(event.low_eur)} a "
-        f"{format_eur(event.high_eur)} {_side(event.high_eur)}."
-    )
+    span = f"en un rango que va de {_amount(event.low_eur)} a {_amount(event.high_eur)}"
+    if impact == 0:
+        first = f"«{event.title}» no mueve tu cartera en la estimación central, {span}."
+    else:
+        first = f"«{event.title}» te afecta en unos {_amount(impact)}, {span}."
     sentences = [first]
     if event.breakdown:
         top = max(event.breakdown, key=lambda a: abs(a.impact_eur))
@@ -126,8 +131,7 @@ def _move(pre: Preloaded, move: MoveAttributionOut | None) -> list[str]:
         if pre.events:
             event = max(pre.events, key=lambda e: abs(e.impact_eur))
             sentences.append(
-                f"El evento que más pesa es «{event.title}», con unos "
-                f"{format_eur(event.impact_eur)} {_side(event.impact_eur)}."
+                f"El evento que más pesa es «{event.title}», con unos {_amount(event.impact_eur)}."
             )
         return sentences
     start = _PERIOD_START.get(move.period, "En este periodo")
@@ -135,10 +139,9 @@ def _move(pre: Preloaded, move: MoveAttributionOut | None) -> list[str]:
     if move.by_event:
         top = max(move.by_event, key=lambda e: abs(e.impact_eur))
         sentences.append(
-            f"La mayor parte viene de «{top.title}», con unos {format_eur(top.impact_eur)} "
-            f"{_side(top.impact_eur)}."
+            f"La mayor parte viene de «{top.title}», con unos {_amount(top.impact_eur)}."
         )
-    elif move.by_asset:
+    elif move.by_asset and any(a.change_eur != 0 for a in move.by_asset):
         asset = max(move.by_asset, key=lambda a: abs(a.change_eur))
         sentences.append(
             f"Lo que más ha pesado es {asset.name}, con {format_eur(asset.change_eur)} "
@@ -194,11 +197,11 @@ def answer(pre: Preloaded, question: str, move: MoveAttributionOut | None = None
 
 def event_explanation(impact: EventImpactStub) -> str:
     value = impact.impact_eur
-    text = (
-        f"Este evento te afecta en unos {format_eur(value)} {_side(value)}, en un rango que va "
-        f"de {format_eur(impact.low_eur)} {_side(impact.low_eur)} a "
-        f"{format_eur(impact.high_eur)} {_side(impact.high_eur)}."
-    )
+    span = f"en un rango que va de {_amount(impact.low_eur)} a {_amount(impact.high_eur)}"
+    if value == 0:
+        text = f"Este evento no mueve tu cartera en la estimación central, {span}."
+    else:
+        text = f"Este evento te afecta en unos {_amount(value)}, {span}."
     if impact.breakdown:
         top = max(impact.breakdown, key=lambda a: abs(a.impact_eur))
         text += f" Donde más se nota es en {top.name}, por el canal de {top.channel}."
@@ -207,6 +210,8 @@ def event_explanation(impact: EventImpactStub) -> str:
 
 def alert_message(impact: EventImpactStub) -> str:
     value = impact.impact_eur
+    if value == 0:
+        return f"{impact.title}: {format_eur(value)} de efecto en tu cartera."
     return f"{impact.title}: tu cartera, unos {format_eur(value)} {_more_less(value)}."
 
 

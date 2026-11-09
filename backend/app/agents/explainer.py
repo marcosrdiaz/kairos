@@ -46,6 +46,9 @@ TURN_DEADLINE_S = 6.0
 UNAVAILABLE = "El asistente no puede responder ahora mismo."
 
 logger = logging.getLogger(__name__)
+_monotonic = time.monotonic  # reloj del plazo; los tests lo sustituyen
+_SENTENCE_END = (".", "!", "?", "…")
+_CLOSERS = "»\"”')*_"
 
 Stream = Generator[AskEvent, None, str | None]
 
@@ -72,13 +75,13 @@ class Turn:
         self.fallback_used = False
         self.usage: list[dict[str, int]] = []
         self._started = time.perf_counter()
-        self._deadline = time.monotonic() + TURN_DEADLINE_S
+        self._deadline = 0.0  # se fija al empezar la parte del modelo (`_model_part`)
         self.out = Emitter(self.turn_id, self.channel, self.kind, [], self._started)
 
     # --- Modelo ---
 
     def _check_deadline(self) -> None:
-        if time.monotonic() > self._deadline:
+        if _monotonic() > self._deadline:
             raise _Fallback("plazo del turno agotado")
 
     def _record_usage(self, final: Any) -> None:
@@ -134,9 +137,10 @@ class Turn:
             stop = final.stop_reason
             if stop == "refusal":
                 raise _Fallback("rechazo del modelo")
-            if stop == "max_tokens":
-                splitter.discard()  # la última frase está a medias: no se dice
-            pending += splitter.flush()
+            tail = splitter.flush()
+            if stop == "max_tokens":  # la última frase, si está a medias, no se dice
+                tail = [s for s in tail if s.rstrip(_CLOSERS).endswith(_SENTENCE_END)]
+            pending += tail
             results = self._run_tools(final) if stop == "tool_use" else []
             if not results:
                 blocked = yield from self._sentences(pending)
@@ -179,19 +183,22 @@ class Turn:
         return move
 
     def _template(self, pre: Preloaded) -> Iterator[AskEvent]:
-        self.fallback_used = True
+        """Sigue desde la frase siguiente a las ya dichas. `fallback_used` solo si la plantilla
+        llega a emitir alguna frase."""
         sentences = templates.answer(pre, self.request.question, self._move())
         for sentence in sentences[len(self.out.emitted) :]:
             if self.out.full:
                 return
             outcome = self.out.approve(sentence)
             if not isinstance(outcome, str):
+                self.fallback_used = True
                 yield outcome
 
     # --- Turno ---
 
     def _model_part(self, pre: Preloaded) -> Iterator[AskEvent]:
         """La respuesta del modelo; si falla de cualquier forma, la plantilla."""
+        self._deadline = _monotonic() + TURN_DEADLINE_S  # el contexto no cuenta
         client = claude.get_client()
         if client is None:
             logger.info("Explicador %s: sin clave de Anthropic, plantilla", self.turn_id)

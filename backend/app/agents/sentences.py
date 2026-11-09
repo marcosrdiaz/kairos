@@ -88,10 +88,6 @@ class SentenceSplitter:
         self._buffer = ""
         return [sentence] if sentence else []
 
-    def discard(self) -> None:
-        """Olvida lo que queda sin cerrar (respuesta cortada por `max_tokens`)."""
-        self._buffer = ""
-
 
 def split(text: str) -> list[str]:
     splitter = SentenceSplitter()

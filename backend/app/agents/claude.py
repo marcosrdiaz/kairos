@@ -49,6 +49,12 @@ def get_client() -> Any | None:
     api_key = get_settings().anthropic_api_key
     if not api_key:
         return None
+    return _real_client(api_key)
+
+
+@cache
+def _real_client(api_key: str) -> anthropic.Anthropic:
+    """Un cliente por clave: reutiliza las conexiones (sin un TLS nuevo en cada turno)."""
     return anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_S, max_retries=0)
 
 
