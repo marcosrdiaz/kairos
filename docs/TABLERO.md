@@ -100,7 +100,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py` | — | ⬜ |
 | T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` | — | ⬜ |
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | Alons | 🔄 en curso |
-| T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | 🧪 en PR |
+| T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | ✅ hecho |
 | T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` | — | ⬜ |
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | — | ⬜ |
@@ -148,11 +148,9 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #39; después, borrar esta subsección.
 **Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
 
-### T2-08 · Avisos de evento — Marcos
-**Qué estaba haciendo:** PR #65 (`t2-08/alerts`) abierto. `alerts` real: score, umbral gemelo del widget (test de sincronía con `status`), 1 aviso por (cartera, evento), 2 por semana ISO, mensaje por el guardián, `calc_id` resuelto al leer. Lint y tests (backend 1490, frontend 228) en verde; probado con Postgres real (2 replays → 1 aviso; reset → 0).
-**Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #65; después, `docs: done T2-08` y borrar esta subsección.
-**Ficheros tocados:** `backend/app/alerts/`, `backend/tests/test_alerts_{engine,service}.py`, `backend/tests/test_event_agent_examples.py` (un test que comprobaba el mock), `docs/decisiones/D-XXX-avisos-t2-08.md`.
-**Para otras tareas:** el cerrojo de idempotencia es en proceso (un solo worker de uvicorn). T3-04 debe cambiar `alerts/config.py` y `status/config.py` a la vez. Al entrar T2-02, comprobar que `alerts` y `status` siguen usando el mismo patrimonio.
+### T3-04 · Umbrales de avisos y de estado: cambiarlos a la vez — Marcos (para quien coja la tarea)
+**Qué hay que saber:** `alerts/config.py` (`MIN_EUR`, `MIN_SHARE`) y `status/config.py` (`ATENTO_MIN_EUR`, `ATENTO_MIN_SHARE`) tienen que valer lo mismo: el paso 3 del guion necesita el widget en «Atento» y el aviso a la vez. Dos tests lo comprueban (`backend/tests/test_alerts_engine.py`); si cambias uno y no el otro, fallan.
+**Siguiente paso exacto:** al calibrar, cambia los dos ficheros en el mismo PR. Ver D-076.
 
 ### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
 **Qué estaba haciendo:** PR #58 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador. PR #59 abierto (misma rama, CI en verde): el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071). `ruff`, `mypy` y 1376 tests del backend en verde.
