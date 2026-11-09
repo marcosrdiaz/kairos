@@ -80,7 +80,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | Jaime | ✅ hecho |
 | T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | — | ⬜ |
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | Jaime | ✅ hecho |
-| T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` | Manu | 🔄 en curso |
+| T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` | Manu | 🧪 en PR |
 | T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | — | ⬜ |
 | T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` | Javi | 🔄 en curso |
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | — | ⬜ |
@@ -136,6 +136,16 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T1-16 · Guardián — Manu
+**Qué estaba haciendo:** guardián implementado y revisado en la rama `t1-16/guardian`, PR #38 abierto: lint, mypy y 984 tests en verde en local.
+**Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #38; después, `docs: done T1-16`. Queda pendiente un PR aparte de `pyproject.toml`: declarar `pyyaml` como dependencia directa y añadir `app.agents.guardian_figures` a la lista de módulos con `mypy --strict`.
+**Ficheros tocados:** `backend/app/agents/{guardian,guardian_figures}.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian_{patterns,figures,shape,units}.py`, `backend/tests/fakes/guardian.py`, `docs/SPEC.md` §9, decisión nueva «Guardián: reglas de cifras, patrones y forma».
+**Para T1-17:** la entrada es `guardian.check(GuardianRequest)`.
+- Pasa como evidencias los años y las cifras del evento que el texto vaya a citar.
+- Pon la cifra en € en la primera frase de las respuestas de impacto.
+- Escribe el sujeto delante del verbo ("el Tesoro compra deuda", no "compra deuda el Tesoro").
+- Sustituye el filtro provisional `_ORDER` de `analyzer.py` por `guardian.check`.
 
 ### T1-20 · DCA en la UI: API real que deja T1-06 — Alons (para quien coja la tarea)
 **Endpoints (reales en `main`, D-055 y D-056):** lista las aportaciones pendientes con `GET /portfolios/{id}/dca-executions?status=pending` y confirma o salta con `POST /dca-executions/{id}` (`{"action": "confirm" | "skip"}`; 422 si ya está resuelta). Los planes están en `GET/POST/PATCH /portfolios/{id}/dca-plans`; si el reparto no suma 1, responde 422 `DCA_ALLOCATION_INVALID`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo. Confirmar compra al precio del momento, así que las participaciones de la respuesta pueden diferir de las estimadas.
