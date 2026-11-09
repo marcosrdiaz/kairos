@@ -1,4 +1,4 @@
-### D-XXX · «¿De dónde sale?» en la UI (T2-11)
+### D-081 · «¿De dónde sale?» en la UI (T2-11)
 - Fecha: 2026-11-10 · Autor: Jaime · Estado: Propuesta
 - Contexto: RF-19 pide llegar a la traza desde cualquier cifra del panel. El panel ya envolvía sus cifras en `Traced` a la espera de esta tarea, y el resto de pantallas solo tenían `data-calc-id`.
 - Decisión:
