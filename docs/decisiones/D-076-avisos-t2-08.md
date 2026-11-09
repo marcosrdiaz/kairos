@@ -1,4 +1,4 @@
-### D-XXX · Avisos de evento (T2-08): un aviso por evento y cartera, umbral gemelo del widget y sin migración
+### D-076 · Avisos de evento (T2-08): un aviso por evento y cartera, umbral gemelo del widget y sin migración
 - Fecha: 2026-11-09 · Autor: Marcos · Estado: Propuesta
 - Contexto: D-032 fija la puntuación (`|impacto| / max(150, 0,005 · patrimonio)`), el umbral (`score ≥ 1`) y el límite (2 por semana ISO), pero no dice qué pasa si el mismo evento se reinyecta, cómo se mantiene sincronizado con el estado «Atento» del widget ni dónde se guarda el `calc_id` del aviso.
 - Decisión:
