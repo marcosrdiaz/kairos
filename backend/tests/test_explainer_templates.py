@@ -5,9 +5,10 @@ from collections.abc import Iterator
 from decimal import Decimal
 from typing import Any
 
+import httpx2
 import pytest
 
-from app.agents import claude, context, guardian, service, templates
+from app.agents import claude, context, guardian, service, templates, writer
 from app.agents.fact_format import as_evidence, format_eur, format_fraction, money, text_evidence
 from app.agents.facts import move_facts, status_facts, stub_facts
 from app.schemas import examples
@@ -186,7 +187,69 @@ def test_alert_message() -> None:
     assert text == f"{stub.title}: tu cartera, unos {format_eur(stub.impact_eur)} menos."
 
 
-def test_upstream_error_in_writer_uses_template() -> None:
-    claude.set_client(FakeStreamingClaude(ValueError("respuesta ilegible")))
+@pytest.mark.parametrize(
+    "outcome",
+    [
+        httpx2.ReadTimeout("timeout"),
+        Reply("", stop_reason="refusal"),
+        Reply(""),
+        RuntimeError("bug inesperado"),  # tampoco puede romper el pipeline de eventos
+    ],
+)
+def test_writer_failures_use_template(outcome: Any) -> None:
+    claude.set_client(FakeStreamingClaude(outcome))
     stub = _stub()
     assert service.write_alert_message(stub) == templates.alert_message(stub)
+
+
+def test_writer_uses_its_own_prompt_and_channel_task() -> None:
+    stub = _stub("EventImpactOut.nvda")
+    text = f"{stub.title}: unos {format_eur(stub.impact_eur)} menos."
+    fake = FakeStreamingClaude(Reply(text))
+    claude.set_client(fake)
+    assert service.write_alert_message(stub) == text
+    call = fake.messages.calls[0]
+    assert call["system"] == claude.writer_prompt()
+    assert "aviso al móvil" in call["messages"][0]["content"]
+
+
+def test_widget_text_over_the_limit_is_retried_then_template() -> None:
+    facts = _status(StatusState.ATENTO)
+    assert facts.event_impact_eur is not None
+    euros = format_eur(facts.event_impact_eur)
+    long_text = (
+        f"Hoy tu cartera tiene unos {euros} menos por el evento de las tecnológicas y eso se nota "
+        "bastante en los fondos que tienes."
+    )
+    fake = FakeStreamingClaude(Reply(long_text), Reply("Una. Dos. Tres."))
+    claude.set_client(fake)
+    text, status = service.write_status_sentence(facts)
+    assert status is SentenceStatus.TEMPLATE
+    assert text == templates.status_sentence(facts)
+    assert "palabras" in fake.messages.calls[1]["messages"][0]["content"]
+
+
+@pytest.mark.parametrize(
+    ("text", "channel", "fits"),
+    [
+        ("Todo en calma. Toca para ver por qué.", GuardianChannel.WIDGET, True),
+        ("Una. Dos. Tres.", GuardianChannel.WIDGET, False),
+        ("Una frase. Otra.", GuardianChannel.ALERT, False),
+        (" ".join(["palabra"] * 30) + ".", GuardianChannel.ALERT, False),
+        ("Una. Dos. Tres.", GuardianChannel.EVENT_EXPLANATION, True),
+        ("Una. Dos. Tres. Cuatro.", GuardianChannel.TEXT, True),
+    ],
+)
+def test_channel_limits(text: str, channel: GuardianChannel, fits: bool) -> None:
+    assert (writer.too_long(text, channel) is None) is fits
+
+
+def test_templates_fit_their_channel_limits() -> None:
+    for name in ("EventImpactOut", "EventImpactOut.nvda"):
+        stub = _stub(name)
+        assert writer.too_long(templates.alert_message(stub), GuardianChannel.ALERT) is None
+        explanation = templates.event_explanation(stub)
+        assert writer.too_long(explanation, GuardianChannel.EVENT_EXPLANATION) is None
+    for state in StatusState:
+        text = templates.status_sentence(_status(state))
+        assert writer.too_long(text, GuardianChannel.WIDGET) is None

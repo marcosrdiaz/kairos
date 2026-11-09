@@ -27,10 +27,51 @@ from app.agents.sentences import SentenceSplitter, split
         ("**Poco.** Unos 90 euros.", ["Poco.", "Unos 90 euros."]),
         ("Una frase\ncon salto. Y otra.", ["Una frase con salto.", "Y otra."]),
         ("", []),
+        # Abreviaturas
+        ("Aprox. 470 euros. Bien.", ["Aprox. 470 euros.", "Bien."]),
+        ("Unos 470 euros (aprox.). Bien.", ["Unos 470 euros (aprox.).", "Bien."]),
+        ("Iberdrola S.A. sube. Otra.", ["Iberdrola S.A. sube.", "Otra."]),
+        ("Bonos, acciones, etc. Tu cartera baja.", ["Bonos, acciones, etc.", "Tu cartera baja."]),
+        ("Bonos, acciones, etc. y más cosas.", ["Bonos, acciones, etc. y más cosas."]),
+        (
+            "Las tecnológicas de EE.UU. han caído. Bien.",
+            ["Las tecnológicas de EE.UU. han caído.", "Bien."],
+        ),
+        ("La Sra. García invierte. Bien.", ["La Sra. García invierte.", "Bien."]),
+        # Markdown
+        (
+            "- **Patrimonio**: 42.380 euros\n- **Semana**: 514 euros",
+            ["Patrimonio: 42.380 euros", "Semana: 514 euros"],
+        ),
+        (
+            "Ha bajado 514 euros.\n\n- **NVIDIA**: resta.\n- **BCE**: suma.",
+            ["Ha bajado 514 euros.", "NVIDIA: resta.", "BCE: suma."],
+        ),
+        (
+            "Ha bajado 514 euros. 1. Por NVIDIA. 2. Por el BCE.",
+            ["Ha bajado 514 euros.", "Por NVIDIA.", "Por el BCE."],
+        ),
+        ("1. Tu cartera baja. 2. Tu fondo sube.", ["Tu cartera baja.", "Tu fondo sube."]),
+        ("## Título\nTexto. Otro.", ["Texto.", "Otro."]),
+        ("Tu fondo *MSCI* sube. Bien.", ["Tu fondo MSCI sube.", "Bien."]),
+        ("Tu fondo _MSCI_ sube `ya`. Bien.", ["Tu fondo MSCI sube ya.", "Bien."]),
+        ("Resumen:\n- Uno baja.\n- Otro sube.", ["Resumen:", "Uno baja.", "Otro sube."]),
+        ("Línea uno\n\nLínea dos. Fin.", ["Línea uno", "Línea dos.", "Fin."]),
+        ("*Poco.* Unos 90 euros.", ["Poco.", "Unos 90 euros."]),
     ],
 )
 def test_split(text: str, expected: list[str]) -> None:
     assert split(text) == expected
+    splitter = SentenceSplitter()
+    by_char = [s for char in text for s in splitter.feed(char)] + splitter.flush()
+    assert by_char == expected, "el streaming carácter a carácter debe dar lo mismo"
+
+
+def test_discard_drops_the_unfinished_sentence() -> None:
+    splitter = SentenceSplitter()
+    assert splitter.feed("Ha bajado. Por las tecnol") == ["Ha bajado."]
+    splitter.discard()
+    assert splitter.flush() == []
 
 
 def test_streaming_waits_for_the_next_character() -> None:

@@ -124,6 +124,19 @@ def test_module_errors_become_tool_errors(monkeypatch: pytest.MonkeyPatch) -> No
     assert "PRICE_UNAVAILABLE" in result.content
 
 
+@pytest.mark.parametrize("error", [KeyError("x"), TypeError("y"), RuntimeError("z")])
+def test_unexpected_errors_become_a_fixed_tool_error(
+    monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
+    def fail(*_: Any) -> Any:
+        raise error
+
+    monkeypatch.setattr(exposure_service, "get_exposure", fail)
+    result = tools.run("laura", "get_exposure", {})
+    assert result == tools.ToolResult(tools.TOOL_FAILED, is_error=True)
+    assert not any(ch.isdigit() for ch in tools.TOOL_FAILED)
+
+
 def test_definitions_match_handlers() -> None:
     names = [d["name"] for d in tools.DEFINITIONS]
     assert names == [
