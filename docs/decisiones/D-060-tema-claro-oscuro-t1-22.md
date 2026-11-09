@@ -1,4 +1,4 @@
-### D-XXX · Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22)
+### D-060 · Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22)
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: Javi propone un estilo visual nuevo a partir de una referencia (paleta en oro, barra lateral en escritorio, tarjetas con icono, modo claro y oscuro) y pide un modo oscuro con interruptor. El sistema de T0-07 (D-035) era solo claro, con un azul de acento y tokens sin prefijo en el `@theme` de Tailwind. Es una tarea nueva (T1-22) que no estaba en la tabla de `docs/INGENIERIA.md` §4: hay que validarla en el checkpoint.
 - Decisión:

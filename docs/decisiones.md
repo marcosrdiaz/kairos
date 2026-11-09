@@ -89,4 +89,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-057](decisiones/D-057-plan-variacion-valor-t1-07.md) | 2026-11-09 | Plan y variación de valor (T1-07): asignación actual con `mixed`, desviación, `PUT /plan` y `get_value_change` | Propuesta |
 | [D-058](decisiones/D-058-guardian-reglas-cifras-forma.md) | 2026-11-09 | Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma | Propuesta |
 | [D-059](decisiones/D-059-app-adaptable-escritorio-t1-18.md) | 2026-11-09 | App adaptable a escritorio y tarjeta de estado en Inicio (T1-18) | Propuesta |
+| [D-060](decisiones/D-060-tema-claro-oscuro-t1-22.md) | 2026-11-09 | Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22) | Propuesta |
 <!-- INDICE:FIN -->
