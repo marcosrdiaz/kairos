@@ -1,4 +1,4 @@
-### D-XXX · Tests del backend en paralelo con pytest-xdist (T1-23)
+### D-063 · Tests del backend en paralelo con pytest-xdist (T1-23)
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: `make test` tardaba unos 2 minutos en local (1069 tests). Medido con `--durations`: 59 s de *setup* de fixtures, 25 s de *teardown* y solo 24 s dentro de los tests. Ningún test es lento por sí solo: el coste es el `create_all`, el seed y la app que se repiten en cada test, además del `drop_all` del final.
 - Decisión:

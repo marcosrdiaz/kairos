@@ -92,4 +92,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-060](decisiones/D-060-tema-claro-oscuro-t1-22.md) | 2026-11-09 | Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22) | Propuesta |
 | [D-061](decisiones/D-061-carrusel-noticias-t2-19.md) | 2026-11-09 | Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19) | Propuesta |
 | [D-062](decisiones/D-062-traspaso-fondo-fondo-t1-05.md) | 2026-11-09 | Traspaso fondo → fondo (T1-05): participaciones y coste de los lotes nuevos, libro y error con alternativa | Propuesta |
+| [D-063](decisiones/D-063-tests-backend-en-paralelo.md) | 2026-11-09 | Tests del backend en paralelo con pytest-xdist (T1-23) | Propuesta |
 <!-- INDICE:FIN -->
