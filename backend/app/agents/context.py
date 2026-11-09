@@ -64,6 +64,7 @@ class _Entry:
 
 _cache: dict[str, _Entry] = {}
 _lock = Lock()
+_monotonic = time.monotonic  # reloj del TTL; los tests lo sustituyen
 
 
 def _optional_plan(portfolio_id: str) -> PlanOut | None:
@@ -156,7 +157,7 @@ def build(portfolio_id: str) -> Preloaded:
 def get(portfolio_id: str) -> Preloaded:
     """Contexto de la caché si sigue vigente; si no, lo reconstruye."""
     _, status_calc_id = _status(portfolio_id)
-    now = time.monotonic()
+    now = _monotonic()
     with _lock:
         entry = _cache.get(portfolio_id)
     if entry and entry.status_calc_id == status_calc_id and now - entry.built_at < TTL_S:

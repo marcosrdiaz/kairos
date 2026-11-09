@@ -7,6 +7,7 @@ error (`is_error`) para que el modelo lo diga sin inventar nada.
 """
 
 import json
+import logging
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
@@ -27,6 +28,9 @@ from app.schemas.impact import MovePeriod
 MAX_DAYS = 30
 MAX_SHOCK = Decimal(1)
 _PERIODS: tuple[str, ...] = get_args(MovePeriod)
+TOOL_FAILED = "La herramienta ha fallado y no ha devuelto datos. No des cifras de esta parte."
+
+logger = logging.getLogger(__name__)
 
 
 class ToolInputError(ValueError):
@@ -135,6 +139,9 @@ def run(portfolio_id: str, name: str, args: Any) -> ToolResult:
         return ToolResult(f"Entrada no válida: {error}", is_error=True)
     except AppError as error:
         return ToolResult(f"{error.code.value}: {error.message}", is_error=True)
+    except Exception:
+        logger.exception("Herramienta %s: error inesperado (cartera %s)", name, portfolio_id)
+        return ToolResult(TOOL_FAILED, is_error=True)
 
 
 def _schema(properties: dict[str, Any] | None = None, required: list[str] | None = None) -> Any:

@@ -25,18 +25,20 @@ from app.schemas.agents import (
 )
 from app.schemas.events import EventAnalysis, EventIn
 
+# Una tarea por canal; el redactor comprueba la longitud con `writer.LIMITS`.
 _EVENT_TASK = (
-    "Escribe la explicación de este evento para el panel del usuario: 2 frases que digan cuánto "
-    "le afecta en euros (con el rango) y por qué canal le llega, a partir de esta cadena causal: "
-    "{chain}. Evento: «{title}»."
+    "Texto: explicación de un evento en el panel. Como mucho 2 frases y 60 palabras. La primera "
+    "dice cuánto le afecta en euros y si es a favor o en contra, con el rango; la segunda, por "
+    "qué canal le llega, a partir de esta cadena causal: {chain}. Evento: «{title}»."
 )
 _STATUS_TASK = (
-    "Escribe la frase del widget de la pantalla de inicio: una sola frase de menos de 15 palabras "
-    "que diga cómo está la cartera. Estado: {state}. {detail}"
+    "Texto: frase del widget de la pantalla de inicio. Una sola frase de 15 palabras como mucho "
+    "que diga cómo está la cartera; si el estado es atento o revisa_plan, puedes añadir detrás "
+    "«Toca para ver por qué.». Estado: {state}. {detail}"
 )
 _ALERT_TASK = (
-    "Escribe el texto de un aviso al móvil: una sola frase corta con el evento y cuánto afecta a "
-    "la cartera en euros. Evento: «{title}»."
+    "Texto: aviso al móvil. Una sola frase de 20 palabras como mucho con el evento y cuánto "
+    "afecta a la cartera en euros. Evento: «{title}»."
 )
 
 _sessions: set[str] = set()

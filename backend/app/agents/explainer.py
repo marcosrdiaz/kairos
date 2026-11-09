@@ -3,21 +3,25 @@
 1. `meta` con el `turn_id` y si toca el aviso de IA.
 2. Claude rápido, con el contexto precargado de la cartera en el prompt (con caché) y las
    herramientas de `tools.py`, escribe en streaming. El texto se parte en frases y cada una pasa
-   por el guardián antes de emitirse como `sentence`; sus `calc_ids` son los que casó el guardián.
-   Las frases aprobadas se registran en `voice` para el TTS.
-3. Frase bloqueada → un reintento con el motivo. Si vuelve a bloquearse, o si no hay clave o la
-   API falla, el resto sale de la plantilla (`fallback_used`), que también pasa el guardián.
-4. `done` (o `error` si no se ha podido emitir ni una frase).
+   por el guardián (`emitter.py`) antes de emitirse como `sentence`.
+3. Frase bloqueada → un reintento con el motivo. Si vuelve a bloquearse, si no hay clave, si la
+   API falla (también a mitad del stream), si la respuesta llega cortada sin ninguna frase o si se
+   agota el plazo del turno, el resto sale de la plantilla (`fallback_used`), que también pasa el
+   guardián.
+4. `done`, o `error` si no se ha podido emitir ni una frase. El stream nunca se corta sin uno de
+   los dos: cualquier fallo inesperado se registra en el log.
 """
 
-import json
+import logging
 import time
 from collections.abc import Generator, Iterator
 from typing import Any
 from uuid import uuid4
 
-from app.agents import claude, context, guardian, templates, tools
+from app.agents import claude, context, templates, tools
+from app.agents import explainer_prompt as prompt
 from app.agents.context import Preloaded
+from app.agents.emitter import Emitter
 from app.agents.fact_format import as_evidence
 from app.agents.facts import move_facts
 from app.agents.sentences import SentenceSplitter
@@ -30,19 +34,18 @@ from app.schemas.agents import (
     AskEvent,
     AskMetaEvent,
     AskRequest,
-    AskSentenceEvent,
-    Evidence,
     GuardianChannel,
-    GuardianRequest,
+    QuestionKind,
 )
 from app.schemas.impact import MoveAttributionOut
-from app.voice import service as voice_service
 
-MAX_VOICE_SENTENCES = guardian.MAX_VOICE_SENTENCES
-MAX_TEXT_SENTENCES = 5
 MAX_TOOL_ROUNDS = 3
 ATTEMPTS = 2
+TURN_DEADLINE_S = 6.0
+"""Plazo de la parte del modelo; al superarlo se corta y sigue la plantilla."""
 UNAVAILABLE = "El asistente no puede responder ahora mismo."
+
+logger = logging.getLogger(__name__)
 
 Stream = Generator[AskEvent, None, str | None]
 
@@ -55,37 +58,6 @@ def new_turn_id() -> str:
     return f"turn_{uuid4().hex}"
 
 
-def context_block(pre: Preloaded) -> str:
-    """Contexto de la cartera para el prompt. Estable mientras dure la caché del contexto."""
-    consensus = [
-        {"event_id": e.event_id, "titulo": e.title, **e.surprise.model_dump(mode="json")}
-        for e in pre.events
-        if e.surprise.metric
-    ]
-    payload = {"contexto": pre.context.model_dump(mode="json"), "consenso_eventos": consensus}
-    return (
-        "<contexto_cartera>\n" + json.dumps(payload, ensure_ascii=False) + "\n</contexto_cartera>"
-    )
-
-
-def _user_text(request: AskRequest, impact: bool) -> str:
-    channel = "voz (máximo 3 frases)" if request.channel is AskChannel.VOICE else "texto"
-    kind = "impacto: la cifra en euros va en la primera frase" if impact else "general"
-    return (
-        f"Canal: {channel}. Tipo de pregunta: {kind}.\n<pregunta>\n{request.question}\n</pregunta>"
-    )
-
-
-def _feedback(sentence: str, detail: str, said: list[str]) -> str:
-    text = f"La frase «{sentence}» no ha pasado la revisión: {detail}. "
-    if said:
-        quoted = " ".join(f"«{s}»" for s in said)
-        text += f"Ya se han dicho estas frases, no las repitas: {quoted}. Escribe solo cómo sigue."
-    else:
-        text += "Vuelve a escribir la respuesta entera."
-    return text + " Usa solo cifras de los facts, copiando su `display`, y no des órdenes."
-
-
 class Turn:
     def __init__(self, portfolio_id: str, request: AskRequest, disclaimer: bool) -> None:
         self.portfolio_id = portfolio_id
@@ -94,59 +66,25 @@ class Turn:
         self.turn_id = new_turn_id()
         self.topic = templates.topic(request.question)
         self.kind = templates.question_kind(self.topic)
-        self.voice = request.channel is AskChannel.VOICE
-        self.channel = GuardianChannel.VOICE if self.voice else GuardianChannel.TEXT
-        self.emitted: list[str] = []
-        self.evidence: list[Evidence] = []
+        voice = request.channel is AskChannel.VOICE
+        self.channel = GuardianChannel.VOICE if voice else GuardianChannel.TEXT
         self.blocked_count = 0
         self.fallback_used = False
-        self.first_sentence_ms = 0
+        self.usage: list[dict[str, int]] = []
         self._started = time.perf_counter()
-
-    # --- Guardián ---
-
-    def _full(self) -> bool:
-        limit = MAX_VOICE_SENTENCES if self.voice else MAX_TEXT_SENTENCES
-        return len(self.emitted) >= limit
-
-    def _approve(self, text: str) -> AskSentenceEvent | str:
-        """El evento de la frase si el guardián la aprueba; si no, el motivo."""
-        index = len(self.emitted)
-        request = GuardianRequest(
-            text=text,
-            channel=self.channel,
-            question_kind=self.kind,
-            sentence_index=index,
-            evidence=self.evidence,
-        )
-        verdict = guardian.check(request)
-        if not verdict.ok:
-            return "; ".join(reason.detail for reason in verdict.reasons)
-        calc_ids = list(
-            dict.fromkeys(f.matched_calc_id for f in verdict.figures if f.matched_calc_id)
-        )
-        if not self.emitted:
-            self.first_sentence_ms = int((time.perf_counter() - self._started) * 1000)
-        self.emitted.append(text)
-        voice_service.register_approved(self.turn_id, index, text)
-        return AskSentenceEvent(
-            type="sentence", turn_id=self.turn_id, index=index, text=text, calc_ids=calc_ids
-        )
+        self._deadline = time.monotonic() + TURN_DEADLINE_S
+        self.out = Emitter(self.turn_id, self.channel, self.kind, [], self._started)
 
     # --- Modelo ---
 
-    def _kwargs(self, client_messages: list[Any], pre: Preloaded, allow_tools: bool) -> Any:
-        system = [
-            {"type": "text", "text": claude.system_prompt()},
-            {"type": "text", "text": context_block(pre), "cache_control": {"type": "ephemeral"}},
-        ]
-        return {
-            **claude.base_kwargs(),
-            "system": system,
-            "tools": tools.DEFINITIONS,
-            "tool_choice": {"type": "auto" if allow_tools else "none"},
-            "messages": client_messages,
-        }
+    def _check_deadline(self) -> None:
+        if time.monotonic() > self._deadline:
+            raise _Fallback("plazo del turno agotado")
+
+    def _record_usage(self, final: Any) -> None:
+        usage = claude.usage_of(final)
+        self.usage.append(usage)
+        logger.info("Explicador %s: uso de Claude %s", self.turn_id, usage)
 
     def _run_tools(self, final: Any) -> list[dict[str, Any]]:
         results = []
@@ -154,7 +92,7 @@ class Turn:
             if getattr(block, "type", "") != "tool_use":
                 continue
             result = tools.run(self.portfolio_id, block.name, block.input)
-            self.evidence += as_evidence(result.facts)
+            self.out.evidence += as_evidence(result.facts)
             results.append(
                 {
                     "type": "tool_result",
@@ -165,60 +103,62 @@ class Turn:
             )
         return results
 
+    def _sentences(self, sentences: list[str]) -> Stream:
+        for sentence in sentences:
+            outcome = self.out.approve(sentence)
+            if isinstance(outcome, str):
+                return prompt.feedback(sentence, outcome, self.out.emitted)
+            yield outcome
+            if self.out.full:
+                return None
+        return None
+
     def _stream(self, client: Any, messages: list[Any], pre: Preloaded) -> Stream:
         """Una respuesta completa (con sus rondas de herramientas). Devuelve el motivo si una
         frase se bloquea; `None` si ha terminado bien."""
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             splitter = SentenceSplitter()
-            kwargs = self._kwargs(messages, pre, allow_tools=round_ < MAX_TOOL_ROUNDS)
+            kwargs = prompt.request_kwargs(messages, pre, allow_tools=round_ < MAX_TOOL_ROUNDS)
             with client.messages.stream(**kwargs) as stream:
                 for event in stream:
+                    self._check_deadline()
                     if getattr(event, "type", "") != "text":
                         continue
-                    for sentence in splitter.feed(event.text):
-                        outcome = self._approve(sentence)
-                        if isinstance(outcome, str):
-                            return _feedback(sentence, outcome, self.emitted)
-                        yield outcome
-                        if self._full():
-                            return None
+                    blocked = yield from self._sentences(splitter.feed(event.text))
+                    if blocked is not None or self.out.full:
+                        return blocked
                 final = stream.get_final_message()
-            for sentence in splitter.flush():
-                outcome = self._approve(sentence)
-                if isinstance(outcome, str):
-                    return _feedback(sentence, outcome, self.emitted)
-                yield outcome
-            if final.stop_reason == "refusal":
-                raise _Fallback("rechazo")
-            results = self._run_tools(final) if final.stop_reason == "tool_use" else []
+            self._record_usage(final)
+            stop = final.stop_reason
+            if stop == "max_tokens":
+                splitter.discard()  # la última frase está a medias: no se dice
+            blocked = yield from self._sentences(splitter.flush())
+            if blocked is not None or self.out.full:
+                return blocked
+            if stop == "refusal":
+                raise _Fallback("rechazo del modelo")
+            results = self._run_tools(final) if stop == "tool_use" else []
             if not results:
-                if not self.emitted:
-                    raise _Fallback("respuesta vacía")
-                return None
-            if self._full():
+                if not self.out.emitted:
+                    raise _Fallback(f"respuesta sin frases ({stop})")
                 return None
             messages.append({"role": "assistant", "content": final.content})
             messages.append({"role": "user", "content": results})
+            self._check_deadline()
         raise _Fallback("demasiadas rondas de herramientas")
 
     def _llm(self, client: Any, pre: Preloaded) -> Iterator[AskEvent]:
-        impact = self.kind.value == "impact"
-        messages: list[Any] = [
-            {
-                "role": "user",
-                "content": [{"type": "text", "text": _user_text(self.request, impact)}],
-            }
-        ]
+        text = prompt.user_text(self.request, self.kind is QuestionKind.IMPACT)
+        messages: list[Any] = [{"role": "user", "content": [{"type": "text", "text": text}]}]
         for _ in range(ATTEMPTS):
             feedback = yield from self._stream(client, messages, pre)
             if feedback is None:
                 return
             self.blocked_count += 1
+            logger.info("Explicador %s: frase bloqueada: %s", self.turn_id, feedback)
             last = messages[-1]
-            messages[-1] = {
-                **last,
-                "content": [*last["content"], {"type": "text", "text": feedback}],
-            }
+            extra = {"type": "text", "text": feedback}
+            messages[-1] = {**last, "content": [*last["content"], extra]}
         raise _Fallback("bloqueada tras el reintento")
 
     # --- Plantilla ---
@@ -230,39 +170,52 @@ class Turn:
             move = impact_service.explain_move(self.portfolio_id, "week")
         except AppError:
             return None
-        self.evidence += as_evidence(move_facts(move))
+        self.out.evidence += as_evidence(move_facts(move))
         return move
 
     def _template(self, pre: Preloaded) -> Iterator[AskEvent]:
         self.fallback_used = True
         sentences = templates.answer(pre, self.request.question, self._move())
-        for sentence in sentences[len(self.emitted) :]:
-            if self._full():
+        for sentence in sentences[len(self.out.emitted) :]:
+            if self.out.full:
                 return
-            outcome = self._approve(sentence)
+            outcome = self.out.approve(sentence)
             if not isinstance(outcome, str):
                 yield outcome
 
     # --- Turno ---
 
+    def _model_part(self, pre: Preloaded) -> Iterator[AskEvent]:
+        """La respuesta del modelo; si falla de cualquier forma, la plantilla."""
+        client = claude.get_client()
+        if client is None:
+            logger.info("Explicador %s: sin clave de Anthropic, plantilla", self.turn_id)
+        else:
+            try:
+                yield from self._llm(client, pre)
+                return
+            except _Fallback as reason:
+                logger.warning("Explicador %s: plantilla (%s)", self.turn_id, reason)
+            except claude.UPSTREAM_ERRORS:
+                logger.warning("Explicador %s: fallo de Claude", self.turn_id, exc_info=True)
+            except Exception:
+                logger.exception("Explicador %s: error inesperado del modelo", self.turn_id)
+        yield from self._template(pre)
+
     def events(self) -> Iterator[AskEvent]:
         yield AskMetaEvent(type="meta", turn_id=self.turn_id, disclaimer=self.disclaimer)
         try:
             pre = context.get(self.portfolio_id)
+            self.out.evidence = pre.evidence()
+            yield from self._model_part(pre)
         except AppError as error:
             yield self._error(error.code.value, error.message)
             return
-        self.evidence = pre.evidence()
-        client = claude.get_client()
-        try:
-            if client is None:
-                raise _Fallback("sin clave de Anthropic")
-            yield from self._llm(client, pre)
-        except _Fallback:
-            yield from self._template(pre)
-        except claude.UPSTREAM_ERRORS:
-            yield from self._template(pre)
-        if not self.emitted:
+        except Exception:
+            logger.exception("Explicador %s: error inesperado", self.turn_id)
+            yield self._error(ErrorCode.UPSTREAM_UNAVAILABLE.value, UNAVAILABLE)
+            return
+        if not self.out.emitted:
             yield self._error(ErrorCode.UPSTREAM_UNAVAILABLE.value, UNAVAILABLE)
             return
         yield AskDoneEvent(
@@ -270,7 +223,7 @@ class Turn:
             turn_id=self.turn_id,
             fallback_used=self.fallback_used,
             blocked_count=self.blocked_count,
-            first_sentence_ms=self.first_sentence_ms,
+            first_sentence_ms=self.out.first_sentence_ms,
         )
 
     def _error(self, code: str, message: str) -> AskErrorEvent:
