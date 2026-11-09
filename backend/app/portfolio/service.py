@@ -12,6 +12,7 @@ from app.core import clock, trace
 from app.core.db import session_scope
 from app.portfolio import (
     dca_flow,
+    demo_adjustment,
     engine,
     errors,
     ledger,
@@ -24,6 +25,7 @@ from app.portfolio import (
 )
 from app.portfolio import quotes as pricing
 from app.schemas.common import Profile, SourceRef, TraceKind
+from app.schemas.impact import EventImpactOut
 from app.schemas.portfolio import (
     AssetOut,
     DcaExecutionActionRequest,
@@ -50,7 +52,10 @@ LOOKUP_LIMIT = 20
 
 
 def get_valued(portfolio_id: str) -> PortfolioOut:
-    """Cartera valorada con el último precio de cada activo (RF-03). Deja traza `valuation`."""
+    """Cartera valorada con el último precio de cada activo (RF-03). Deja traza `valuation`.
+
+    En modo demo suma los ajustes tras un replay (D-031); su traza apunta a la del impacto.
+    """
     with session_scope() as session:
         row = repository.get_portfolio(session, portfolio_id)
         if row is None:
@@ -58,8 +63,10 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
         name, profile = row.name, Profile(row.profile)
         lots = ledger.open_lots(session, portfolio_id)
         assets = repository.get_assets(session, {lot.asset_id for lot in lots})
+        adjustment_rows = demo_adjustment.load(session, portfolio_id)
+    adjustments = demo_adjustment.summarize(adjustment_rows, set(assets))
     quotes, sources = pricing.quotes(assets)
-    valuation = engine.value_portfolio(lots, assets, quotes)
+    valuation = engine.value_portfolio(lots, assets, quotes, adjustments.by_asset)
     calc_id = trace.record(
         TraceKind.VALUATION,
         engine.FORMULA,
@@ -67,6 +74,7 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
             "portfolio_id": portfolio_id,
             "lots": [vars(lot) for lot in lots],
             "quotes": {asset_id: vars(q) for asset_id, q in quotes.items()},
+            "demo_adjustments": adjustments.by_asset,
         },
         outputs={
             "total_eur": valuation.total_eur,
@@ -76,6 +84,7 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
             "value_eur": {p.asset_id: p.value_eur for p in valuation.positions},
         },
         sources=sources,
+        parent_calc_ids=[a.calc_id for a in adjustments.by_event],
     )
     return PortfolioOut(
         id=portfolio_id,
@@ -86,10 +95,23 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
         change_week_pct=valuation.change_week_pct,
         allocation=valuation.allocation,
         positions=valuation.positions,
-        demo_adjustments=[],
+        demo_adjustments=adjustments.by_event,
         valued_at=clock.now(),
         calc_id=calc_id,
     )
+
+
+def apply_demo_adjustment(portfolio_id: str, impact: EventImpactOut) -> None:
+    """Tras un replay (lo llama `events`): la valoración suma el impacto central de cada posición,
+    con la etiqueta "Estimación tras el evento" y el `calc_id` del impacto. Sustituye el ajuste
+    anterior de ese evento. Solo con `DEMO_MODE=true`; fuera, no hace nada (D-031)."""
+    demo_adjustment.apply(portfolio_id, impact)
+
+
+def clear_demo_adjustment(portfolio_id: str, event_id: str) -> None:
+    """Quita el ajuste de un evento. `events` lo llama antes de recalcular su impacto, para que
+    repetir el replay no lo acumule sobre sí mismo."""
+    demo_adjustment.clear(portfolio_id, event_id)
 
 
 def get_plan(portfolio_id: str) -> PlanOut:
@@ -229,7 +251,9 @@ def load_seed(force: bool = False) -> list[str]:
 
 
 def reset_demo() -> list[str]:
-    """Devuelve Laura y Javier a su estado inicial (`/demo/reset`). Devuelve los IDs recargados."""
+    """Devuelve Laura y Javier a su estado inicial (`/demo/reset`) y borra los ajustes de demo de
+    todas las carteras. Devuelve los IDs recargados."""
+    demo_adjustment.clear()
     return seed.load(force=True)
 
 

@@ -1,0 +1,13 @@
+### D-XXX · Ajuste de demo (T2-02): se sustituye por evento, entra en el cambio semanal e ignora activos vendidos
+- Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
+- Contexto: D-031 y la decisión 17 del diseño fijan que, en modo demo, la valoración suma el impacto central de cada posición tras un replay. No dicen qué pasa al repetir el replay de un evento, cómo entra en `change_week_*` si falta el precio de hace 7 días, ni qué hacer con una posición vendida después del evento.
+- Decisión:
+  - **Repetir un replay no acumula.** `events/pipeline.py` llama a `portfolio.service.clear_demo_adjustment(portfolio_id, event_id)` antes de calcular el impacto y a `apply_demo_adjustment(portfolio_id, impact)` justo después, antes de `status.recompute` (D-073). El impacto se calcula sobre la valoración sin el ajuste anterior de ese evento, así que repetir el ensayo da la misma cifra. Los ajustes de eventos distintos sí se suman, en orden de replay.
+  - **Cambio semanal.** El ajuste se suma al `value_eur` de su posición, pero no al valor de hace 7 días. Así, `change_week_eur` lo incluye siempre, también si falta el precio de hace 7 días.
+  - **Activos vendidos.** Si una posición ya no está en cartera, su fila de ajuste se ignora, tanto en los totales como en `demo_adjustments`.
+  - **Traza.** La traza `valuation` lleva `demo_adjustments` por activo en `inputs` y el `calc_id` de cada impacto en `parent_calc_ids`. El `calc_id` de cada elemento de `demo_adjustments` es el del impacto del evento.
+  - **Reset.** `/demo/reset` borra los ajustes de todas las carteras, no solo los de Laura y Javier.
+  - La lógica vive en `portfolio/demo_adjustment.py`, porque `service.py` se acercaba al límite de 300 líneas.
+- Motivo: los ensayos del guion repiten el replay de NVIDIA sin reset; sin borrar antes, la cifra cambiaría en cada ensayo.
+- Alternativas descartadas: dejar que se acumule (la cifra varía entre ensayos); escalar el ajuste anterior (complica la traza sin aportar nada).
+- Consecuencias: `get_value_change` (T2-07) sigue con precios reales y sin ajustes; según D-031, `explain_move` debe sumarlos a `by_asset`, y para eso puede leer `PortfolioOut.demo_adjustments`.

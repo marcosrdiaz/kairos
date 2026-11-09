@@ -174,6 +174,37 @@ def clear_portfolio(session: Session, portfolio_id: str) -> None:
     session.flush()
 
 
+# --- Ajuste de demo (D-031) ---
+
+
+def list_demo_adjustments(session: Session, portfolio_id: str) -> list[DemoAdjustment]:
+    """Filas de la cartera en orden de alta (el primer evento reproducido, primero)."""
+    stmt = (
+        select(DemoAdjustment)
+        .where(DemoAdjustment.portfolio_id == portfolio_id)
+        .order_by(DemoAdjustment.id)
+    )
+    return list(session.scalars(stmt))
+
+
+def add_demo_adjustments(session: Session, rows: Iterable[DemoAdjustment]) -> None:
+    session.add_all(list(rows))
+    session.flush()
+
+
+def delete_demo_adjustments(
+    session: Session, portfolio_id: str | None = None, event_id: str | None = None
+) -> None:
+    """Sin filtros, borra todos (los de todas las carteras)."""
+    stmt = delete(DemoAdjustment)
+    if portfolio_id is not None:
+        stmt = stmt.where(DemoAdjustment.portfolio_id == portfolio_id)
+    if event_id is not None:
+        stmt = stmt.where(DemoAdjustment.event_id == event_id)
+    session.execute(stmt)
+    session.flush()
+
+
 def set_plan(session: Session, portfolio_id: str, raw: dict[str, Any]) -> None:
     target = raw["target"]
     session.merge(

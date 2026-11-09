@@ -120,7 +120,9 @@ def run(event: EventIn, occurred_at: datetime | None, silent: bool) -> ReplayOut
 
     calc_ids: dict[str, str] = {}
     for portfolio_id in portfolio_service.list_portfolio_ids():
+        portfolio_service.clear_demo_adjustment(portfolio_id, event.id)  # repetir no acumula
         impact = impact_service.compute_event_impact(portfolio_id, analysis, shocks)
+        portfolio_service.apply_demo_adjustment(portfolio_id, impact)  # antes del estado (D-031)
         calc_ids[portfolio_id] = impact.calc_id
         stub = EventImpactStub.model_validate(
             impact.model_dump(mode="json", include=set(EventImpactStub.model_fields))
