@@ -2,7 +2,7 @@
 
 Otros módulos importan solo las funciones de *Interfaz entre módulos*. El resto las usa la API.
 Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta; desde
-T1-06, DCA; desde T1-07, plan y variación de valor. El traspaso aún delega en `mock.py` (T1-05).
+T1-06, DCA; desde T1-07, plan y variación de valor; desde T1-05, traspaso.
 """
 
 from datetime import datetime
@@ -15,11 +15,11 @@ from app.portfolio import (
     engine,
     errors,
     ledger,
-    mock,
     operations,
     plan_flow,
     repository,
     seed,
+    transfers,
     value_change,
 )
 from app.portfolio import quotes as pricing
@@ -233,11 +233,13 @@ def reset_demo() -> list[str]:
     return seed.load(force=True)
 
 
-# --- Plan (T1-07) y traspaso (aún sobre el mock, T1-05) ---
+# --- Traspaso (T1-05) y plan (T1-07) ---
 
 
 def register_transfer(portfolio_id: str, request: TransferRequest) -> TransactionOut:
-    return mock.register_transfer(portfolio_id, request)
+    """Traspaso fondo → fondo conservando fecha y coste (RF-06). Si alguno no es fondo, 422
+    `TRANSFER_NOT_ALLOWED` con la alternativa. Ver `transfers.py`."""
+    return transfers.register_transfer(portfolio_id, request, get_valued)
 
 
 def update_plan(portfolio_id: str, request: PlanUpdateRequest) -> PlanOut:

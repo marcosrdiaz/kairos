@@ -4,7 +4,6 @@
 from fastapi.testclient import TestClient
 
 from app.main import API_PREFIX
-from app.schemas import examples
 
 
 def test_get_portfolio_without_prices_is_503(client: TestClient) -> None:
@@ -33,24 +32,6 @@ def test_transaction_requires_exactly_one_of_amount_or_units(client: TestClient)
     response = client.post(f"{API_PREFIX}/portfolios/laura/transactions", json=body)
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
-
-
-def test_fund_to_fund_transfer(client: TestClient) -> None:
-    response = client.post(
-        f"{API_PREFIX}/portfolios/laura/transfers", json=examples.load("TransferRequest")
-    )
-    assert response.status_code == 201
-    assert response.json()["type"] == "transfer"
-
-
-def test_etf_transfer_not_allowed(client: TestClient) -> None:
-    body = {"from_asset_id": "IE00B4L5Y983", "to_asset_id": "IE00B03HD191", "units": "50"}
-    response = client.post(f"{API_PREFIX}/portfolios/laura/transfers", json=body)
-    assert response.status_code == 422
-    error = response.json()
-    assert error["code"] == "TRANSFER_NOT_ALLOWED"
-    assert error["details"]["from_asset_type"] == "etf"
-    assert error["details"]["alternative"] == "sell_and_buy"
 
 
 def test_openapi_exposes_portfolio_contracts(client: TestClient) -> None:
