@@ -108,7 +108,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | — | ⬜ |
 | T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | ✅ hecho |
 | T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` | — | ⬜ |
-| T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | Javi | 🔄 en curso |
+| T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | Javi | 🧪 en PR |
 | T2-17 | Ticker de mercado en Inicio (entre la cabecera de estado y las tarjetas): barra que se desplaza sola con el último precio y la variación de los activos de la cartera | Precios reales con fecha (sin cifras inventadas); se pausa al pasar el ratón, con el foco y con un botón (WCAG 2.2.2); sin movimiento con `prefers-reduced-motion`. Necesita un endpoint de precios nuevo: petición de contrato en un PR propio | T1-02 | `backend/app/api/prices.py` (nuevo), `frontend/src/app/market/ticker/` | — | ⬜ |
 | T2-18 | Gráfica interactiva de la evolución del valor de la cartera en Inicio (contenedor grande junto al ticker) | Serie real calculada con `prices.history` (sin datos inventados); selector de periodo; punto activo con ratón y teclado; tabla alternativa para lector de pantalla. Necesita `GET /portfolios/{id}/history` y su esquema: petición de contrato en un PR propio. Si usa una librería de gráficos, decisión antes | T1-02, T1-03 | `backend/app/portfolio/history.py`, `backend/app/api/history.py` (nuevo), `frontend/src/app/market/chart/` | — | ⬜ |
 | T2-19 | Resumen de noticias en Inicio (debajo de las tarjetas): carrusel con ilustración por tipo de evento a la izquierda y texto a la derecha, flechas y avance automático cada 10 s | Datos de `GET /portfolios/{id}/events` (rango en €, confianza, fuente); botón de pausa y pausa con ratón y foco (WCAG 2.2.2); flechas usables con teclado; sin avance automático con `prefers-reduced-motion` | T1-13 | `frontend/src/app/news/` | Javi | ✅ hecho |
@@ -191,6 +191,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - Hasta T0-03 no hay tipos generados ni mocks en `src/api/{generated,mocks}/`.
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
+
+### T2-16 · Latencia de voz — Javi
+**Qué está hecho:** rama `t2-16/measure-voice`, subida. `scripts/measure_voice.py` mide desde que se suelta el botón hasta el primer byte de audio de la respuesta. Con el prompt actual del explicador: 5/10 por debajo de 2 s. Con dos reglas nuevas en el prompt (primera frase de ≤ 12 palabras con la cifra; tolerar errores de dictado como «BC» por «BCE»): **9/10**, mediana 1,7 s. STT (~170 ms) y TTS (~220 ms) no son el problema. Decisión «Latencia de voz (T2-16)».
+**Siguiente paso exacto:** abrir el PR desde la rama, revisión, CI en verde y merge; después `docs: done T2-16` y borrar esta subsección.
+**Ficheros tocados:** `scripts/measure_voice.py`, decisión nueva; fuera de la fila: `backend/app/agents/prompts/explainer.md` (+2 reglas en «La respuesta»).
+**Para Manu (prompt del explicador, T1-17):** revisa las dos reglas nuevas en el PR. Para T2-09: el contexto de Laura cambia de tamaño entre turnos y recrea la caché del prompt; detalle en la decisión. **Para la demo:** tras `/demo/reset`, hacer una pregunta a cada cartera para calentar la caché.
 
 ## 5. Bloqueos
 
