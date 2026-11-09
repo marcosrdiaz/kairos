@@ -87,7 +87,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
 | T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | ✅ hecho |
-| T1-23 | Tests del backend más rápidos: `pytest-xdist` (`-n auto` en `make test-backend`) y fixture `db` sin `drop_all` innecesario | `make test` en verde y en menos de la mitad de tiempo que antes (~2 min en local) | T0-01 | `backend/pyproject.toml`, `backend/uv.lock`, `backend/tests/conftest.py`, `Makefile` (solo `test-backend`) | Alons | 🧪 en PR |
+| T1-23 | Tests del backend más rápidos: `pytest-xdist` (`-n auto` en `make test-backend`) y fixture `db` sin `drop_all` innecesario | `make test` en verde y en menos de la mitad de tiempo que antes (~2 min en local) | T0-01 | `backend/pyproject.toml`, `backend/uv.lock`, `backend/tests/conftest.py`, `Makefile` (solo `test-backend`) | Alons | ✅ hecho |
 
 ### Fase 2 · Experiencia e integración (hasta el mar 10, 18:00)
 
@@ -137,11 +137,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
-
-### T1-23 · Tests del backend más rápidos — Alons
-**Qué estaba haciendo:** PR #45 (`t1-23/faster-tests`): `pytest -n auto` en `make test-backend` (pytest-xdist) y fixture `db` sin `drop_all`. Backend de 119 s a 41 s en local; lint y tests en verde.
-**Siguiente paso exacto:** revisión de otra persona, CI en verde, merge y `docs: done T1-23`.
-**Ficheros tocados:** `Makefile`, `backend/pyproject.toml`, `backend/uv.lock`, `backend/tests/conftest.py`, decisión nueva *Tests del backend en paralelo con pytest-xdist (T1-23)*.
 
 ### T1-16 · Seguimiento: `pyproject.toml` — Manu
 **Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
