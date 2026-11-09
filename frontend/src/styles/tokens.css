@@ -68,6 +68,8 @@
   --kairos-color-icon-purple-fg: #4f2fa8;
   --kairos-color-icon-blue-bg: #e5eefc;
   --kairos-color-icon-blue-fg: #1647a8;
+  --kairos-color-icon-red-bg: #fbe4e2;
+  --kairos-color-icon-red-fg: #b42318;
 
   /* Categorías de gráficos (marcas ≥ 3:1 sobre la superficie) */
   --kairos-color-chart-1: #8a6500;
@@ -140,6 +142,8 @@
   --kairos-color-icon-purple-fg: #c8b8f7;
   --kairos-color-icon-blue-bg: #142849;
   --kairos-color-icon-blue-fg: #a3c4ff;
+  --kairos-color-icon-red-bg: #3d1714;
+  --kairos-color-icon-red-fg: #f6a9a1;
 
   --kairos-color-chart-1: #f2c14e;
   --kairos-color-chart-2: #2fb8b0;

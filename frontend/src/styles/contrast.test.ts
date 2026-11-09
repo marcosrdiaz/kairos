@@ -76,6 +76,7 @@ const UI_PAIRS: [string, string][] = [
   ["icon-green-fg", "icon-green-bg"],
   ["icon-purple-fg", "icon-purple-bg"],
   ["icon-blue-fg", "icon-blue-bg"],
+  ["icon-red-fg", "icon-red-bg"],
   ["state-tranquilo-solid", "surface"],
   ["state-atento-solid", "surface"],
   ["state-revisa-plan-solid", "surface"],

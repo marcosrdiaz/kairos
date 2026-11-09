@@ -10,19 +10,20 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("ThemeToggle", () => {
-  it("es un botón de alternancia con nombre estable", () => {
+  it("es un interruptor con nombre estable", () => {
     render(<ThemeToggle />);
-    const btn = screen.getByRole("button", { name: "Modo oscuro" });
-    expect(btn.getAttribute("aria-pressed")).toBe("false");
+    const btn = screen.getByRole("switch", { name: "Modo oscuro" });
+    expect(btn.getAttribute("aria-checked")).toBe("false");
+    expect(btn.tagName).toBe("BUTTON");
     expect(btn.getAttribute("type")).toBe("button");
   });
 
-  it("cambia data-theme, aria-pressed y guarda la preferencia", () => {
+  it("cambia data-theme, aria-checked y guarda la preferencia", () => {
     render(<ThemeToggle />);
-    const btn = screen.getByRole("button", { name: "Modo oscuro" });
+    const btn = screen.getByRole("switch", { name: "Modo oscuro" });
     fireEvent.click(btn);
     expect(document.documentElement.dataset.theme).toBe("dark");
-    expect(btn.getAttribute("aria-pressed")).toBe("true");
+    expect(btn.getAttribute("aria-checked")).toBe("true");
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     fireEvent.click(btn);
     expect(document.documentElement.dataset.theme).toBe("light");
@@ -36,9 +37,9 @@ describe("ThemeToggle", () => {
         <ThemeToggle showLabel />
       </>,
     );
-    const [a, b] = screen.getAllByRole("button", { name: "Modo oscuro" });
+    const [a, b] = screen.getAllByRole("switch", { name: "Modo oscuro" });
     fireEvent.click(a!);
-    expect(b!.getAttribute("aria-pressed")).toBe("true");
+    expect(b!.getAttribute("aria-checked")).toBe("true");
   });
 
   it("la preferencia guardada manda sobre la del sistema", () => {

@@ -67,6 +67,8 @@
   --color-icon-purple-bg: var(--kairos-color-icon-purple-bg);
   --color-icon-blue: var(--kairos-color-icon-blue-fg);
   --color-icon-blue-bg: var(--kairos-color-icon-blue-bg);
+  --color-icon-red: var(--kairos-color-icon-red-fg);
+  --color-icon-red-bg: var(--kairos-color-icon-red-bg);
 
   --color-chart-1: var(--kairos-color-chart-1);
   --color-chart-2: var(--kairos-color-chart-2);
@@ -99,9 +101,12 @@
     font-family: var(--kairos-font);
     font-size: var(--text-base);
     line-height: 1.5;
-    transition:
-      background-color var(--kairos-transition),
-      color var(--kairos-transition);
+  }
+  /* Al cambiar de tema (src/theme/theme.ts) se cortan las transiciones para que no haya fundidos a destiempo. */
+  .theme-switching *:not([data-keep-transition]),
+  .theme-switching *:not([data-keep-transition])::before,
+  .theme-switching *:not([data-keep-transition])::after {
+    transition: none !important;
   }
   :focus-visible {
     outline: 3px solid var(--kairos-color-focus);

@@ -131,7 +131,7 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 ### Resto
 - Superficies: `bg`, `surface`, `surface-muted`; texto: `text`, `text-muted`; bordes: `border` (decorativo) y `border-strong` (controles).
 - Variación: `trend-up` y `trend-down`, siempre con flecha y signo.
-- Iconos de tarjeta: `icon-{gold,green,purple,blue}-{bg,fg}`.
+- Iconos de tarjeta: `icon-{gold,green,purple,blue,red}-{bg,fg}`. El rojo de icono es decorativo (tarjeta "Valor total"); no comunica estado.
 - Gráficos: `chart-1` a `chart-4` (oro, verde azulado, violeta, azul).
 
 ### Contraste (WCAG 2.2 AA)
@@ -159,7 +159,7 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 ## Modo claro y oscuro
 
 - El tema está en `<html data-theme="light|dark">`. Un script en línea de `frontend/index.html` lo fija antes de pintar (sin parpadeo): preferencia guardada en `localStorage` (`kairos-theme`) y, si no hay, la del sistema (`prefers-color-scheme`).
-- `src/theme/ThemeToggle.tsx` es un `<button aria-pressed>` con nombre fijo "Modo oscuro". En escritorio va al pie de la barra lateral con texto e interruptor visual; en móvil, solo icono en la cabecera.
+- `src/theme/ThemeToggle.tsx` es un `<button role="switch" aria-checked>` con nombre fijo "Modo oscuro". Al cambiar de modo se cortan las transiciones un instante (clase `theme-switching`) para que todo cambie a la vez; solo el propio interruptor se anima. En escritorio va al pie de la barra lateral con texto e interruptor visual; en móvil, solo icono en la cabecera.
 - `color-scheme` cambia con el modo, así que los controles nativos y las barras de desplazamiento siguen el tema.
 
 ## Typography
@@ -181,9 +181,9 @@ Móvil primero, pero la app también se usa en escritorio.
 
 - **Móvil (< 1024 px):** cabecera fija de 64 px con la marca y el botón de modo oscuro; contenido en una columna de 36 rem (576 px) con 16 px de margen; barra inferior fija con tres pestañas (icono + texto; la activa con una píldora de tinte de oro detrás del icono).
 - **Escritorio (≥ 1024 px, `lg`):** barra lateral de 16 rem con la marca, las secciones (la activa rellena de oro), un separador, el enlace al panel y, al pie, el interruptor de modo oscuro. Contenido hasta 72 rem (1152 px) con 40 px de margen.
-- Es un único `<nav aria-label="Secciones">`, recolocado con CSS. Hay un enlace "Saltar al contenido" que aparece con el foco.
+- Es un único `<nav aria-label="Secciones">`, recolocado con CSS. Los landmarks (`header`, `nav`, `main`) permiten saltar de zona con el lector de pantalla.
 - `scroll-padding` evita que la cabecera o la barra fijas tapen el elemento con foco.
-- **Inicio:** cabecera con degradado de tinte de oro (estado, frase como titular, botón "Ver por qué" y una ilustración decorativa de barras sin datos), cuatro tarjetas de cifras (2 columnas en móvil, 4 en escritorio ancho) y una tarjeta de atajos.
+- **Inicio:** cabecera con degradado de tinte de oro (estado, frase como titular, botón "Ver por qué" y, a la derecha, la ilustración `HeroArt`: un globo con una órbita de eventos que desemboca en una moneda en euros, con los colores de los tokens; en oscuro añade estrellas y halo), cuatro tarjetas de cifras (2 columnas en móvil, 4 en escritorio ancho) y una tarjeta de atajos. Previsto: ticker de mercado y gráfica interactiva entre la cabecera y las tarjetas (T2-17, T2-18) y carrusel de noticias debajo de las tarjetas (T2-19).
 - El panel (`/panel`) mantiene su layout de escritorio propio.
 - El widget de la pantalla de inicio del móvil es un componente aparte que se hará después.
 

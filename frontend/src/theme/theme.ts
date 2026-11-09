@@ -40,7 +40,12 @@ export function getTheme(): Theme {
 }
 
 export function setTheme(theme: Theme): void {
-  document.documentElement.dataset.theme = theme;
+  const root = document.documentElement;
+  // Sin transiciones durante el cambio: todo cambia de color a la vez, sin fundidos a destiempo
+  // (salvo el propio interruptor, marcado con data-keep-transition). Ver index.css.
+  root.classList.add("theme-switching");
+  root.dataset.theme = theme;
+  requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")));
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {

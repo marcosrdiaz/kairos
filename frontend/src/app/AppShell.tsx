@@ -20,13 +20,6 @@ export function AppShell() {
   const { search } = useLocation();
   return (
     <div className="min-h-dvh bg-paper lg:grid lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)]">
-      <a
-        href="#contenido"
-        className="sr-only rounded-control bg-surface px-4 py-3 font-semibold text-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
-      >
-        Saltar al contenido
-      </a>
-
       <header className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:py-6">
         <Link
           to={`/inicio${search}`}
@@ -89,8 +82,7 @@ export function AppShell() {
 
       <main
         id="contenido"
-        tabIndex={-1}
-        className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 focus:outline-none lg:max-w-(--kairos-max-width) lg:px-10 lg:pb-12 lg:pt-10"
+        className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 lg:max-w-(--kairos-max-width) lg:px-10 lg:pb-12 lg:pt-10"
       >
         <Outlet />
       </main>

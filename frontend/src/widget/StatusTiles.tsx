@@ -11,10 +11,10 @@ import {
 import { formatDate, formatEur } from "../lib/format";
 import { REASON_TEXT, signedPercent, trendOf } from "./states";
 
-type Tone = "gold" | "green" | "purple" | "blue";
+type Tone = "red" | "green" | "purple" | "blue";
 
 const TONE: Record<Tone, string> = {
-  gold: "bg-icon-gold-bg text-icon-gold",
+  red: "bg-icon-red-bg text-icon-red",
   green: "bg-icon-green-bg text-icon-green",
   purple: "bg-icon-purple-bg text-icon-purple",
   blue: "bg-icon-blue-bg text-icon-blue",
@@ -45,7 +45,7 @@ export function StatusTiles({ status }: { status: StatusOut }) {
   const trend = trendOf(status.change_week_pct);
   return (
     <dl className="m-0 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4">
-      <Tile label="Valor total" tone="gold" Icon={CoinsIcon}>
+      <Tile label="Valor total" tone="red" Icon={CoinsIcon}>
         <span className="tabular-nums">{formatEur(status.total_eur)}</span>
       </Tile>
       <Tile label="Esta semana" tone="green" Icon={TrendIcon}>
