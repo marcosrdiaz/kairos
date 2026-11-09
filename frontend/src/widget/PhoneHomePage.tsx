@@ -1,7 +1,8 @@
 import { useSearchParams } from "react-router";
+import { useStatus } from "../api/hooks/useStatus";
 import { LogoTile } from "../components/icons";
+import { AlertNotice } from "./AlertNotice";
 import { HomeWidget } from "./HomeWidget";
-import { useStatus } from "./useStatus";
 
 const DEFAULT_PORTFOLIO = "laura";
 
@@ -21,7 +22,7 @@ function DockIcon({ tone }: { tone: string }) {
 /**
  * `/widget`: pantalla de inicio de un móvil simulada con el widget de Kairos (RF-13, D-004).
  * En escritorio se ve un móvil centrado; en un móvil real ocupa la pantalla.
- * Lee el estado una vez; el polling cada 5 s es de T2-13.
+ * El estado y los avisos se actualizan solos cada 5 s; si falla una consulta, sigue lo último.
  */
 export function PhoneHomePage() {
   const [params] = useSearchParams();
@@ -52,7 +53,11 @@ export function PhoneHomePage() {
           <p className="m-0 mt-2 text-base text-ink-muted">{capitalizeFirst(dayFmt.format(now))}</p>
         </div>
 
-        <div aria-live="polite" className="mt-10 px-5">
+        <div className="mt-6 px-5">
+          <AlertNotice portfolioId={portfolioId} href={`/inicio${query}`} />
+        </div>
+
+        <div aria-live="polite" className="mt-4 px-5">
           {isPending && (
             <div
               role="status"
@@ -60,7 +65,7 @@ export function PhoneHomePage() {
               className="h-44 rounded-[1.75rem] bg-surface/70 motion-safe:animate-pulse"
             />
           )}
-          {isError && (
+          {isError && !data && (
             <p className="m-0 rounded-[1.75rem] bg-surface/90 p-4 text-ink-muted">
               Ahora mismo no podemos mostrar el estado de tu cartera.
             </p>

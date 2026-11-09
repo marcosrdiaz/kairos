@@ -1,11 +1,12 @@
 import type { ComponentType } from "react";
 import { Link, useSearchParams } from "react-router";
+import { useStatus } from "../api/hooks/useStatus";
 import { ArrowRightIcon, ChatIcon, PanelIcon, WalletIcon } from "../components/icons";
 import { EmptyNote, PageTitle } from "../components/PageTitle";
 import { NewsSection } from "./news/NewsSection";
+import { AlertNotice } from "../widget/AlertNotice";
 import { StatusCard } from "../widget/StatusCard";
 import { StatusTiles } from "../widget/StatusTiles";
-import { useStatus } from "../widget/useStatus";
 
 const DEFAULT_PORTFOLIO = "laura";
 
@@ -93,8 +94,9 @@ export function InicioPage() {
     <>
       <PageTitle visuallyHidden>Inicio</PageTitle>
       <div className="flex flex-col gap-6">
+        <AlertNotice portfolioId={portfolioId} href={`/panel${query}`} />
         {isPending && <StatusSkeleton />}
-        {isError && (
+        {isError && !data && (
           <EmptyNote>
             Ahora mismo no podemos mostrar el estado de tu cartera. Vuelve a intentarlo en unos
             segundos.
