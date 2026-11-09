@@ -137,6 +137,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T1-16 · Seguimiento: `pyproject.toml` — Manu
+**Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
+**Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #39; después, borrar esta subsección.
+**Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
+
 ### T1-17 · Explicador: requisitos que deja T1-16 — Manu (para quien coja la tarea)
 **Guardián en `main` (#38):** la entrada es `guardian.check(GuardianRequest)`. Detalle en la decisión «Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma».
 - Las cifras se comparan en valor absoluto: el guardián no detecta un signo cambiado ("has ganado" con un −470 €). Escribe la dirección con el verbo a partir del signo de la herramienta ("te ha restado").
