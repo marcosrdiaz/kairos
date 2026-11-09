@@ -6,8 +6,12 @@ import bce from "../api/mocks/EventImpactOut.json";
 import nvda from "../api/mocks/EventImpactOut.nvda.json";
 import javier from "../api/mocks/PortfolioOut.javier.json";
 import laura from "../api/mocks/PortfolioOut.json";
+import exposure from "../api/mocks/ExposureOut.json";
+import radar from "../api/mocks/RadarOut.json";
 import status from "../api/mocks/StatusOut.json";
 import { PanelPage } from "./PanelPage";
+
+const EMPTY_RADAR = { items: [], calc_id: "calc_radar_vacio" };
 
 const PORTFOLIOS = [
   { id: "laura", name: "Laura", profile: "dinamico" },
@@ -18,7 +22,11 @@ const json = (body: unknown, code = 200) =>
   new Response(JSON.stringify(body), { status: code, headers: { "Content-Type": "application/json" } });
 
 /** Backend falso: sirve cada ruta según la cartera pedida. `events` por cartera. */
-function stubApi(events: Record<string, unknown[] | "error"> = { laura: [bce, nvda], javier: [nvda] }) {
+function stubApi(
+  events: Record<string, unknown[] | "error"> = { laura: [bce, nvda], javier: [nvda] },
+  others: { exposure?: unknown; radar?: Record<string, unknown> } = {},
+) {
+  const radars = others.radar ?? { laura: radar, javier: EMPTY_RADAR };
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
@@ -26,6 +34,10 @@ function stubApi(events: Record<string, unknown[] | "error"> = { laura: [bce, nv
       if (url.endsWith("/portfolios")) return json(PORTFOLIOS);
       const id = /portfolios\/(\w+)/.exec(url)?.[1] ?? "laura";
       if (url.includes("/status")) return json({ ...status, state: "atento" });
+      if (url.includes("/exposure")) {
+        return others.exposure === "error" ? json({ code: "INTERNAL" }, 500) : json(others.exposure ?? exposure);
+      }
+      if (url.includes("/radar")) return json(radars[id] ?? EMPTY_RADAR);
       if (url.includes("/events")) {
         const list = events[id];
         return list === "error" ? json({ code: "INTERNAL" }, 500) : json(list ?? []);
@@ -65,7 +77,7 @@ describe("PanelPage · Resumen", () => {
     expect(dl.parentElement?.textContent).toMatch(/34\.311,68\s€/);
     expect(dl.parentElement?.textContent).toMatch(/Valorado a/);
     expect(await screen.findByText("Atento")).toBeTruthy();
-    const table = screen.getByRole("table");
+    const table = screen.getByRole("table", { name: /Posiciones de la cartera/ });
     const rows = within(table).getAllByRole("row");
     expect(rows.length).toBe(laura.positions.length + 1);
     expect(within(table).getAllByText(/6 de noviembre de 2026/).length).toBeGreaterThan(0);
@@ -125,5 +137,57 @@ describe("PanelPage · rango colapsado", () => {
     renderPanel();
     expect(await screen.findByText(/^≈ -224\s€$/)).toBeTruthy();
     expect(screen.queryByText(/entre -224/)).toBeNull();
+  });
+});
+
+describe("PanelPage · Exposición", () => {
+  it("muestra la radiografía, los repartos y las mayores empresas con sus activos", async () => {
+    stubApi();
+    renderPanel();
+    expect(await screen.findByRole("heading", { level: 2, name: "Exposición" })).toBeTruthy();
+    expect(await screen.findByText(/Mayor país: Estados Unidos/)).toBeTruthy();
+    for (const t of ["Por país", "Por sector", "Por divisa"]) {
+      expect(screen.getByRole("region", { name: t })).toBeTruthy();
+    }
+    const table = await screen.findByRole("table", { name: /Diez mayores empresas/ });
+    expect(within(table).getByText(exposure.top_companies[0]!.name)).toBeTruthy();
+    expect(screen.getByText(/cubierta: 94,0\s%/)).toBeTruthy();
+    expect(document.querySelector("#exposicion [data-calc-id]")).not.toBeNull();
+  });
+
+  it("la anchura de las barras sale de la fracción del backend, sin pasarla a number", async () => {
+    stubApi();
+    renderPanel();
+    const country = await screen.findByRole("region", { name: "Por país" });
+    const bar = country.querySelector<HTMLElement>("li span[style]");
+    // jsdom resuelve el calc(); en el navegador es calc(0.61 * 100%).
+    expect(bar?.getAttribute("style")).toMatch(/width:\s*calc\(61%\)/);
+  });
+
+  it("si falla, estado vacío honesto", async () => {
+    stubApi(undefined, { exposure: "error" });
+    renderPanel();
+    expect(await screen.findByText(/no podemos mostrar la exposición/)).toBeTruthy();
+  });
+});
+
+describe("PanelPage · Radar", () => {
+  it("riesgo y oportunidad con su palabra, su importe y la regla del usuario", async () => {
+    stubApi();
+    renderPanel();
+    const cheaper = await screen.findByRole("heading", { level: 3, name: radar.items[1]!.title });
+    const card = cheaper.closest("li")!;
+    expect(within(card).getByText("Oportunidad")).toBeTruthy();
+    expect(within(card).getByText("tu plan de aportaciones")).toBeTruthy();
+    expect(within(card).getByText(/210\s€/)).toBeTruthy();
+    const risk = screen.getByRole("heading", { level: 3, name: radar.items[0]!.title }).closest("li")!;
+    expect(within(risk).getByText("Riesgo")).toBeTruthy();
+    expect(card.querySelector("[data-calc-id]")).not.toBeNull();
+  });
+
+  it("sin nada que destacar (Javier), lo dice sin inventar cifras", async () => {
+    stubApi();
+    renderPanel("/panel?p=javier");
+    expect(await screen.findByText(/el radar no ve riesgos ni oportunidades/)).toBeTruthy();
   });
 });

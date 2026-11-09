@@ -1,9 +1,11 @@
 import { usePortfolioId } from "../app/portfolio-picker/usePortfolioId";
 import { PageTitle } from "../components/PageTitle";
 import { EventsSection } from "./events/EventsSection";
+import { ExposureSection } from "./exposure/ExposureSection";
 import "./panel.css";
 import { PanelHeader } from "./PanelHeader";
 import { PanelNoticeSlot } from "./PanelNoticeSlot";
+import { RadarSection } from "./radar/RadarSection";
 import { SummarySection } from "./summary/SummarySection";
 
 /**
@@ -21,6 +23,8 @@ export function PanelPage() {
         <PanelNoticeSlot />
         <SummarySection key={`resumen-${portfolioId}`} portfolioId={portfolioId} />
         <EventsSection key={`eventos-${portfolioId}`} portfolioId={portfolioId} />
+        <ExposureSection key={`exposicion-${portfolioId}`} portfolioId={portfolioId} />
+        <RadarSection key={`radar-${portfolioId}`} portfolioId={portfolioId} />
       </main>
     </div>
   );

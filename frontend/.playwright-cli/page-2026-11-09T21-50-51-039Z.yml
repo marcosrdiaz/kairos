@@ -1,0 +1,369 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: KAIROS
+      - generic [ref=e7]:
+        - generic [aria-hidden] [ref=e8]: Cartera
+        - group "Cartera" [ref=e40]:
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - radio "Laura" [ref=e44]
+              - generic [ref=e45] [cursor=pointer]: Laura
+            - generic [ref=e46]:
+              - radio "Javier" [checked] [active] [ref=e47]
+              - generic [ref=e48] [cursor=pointer]: Javier
+      - navigation "Bloques del panel" [ref=e10]:
+        - link "Resumen" [ref=e11] [cursor=pointer]:
+          - /url: "#resumen"
+        - link "Eventos" [ref=e12] [cursor=pointer]:
+          - /url: "#eventos"
+        - link "Exposición" [ref=e13] [cursor=pointer]:
+          - /url: "#exposicion"
+        - link "Radar" [ref=e14] [cursor=pointer]:
+          - /url: "#radar"
+        - link "Volver a la app" [ref=e15] [cursor=pointer]:
+          - /url: /inicio?p=javier
+    - status [ref=e16]: Mostrando la cartera de Javier
+  - main [ref=e17]:
+    - heading "Panel de contexto" [level=1] [ref=e18]
+    - region [ref=e501]:
+      - heading "Resumen" [level=2] [ref=e502]
+      - paragraph [ref=e503]: Cómo está tu cartera hoy, con los precios de cierre más recientes.
+      - generic [ref=e504]:
+        - generic [ref=e505]:
+          - generic [ref=e506]:
+            - generic [ref=e507]: Tranquilo
+            - paragraph [ref=e510]: "Todo en calma: tu cartera vale 179.912 euros."
+          - generic [ref=e511]:
+            - generic [ref=e512]:
+              - term [ref=e513]: Patrimonio
+              - definition [ref=e514]: 179.911,74 €
+              - definition [ref=e515]: Valorado a 9 de noviembre de 2026
+            - generic [ref=e516]:
+              - term [ref=e517]: Última semana
+              - definition [ref=e518]: ▲+94,93 €
+              - definition [ref=e519]: +0,0 %
+            - generic [ref=e520]:
+              - term [ref=e521]: Ajuste de demostración
+              - definition [ref=e522]:
+                - text: "El BCE baja los tipos 0,25 puntos:"
+                - generic [ref=e523]: 0,00 €
+            - generic [ref=e524]:
+              - term [ref=e525]: Ajuste de demostración
+              - definition [ref=e526]:
+                - text: "El Brent se dispara tras el ataque de Israel a Irán:"
+                - generic [ref=e527]: 0,00 €
+            - generic [ref=e528]:
+              - term [ref=e529]: Ajuste de demostración
+              - definition [ref=e530]:
+                - text: "NVIDIA cae un 8,5 % pese a sus ingresos récord:"
+                - generic [ref=e531]: "-88,51 €"
+        - generic [ref=e532]:
+          - heading "Posiciones" [level=3] [ref=e533]
+          - region "Posiciones (desplázate para ver todas las columnas)" [ref=e534]:
+            - table [ref=e535]:
+              - caption [ref=e536]: Posiciones de la cartera de Javier, con su valor en euros y la fecha del precio
+              - rowgroup [ref=e537]:
+                - row [ref=e538]:
+                  - columnheader "Activo" [ref=e539]
+                  - columnheader "Participaciones" [ref=e540]
+                  - columnheader "Precio" [ref=e541]
+                  - columnheader "Valor" [ref=e542]
+                  - columnheader "Peso" [ref=e543]
+                  - columnheader "Plusvalía latente" [ref=e544]
+              - rowgroup [ref=e545]:
+                - row [ref=e546]:
+                  - rowheader "Vanguard Euro Government Bond Index Fund Investor EUR Acc IE0007472115" [ref=e547]:
+                    - text: Vanguard Euro Government Bond Index Fund Investor EUR Acc
+                    - generic [ref=e548]: IE0007472115
+                  - cell "360,0936" [ref=e549]
+                  - cell [ref=e550]:
+                    - text: 199,9482 €
+                    - time [ref=e552]: 5 de noviembre de 2026
+                  - cell "72.000,07 €" [ref=e553]
+                  - cell "40,0 %" [ref=e554]
+                  - cell "-9774,71 €" [ref=e555]
+                - row [ref=e556]:
+                  - rowheader "Vanguard Global Bond Index Fund EUR Hedged Acc IE00B18GC888" [ref=e557]:
+                    - text: Vanguard Global Bond Index Fund EUR Hedged Acc
+                    - generic [ref=e558]: IE00B18GC888
+                  - cell "454,8487" [ref=e559]
+                  - cell [ref=e560]:
+                    - text: 98,9344 €
+                    - time [ref=e562]: 5 de noviembre de 2026
+                  - cell "45.000,18 €" [ref=e563]
+                  - cell "25,0 %" [ref=e564]
+                  - cell "-4394,02 €" [ref=e565]
+                - row [ref=e566]:
+                  - rowheader "Depósito a plazo 12 meses (ilustrativo)" [ref=e567]
+                  - cell "27.000" [ref=e568]
+                  - cell [ref=e569]:
+                    - text: 1,00 €
+                    - time [ref=e571]: 9 de noviembre de 2026
+                  - cell "27.000,00 €" [ref=e572]
+                  - cell "15,0 %" [ref=e573]
+                  - cell "0,00 €" [ref=e574]
+                - row [ref=e575]:
+                  - rowheader "Plan de pensiones mixto (ilustrativo)" [ref=e576]
+                  - cell "1800" [ref=e577]
+                  - cell [ref=e578]:
+                    - text: 10,00 €
+                    - time [ref=e580]: 9 de noviembre de 2026
+                  - cell "18.000,00 €" [ref=e581]
+                  - cell "10,0 %" [ref=e582]
+                  - cell "0,00 €" [ref=e583]
+                - row [ref=e584]:
+                  - rowheader "Vanguard Global Stock Index Fund EUR Acc IE00B03HD191" [ref=e585]:
+                    - text: Vanguard Global Stock Index Fund EUR Acc
+                    - generic [ref=e586]: IE00B03HD191
+                  - cell "286,4636" [ref=e587]
+                  - cell [ref=e588]:
+                    - text: 62,8352 €
+                    - time [ref=e590]: 5 de noviembre de 2026
+                  - cell "17.911,49 €" [ref=e591]
+                  - cell "10,0 %" [ref=e592]
+                  - cell "+6801,11 €" [ref=e593]
+    - region [ref=e594]:
+      - heading "Eventos" [level=2] [ref=e595]
+      - paragraph [ref=e596]: Lo que ha pasado en el mundo y cuánto te toca en euros. Solo salen los que afectan a tu cartera.
+      - generic [ref=e598]:
+        - article [ref=e599]:
+          - generic [ref=e600]:
+            - generic [ref=e601]:
+              - paragraph [ref=e602]:
+                - generic [ref=e603]: Resultados
+                - generic [aria-hidden] [ref=e604]: ·
+                - time [ref=e605]: 9 de noviembre de 2026
+              - heading "NVIDIA cae un 8,5 % pese a sus ingresos récord" [level=3] [ref=e606]
+            - generic [ref=e607]: Riesgo
+          - list "Cadena causal" [ref=e608]:
+            - listitem [ref=e609]:
+              - generic [ref=e611]: NVIDIA publica unos ingresos trimestrales récord, pero prevé un margen bruto menor para el siguiente trimestre.
+            - listitem [ref=e612]:
+              - generic [ref=e616]: El mercado se fija en el margen y la acción de NVIDIA cae con fuerza en la sesión siguiente.
+            - listitem [ref=e617]:
+              - generic [ref=e621]: Por su peso en los índices, la caída arrastra a las tecnológicas de Estados Unidos y a los fondos que las replican.
+            - listitem [ref=e622]:
+              - generic [ref=e626]: Bajan tus posiciones de renta variable
+          - generic [ref=e627]:
+            - generic [ref=e628]:
+              - term [ref=e629]: Impacto estimado en tu cartera
+              - definition [ref=e630]: ≈ -89 €
+            - generic [ref=e631]:
+              - term [ref=e632]: Fiabilidad
+              - definition [ref=e633]: Confianza baja
+          - paragraph [ref=e634]: Este evento te afecta en unos 89 euros en contra, en un rango que va de 89 euros en contra a 89 euros en contra. Donde más se nota es en Vanguard Global Stock Index Fund EUR Acc, por el canal de resultados NVDA.
+          - group [ref=e635]:
+            - generic "Qué activos lo notan (5)" [ref=e636] [cursor=pointer]
+          - paragraph [ref=e637]: "Fuente: Movimientos observados el 26 feb 2025, 26 de febrero de 2025"
+        - article [ref=e638]:
+          - generic [ref=e639]:
+            - generic [ref=e640]:
+              - paragraph [ref=e641]:
+                - generic [ref=e642]: Materias primas
+                - generic [aria-hidden] [ref=e643]: ·
+                - time [ref=e644]: 5 de noviembre de 2026
+              - heading "El Brent se dispara tras el ataque de Israel a Irán" [level=3] [ref=e645]
+            - generic [ref=e646]: Neutral
+          - list "Cadena causal" [ref=e647]:
+            - listitem [ref=e648]:
+              - generic [ref=e650]: Israel ataca instalaciones nucleares y militares de Irán y aumenta el riesgo en Oriente Próximo.
+            - listitem [ref=e651]:
+              - generic [ref=e655]: El mercado teme cortes de suministro en la región y en el estrecho de Ormuz, y el precio del crudo sube con fuerza.
+            - listitem [ref=e656]:
+              - generic [ref=e660]: Un petróleo más caro presiona al alza la inflación esperada y encarece los costes de empresas y consumidores.
+            - listitem [ref=e661]:
+              - generic [ref=e665]: Las bolsas caen por la aversión al riesgo y el dinero busca refugio en activos como el oro.
+            - listitem [ref=e666]:
+              - generic [ref=e670]: Apenas cambia tu cartera
+          - generic [ref=e671]:
+            - generic [ref=e672]:
+              - term [ref=e673]: Impacto estimado en tu cartera
+              - definition [ref=e674]: ≈ 0 €
+            - generic [ref=e675]:
+              - term [ref=e676]: Fiabilidad
+              - definition [ref=e677]: Confianza baja
+          - paragraph [ref=e678]: Este evento no mueve tu cartera en la estimación central, en un rango que va de 0 euros a 0 euros. Donde más se nota es en Vanguard Euro Government Bond Index Fund Investor EUR Acc, por el canal de sin efecto.
+          - group [ref=e679]:
+            - generic "Qué activos lo notan (5)" [ref=e680] [cursor=pointer]
+          - paragraph [ref=e681]: "Fuente: Movimientos observados el 13 jun 2025, 13 de junio de 2025"
+        - article [ref=e682]:
+          - generic [ref=e683]:
+            - generic [ref=e684]:
+              - paragraph [ref=e685]:
+                - generic [ref=e686]: Banco central
+                - generic [aria-hidden] [ref=e687]: ·
+                - time [ref=e688]: 5 de noviembre de 2026
+              - heading "El BCE baja los tipos 0,25 puntos" [level=3] [ref=e689]
+            - generic [ref=e690]: Neutral
+          - list "Cadena causal" [ref=e691]:
+            - listitem [ref=e692]:
+              - generic [ref=e694]: El BCE baja sus tipos de interés oficiales, como esperaba el mercado.
+            - listitem [ref=e695]:
+              - generic [ref=e699]: Bajan los tipos del mercado monetario y la rentabilidad de los bonos en euros.
+            - listitem [ref=e700]:
+              - generic [ref=e704]: Los bonos y fondos de renta fija en euros tienden a ganar valor y la financiación se abarata.
+            - listitem [ref=e705]:
+              - generic [ref=e709]: La bolsa puede apoyarse en una financiación más barata y el euro puede perder algo de atractivo frente al dólar.
+            - listitem [ref=e710]:
+              - generic [ref=e714]: Apenas cambia tu cartera
+          - generic [ref=e715]:
+            - generic [ref=e716]:
+              - term [ref=e717]: Impacto estimado en tu cartera
+              - definition [ref=e718]: ≈ 0 €
+            - generic [ref=e719]:
+              - term [ref=e720]: Fiabilidad
+              - definition [ref=e721]: Confianza baja
+            - generic [ref=e722]:
+              - term [ref=e723]: Frente al consenso
+              - definition [ref=e724]: En línea con lo esperado
+          - paragraph [ref=e725]: Este evento no mueve tu cartera en la estimación central, en un rango que va de 0 euros a 0 euros. Donde más se nota es en Vanguard Euro Government Bond Index Fund Investor EUR Acc, por el canal de sin efecto.
+          - group [ref=e726]:
+            - generic "Qué activos lo notan (5)" [ref=e727] [cursor=pointer]
+          - paragraph [ref=e728]: "Fuente: Movimientos observados el 5 jun 2025, 5 de junio de 2025"
+    - region [ref=e729]:
+      - heading "Exposición" [level=2] [ref=e730]
+      - paragraph [ref=e731]: Qué hay realmente dentro de tu cartera, sumando lo que tienes directamente y lo que llevan tus fondos y ETF.
+      - generic [ref=e733]:
+        - generic [ref=e734]:
+          - generic [ref=e735]:
+            - term [ref=e736]: Posiciones
+            - definition [ref=e737]: "3"
+          - generic [ref=e738]:
+            - term [ref=e739]: "Mayor país: Estados Unidos"
+            - definition [ref=e740]: 19,0 %
+          - generic [ref=e741]:
+            - term [ref=e742]: Tus 7 mayores empresas
+            - definition [ref=e743]: 2,5 %
+        - generic [ref=e744]:
+          - region "Por país" [ref=e745]:
+            - heading "Por país" [level=3] [ref=e746]
+            - list [ref=e747]:
+              - listitem [ref=e748]:
+                - generic [ref=e749]: Estados Unidos
+                - generic [ref=e750]: 19,0 %34.253 €
+              - listitem [ref=e753]:
+                - generic [ref=e754]: Francia
+                - generic [ref=e755]: 11,3 %20.374 €
+              - listitem [ref=e758]:
+                - generic [ref=e759]: Alemania
+                - generic [ref=e760]: 11,1 %19.987 €
+              - listitem [ref=e763]:
+                - generic [ref=e764]: Italia
+                - generic [ref=e765]: 8,3 %14.985 €
+              - listitem [ref=e768]:
+                - generic [ref=e769]: España
+                - generic [ref=e770]: 5,9 %10.538 €
+              - listitem [ref=e773]:
+                - generic [ref=e774]: Países Bajos
+                - generic [ref=e775]: 2,1 %3779 €
+            - group [ref=e778]:
+              - generic "Ver 11 más" [ref=e779] [cursor=pointer]
+          - region "Por sector" [ref=e780]:
+            - heading "Por sector" [level=3] [ref=e781]
+            - list [ref=e782]:
+              - listitem [ref=e783]:
+                - generic [ref=e784]: Deuda pública
+                - generic [ref=e785]: 40,0 %72.000 €
+              - listitem [ref=e788]:
+                - generic [ref=e789]: Tecnología
+                - generic [ref=e790]: 1,9 %3475 €
+              - listitem [ref=e793]:
+                - generic [ref=e794]: Comunicaciones
+                - generic [ref=e795]: 0,6 %1039 €
+              - listitem [ref=e798]:
+                - generic [ref=e799]: Consumo discrecional
+                - generic [ref=e800]: 0,4 %681 €
+              - listitem [ref=e803]:
+                - generic [ref=e804]: Otros
+                - generic [ref=e805]: 57,1 %102.717 €
+          - region "Por divisa" [ref=e808]:
+            - heading "Por divisa" [level=3] [ref=e809]
+            - list [ref=e810]:
+              - listitem [ref=e811]:
+                - generic [ref=e812]: Euro
+                - generic [ref=e813]: 90,7 %163.200 €
+              - listitem [ref=e816]:
+                - generic [ref=e817]: Dólar
+                - generic [ref=e818]: 7,3 %13.057 €
+              - listitem [ref=e821]:
+                - generic [ref=e822]: Yen
+                - generic [ref=e823]: 0,6 %1057 €
+              - listitem [ref=e826]:
+                - generic [ref=e827]: Libra
+                - generic [ref=e828]: 0,3 %609 €
+              - listitem [ref=e831]:
+                - generic [ref=e832]: Dólar canadiense
+                - generic [ref=e833]: 0,3 %591 €
+              - listitem [ref=e836]:
+                - generic [ref=e837]: Franco suizo
+                - generic [ref=e838]: 0,2 %376 €
+            - group [ref=e841]:
+              - generic "Ver 2 más" [ref=e842] [cursor=pointer]
+        - region [ref=e843]:
+          - heading "Mayores empresas, mirando dentro de tus fondos" [level=3] [ref=e844]
+          - region "Mayores empresas (desplázate para ver todas las columnas)" [ref=e845]:
+            - table [ref=e846]:
+              - caption [ref=e847]: Diez mayores empresas de la cartera sumando lo que tienes directamente y lo que hay dentro de tus fondos y ETF
+              - rowgroup [ref=e848]:
+                - row [ref=e849]:
+                  - columnheader "Empresa" [ref=e850]
+                  - columnheader "Peso" [ref=e851]
+                  - columnheader "Valor" [ref=e852]
+                  - columnheader "Dónde la tienes" [ref=e853]
+              - rowgroup [ref=e854]:
+                - row [ref=e855]:
+                  - rowheader "NVIDIA" [ref=e856]
+                  - cell "0,6 %" [ref=e857]
+                  - cell "1039 €" [ref=e858]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e859]
+                - row [ref=e860]:
+                  - rowheader "APPLE" [ref=e861]
+                  - cell "0,5 %" [ref=e862]
+                  - cell "967 €" [ref=e863]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e864]
+                - row [ref=e865]:
+                  - rowheader "ALPHABET" [ref=e866]
+                  - cell "0,4 %" [ref=e867]
+                  - cell "716 €" [ref=e868]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e869]
+                - row [ref=e870]:
+                  - rowheader "MICROSOFT" [ref=e871]
+                  - cell "0,4 %" [ref=e872]
+                  - cell "716 €" [ref=e873]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e874]
+                - row [ref=e875]:
+                  - rowheader "AMAZON.COM INC" [ref=e876]
+                  - cell "0,3 %" [ref=e877]
+                  - cell "484 €" [ref=e878]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e879]
+                - row [ref=e880]:
+                  - rowheader "BROADCOM INC" [ref=e881]
+                  - cell "0,2 %" [ref=e882]
+                  - cell "322 €" [ref=e883]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e884]
+                - row [ref=e885]:
+                  - rowheader "META PLATFORMS" [ref=e886]
+                  - cell "0,2 %" [ref=e887]
+                  - cell "322 €" [ref=e888]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e889]
+                - row [ref=e890]:
+                  - rowheader "MICRON TECHNOLOGY" [ref=e891]
+                  - cell "0,1 %" [ref=e892]
+                  - cell "233 €" [ref=e893]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e894]
+                - row [ref=e895]:
+                  - rowheader "ADVANCED MICRO DEVICES" [ref=e896]
+                  - cell "0,1 %" [ref=e897]
+                  - cell "197 €" [ref=e898]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e899]
+                - row [ref=e900]:
+                  - rowheader "TESLA INC" [ref=e901]
+                  - cell "0,1 %" [ref=e902]
+                  - cell "197 €" [ref=e903]
+                  - cell "Vanguard Global Stock Index Fund EUR Acc" [ref=e904]
+        - paragraph [ref=e905]: "Composición de los fondos y ETF cubierta: 68,7 %. Datos a 30 de septiembre de 2026."
+    - region [ref=e906]:
+      - heading "Radar" [level=2] [ref=e907]
+      - paragraph [ref=e908]: Riesgos y oportunidades de tu cartera, siempre frente a tus propias reglas. Es contexto, no una orden.
+      - paragraph [ref=e910]: Ahora mismo el radar no ve riesgos ni oportunidades que destacar en tu cartera.
