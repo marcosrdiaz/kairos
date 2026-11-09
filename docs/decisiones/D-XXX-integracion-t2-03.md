@@ -1,0 +1,12 @@
+### D-XXX · Integración (T2-03): mocks que se quedan, patrones del guardián en el analizador y `GUARDIAN_LLM_CHECK` fuera
+- Fecha: 2026-11-10 · Autor: Jaime · Estado: Propuesta
+- Contexto: T2-03 quita los mocks del backend y deja tres pendientes de agentes (D-066): sustituir el filtro `_ORDER` de `analyzer.py`, rellenar `agent_log` y decidir qué hacer con `GUARDIAN_LLM_CHECK`, que se cargaba en `config.py` y nada usaba.
+- Decisión:
+  - **Mocks.** Se borran `status/mock.py`, `impact/mock.py`, `agents/mock.py` y `portfolio/mock.py`, que nadie importaba, y `get_projection` de `planning/mock.py`. Se quedan `planning/mock.py` con `get_agenda` (lo sustituye T2-06, que debe borrarlo) y `voice/mock.py`, que no es un andamio: es lo que sirve el audio sin clave de ElevenLabs en tests y CI.
+  - **Analizador.** `_ORDER` se sustituye por `guardian.find_forbidden`, con la lista completa de `prompts/forbidden.yaml`. Solo los patrones, sin `guardian.check`: el borrador no lleva cifras (D-025), así que no hay evidencias con las que comprobarlas, y las reglas de forma son las de las respuestas del explicador.
+  - **`GUARDIAN_LLM_CHECK` se quita** de `config.py`, `.env.example` y `SPEC.md`. Es la verificación extra de D-010, que era opcional y nunca se hizo; probarla exige clave y el guardián determinista ya cubre la regla 3 de producto.
+  - **`agent_log` queda sin rellenar** en el MVP: la tabla existe, pero el guion no la usa. Es una limitación conocida: los turnos de los agentes solo van al log de la aplicación.
+  - **Smoke.** `scripts/demo_smoke.py` recorre los pasos 1 a 8 sobre `httpx.Client`. El mismo código corre contra el backend levantado y, en `test_demo_smoke.py`, contra la app con `TestClient`, así que el guion queda vigilado por el CI sin red ni Claude.
+- Motivo: cerrar la integración con lo que el guion necesita, sin añadir código que nadie pueda probar antes de la entrega.
+- Alternativas descartadas: `guardian.check` con evidencias vacías en el analizador (las reglas de forma no aplican a una cadena causal); implementar el chequeo con modelo (coste y latencia sin medirse); borrar `planning/mock.py` en esta tarea (T2-06 sigue pendiente y la agenda se quedaría sin datos).
+- Consecuencias: un `.env` que conserve `GUARDIAN_LLM_CHECK` sigue funcionando (la configuración ignora claves desconocidas). El smoke resetea la demo cuando se ejecuta. El paso 5 comprueba la agenda de `planning/mock.py` hasta que entre T2-06.

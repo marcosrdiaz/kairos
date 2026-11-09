@@ -5,14 +5,13 @@ salen de `observed` (D-025). Si falla tras un reintento lanza `AnalyzerError` y 
 análisis de respaldo.
 """
 
-import re
-import unicodedata
 from pathlib import Path
 from typing import Any
 
 import anthropic
 from pydantic import ValidationError, field_validator
 
+from app.agents import guardian
 from app.config import get_settings
 from app.schemas.common import ContractModel
 from app.schemas.events import (
@@ -30,13 +29,6 @@ _PROMPT_PATH = Path(__file__).parent / "prompts" / "analyzer.md"
 _ATTEMPTS = 2
 _TIMEOUT_S = 4.0
 _MAX_TOKENS = 2048
-
-# Filtro mínimo hasta T1-16: los textos del analizador llegan al usuario (regla 3 de producto).
-# Se sustituye por `guardian.py`, que tendrá la lista completa en `prompts/forbidden.yaml`.
-_ORDER = re.compile(
-    r"\b(compra|compres|comprar|vende|vendas|vender|invierte en|sal de|te recomiendo"
-    r"|deberias (comprar|vender|invertir)|es buen momento para)\b"
-)
 
 
 class AnalyzerError(Exception):
@@ -100,18 +92,18 @@ def _user_message(event: EventIn, feedback: str | None) -> str:
     return "\n".join(parts)
 
 
-def _normalized(text: str) -> str:
-    decomposed = unicodedata.normalize("NFKD", text.lower())
-    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
-
-
 def _check_no_orders(draft: AnalyzerDraft) -> None:
+    """Los textos del analizador llegan al usuario (regla 3 de producto): patrones del guardián.
+
+    Solo los patrones: el borrador no lleva cifras (D-025) ni tiene evidencias con las que
+    comprobarlas, y la forma que mira `guardian.check` es la de las respuestas del explicador.
+    """
     texts = [
         *draft.causal_chain,
         *(c.label for c in draft.channels),
         *(c.rationale for c in draft.channels),
     ]
-    if any(_ORDER.search(_normalized(text)) for text in texts):
+    if any(guardian.find_forbidden(text) for text in texts):
         raise ValueError("el texto contiene una orden o un consejo de inversión")
 
 

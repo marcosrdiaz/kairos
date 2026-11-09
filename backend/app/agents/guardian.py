@@ -8,8 +8,6 @@
    mayores que diez son cifras desconocidas.
 3. **Forma**: en voz, ≤ 3 frases contando las ya emitidas (`sentence_index`, base 0); en impacto,
    la primera frase (`sentence_index == 0`) lleva una cifra en € (no vale otra moneda).
-
-Extensión: el chequeo con modelo (`GUARDIAN_LLM_CHECK`, D-010) va en quien llama, tras un `ok`.
 """
 
 import re
