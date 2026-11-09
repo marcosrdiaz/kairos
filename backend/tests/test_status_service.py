@@ -1,5 +1,7 @@
 """Estado precalculado del widget: lectura sin modelo, `recompute`, traza y refresco (T2-04)."""
 
+import subprocess
+import sys
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -46,6 +48,13 @@ def _get(client: TestClient, portfolio_id: str = "laura") -> dict[str, Any]:
     assert response.status_code == 200
     body: dict[str, Any] = response.json()
     return body
+
+
+@pytest.mark.parametrize("module", ["app.agents.context", "app.status.service"])
+def test_module_can_be_the_first_import(module: str) -> None:
+    """`agents.context` usa `status` y `status` usa `agents`: el ciclo no debe romper el arranque."""
+    done = subprocess.run([sys.executable, "-c", f"import {module}"], capture_output=True)
+    assert done.returncode == 0, done.stderr.decode(errors="replace")
 
 
 def test_laura_starts_tranquilo_with_real_figures(client: TestClient) -> None:

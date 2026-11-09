@@ -12,7 +12,6 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from threading import Lock
 
-from app.agents import service as agents_service
 from app.core import clock, trace
 from app.core.errors import AppError
 from app.impact import service as impact_service
@@ -189,8 +188,18 @@ def _keep(portfolio_id: str, snapshot: _Snapshot, checked_at: float) -> StatusOu
     return snapshot.status
 
 
+def _sentence(facts: StatusFacts, *, use_model: bool) -> tuple[str, SentenceStatus]:
+    from app.agents import service as agents_service  # aquí por el ciclo agents → status → agents
+
+    return agents_service.write_status_sentence(facts, use_model=use_model)
+
+
 def _template_sentence(facts: StatusFacts) -> tuple[str, SentenceStatus]:
-    return agents_service.write_status_sentence(facts, use_model=False)
+    return _sentence(facts, use_model=False)
+
+
+def _model_sentence(facts: StatusFacts) -> tuple[str, SentenceStatus]:
+    return _sentence(facts, use_model=True)
 
 
 def get_status(portfolio_id: str) -> StatusOut:
@@ -218,7 +227,7 @@ def recompute(portfolio_id: str) -> StatusOut:
         and snapshot.status.sentence_status is SentenceStatus.OK
     ):
         return _keep(portfolio_id, snapshot, now)
-    return _store(portfolio_id, reading, now, agents_service.write_status_sentence)
+    return _store(portfolio_id, reading, now, _model_sentence)
 
 
 def reset() -> None:
