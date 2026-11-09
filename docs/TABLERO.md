@@ -94,7 +94,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2-01 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T1-01 | `backend/app/core/trace.py`, `backend/app/api/traces.py` | Marcos | ✅ hecho |
-| T2-02 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(...)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T1-03, T1-13 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/demo.py` | Alons | 🧪 en PR |
+| T2-02 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(...)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T1-03, T1-13 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/demo.py` | Alons | ✅ hecho |
 | T2-03 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API | Smoke en verde (`scripts/demo_smoke.py`) | Todas las de la fase 1 | `backend/app/*/mock.py` (borrar), `backend/app/api/demo.py`, `scripts/demo_smoke.py` | — | ⬜ |
 | T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | Jaime | 🧪 en PR |
 | T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py` | — | ⬜ |
@@ -161,11 +161,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Para T2-02:** aplica el ajuste de demo antes de `status.recompute` en `events/pipeline.py`; si no, el widget no refleja el impacto.
 **Sin probar:** la frase con Claude real (sin `ANTHROPIC_API_KEY`); si falla, sale la plantilla validada.
 
-### T2-02 · Ajuste de demo — Alons
-**Qué estaba haciendo:** PR #64 (`t2-02/demo-adjustment`) abierto. Tras un replay en modo demo, `/portfolios/{id}` y `/status` suman el impacto por posición (`demo_adjustments` con etiqueta y `calc_id` del impacto). Repetir el replay de un evento no lo acumula, y `/demo/reset` lo borra. `make lint` y 1442 tests del backend en verde.
-**Siguiente paso exacto:** revisión (Jaime, porque toca 2 líneas de `events/pipeline.py`), CI en verde, merge y `docs: done T2-02`.
-**Ficheros tocados:** `backend/app/portfolio/{engine,repository,service,demo_adjustment}.py`, `backend/app/events/pipeline.py`, `backend/tests/test_demo_adjustment.py` y la decisión «Ajuste de demo (T2-02): se sustituye por evento, entra en el cambio semanal e ignora activos vendidos».
-**Para T2-07:** `get_value_change` sigue sin ajustes; según D-031, `explain_move` debe sumarlos a `by_asset` (están en `PortfolioOut.demo_adjustments`).
+### T2-07 · Lo que deja T2-02 — Alons (para quien coja la tarea)
+- `portfolio.service.get_value_change` sigue con precios reales y sin ajustes de demo. Según D-031, `explain_move` debe sumarlos a `by_asset`: están en `PortfolioOut.demo_adjustments` (por evento) y en la traza `valuation` (`inputs.demo_adjustments`, por activo). Detalle en D-075.
 
 ### T2-03 · Integración: pendientes de agentes que deja T1-17 — Manu (para quien coja la tarea)
 - `analyzer.py` sigue filtrando las órdenes con su regex provisional `_ORDER`. Hay que sustituirla por `guardian.check` (regla 3 de producto).
