@@ -4,7 +4,7 @@
  *
  * Plan B: si no hay micrófono o falla la transcripción, `problem` lo explica y la pantalla
  * ofrece las preguntas sugeridas y el campo de texto (RF-15). Si falla el TTS, la respuesta
- * se queda en texto (`turn.ttsFailed`).
+ * se queda en texto (`Turn.ttsFailed`).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { streamAsk, type AskChannel } from "../api/ask";
@@ -30,6 +30,8 @@ export interface Sentence {
 }
 
 export interface Turn {
+  /** Identificador local del turno (clave de React); el `turn_id` del backend no llega hasta `meta`. */
+  id: number;
   question: string;
   channel: AskChannel;
   showDisclaimer: boolean;
@@ -66,10 +68,18 @@ function waitOpen(ws: WebSocket): Promise<void> {
   });
 }
 
-export function useVoiceAsk(portfolioId: string, speakTextAnswers: boolean) {
+/** Turnos que se conservan en pantalla (la conversación dura lo que la pestaña). */
+const MAX_TURNS = 30;
+
+/**
+ * `speakAnswers`: si las respuestas se leen en voz alta (el interruptor de la pantalla). Vale
+ * para las preguntas por voz y por texto; sin él, todo queda en texto.
+ */
+export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [partial, setPartial] = useState("");
-  const [turn, setTurn] = useState<Turn | null>(null);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const nextId = useRef(1);
   const [problem, setProblem] = useState<Problem | null>(null);
 
   const stt = useRef<SttSession | null>(null);
@@ -113,11 +123,22 @@ export function useVoiceAsk(portfolioId: string, speakTextAnswers: boolean) {
       const controller = new AbortController();
       abort.current = controller;
       streaming.current = true;
-      const speak = channel === "voice" || speakTextAnswers;
+      const speak = speakAnswers;
       const q = getQueue();
+      const id = nextId.current++;
       const update = (patch: (t: Turn) => Partial<Turn>) =>
-        setTurn((t) => (t ? { ...t, ...patch(t) } : t));
-      setTurn({ question, channel, showDisclaimer: false, sentences: [], done: false, error: null, ttsFailed: false });
+        setTurns((all) => all.map((t) => (t.id === id ? { ...t, ...patch(t) } : t)));
+      const turn: Turn = {
+        id,
+        question,
+        channel,
+        showDisclaimer: false,
+        sentences: [],
+        done: false,
+        error: null,
+        ttsFailed: false,
+      };
+      setTurns((all) => [...all, turn].slice(-MAX_TURNS));
       setPhase("thinking");
       try {
         const request = { question, channel, session_id: getSessionId() };
@@ -147,14 +168,15 @@ export function useVoiceAsk(portfolioId: string, speakTextAnswers: boolean) {
           }
         }
       } catch {
+        update(() => (controller.signal.aborted ? { done: true } : { error: MSG_ASK, done: true }));
         if (controller.signal.aborted) return;
-        update(() => ({ error: MSG_ASK, done: true }));
       }
+      update(() => ({ done: true })); // también si se paró a medias
       if (abort.current !== controller) return;
       streaming.current = false;
       if (!q.busy) setPhase("idle");
     },
-    [cancel, getQueue, portfolioId, speakTextAnswers],
+    [cancel, getQueue, portfolioId, speakAnswers],
   );
 
   const failStt = useCallback(
@@ -241,5 +263,5 @@ export function useVoiceAsk(portfolioId: string, speakTextAnswers: boolean) {
     session.timer = window.setTimeout(() => stt.current === session && failStt("stt"), FINAL_TIMEOUT_MS);
   }, [failStt, handleFinal]);
 
-  return { phase, partial, turn, problem, pressStart, pressEnd, ask, cancel };
+  return { phase, partial, turns, problem, pressStart, pressEnd, ask, cancel };
 }
