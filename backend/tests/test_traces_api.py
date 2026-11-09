@@ -1,6 +1,8 @@
 """`GET /traces/{calc_id}` (T2-01, RF-19): de dónde sale cualquier cifra."""
 
-from datetime import UTC, datetime
+from collections.abc import Iterator
+from contextlib import contextmanager
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
@@ -13,6 +15,9 @@ from app.schemas.portfolio import TraceOut
 
 NOW = datetime(2026, 11, 9, 10, 30, tzinfo=UTC)
 UNKNOWN = "calc_" + "0" * 32
+# El mismo instante (10:30 UTC) tal como lo devolvería cada motor de BD:
+SQLITE_STYLE = datetime(2026, 11, 9, 10, 30)  # noqa: DTZ001  (SQLite no guarda la zona)
+POSTGRES_STYLE = datetime(2026, 11, 9, 11, 30, tzinfo=timezone(timedelta(hours=1)))  # timestamptz
 
 
 def _source(label: str = "Evento de prueba") -> SourceRef:
@@ -125,12 +130,81 @@ def test_unknown_trace_is_a_404_with_the_standard_error_body(
 
 @pytest.mark.usefixtures("db")
 def test_get_returns_a_timezone_aware_utc_datetime() -> None:
-    """SQLite devuelve la fecha sin zona; `TraceOut` exige UTC con zona."""
+    """SQLite (BD real de los tests) devuelve la fecha sin zona; `TraceOut` exige zona."""
     clock.set_now(NOW)
     stored = trace.get(_record())
     assert stored is not None
     assert stored.created_at.tzinfo is not None
     assert stored.created_at == NOW
+
+
+def _row_with(created_at: datetime) -> trace.CalcTrace:
+    return trace.CalcTrace(
+        id=UNKNOWN,
+        kind="valuation",
+        formula="x = Σ y",
+        inputs={},
+        outputs={"x": "4.00"},
+        sources=[],
+        parent_calc_ids=[],
+        created_at=created_at,
+    )
+
+
+def _engine_returns(monkeypatch: pytest.MonkeyPatch, row: trace.CalcTrace) -> None:
+    """Hace que `trace.get` lea `row` tal cual, como lo devolvería el motor de BD."""
+
+    class _Session:
+        def get(self, model: object, key: str) -> trace.CalcTrace:
+            return row
+
+    @contextmanager
+    def fake_session_scope() -> Iterator[_Session]:
+        yield _Session()
+
+    monkeypatch.setattr(trace, "session_scope", fake_session_scope)
+
+
+def test_get_leaves_a_date_with_zone_untouched_as_postgres_returns_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Postgres (`timestamptz`) devuelve la fecha con zona, a veces la de la sesión (no UTC)."""
+    madrid = timezone(timedelta(hours=1))
+    stored_at = datetime(2026, 11, 9, 11, 30, tzinfo=madrid)  # = 10:30 UTC
+    _engine_returns(monkeypatch, _row_with(stored_at))
+
+    stored = trace.get(UNKNOWN)
+
+    assert stored is not None
+    assert stored.created_at is stored_at  # ni se copia ni se convierte
+    assert stored.created_at.utcoffset() == timedelta(hours=1)
+    assert stored.created_at == NOW  # el instante es el mismo
+
+
+def test_get_assumes_utc_for_a_date_without_zone_as_sqlite_returns_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _engine_returns(monkeypatch, _row_with(SQLITE_STYLE))
+
+    stored = trace.get(UNKNOWN)
+
+    assert stored is not None
+    assert stored.created_at.tzinfo is UTC
+    assert stored.created_at == NOW  # misma hora de reloj, ahora en UTC
+
+
+@pytest.mark.parametrize(
+    "created_at",
+    [SQLITE_STYLE, POSTGRES_STYLE],
+    ids=["sin-zona (sqlite)", "con-zona (postgres)"],
+)
+def test_endpoint_serves_the_same_instant_with_either_engine(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, created_at: datetime
+) -> None:
+    _engine_returns(monkeypatch, _row_with(created_at))
+    response = client.get(f"/api/v1/traces/{UNKNOWN}")
+    assert response.status_code == 200
+    assert response.json()["created_at"] == "2026-11-09T10:30:00Z"
 
 
 def test_endpoint_is_documented_in_openapi(client: TestClient) -> None:

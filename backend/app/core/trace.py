@@ -97,9 +97,10 @@ def record(
     return calc_id
 
 
-def _as_utc(value: datetime) -> datetime:
-    """SQLite devuelve las fechas sin zona; en BD siempre se guardan en UTC."""
-    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+def _with_zone(value: datetime) -> datetime:
+    """Fecha con zona. Postgres (`timestamptz`) ya la devuelve con zona: no se toca. SQLite la
+    devuelve sin zona: se asume UTC, que es como se guarda (`clock.now()` es siempre UTC)."""
+    return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
 
 
 def get(calc_id: str) -> TraceRecord | None:
@@ -115,5 +116,5 @@ def get(calc_id: str) -> TraceRecord | None:
             outputs=row.outputs,
             sources=row.sources,
             parent_calc_ids=row.parent_calc_ids,
-            created_at=_as_utc(row.created_at),
+            created_at=_with_zone(row.created_at),
         )
