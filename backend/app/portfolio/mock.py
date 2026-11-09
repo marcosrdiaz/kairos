@@ -1,7 +1,7 @@
 """Mock del gestor de cartera: sirve los ejemplos de `schemas/examples/` (D-018).
 
 Solo lectura y sin BD. Las escrituras devuelven el ejemplo de respuesta sin cambiar nada.
-Lo sustituyen T1-03 a T1-07; se borra en T2-03.
+Lo sustituyen T1-03 a T1-07 (el DCA ya es real desde T1-06); se borra en T2-03.
 """
 
 from datetime import datetime
@@ -10,9 +10,6 @@ from app.core.errors import AppError, ErrorCode
 from app.schemas import examples
 from app.schemas.common import AssetType, ErrorOut
 from app.schemas.portfolio import (
-    DcaExecutionOut,
-    DcaExecutionStatus,
-    DcaPlanOut,
     PlanOut,
     PortfolioOut,
     PortfolioSummaryOut,
@@ -61,12 +58,6 @@ def get_plan(portfolio_id: str) -> PlanOut:
     return plan.model_copy(update={"portfolio_id": portfolio_id})
 
 
-def list_dca_plans(portfolio_id: str) -> list[DcaPlanOut]:
-    _ensure_exists(portfolio_id)
-    plan = DcaPlanOut.model_validate(examples.load("DcaPlanOut"))
-    return [plan.model_copy(update={"portfolio_id": portfolio_id})]
-
-
 def get_value_change(portfolio_id: str, start: datetime, end: datetime) -> ValueChangeOut:
     _ensure_exists(portfolio_id)
     change = ValueChangeOut.model_validate(examples.load("ValueChangeOut"))
@@ -83,20 +74,3 @@ def register_transfer(portfolio_id: str, request: TransferRequest) -> Transactio
         details = {**error.details, "from_asset_type": involved[0], "to_asset_type": involved[1]}
         raise AppError(ErrorCode.TRANSFER_NOT_ALLOWED, error.message, details=details)
     return TransactionOut.model_validate(examples.load("TransactionOut.transfer"))
-
-
-def get_dca_execution(execution_id: str) -> DcaExecutionOut:
-    execution = DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))
-    return execution.model_copy(update={"id": execution_id})
-
-
-def list_dca_executions(
-    portfolio_id: str, status: DcaExecutionStatus | None = None
-) -> list[DcaExecutionOut]:
-    _ensure_exists(portfolio_id)
-    execution = DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))
-    return [execution] if status in (None, execution.status) else []
-
-
-def run_dca_demo() -> list[DcaExecutionOut]:
-    return [DcaExecutionOut.model_validate(examples.load("DcaExecutionOut"))]

@@ -1,15 +1,15 @@
 """Interfaz pública del gestor de cartera (diseño del MVP §4.1).
 
 Otros módulos importan solo las funciones de *Interfaz entre módulos*. El resto las usa la API.
-Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta.
-Lo demás aún delega en `mock.py`; T1-05 a T1-07 lo cambian sin cambiar las firmas.
+Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta; desde
+T1-06, DCA. Lo demás aún delega en `mock.py`; T1-05 y T1-07 lo cambian sin cambiar las firmas.
 """
 
 from datetime import datetime
 
 from app.core import clock, trace
 from app.core.db import session_scope
-from app.portfolio import engine, errors, ledger, mock, operations, repository, seed
+from app.portfolio import dca_flow, engine, errors, ledger, mock, operations, repository, seed
 from app.portfolio import quotes as pricing
 from app.schemas.common import Profile, TraceKind
 from app.schemas.portfolio import (
@@ -85,7 +85,7 @@ def get_plan(portfolio_id: str) -> PlanOut:
 
 
 def list_dca_plans(portfolio_id: str) -> list[DcaPlanOut]:
-    return mock.list_dca_plans(portfolio_id)
+    return dca_flow.list_plans(portfolio_id)
 
 
 def get_value_change(portfolio_id: str, start: datetime, end: datetime) -> ValueChangeOut:
@@ -172,7 +172,7 @@ def reset_demo() -> list[str]:
     return seed.load(force=True)
 
 
-# --- Aún sobre el mock (T1-05 a T1-07) ---
+# --- Aún sobre el mock (T1-05, T1-07) ---
 
 
 def register_transfer(portfolio_id: str, request: TransferRequest) -> TransactionOut:
@@ -184,30 +184,34 @@ def update_plan(portfolio_id: str, request: PlanUpdateRequest) -> PlanOut:
     return plan.model_copy(update=request.model_dump(exclude_unset=True))
 
 
+# --- DCA (T1-06, RF-07). Ver `dca_flow.py` ---
+
+
 def create_dca_plan(portfolio_id: str, request: DcaPlanCreateRequest) -> DcaPlanOut:
-    plan = mock.list_dca_plans(portfolio_id)[0]
-    return plan.model_copy(update=request.model_dump(exclude_unset=True))
+    return dca_flow.create_plan(portfolio_id, request)
 
 
 def update_dca_plan(portfolio_id: str, plan_id: str, request: DcaPlanUpdateRequest) -> DcaPlanOut:
-    plan = mock.list_dca_plans(portfolio_id)[0]
-    return plan.model_copy(update={"id": plan_id, **request.model_dump(exclude_unset=True)})
+    return dca_flow.update_plan(portfolio_id, plan_id, request)
 
 
 def list_dca_executions(
     portfolio_id: str, status: DcaExecutionStatus | None = None
 ) -> list[DcaExecutionOut]:
-    """Ejecuciones DCA de la cartera (todas o solo las de `status`)."""
-    return mock.list_dca_executions(portfolio_id, status)
+    """Ejecuciones DCA de la cartera (todas o solo las de `status`), la más reciente primero."""
+    return dca_flow.list_executions(portfolio_id, status)
+
+
+def run_dca_due() -> list[DcaExecutionOut]:
+    """Job: crea las ejecuciones pendientes de los planes cuya fecha ha llegado."""
+    return dca_flow.run(force=False)
 
 
 def run_dca_demo() -> list[DcaExecutionOut]:
-    """`POST /demo/dca/run`: crea las ejecuciones pendientes de hoy y las devuelve."""
-    return mock.run_dca_demo()
+    """`POST /demo/dca/run`: crea para hoy la ejecución pendiente de cada plan activo."""
+    return dca_flow.run(force=True)
 
 
 def act_on_dca_execution(execution_id: str, request: DcaExecutionActionRequest) -> DcaExecutionOut:
-    status = (
-        DcaExecutionStatus.CONFIRMED if request.action == "confirm" else DcaExecutionStatus.SKIPPED
-    )
-    return mock.get_dca_execution(execution_id).model_copy(update={"status": status})
+    """Confirmar (compra `dca_buy` al precio de ahora) o saltar una aportación pendiente."""
+    return dca_flow.act(execution_id, request)
