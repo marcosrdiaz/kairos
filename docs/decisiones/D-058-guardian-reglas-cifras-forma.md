@@ -1,4 +1,4 @@
-### D-XXX · Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma
+### D-058 · Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma
 - Fecha: 2026-11-09 · Autor: Manu · Estado: Propuesta
 - Contexto: el diseño del MVP §4.4 y `SPEC.md` §9 fijan el contrato del guardián y sus reglas, pero dejan abiertos casos que aparecen en cuanto se valida frase a frase (D-010): unidades de las cifras, años, fechas, nombres de índices, monedas extranjeras, falsos positivos de "compra"/"vende" y cómo aplicar "≥ 1 cifra en €" y "≤ 3 frases" sin ver la respuesta entera. Una revisión adversarial (105 órdenes y recomendaciones indirectas) obligó a ampliar los patrones y a endurecer las cifras.
 - Decisión:
