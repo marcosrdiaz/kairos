@@ -1,4 +1,4 @@
-### D-XXX · Integración (T2-03): mocks que se quedan, patrones del guardián en el analizador y `GUARDIAN_LLM_CHECK` fuera
+### D-082 · Integración (T2-03): mocks que se quedan, patrones del guardián en el analizador y `GUARDIAN_LLM_CHECK` fuera
 - Fecha: 2026-11-10 · Autor: Jaime · Estado: Propuesta
 - Contexto: T2-03 quita los mocks del backend y deja tres pendientes de agentes (D-066): sustituir el filtro `_ORDER` de `analyzer.py`, rellenar `agent_log` y decidir qué hacer con `GUARDIAN_LLM_CHECK`, que se cargaba en `config.py` y nada usaba.
 - Decisión:
