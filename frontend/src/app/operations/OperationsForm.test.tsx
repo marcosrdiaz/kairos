@@ -8,7 +8,9 @@ import portfolio from "../../api/mocks/PortfolioOut.json";
 import txOut from "../../api/mocks/TransactionOut.json";
 import transferOut from "../../api/mocks/TransactionOut.transfer.json";
 import notAllowed from "../../api/mocks/ErrorOut.transfer_not_allowed.json";
+import { ApiError } from "../../api/client";
 import { OperationsForm } from "./OperationsForm";
+import { operationErrorText } from "./operationError";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -150,12 +152,17 @@ describe("OperationsForm · venta", () => {
 });
 
 describe("OperationsForm · traspaso", () => {
-  async function fillTransfer(fromId: string) {
+  async function fillTransfer(fromId: string, byAmount = false) {
     fireEvent.click(screen.getByRole("radio", { name: "Traspaso" }));
     await choosePosition("Fondo de origen", fromId);
     await pickAsset("Fondo de destino", "Vanguard", /Vanguard Global Stock/);
-    fireEvent.click(screen.getByRole("radio", { name: "Por participaciones" }));
-    typeQty("Participaciones", "50");
+    if (byAmount) {
+      fireEvent.click(screen.getByRole("radio", { name: "Por importe (€)" }));
+      typeQty("Importe (€)", "1234,5");
+    } else {
+      fireEvent.click(screen.getByRole("radio", { name: "Por participaciones" }));
+      typeQty("Participaciones", "50");
+    }
     fireEvent.click(screen.getByRole("button", { name: "Registrar traspaso" }));
   }
 
@@ -215,7 +222,72 @@ describe("OperationsForm · traspaso", () => {
     const fetchMock = stubApi(() => json(transferOut, 201));
     renderForm();
     await fillTransfer("IE00B03HD191");
-    expect(await screen.findByText("El destino tiene que ser distinto del origen.")).toBeTruthy();
+    const error = await screen.findByText("El destino tiene que ser distinto del origen.");
+    const group = screen.getByRole("group", { name: "Fondo de destino" });
+    expect(group.getAttribute("aria-describedby")).toBe(error.id);
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+  });
+
+  it("«Registrar como venta» toma importe y unidad del traspaso enviado", async () => {
+    stubApi(() => json(notAllowed, 422));
+    renderForm();
+    await fillTransfer("IE00B4L5Y983", true);
+    fireEvent.click(await screen.findByRole("button", { name: "Registrar como venta" }));
+    expect((screen.getByRole("radio", { name: "Por importe (€)" }) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Importe (€)") as HTMLInputElement).value).toBe("1234,5");
+  });
+
+  it("si la posición de origen desaparece, el resultado usa el nombre conocido al enviar", async () => {
+    const emptied = {
+      ...transferOut,
+      asset_id: "IE00B18GC888",
+      to_asset_id: "IE00B03HD191",
+      portfolio: {
+        ...transferOut.portfolio,
+        positions: transferOut.portfolio.positions.filter((p) => p.asset_id !== "IE00B18GC888"),
+      },
+    };
+    stubApi(() => json(emptied, 201));
+    renderForm();
+    await fillTransfer("IE00B18GC888");
+    const result = await screen.findByRole("region", { name: "Traspaso registrado" });
+    expect(result.textContent).toContain("De «Vanguard Global Bond Index Fund EUR Hedged Acc»");
+    expect(result.textContent).not.toContain("«IE00B18GC888»");
+  });
+});
+
+describe("OperationsForm · otros errores y cambios de tipo", () => {
+  it("cambiar de tipo vacía la cantidad para no cambiarle la unidad", async () => {
+    const fetchMock = stubApi(() => json(txOut, 201));
+    renderForm();
+    typeQty("Importe (€)", "500");
+    fireEvent.click(screen.getByRole("radio", { name: "Venta" }));
+    await choosePosition("Posición", "US0378331005");
+    expect((screen.getByLabelText("Participaciones") as HTMLInputElement).value).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: "Registrar venta" }));
+    expect(await screen.findByText("Escribe una cifra.")).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+  });
+
+  it("503 PRICE_UNAVAILABLE: sin precio no se registra nada", async () => {
+    stubApi(() => json({ code: "PRICE_UNAVAILABLE", message: "x", details: { asset_id: etf.id } }, 503));
+    renderForm();
+    await pickAsset("Activo", "IWDA", /iShares Core MSCI World/);
+    typeQty("Importe (€)", "300");
+    fireEvent.click(screen.getByRole("button", { name: "Registrar compra" }));
+    expect(
+      await screen.findByText(
+        "Ahora mismo no hay precio de «iShares Core MSCI World UCITS ETF USD (Acc)» para registrar la operación. No se ha registrado nada.",
+      ),
+    ).toBeTruthy();
+  });
+});
+
+describe("operationErrorText · 404", () => {
+  const notFound = (details: Record<string, unknown>) => new ApiError("x", 404, "NOT_FOUND", details);
+  it("distingue activo, cartera y caso sin detalles", () => {
+    expect(operationErrorText(notFound({ asset_id: "X" }), "buy", null)).toMatch(/^No encontramos ese activo/);
+    expect(operationErrorText(notFound({ portfolio_id: "laura" }), "buy", null)).toMatch(/^No encontramos esta cartera/);
+    expect(operationErrorText(notFound({}), "sell", null)).toMatch(/^No encontramos lo necesario/);
   });
 });

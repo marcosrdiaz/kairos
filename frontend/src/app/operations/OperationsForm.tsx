@@ -27,8 +27,13 @@ const SUBMIT: Record<OperationKind, string> = {
 interface Submitted {
   built: Extract<ReturnType<typeof buildOperation>, { ok: true }>;
   kind: OperationKind;
+  /** Nombres conocidos al enviar: respaldo si la posición desaparece (venta o traspaso total). */
   label: string | null;
+  toLabel: string | null;
 }
+
+/** "300.5" (cuerpo enviado) -> "300,5" (como se escribe en el campo). */
+const toInput = (value: string) => value.replace(".", ",");
 
 /**
  * Registro de operaciones (RF-04, RF-05, RF-06) en la cartera elegida, solo en KAIROS: compra
@@ -87,18 +92,21 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
     }
     setErrors({});
     const label = draft.kind === "buy" ? (draft.asset?.name ?? null) : (held?.name ?? null);
-    save.mutate({ built, kind: draft.kind, label });
+    const toLabel = draft.kind === "transfer" ? (draft.asset?.name ?? null) : null;
+    save.mutate({ built, kind: draft.kind, label, toLabel });
   }
 
   function sellInstead() {
     const from = save.variables?.built;
     if (from?.kind !== "transfer") return;
     save.reset();
+    // Cantidad y unidad salen del cuerpo enviado, no del borrador (que puede haber cambiado).
+    const { amount_eur, units } = from.body;
     setDraft({
       ...emptyDraft("sell"),
       heldAssetId: from.body.from_asset_id,
-      mode: from.body.amount_eur ? "amount" : "units",
-      quantity: draft.quantity,
+      mode: amount_eur ? "amount" : "units",
+      quantity: toInput(amount_eur ?? units ?? ""),
     });
     requestAnimationFrame(() => submitRef.current?.focus());
   }
@@ -114,14 +122,23 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {save.isSuccess && <OperationResult ref={resultRef} tx={save.data} />}
+      {save.isSuccess && (
+        <OperationResult
+          ref={resultRef}
+          tx={save.data}
+          fallbackName={save.variables.label}
+          fallbackToName={save.variables.toLabel}
+        />
+      )}
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5 rounded-card border border-line bg-surface p-5">
         <ChoiceGroup
           legend="Tipo de operación"
           value={draft.kind}
           options={KINDS}
           onValue={(kind) => {
-            setDraft((d) => ({ ...emptyDraft(kind), quantity: d.quantity }));
+            // Cantidad vacía: cada tipo tiene su unidad por defecto (importe o participaciones)
+            // y conservar la cifra la cambiaría de unidad sin que se note.
+            setDraft(emptyDraft(kind));
             setErrors({});
             save.reset();
           }}
@@ -140,18 +157,12 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
           />
         )}
         {draft.kind === "transfer" && (
-          <div className="flex flex-col gap-2">
-            <AssetCombobox
-              label="Fondo de destino"
-              value={draft.asset}
-              onChange={(asset) => update({ asset })}
-              error={errors.asset}
-            />
-            {/* Con un activo ya elegido, el buscador no pinta su error: se muestra aquí. */}
-            {draft.asset && errors.asset && (
-              <p className="m-0 text-sm font-medium text-error">{errors.asset}</p>
-            )}
-          </div>
+          <AssetCombobox
+            label="Fondo de destino"
+            value={draft.asset}
+            onChange={(asset) => update({ asset })}
+            error={errors.asset}
+          />
         )}
         <ChoiceGroup
           legend="Cantidad"

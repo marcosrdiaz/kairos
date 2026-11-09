@@ -67,7 +67,12 @@ export function AssetCombobox({ label, value, onChange, error, autoFocus }: Asse
 
   if (value) {
     return (
-      <div role="group" aria-labelledby={`${uid}-label`} className="flex flex-col gap-2">
+      <div
+        role="group"
+        aria-labelledby={`${uid}-label`}
+        aria-describedby={error ? errorId : undefined}
+        className="flex flex-col gap-2"
+      >
         <span id={`${uid}-label`} className="text-base font-semibold text-ink">
           {label}
         </span>
@@ -88,6 +93,12 @@ export function AssetCombobox({ label, value, onChange, error, autoFocus }: Asse
             Cambiar
           </button>
         </div>
+        {/* Errores que dependen del activo elegido (p. ej. destino igual al origen). */}
+        {error && (
+          <span id={errorId} className="text-sm font-medium text-error">
+            {error}
+          </span>
+        )}
       </div>
     );
   }

@@ -43,7 +43,10 @@ export function operationErrorText(error: unknown, kind: OperationKind, assetLab
       return `Ahora mismo no hay precio${of} para registrar la operación. ${NOTHING}`;
     }
     if (error.code === "NOT_FOUND") {
-      return `No encontramos el activo en el catálogo o en esta cartera. ${NOTHING}`;
+      // El backend dice qué falta en `details` (portfolio/errors.py): `asset_id` o `portfolio_id`.
+      if (str(error.details.asset_id)) return `No encontramos ese activo en el catálogo. ${NOTHING}`;
+      if (str(error.details.portfolio_id)) return `No encontramos esta cartera. ${NOTHING}`;
+      return `No encontramos lo necesario para registrar la operación. ${NOTHING}`;
     }
     if (error.code === "mock_missing") {
       return "En el modo de ejemplo no hay respuesta para esta operación.";

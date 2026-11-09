@@ -1,7 +1,7 @@
 import type { ReactNode, Ref } from "react";
 import type { TransactionOut } from "../../api/generated/schema";
 import { formatDate, formatEur, formatUnits } from "../../lib/format";
-import { assetName, findPosition, formatPrice } from "./usePortfolio";
+import { findPosition, formatPrice } from "./usePortfolio";
 
 const TITLE: Record<TransactionOut["type"], string> = {
   buy: "Compra registrada",
@@ -23,6 +23,9 @@ function Row({ label, children, calcId }: { label: string; children: ReactNode; 
 
 interface OperationResultProps {
   tx: TransactionOut;
+  /** Nombre del activo conocido al enviar, por si ya no está en la cartera (venta total). */
+  fallbackName?: string | null;
+  fallbackToName?: string | null;
   ref?: Ref<HTMLElement>;
 }
 
@@ -31,10 +34,12 @@ interface OperationResultProps {
  * efecto (participaciones, precio medio o plusvalía estimada). Ninguna cifra se calcula aquí;
  * `data-calc-id` apunta a la traza para el "¿De dónde sale?".
  */
-export function OperationResult({ tx, ref }: OperationResultProps) {
+export function OperationResult({ tx, fallbackName, fallbackToName, ref }: OperationResultProps) {
   const p = tx.portfolio;
-  const name = assetName(p, tx.asset_id);
-  const toName = tx.to_asset_id ? assetName(p, tx.to_asset_id) : null;
+  const name = findPosition(p, tx.asset_id)?.name ?? fallbackName ?? tx.asset_id;
+  const toName = tx.to_asset_id
+    ? (findPosition(p, tx.to_asset_id)?.name ?? fallbackToName ?? tx.to_asset_id)
+    : null;
   const toPosition = tx.to_asset_id ? findPosition(p, tx.to_asset_id) : undefined;
   const gain = tx.effect.realized_gain_eur;
   return (
