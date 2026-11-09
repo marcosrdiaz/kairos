@@ -96,7 +96,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-01 | `/traces/{calc_id}` con `parent_calc_ids` | RF-19 | T1-01 | `backend/app/core/trace.py`, `backend/app/api/traces.py` | Marcos | 🧪 en PR |
 | T2-02 | Ajuste de demo: `portfolio.service.apply_demo_adjustment(...)` (lo llama `events` tras el impacto) + `demo_adjustments` en la valoración + borrado en `/demo/reset` | Tras el replay, `/portfolios/laura` y `/status` reflejan el impacto con etiqueta y traza | T1-03, T1-13 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/demo.py` | — | ⬜ |
 | T2-03 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API | Smoke en verde (`scripts/demo_smoke.py`) | Todas las de la fase 1 | `backend/app/*/mock.py` (borrar), `backend/app/api/demo.py`, `scripts/demo_smoke.py` | — | ⬜ |
-| T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | Jaime | 🔄 en curso |
+| T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | Jaime | 🧪 en PR |
 | T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py` | — | ⬜ |
 | T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` | — | ⬜ |
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | — | ⬜ |
@@ -153,6 +153,13 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** con `ANTHROPIC_API_KEY` en `.env`, desde `backend/`, `pytest -m live tests/test_event_explanations_live.py -s` (criterio con Claude real, aún sin ejecutar). Después, revisión de otra persona, merge de #59 y `docs: done T2-09`.
 **Ficheros tocados:** `backend/app/events/{pipeline,service}.py`, `backend/app/agents/context.py`, `backend/tests/test_event_explanations{,_live}.py`, `backend/tests/test_explainer_context.py`.
 **Sin hacer (D-071):** Claude a veces suma cifras en «¿Por qué ha bajado?». El guardián lo bloquea y acaba en plantilla; ajustar el prompt requiere medir con la clave.
+
+### T2-04 · `status` precalculado — Jaime
+**Qué estaba haciendo:** PR #62 (`t2-04/status-precomputed`, https://github.com/marcosrdiaz/kairos/pull/62), CI en verde. `GET /status` real, en memoria y sin llamar al modelo; `recompute` redacta con el modelo. < 200 ms medido con SQLite (24 ms sin estado, 20 ms al refrescar). `ruff`, `mypy` y 1398 tests del backend en verde.
+**Siguiente paso exacto:** revisión de otra persona, merge de #62 y `docs: done T2-04`.
+**Ficheros tocados:** `backend/app/status/{config,engine,service}.py`, `backend/tests/test_status_{engine,service}.py`; fuera de la fila: `backend/app/agents/{service,writer}.py` (`use_model=False`), `backend/app/api/demo.py`, `backend/tests/{conftest,test_analysis_mocks}.py`, `docs/SPEC.md` §8.6 y la decisión «Estado del widget (T2-04)».
+**Para T2-02:** aplica el ajuste de demo antes de `status.recompute` en `events/pipeline.py`; si no, el widget no refleja el impacto.
+**Sin probar:** la frase con Claude real (sin `ANTHROPIC_API_KEY`); si falla, sale la plantilla validada.
 
 ### T2-03 · Integración: pendientes de agentes que deja T1-17 — Manu (para quien coja la tarea)
 - `analyzer.py` sigue filtrando las órdenes con su regex provisional `_ORDER`. Hay que sustituirla por `guardian.check` (regla 3 de producto).
