@@ -20,12 +20,21 @@
 #   "vende"/"invierte" no hay ambigüedad y sí se bloquea ("Tú vende ya" → inicio + "ya").
 # - "compras" (presente: "si compras cada mes") no se bloquea; el subjuntivo ("no vendas", "es
 #   mejor que compres") sí, salvo tras "digo que" ("No te digo que vendas").
-# - El imperfecto de subjuntivo ("sería mejor que vendieras") se bloquea salvo tras "si" ("si
-#   vendieras hoy, materializarías..." describe un escenario).
+# - El imperfecto de subjuntivo solo se bloquea tras "que" u "ojalá" ("sería mejor que
+#   vendieras"); "si los inversores vendieran..." o "aunque salieran..." describen escenarios.
+# - Tras "y"/"o", "compra"/"vende"/"invierte" solo se bloquean si cierran la cláusula o van con
+#   más/ya/ahora o pronombre ("No te asustes y compra"); "el fondo compra bonos y vende los que
+#   vencen" es descriptivo. Los imperativos de operación (aumenta, reduce...) no aceptan "y"/coma
+#   como inicio salvo con objeto de 2.ª persona ("y reduce tu exposición").
+# - "Hoy compra deuda el Tesoro" (sujeto pospuesto) y "Ahora invierte más cada mes" se bloquean:
+#   no se distinguen del imperativo. El explicador escribe el sujeto delante.
 # - "debería" (3.ª persona: "el BCE debería bajar tipos") no se bloquea; "deberías" + operación sí.
 #   "Deberías revisar tu plan" está permitido: es su plan.
 # - Recomendaciones de terceros ("los analistas recomiendan comprar") se bloquean, salvo negadas
-#   ("Kairos no recomienda comprar ni vender", aviso legal).
+#   ("Kairos no [te] recomienda comprar ni vender", aviso legal).
+# - "plantea/considera/valora + operación" solo en 2.ª persona: "El BCE plantea comprar menos
+#   deuda" es descriptivo. "Es momento/hora de" sin adjetivo solo con una operación detrás ("Es
+#   momento de revisar tu plan" es el estado revisa_plan). "Saldría ganando/perdiendo" no es orden.
 # - El condicional "vendería/compraría" se bloquea en cualquier posición, aunque a veces sea 3.ª
 #   persona ("el BCE vendería bonos"): el explicador no lo necesita.
 # - "Tu plan dice: mantén la aportación" se bloquea (imperativo tras dos puntos). Aceptado.
@@ -33,24 +42,29 @@
 #   es descripción de la cartera.
 
 placeholders:
-  START: '(?:^|[.;:!?¡¿,(«"—–-]\s*|\b(?:y|o|pues|mejor|asi que|entonces|por eso|dicho esto)\s+)(?:(?:hoy|manana|ahora|ya mismo|ya)\s*,?\s+|(?:cuando|si)\s+\w+\s*,?\s+)?'
-  OP: '(?:comprar|vender|invertir|reinvertir|desinvertir|reembolsar|traspasar|liquidar|salir|entrar|deshacerte|deshacerse)\w*'
+  START: '(?:^|[.;:!?¡¿,(«"—–-]\s*|\b(?:pues|mejor|asi que|entonces|por eso|dicho esto)\s*,?\s+)(?:(?:hoy|manana|ahora|ya mismo|ya)\s*,?\s+|(?:cuando|si)\s+\w+\s*,?\s+)?'
+  STRICT: '(?:^|[.;:!?¡¿(«"—–]\s*|\b(?:mejor|asi que|entonces|por eso|dicho esto)\s*,?\s+)(?:(?:hoy|manana|ahora|ya mismo|ya)\s*,?\s+|(?:cuando|si)\s+\w+\s*,?\s+)?'
+  WEAK: '\b(?:y|e|o|u)\s+'
+  CLOSE: '(?:(?:lo|la|los|las|le|les)\b|(?=\s*(?:[.,;:!?]|$))|\s+(?:mas|ya|ahora)\b)'
+  OP: '(?:comprar|vender|invertir|reinvertir|desinvertir|reembolsar|traspasar|liquidar|salir|entrar|deshacerte|deshacerse)\w*(?!\s+en\s+(?:detalle|vigor))'
 
 patterns:
   - id: compra_imperativo
-    regex: '<START>compra(?:lo|la|los|las|le|les)?\b'
+    # Tras "y"/"o" solo si cierra la cláusula o va con más/ya/ahora o pronombre: "y compra bonos"
+    # es descriptivo ("El fondo invierte en deuda y compra bonos nuevos").
+    regex: '<START>compra(?:lo|la|los|las|le|les)?\b|<WEAK>compra<CLOSE>'
     blocks: ["Compra más acciones de NVIDIA.", "Si baja otra vez, cómpralas.", "Mejor compra renta fija.", "COMPRA MÁS NVIDIA.", "Hoy compra más.", "Cuando puedas compra más.", "Si puedes, compra más.", "Así que compra.", "No te asustes y compra.", "Compra la caída."]
-    allows: ["Tu plan compra participaciones cada mes.", "El precio de compra fue más bajo.", "Tu última compra fue en junio.", "Si compras cada mes, el precio medio se suaviza.", "Compraste el fondo en 2020.", "Tu aportación mensual compra participaciones del fondo.", "Tu DCA compra este mes al precio más bajo, según tu plan.", "Con tu regla de aportar cada mes, esta compra entra más barata."]
+    allows: ["Tu plan compra participaciones cada mes.", "El precio de compra fue más bajo.", "Tu última compra fue en junio.", "Si compras cada mes, el precio medio se suaviza.", "Compraste el fondo en 2020.", "Tu aportación mensual compra participaciones del fondo.", "Tu DCA compra este mes al precio más bajo, según tu plan.", "Con tu regla de aportar cada mes, esta compra entra más barata.", "El fondo de bonos invierte en deuda y compra bonos nuevos cada mes.", "El BCE compra deuda pública desde hace años."]
 
   - id: vende_imperativo
-    regex: '<START>vende(?:lo|la|los|las|le|les)?\b'
-    blocks: ["Vende el fondo tecnológico.", "Si sube, véndelo.", "Mañana vende.", "Por eso, vende.", "Dicho esto, vende la mitad.", "Hoy vende la mitad."]
-    allows: ["Vendiste parte de los bonos en marzo.", "La venta de bonos del BCE presiona los precios.", "El fondo vende posiciones en tecnología.", "Los bancos venden deuda."]
+    regex: '<START>vende(?:lo|la|los|las|le|les)?\b|<WEAK>vende<CLOSE>'
+    blocks: ["Vende el fondo tecnológico.", "Si sube, véndelo.", "Mañana vende.", "Por eso, vende.", "Dicho esto, vende la mitad.", "Hoy vende la mitad.", "No lo pienses y vende ya."]
+    allows: ["Vendiste parte de los bonos en marzo.", "La venta de bonos del BCE presiona los precios.", "El fondo vende posiciones en tecnología.", "Los bancos venden deuda.", "El fondo compra bonos y vende los que vencen."]
 
   - id: invierte_imperativo
-    regex: '<START>invierte\b'
-    blocks: ["Invierte en renta fija europea.", "Invierte más este mes."]
-    allows: ["Tu fondo invierte en empresas europeas.", "Tu plan ahora invierte más cada mes."]
+    regex: '<START>invierte\b|<WEAK>invierte<CLOSE>'
+    blocks: ["Invierte en renta fija europea.", "Invierte más este mes.", "Espera un poco e invierte."]
+    allows: ["Tu fondo invierte en empresas europeas.", "Tu plan ahora invierte más cada mes.", "El fondo cobra cupones y invierte en deuda nueva."]
 
   - id: imperativo_usted_vosotros
     regex: '<START>(?:compren?|vendan?|inviertan?|salgan?\s+del?)\b|\b(?:comprad|vended|invertid)\b'
@@ -63,9 +77,11 @@ patterns:
     blocks: ["Cuando baje un poco, véndelas.", "El fondo ha caído: aprovéchalo.", "Está barato, cómpralo.", "Ponlo en un monetario.", "Mantente invertido."]
 
   - id: imperativos_operacion
-    regex: '<START>(?:aumenta|reduce|rebalancea|traspasa|liquida|reembolsa|rescata|mueve|diversifica|huye|evita|suscribe|recoge|aguanta|quedate|echa\s+mas|haz\s+recogida|cambia\s+a|pasa\s+tu\s+dinero|(?:sube|baja)\s+tu\s+(?:aportacion|exposicion|peso|posicion)|vuelve\s+a\s+(?:entrar|comprar|invertir|vender)|entra\s+en(?!\s+vigor))\b'
-    blocks: ["Aumenta tu exposición a Europa.", "Reduce tu peso en tecnología.", "Rebalancea la cartera.", "Mueve tu dinero a bonos.", "Traspasa a un fondo de renta fija.", "Recoge beneficios.", "Haz recogida de beneficios.", "Cambia a renta fija.", "Pasa tu dinero a bonos.", "Diversifica más.", "Sube tu aportación.", "Baja tu exposición.", "Entra en bonos.", "Huye de la renta variable.", "Evita la renta variable.", "Quédate en liquidez.", "Aguanta.", "Liquida el fondo.", "Reembolsa el fondo.", "Rescata el plan.", "Vuelve a entrar.", "Echa más dinero.", "Suscribe más participaciones."]
-    allows: ["El fondo reduce su peso en tecnología.", "La norma entra en vigor en enero.", "Entra en vigor la nueva norma.", "El BCE aumenta los tipos."]
+    # Inicio estricto (sin "y"/"o"/coma: "El petróleo sube y aumenta la inflación" es causal),
+    # o cualquier inicio con objeto de 2.ª persona detrás ("y reduce tu exposición").
+    regex: '<STRICT>(?:aumenta|reduce|rebalancea|traspasa|liquida|reembolsa|rescata|mueve|diversifica|huye|evita|suscribe|recoge|aguanta|quedate|echa\s+mas|haz\s+recogida|cambia\s+a|pasa\s+tu\s+dinero|(?:sube|baja)\s+tu\s+(?:aportacion|exposicion|peso|posicion)|vuelve\s+a\s+(?:entrar|comprar|invertir|vender)|entra\s+en(?!\s+vigor))\b|(?:<START>|<WEAK>)(?:aumenta|reduce|rebalancea|traspasa|liquida|reembolsa|rescata|mueve|diversifica)\s+(?:tu|tus)\b'
+    blocks: ["Aumenta tu exposición a Europa.", "Reduce tu peso en tecnología.", "Rebalancea la cartera.", "Mueve tu dinero a bonos.", "Traspasa a un fondo de renta fija.", "Recoge beneficios.", "Haz recogida de beneficios.", "Cambia a renta fija.", "Pasa tu dinero a bonos.", "Diversifica más.", "Sube tu aportación.", "Baja tu exposición.", "Entra en bonos.", "Huye de la renta variable.", "Evita la renta variable.", "Quédate en liquidez.", "Aguanta.", "Liquida el fondo.", "Reembolsa el fondo.", "Rescata el plan.", "Vuelve a entrar.", "Echa más dinero.", "Suscribe más participaciones.", "Espera al dato y reduce tu exposición."]
+    allows: ["El fondo reduce su peso en tecnología.", "La norma entra en vigor en enero.", "Entra en vigor la nueva norma.", "El BCE aumenta los tipos.", "El petróleo sube y aumenta la inflación esperada.", "La bajada de tipos abarata la deuda y aumenta el valor de los bonos que ya tienes.", "El BCE bajó tipos y reduce así el coste de financiación.", "El dólar ha bajado un 3,4 % y reduce el valor en euros de tus fondos de EE. UU.", "Cuando el crudo sube, reduce los márgenes de las aerolíneas."]
 
   - id: subjuntivo_compraventa
     regex: '(?<!digo que )(?<!decir que )\b(?:compres|vendas|inviertas|compremos|vendamos|invirtamos|desinviertas)\b'
@@ -73,9 +89,10 @@ patterns:
     allows: ["Las ventas de NVIDIA superaron el consenso.", "No te digo que vendas."]
 
   - id: imperfecto_subjuntivo
-    regex: '(?<!si )\b(?:vend|compr|invirt|sal|entr)(?:ieras|ieses|aras|ases|ieran|iesen|aran|asen)\b'
-    blocks: ["Sería mejor que vendieras.", "Te convendría que vendieras.", "Ojalá vendieras.", "Te diría que compraras."]
-    allows: ["Si vendieras hoy, materializarías una pérdida."]
+    # Solo tras "que" u "ojalá" (con una palabra intermedia como mucho): "sería mejor que vendieras".
+    regex: '\b(?:que|ojala)\s+(?:\w+\s+)?(?:vend|compr|invirt|sal|entr)(?:ieras|ieses|aras|ases|ieran|iesen|aran|asen)\b'
+    blocks: ["Sería mejor que vendieras.", "Te convendría que vendieras.", "Ojalá vendieras.", "Te diría que compraras.", "Sería mejor que ya vendieras."]
+    allows: ["Si vendieras hoy, materializarías una pérdida.", "Si los inversores vendieran más tecnológicas, tu fondo bajaría.", "Aunque los inversores salieran de las tecnológicas, tu fondo global está diversificado."]
 
   - id: deber_operar
     regex: '\b(?:deberias|debes|tendrias que|tienes que|te conviene|te convendria|convendria|seria (?:buena idea|conveniente|recomendable|aconsejable|mejor))\s+(?:\w+\s+){0,4}?(?:<OP>|aumentar|reducir|rotar|mantener|aprovechar|apostar)'
@@ -84,9 +101,15 @@ patterns:
 
   - id: recomendacion_generica
     # Evaluación o modal + hasta 4 palabras + infinitivo de operación.
-    regex: '\b(?:seria|mejor|conviene|podrias|podriamos|habria que|toca|la pena|considera|consideraria|plantea\w*|valora|recomendable|aconsejable|opcion|ideal|suyo|prudente|sensato|propongo|animo a)\s+(?:\w+\s+){0,4}?<OP>'
-    blocks: ["Lo mejor sería comprar bonos.", "Lo ideal sería vender.", "Lo suyo sería vender.", "Lo más prudente es vender.", "Una opción sería vender.", "Mejor vender ya.", "Conviene vender ahora.", "Podrías vender parte.", "Podrías plantearte vender.", "Considera vender parte.", "Plantéate vender el fondo.", "Valora comprar más.", "Habría que vender.", "Toca vender.", "Merece la pena comprar.", "Vale la pena invertir más.", "Recomendable vender.", "Te propongo vender.", "Te animo a invertir más."]
+    regex: '\b(?:seria|mejor|conviene|podrias|podriamos|habria que|toca|la pena|recomendable|aconsejable|opcion|ideal|suyo|prudente|sensato|propongo|animo a)\s+(?:\w+\s+){0,4}?<OP>'
+    blocks: ["Lo mejor sería comprar bonos.", "Lo ideal sería vender.", "Lo suyo sería vender.", "Lo más prudente es vender.", "Una opción sería vender.", "Mejor vender ya.", "Conviene vender ahora.", "Podrías vender parte.", "Podrías plantearte vender.", "Habría que vender.", "Toca vender.", "Merece la pena comprar.", "Vale la pena invertir más.", "Recomendable vender.", "Te propongo vender.", "Te animo a invertir más."]
     allows: ["Según tu plan, toca la aportación del día 5.", "Tu plan prevé aportar hasta 2040.", "Mejor de lo esperado.", "Los resultados fueron mejores."]
+
+  - id: plantea_considera
+    # Solo en 2.ª persona: "El BCE plantea comprar menos deuda" es descriptivo.
+    regex: '\b(?:planteate|plantearte|te\s+plantees|consideres|valores)\s+(?:\w+\s+){0,4}?<OP>|<START>(?:considera|valora)\s+(?:\w+\s+){0,4}?<OP>'
+    blocks: ["Considera vender parte.", "Plantéate vender el fondo.", "Valora comprar más.", "Quizá deberías plantearte vender."]
+    allows: ["El BCE plantea comprar menos deuda el año que viene.", "El mercado valora vender bonos largos.", "Podría ser mejor entrar en detalle con tu plan."]
 
   - id: evaluacion_posterior
     regex: '\b(?:comprar|vender|invertir|entrar|salir|desinvertir|liquidar|traspasar|reembolsar)\b[^.]{0,40}\b(?:es|seria)\s+(?:una\s+)?(?:(?:lo\s+)?(?:mas\s+)?(?:sensato|prudente|recomendable|aconsejable|razonable|logico|ideal|mejor)|(?:buena|mala|gran)\s+idea)\b'
@@ -102,22 +125,24 @@ patterns:
     allows: ["Yo no puedo darte consejo.", "Esto es contexto, no una recomendación."]
 
   - id: recomendacion_terceros
-    regex: '(?<!no )\b(?:recomiend|aconsej|sugier)\w*\s+(?:\w+\s+){0,2}?(?:<OP>|mantener)'
+    regex: '(?<!no )(?<!no te )(?<!no le )(?<!no os )(?<!no nos )(?<!no les )\b(?:recomiend|aconsej|sugier)\w*\s+(?:\w+\s+){0,2}?(?:<OP>|mantener)'
     blocks: ["Los analistas recomiendan comprar NVIDIA."]
-    allows: ["Kairos no recomienda comprar ni vender.", "No es una recomendación de compra."]
+    allows: ["Kairos no recomienda comprar ni vender.", "KAIROS no te recomienda comprar ni vender.", "No es una recomendación de compra."]
 
   - id: mi_recomendacion
     regex: '\b(?:mi|mis|nuestra|nuestras|nuestro|nuestros)\s+(?:recomendacion|consejo|sugerencia)'
     blocks: ["Mi recomendación es esperar.", "Nuestro consejo: paciencia.", "Mi consejo es vender."]
 
   - id: buen_momento
-    regex: '\b(?:es|parece|seria|llega|ha llegado|ya es)\s+(?:un\s+|el\s+)?(?:(?:buen|mal|mejor)\s+)?momento\s+(?:para|de)\b'
+    # Sin adjetivo, solo con una operación detrás: "Es momento de revisar tu plan" es su plan.
+    regex: '\b(?:es|parece|seria|llega|ha llegado|ya es)\s+(?:un\s+|el\s+)?(?:buen|mal|mejor)\s+momento\s+(?:para|de)\b|\b(?:es|parece|seria|llega|ha llegado|ya es)\s+(?:el\s+)?momento\s+(?:para|de)\s+(?:<OP>|aprovechar)'
     blocks: ["Es buen momento para entrar.", "Es el momento de vender.", "No parece un buen momento para comprar.", "Es momento de comprar."]
-    allows: ["En ese momento el BCE bajó los tipos.", "El mercado vio el momento de comprar."]
+    allows: ["En ese momento el BCE bajó los tipos.", "El mercado vio el momento de comprar.", "Es momento de revisar tu plan."]
 
   - id: hora_de
-    regex: '\b(?:es|ya es|seria|ha llegado la)\s+hora\s+de\b'
+    regex: '\b(?:es|ya es|seria|ha llegado la)\s+hora\s+de\s+(?:<OP>|aprovechar)'
     blocks: ["Es hora de vender."]
+    allows: ["Es hora de mirar tu plan con calma."]
 
   - id: momento_ideal
     regex: '\bmomento\s+(?:ideal|perfecto|idoneo|oportuno)\b'
@@ -173,8 +198,9 @@ patterns:
     blocks: ["¿Por qué no vendes el fondo?"]
 
   - id: condicional_primera
-    regex: '\b(?:compraria|venderia|invertiria|saldria|desinvertiria)\b'
-    blocks: ["Yo vendería.", "Vendería ya.", "Si fuera tú, vendería.", "Yo en tu caso vendería.", "En tu lugar, compraría más."]
+    regex: '\b(?:compraria|venderia|invertiria|desinvertiria)\b|\bsaldria\b(?!\s+(?:ganando|perdiendo|beneficiad|perjudicad))'
+    blocks: ["Yo vendería.", "Vendería ya.", "Si fuera tú, vendería.", "Yo en tu caso vendería.", "En tu lugar, compraría más.", "Yo saldría del fondo."]
+    allows: ["Si el BCE baja tipos, tu cartera saldría ganando por la parte de bonos.", "Tu cartera saldría beneficiada con la bajada."]
 
   - id: yo_que_tu
     regex: '\b(?:yo\s+que\s+tu|en\s+tu\s+lugar|yo)\b[^.]{0,40}?\b(?:esperaria|mantendria|aguantaria)\b'
@@ -185,9 +211,13 @@ patterns:
     blocks: ["Buy the dip."]
     allows: ["El sell-off de las tecnológicas restó valor."]
 
-# Nombres con dígitos que no son cifras: se ignoran al buscar cifras ("S&P 500" no es 500). Un
-# número pegado a otras letras sí es cifra ("X600").
+# Nombres con dígitos que no son cifras: se ignoran al buscar cifras ("S&P 500" no es 500).
+# Códigos de 1-3 letras + 2-4 dígitos ("H100", "A320", "X600") tampoco, salvo que lleven unidad o
+# multiplicador detrás o sean una moneda ("EUR470"): "600EUR", "5M€" y "470k" siguen siendo cifras.
 figure_exempt_names:
+  - '\bu\.\s?s\.\s?500\b'
+  - '\ba\s+plazo\s+\d{1,2}\s+mes(?:es)?\b'
+  - '\b(?!(?:eur|usd|gbp)\d)[a-z]{1,3}\d{2,4}\b(?!\s*(?:€|\$|£|%|k\b|mm?\b|mil\b|millon|eur|euros?\b|usd\b|dolar|libra|gbp\b|puntos?\b|pb\b|pp\b|por\s+cien))'
   - '\bs&p\s?500\b'
   - '\bibex(?:[\s-]?35)?\b'
   - '\beuro\s?stoxx\s?50\b'

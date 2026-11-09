@@ -27,7 +27,7 @@ RATE = ev("0.0025", "fraction")
         ("Has perdido 470k.", "470000", "number"),
         ("Has perdido 470 k€.", "470000", "EUR"),
         ("Has perdido 3 mm de euros.", "3000000", "EUR"),
-        ("El fondo X600 cayó.", "600", "number"),
+        ("Has perdido H600€.", "600", "EUR"),  # un código con unidad sí es cifra
     ],
 )
 def test_glued_figures_are_extracted_and_blocked(text: str, value: str, unit: str) -> None:
@@ -61,6 +61,10 @@ def test_thousands_with_spaces_are_one_number(text: str) -> None:
         "En el 1T2025 hubo resultados.",
         "El 2.º trimestre y el 3er trimestre.",
         "Tu fondo sigue al S&P 500.",
+        "Tu fondo, el Vanguard U.S. 500 Stock Index Fund, sigue al índice.",
+        "NVIDIA vendió menos chips H100 de lo esperado.",
+        "Airbus entregó más A320 y el fondo X600 cayó.",
+        "Tu Depósito a plazo 12 meses vence en enero.",
     ],
 )
 def test_whitelisted_names_are_not_figures(text: str) -> None:
