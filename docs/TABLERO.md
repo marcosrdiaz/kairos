@@ -86,6 +86,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | — | ⬜ |
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
+| T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | 🔄 en curso |
 
 ### Fase 2 · Experiencia e integración (hasta el mar 10, 18:00)
 
