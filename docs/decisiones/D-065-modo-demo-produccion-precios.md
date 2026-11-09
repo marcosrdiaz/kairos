@@ -1,4 +1,4 @@
-### D-XXX · Modo demo y modo producción: precios en directo y proveedor
+### D-065 · Modo demo y modo producción: precios en directo y proveedor
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: RF-03 (MVP) pide el último precio, intradía en acciones y ETF y VL diario en fondos. D-026 acepta un proveedor real que refresca cada 60 s, pero D-047 lo dejó sin hacer: con cualquier `MARKET_DATA_PROVIDER` se usan los CSV de `data/prices`, que terminan el 6-nov-2026, y las tablas `price` y `fx_rate` están vacías. Ninguna tarea se encargaba del proveedor, así que el sistema solo funciona como demo. Queremos que la presentación siga siendo reproducible y sin claves, y que el mismo código sirva para usarlo de verdad. La tarea es T2-24.
 - Decisión:
