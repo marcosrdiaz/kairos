@@ -1,4 +1,4 @@
-### D-XXX · App adaptable a escritorio y tarjeta de estado en Inicio (T1-18)
+### D-059 · App adaptable a escritorio y tarjeta de estado en Inicio (T1-18)
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: T1-18 pedía una pantalla de inicio de móvil simulada con el widget (D-004). El equipo quiere que la app web sirva igual en escritorio y en móvil, y dejar el widget de la pantalla de inicio del móvil para después.
 - Decisión:
