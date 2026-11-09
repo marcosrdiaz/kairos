@@ -85,3 +85,21 @@ export async function apiPost<T>(path: string, body?: unknown, opts: GetOptions 
   if (!res.ok) throw await toApiError("POST", path, res);
   return (await res.json()) as T;
 }
+
+/** PATCH con cuerpo JSON (solo los campos que cambian). Con mocks, igual que `apiPost`. */
+export async function apiPatch<T>(path: string, body: unknown, opts: GetOptions = {}): Promise<T> {
+  if (USE_MOCKS && opts.mock) {
+    const m = getMock<T>(opts.mock);
+    if (m !== undefined) return m;
+    throw new ApiError(`No hay mock para ${opts.mock}`, 404, "mock_missing");
+  }
+  const init: RequestInit = {
+    method: "PATCH",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+  if (opts.signal) init.signal = opts.signal;
+  const res = await fetch(`${BASE}${path}`, init);
+  if (!res.ok) throw await toApiError("PATCH", path, res);
+  return (await res.json()) as T;
+}

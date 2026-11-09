@@ -9,6 +9,11 @@ interface AssetComboboxProps {
   value: AssetOut | null;
   onChange: (asset: AssetOut | null) => void;
   error?: string | undefined;
+  /**
+   * Error que se pinta con un activo ya elegido (p. ej. "destino igual al origen" del
+   * traspaso). Opcional: sin ella, con activo elegido no se muestra ningún error.
+   */
+  selectedError?: string | undefined;
   /** Para la fila recién añadida: el foco va a su buscador. */
   autoFocus?: boolean;
 }
@@ -18,7 +23,14 @@ interface AssetComboboxProps {
  * flechas para recorrer, Intro para elegir, Escape para cerrar. El número de resultados se
  * anuncia en una región `status`. Una vez elegido, se muestra el activo con "Cambiar".
  */
-export function AssetCombobox({ label, value, onChange, error, autoFocus }: AssetComboboxProps) {
+export function AssetCombobox({
+  label,
+  value,
+  onChange,
+  error,
+  selectedError,
+  autoFocus,
+}: AssetComboboxProps) {
   const uid = useId();
   const inputId = `${uid}-input`;
   const listId = `${uid}-list`;
@@ -67,7 +79,12 @@ export function AssetCombobox({ label, value, onChange, error, autoFocus }: Asse
 
   if (value) {
     return (
-      <div role="group" aria-labelledby={`${uid}-label`} className="flex flex-col gap-2">
+      <div
+        role="group"
+        aria-labelledby={`${uid}-label`}
+        aria-describedby={selectedError ? errorId : undefined}
+        className="flex flex-col gap-2"
+      >
         <span id={`${uid}-label`} className="text-base font-semibold text-ink">
           {label}
         </span>
@@ -88,6 +105,12 @@ export function AssetCombobox({ label, value, onChange, error, autoFocus }: Asse
             Cambiar
           </button>
         </div>
+        {/* Solo si quien lo usa lo pide: errores del activo elegido (destino = origen). */}
+        {selectedError && (
+          <span id={errorId} className="text-sm font-medium text-error">
+            {selectedError}
+          </span>
+        )}
       </div>
     );
   }

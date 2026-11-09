@@ -1,4 +1,6 @@
 import { PageTitle } from "../components/PageTitle";
+import { DcaSection } from "./dca/DcaSection";
+import { OperationsSection } from "./operations/OperationsSection";
 import { OnboardingSection } from "./onboarding/OnboardingSection";
 import { DemoReset } from "./portfolio-picker/DemoReset";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
@@ -20,7 +22,8 @@ export function CarteraPage() {
           <PortfolioPicker />
           <DemoReset />
         </section>
-        {/* Aquí irán las posiciones y las operaciones (T1-20). */}
+        <OperationsSection />
+        <DcaSection />
         <OnboardingSection />
       </div>
     </>
