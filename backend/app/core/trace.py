@@ -4,11 +4,14 @@ Interfaz pública (diseño del MVP §4.1):
 
     record(kind, formula, inputs, outputs, sources, parent_calc_ids=[]) -> calc_id
     get(calc_id) -> TraceRecord | None
+
+`GET /traces/{calc_id}` (`app/api/traces.py`) sirve una traza tal cual; las cifras derivadas de
+varias trazas apuntan a las de origen con `parent_calc_ids`.
 """
 
 import uuid
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any
@@ -94,6 +97,11 @@ def record(
     return calc_id
 
 
+def _as_utc(value: datetime) -> datetime:
+    """SQLite devuelve las fechas sin zona; en BD siempre se guardan en UTC."""
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
 def get(calc_id: str) -> TraceRecord | None:
     with session_scope() as session:
         row = session.get(CalcTrace, calc_id)
@@ -107,5 +115,5 @@ def get(calc_id: str) -> TraceRecord | None:
             outputs=row.outputs,
             sources=row.sources,
             parent_calc_ids=row.parent_calc_ids,
-            created_at=row.created_at,
+            created_at=_as_utc(row.created_at),
         )

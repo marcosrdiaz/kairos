@@ -2554,6 +2554,83 @@
         "title": "TopCountry",
         "type": "object"
       },
+      "TraceKind": {
+        "enum": [
+          "valuation",
+          "transaction",
+          "transfer",
+          "dca",
+          "plan",
+          "exposure",
+          "event_impact",
+          "scenario",
+          "projection",
+          "status",
+          "radar",
+          "move",
+          "agenda"
+        ],
+        "title": "TraceKind",
+        "type": "string"
+      },
+      "TraceOut": {
+        "additionalProperties": false,
+        "description": "`GET /traces/{calc_id}` (endpoint en T2-01).",
+        "properties": {
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "inputs": {
+            "additionalProperties": true,
+            "title": "Inputs",
+            "type": "object"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TraceKind"
+          },
+          "outputs": {
+            "additionalProperties": true,
+            "title": "Outputs",
+            "type": "object"
+          },
+          "parent_calc_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Parent Calc Ids",
+            "type": "array"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "calc_id",
+          "kind",
+          "created_at",
+          "formula",
+          "inputs",
+          "outputs",
+          "sources"
+        ],
+        "title": "TraceOut",
+        "type": "object"
+      },
       "TransactionOut": {
         "additionalProperties": false,
         "description": "Respuesta 201 de una operación o un traspaso.",
@@ -2884,7 +2961,7 @@
     },
     "/api/v1/dca-executions/{execution_id}": {
       "post": {
-        "description": "Confirmar o saltar una aportación pendiente. T1-06 puede moverlo a `api/dca.py`.",
+        "description": "Confirmar (compra `dca_buy` al precio de ahora) o saltar una aportación pendiente. 422 si\nya está resuelta.",
         "operationId": "act_on_dca_execution_api_v1_dca_executions__execution_id__post",
         "parameters": [
           {
@@ -2936,7 +3013,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Act On Dca Execution",
@@ -3567,7 +3644,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Create Dca Plan",
@@ -3638,7 +3715,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Dca Plan",
@@ -3705,7 +3782,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "List Event Impacts",
@@ -3825,7 +3902,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Explain Move",
@@ -3937,7 +4014,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Update Plan",
@@ -3999,7 +4076,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Init Positions",
@@ -4166,7 +4243,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Estimate Scenario",
@@ -4280,7 +4357,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transaction",
@@ -4342,12 +4419,64 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Register Transfer",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/traces/{calc_id}": {
+      "get": {
+        "operationId": "get_trace_api_v1_traces__calc_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calc_id",
+            "required": true,
+            "schema": {
+              "title": "Calc Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Trace",
+        "tags": [
+          "traces"
         ]
       }
     },
@@ -4406,7 +4535,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           }
         },
         "summary": "Tts",
