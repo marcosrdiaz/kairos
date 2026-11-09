@@ -2,7 +2,7 @@
 
 Cada regla devuelve un `Finding` con la cifra y los datos que usan las plantillas
 (`templates.py`). Invariante de producto: una oportunidad siempre lleva `user_rule`, la regla del
-propio usuario (su plan o su plan de aportaciones) frente a la que se expresa. Criterios en D-XXX.
+propio usuario (su plan o su plan de aportaciones) frente a la que se expresa. Criterios en D-078.
 """
 
 from collections.abc import Mapping, Sequence
@@ -230,7 +230,7 @@ def _cheaper(data: RadarInput) -> list[Finding]:
 
 def _tax_free_transfer(data: RadarInput, drift: Decimal) -> list[Finding]:
     """Con desviación: fondo traspasable con plusvalía en la clase sobreponderada y fondo
-    traspasable en la infraponderada. La regla del usuario es su plan (D-XXX)."""
+    traspasable en la infraponderada. La regla del usuario es su plan (D-078)."""
     over = drift > 0
     origin_class = AssetClass.EQUITY if over else AssetClass.FIXED_INCOME
     destination_class = AssetClass.FIXED_INCOME if over else AssetClass.EQUITY

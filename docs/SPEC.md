@@ -283,7 +283,7 @@ Mismo cálculo con shocks fijados por el usuario (`{"EQ_GLOBAL": -0.10}`). Objet
 | Desviación del plan | `|equity_pct − target_equity_pct| > drift_threshold` (fracción, def. 0,10) |
 | Reequilibrio con aportaciones | Si hay desviación y DCA activo: cuántos meses de DCA dirigidos al activo infraponderado lo corrigen |
 | Aportación más barata | Activo del DCA ha caído > 3% desde la última aportación |
-| Traspaso sin tributar | Solo con desviación del plan: fondo con `transferable = true` y plusvalía latente > 0 en la clase sobreponderada, y fondo traspasable en la infraponderada. `user_rule` = el plan (D-XXX) |
+| Traspaso sin tributar | Solo con desviación del plan: fondo con `transferable = true` y plusvalía latente > 0 en la clase sobreponderada, y fondo traspasable en la infraponderada. `user_rule` = el plan (D-078) |
 
 La divisa no cuenta EUR ni la desconocida (`OTHER`). La concentración da un solo aviso aunque salten las dos condiciones. Reglas en `exposure/radar.py`; textos en `exposure/templates.py`.
 

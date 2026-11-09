@@ -1,4 +1,4 @@
-### D-XXX · Radar (T2-05): reglas, divisa desconocida y traspaso sin tributar ligado al plan
+### D-078 · Radar (T2-05): reglas, divisa desconocida y traspaso sin tributar ligado al plan
 - Fecha: 2026-11-09 · Autor: Marcos · Estado: Propuesta
 - Contexto: `SPEC.md` §8.5 enumera las 6 reglas del radar, pero deja abiertos varios detalles al implementarlas, y el invariante del diseño (§4.3) dice que toda oportunidad lleva `user_rule`. La regla «traspaso sin tributar» (posiciones con `transferable = true` y plusvalía latente) no tiene regla del usuario detrás tal como está escrita, así que rompería el invariante.
 - Decisión:
