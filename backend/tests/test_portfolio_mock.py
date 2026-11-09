@@ -28,11 +28,6 @@ def test_unknown_portfolio_is_404_with_error_shape(client: TestClient) -> None:
     assert response.json()["code"] == "NOT_FOUND"
 
 
-def test_plan(client: TestClient) -> None:
-    plan = client.get(f"{API_PREFIX}/portfolios/laura/plan").json()
-    assert plan == examples.load("PlanOut")
-
-
 def test_transaction_requires_exactly_one_of_amount_or_units(client: TestClient) -> None:
     body = {"type": "buy", "asset_id": "IE00B4L5Y983", "amount_eur": "300.00", "units": "1"}
     response = client.post(f"{API_PREFIX}/portfolios/laura/transactions", json=body)

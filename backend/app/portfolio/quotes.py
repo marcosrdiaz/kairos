@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from app.core import clock
 from app.core.errors import AppError
+from app.portfolio import errors
 from app.portfolio.engine import QuoteIn
 from app.prices import service as prices
 from app.schemas.common import SourceRef
@@ -37,6 +38,18 @@ def quotes(asset_ids: Iterable[str]) -> tuple[dict[str, QuoteIn], list[SourceRef
             week_ago_unit_eur=_week_ago_unit_eur(asset_id, pair, week_at),
         )
     return out, list(sources.values())
+
+
+def unit_eur_at(asset_id: str, at: datetime) -> tuple[Decimal, list[SourceRef]]:
+    """`price × fx` del último cierre no posterior a `at` (como mucho 10 días antes), con sus
+    fuentes. Lanza `PRICE_UNAVAILABLE` si no hay dato."""
+    history = prices.history(asset_id, (at - timedelta(days=10)).date(), at.date())
+    if not history:
+        raise errors.price_unavailable_at(asset_id, at)
+    close = history[-1]
+    fx = prices.fx_quote(f"{close.currency}EUR", at)
+    sources = [close.source] if close.currency == "EUR" else [close.source, fx.source]
+    return close.price * fx.rate, sources
 
 
 def _week_ago_unit_eur(asset_id: str, pair: str, at: datetime) -> Decimal | None:

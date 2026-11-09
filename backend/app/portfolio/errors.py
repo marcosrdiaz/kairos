@@ -1,5 +1,6 @@
 """Errores de dominio del gestor de cartera (mensajes para el usuario, en español)."""
 
+from datetime import datetime
 from decimal import Decimal
 
 from app.core.errors import AppError, ErrorCode
@@ -64,6 +65,35 @@ def dca_execution_not_found(execution_id: str) -> AppError:
         ErrorCode.NOT_FOUND,
         f"No existe la aportación «{execution_id}».",
         details={"execution_id": execution_id},
+    )
+
+
+def plan_not_found(portfolio_id: str) -> AppError:
+    return AppError(
+        ErrorCode.NOT_FOUND,
+        "Esta cartera aún no tiene un plan de inversión.",
+        details={"portfolio_id": portfolio_id},
+    )
+
+
+def plan_invalid(reason: str) -> AppError:
+    """422: el objetivo no suma 1 o el umbral está fuera de rango."""
+    return AppError(ErrorCode.VALIDATION_ERROR, reason, details={"field": "target"})
+
+
+def invalid_window(start: datetime, end: datetime) -> AppError:
+    return AppError(
+        ErrorCode.VALIDATION_ERROR,
+        "El inicio del periodo debe ser anterior al final.",
+        details={"start": start.isoformat(), "end": end.isoformat()},
+    )
+
+
+def price_unavailable_at(asset_id: str, at: datetime) -> AppError:
+    return AppError(
+        ErrorCode.PRICE_UNAVAILABLE,
+        "No hay precio de este activo para esa fecha.",
+        details={"asset_id": asset_id, "at": at.isoformat()},
     )
 
 

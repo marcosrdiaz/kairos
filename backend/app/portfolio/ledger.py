@@ -16,6 +16,7 @@ from app.portfolio.engine import LotIn
 from app.portfolio.lots import OpenLot
 from app.portfolio.models import TaxLot, Transaction
 from app.portfolio.repository import new_id, utc
+from app.portfolio.value_change import TxIn
 
 _CENT = Decimal("0.01")
 
@@ -104,6 +105,29 @@ def consume_lots(session: Session, consumed: Iterable[OpenLot]) -> None:
             .where(TaxLot.id == part.lot_id)
             .values(units_remaining=TaxLot.units_remaining - part.units)
         )
+
+
+def transactions_until(session: Session, portfolio_id: str, end: datetime) -> list[TxIn]:
+    """Operaciones de la cartera con `ts ≤ end`, por orden cronológico (para `value_change`).
+
+    El corte se hace en Python: SQLite guarda las fechas sin zona y compararlas en SQL con una
+    fecha con zona no es fiable."""
+    stmt = (
+        select(Transaction)
+        .where(Transaction.portfolio_id == portfolio_id)
+        .order_by(Transaction.ts, Transaction.id)
+    )
+    txs = (
+        TxIn(
+            asset_id=row.asset_id,
+            ts=utc(row.ts),
+            type=row.type,
+            units=row.units,
+            amount_eur=row.amount_eur,
+        )
+        for row in session.scalars(stmt)
+    )
+    return [tx for tx in txs if tx.ts <= end]
 
 
 def open_lots(session: Session, portfolio_id: str) -> list[LotIn]:
