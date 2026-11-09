@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import type { EventImpactOut } from "../../api/generated/schema";
 import { ArrowRightIcon } from "../../components/icons";
 import { formatDate, formatEurRange } from "../../lib/format";
-import { EventArt } from "./EventArt";
 import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL, POLARITY } from "./labels";
 
 interface NewsSlideProps {
@@ -14,7 +13,7 @@ interface NewsSlideProps {
 }
 
 /**
- * Una noticia: ilustración a la izquierda y texto a la derecha (en móvil, una encima de otra).
+ * Texto de una noticia (la ilustración y los controles los pinta NewsCarousel a la izquierda).
  * Patrón de carrusel de WAI-ARIA: role="group" + aria-roledescription="noticia" + "2 de 3".
  * El impacto va como rango (nunca cifra exacta) y con su confianza; todo viene del backend.
  */
@@ -28,13 +27,9 @@ export function NewsSlide({ event, position, total, direction, panelHref }: News
       aria-roledescription="noticia"
       aria-label={`${position} de ${total}`}
       data-calc-id={event.calc_id}
-      className={`grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+      className={`h-full ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
     >
-      <div className="aspect-4/3 md:aspect-auto md:min-h-60">
-        <EventArt type={event.event_type} />
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex h-full min-w-0 flex-col gap-3">
         <p className="m-0 flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
           <span className="font-semibold text-accent">{EVENT_TYPE_LABEL[event.event_type]}</span>
           <span aria-hidden="true">·</span>

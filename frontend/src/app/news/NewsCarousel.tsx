@@ -1,6 +1,7 @@
 import { useEffect, useState, type FocusEvent, type ReactNode } from "react";
 import type { EventImpactOut } from "../../api/generated/schema";
 import { ArrowLeftIcon, ArrowRightIcon, PauseIcon, PlayIcon } from "../../components/icons";
+import { EventArt } from "./EventArt";
 import { AUTO_ADVANCE_MS } from "./labels";
 import { NewsSlide } from "./NewsSlide";
 
@@ -18,6 +19,9 @@ function isKeyboardFocus(el: Element): boolean {
 
 const arrowButton =
   "inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface text-ink hover:bg-surface-muted";
+
+/** Flechas sobre la imagen: centradas en vertical, fondo de superficie para que contrasten. */
+const overlayButton = `${arrowButton} absolute top-1/2 -translate-y-1/2`;
 
 interface NewsCarouselProps {
   events: EventImpactOut[];
@@ -95,24 +99,57 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
         )}
       </div>
 
-      {/* Móvil: noticia arriba y flechas + puntos debajo. Escritorio: flechas a los lados. */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-3 [grid-template-areas:'slide_slide_slide'_'prev_dots_next'] md:gap-x-4 md:[grid-template-areas:'prev_slide_next'_'._dots_.']">
-        {total > 1 && (
-          <button
-            type="button"
-            onClick={() => go(index - 1, "prev")}
-            className={`${arrowButton} [grid-area:prev]`}
-            aria-label="Noticia anterior"
-            aria-controls="news-slides"
+      {/* Imagen con los controles encima (galería) a la izquierda; texto a la derecha. */}
+      <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
+        <div className="relative aspect-4/3 overflow-hidden rounded-control md:aspect-auto md:min-h-64">
+          <div
+            key={current.event_id}
+            className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
           >
-            <ArrowLeftIcon className="size-5" />
-          </button>
-        )}
-        <div
-          id="news-slides"
-          aria-live={rotating ? "off" : "polite"}
-          className="min-w-0 overflow-hidden [grid-area:slide]"
-        >
+            <EventArt type={current.event_type} />
+          </div>
+          {total > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => go(index - 1, "prev")}
+                className={`${overlayButton} left-3`}
+                aria-label="Noticia anterior"
+                aria-controls="news-slides"
+              >
+                <ArrowLeftIcon className="size-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => go(index + 1, "next")}
+                className={`${overlayButton} right-3`}
+                aria-label="Noticia siguiente"
+                aria-controls="news-slides"
+              >
+                <ArrowRightIcon className="size-5" />
+              </button>
+              <ul className="absolute bottom-3 left-1/2 m-0 flex -translate-x-1/2 list-none items-center gap-0.5 rounded-full bg-surface/90 px-1.5 py-0.5">
+                {events.map((e, i) => (
+                  <li key={e.event_id} className="flex">
+                    <button
+                      type="button"
+                      onClick={() => go(i, i < index ? "prev" : "next")}
+                      aria-label={`Noticia ${i + 1}: ${e.title}`}
+                      aria-current={i === index ? "true" : undefined}
+                      className="group inline-flex size-6 items-center justify-center rounded-full"
+                    >
+                      <span
+                        className={`block h-2 rounded-full transition-all ${i === index ? "w-4 bg-accent" : "w-2 bg-line-strong group-hover:bg-ink-muted"}`}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
           <NewsSlide
             key={current.event_id}
             event={current}
@@ -122,36 +159,6 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
             panelHref={panelHref}
           />
         </div>
-        {total > 1 && (
-          <button
-            type="button"
-            onClick={() => go(index + 1, "next")}
-            className={`${arrowButton} [grid-area:next]`}
-            aria-label="Noticia siguiente"
-            aria-controls="news-slides"
-          >
-            <ArrowRightIcon className="size-5" />
-          </button>
-        )}
-        {total > 1 && (
-          <ul className="m-0 flex list-none justify-center gap-1 p-0 [grid-area:dots]">
-            {events.map((e, i) => (
-              <li key={e.event_id}>
-                <button
-                  type="button"
-                  onClick={() => go(i, i < index ? "prev" : "next")}
-                  aria-label={`Noticia ${i + 1}: ${e.title}`}
-                  aria-current={i === index ? "true" : undefined}
-                  className="group inline-flex size-11 items-center justify-center rounded-full"
-                >
-                  <span
-                    className={`block h-2.5 rounded-full transition-all ${i === index ? "w-6 bg-accent" : "w-2.5 bg-line-strong group-hover:bg-ink-muted"}`}
-                  />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
