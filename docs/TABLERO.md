@@ -102,7 +102,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | Alons | ✅ hecho |
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | ✅ hecho |
 | T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
-| T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` | Marcos | 🔄 en curso |
+| T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/`, `frontend/src/api/hooks/{useEvents,useLivePortfolio,useExposure,useRadar,useAgenda}.ts` (nuevos) | Marcos | 🧪 en PR |
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | — | ⬜ |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
 | T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | Jaime | ✅ hecho |
@@ -163,6 +163,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - La tabla `agent_log` (`SPEC.md` §6, modelo `AgentLog`) existe pero no se rellena: ni el explicador ni el redactor guardan sus turnos. Hoy solo van al log de la aplicación (uso de tokens, frases bloqueadas, plantilla).
 - `GUARDIAN_LLM_CHECK` (`settings.guardian_llm_check`) se carga en `config.py`, pero nada lo usa: el chequeo con modelo tras un `ok` del guardián no está hecho. O se implementa o se quita.
 - Detalle en la decisión D-066 (explicador de T1-17).
+
+### T2-10 · Panel de contexto en 3 PR — Marcos
+**Qué estaba haciendo:** PR 1 (#70, estructura + Resumen + Eventos) abierto. Los hooks nuevos van en `frontend/src/api/hooks/` (ficheros nuevos, no tocan los de T2-13): `useEvents` y `useLivePortfolio` (PR 1), `useExposure` y `useRadar` (PR 2), `useAgenda` (PR 3).
+**Siguiente paso exacto:** PR 2 (Exposición + Radar) en una rama que sale de la del #70; cuando el #70 se mergee con squash, rebasarla sobre `main` antes de abrir el PR. Después, PR 3 (Agenda + filtro de eventos + accesibilidad).
+**Ficheros tocados:** `frontend/src/panel/`, `frontend/src/api/hooks/`.
+**Ojo:** los rangos de los eventos salen colapsados por falta de betas en la BD (ver *Bloqueos*, T2-03). La UI muestra «≈ importe» cuando `low == high`.
 
 ### T1-20 · Operaciones y DCA en la UI — Manu
 **Estado (Manu, 9-nov):** PR #51 (`t1-20/operations-dca`) abierta. Lint, typecheck y 205 tests del frontend en verde (Docker). Revisión interna con un agente en tres rondas, hasta «listo para PR».
