@@ -254,15 +254,67 @@ def test_no_files_only_processes_the_decisions(tmp_path: Path) -> None:
     assert other.read_text(encoding="utf-8") == "Ver D-XXX.\n"
 
 
-def test_convention_files_and_numbered_decisions_are_protected(tmp_path: Path) -> None:
+def test_convention_files_are_protected(tmp_path: Path) -> None:
     _setup(tmp_path, ("D-001", "uno", "Uno"), ("D-XXX", "nueva", "Nueva"))
     protected = _write(tmp_path, "CLAUDE.md", "Las decisiones nuevas van con `D-XXX`.\n")
     command = _write(tmp_path, ".claude/commands/decision.md", "Usa D-XXX.\n")
-    prose = _decision(tmp_path, ("D-001", "uno", "Uno"), extra="- El ID provisional es D-XXX.\n")
-    script.renumber(tmp_path, files=[protected, command, prose])
+    script.renumber(tmp_path, files=[protected, command])
     assert protected.read_text(encoding="utf-8") == "Las decisiones nuevas van con `D-XXX`.\n"
     assert command.read_text(encoding="utf-8") == "Usa D-XXX.\n"
-    assert "provisional es D-XXX." in prose.read_text(encoding="utf-8")
+
+
+def test_old_decision_in_the_diff_gets_the_new_id_in_its_state(tmp_path: Path) -> None:
+    """«Sustituida por D-XXX» en una antigua del mismo PR que la nueva."""
+    _setup(tmp_path, ("D-001", "uno", "Uno"), index=False)
+    old = _decision(tmp_path, ("D-001", "uno", "Uno"), state="Sustituida por D-XXX (en parte)")
+    _decision(tmp_path, ("D-XXX", "nueva", "Nueva"))
+    report = script.renumber(tmp_path, files=[old])
+    text = _read(tmp_path, "docs/decisiones/D-001-uno.md")
+    assert "Estado: Sustituida por D-002 (en parte)\n" in text
+    assert text.startswith("### D-001 · Uno\n")  # no se renumera a sí misma
+    assert (tmp_path / "docs/decisiones/D-002-nueva.md").exists()
+    assert not (tmp_path / "docs/decisiones/D-002-uno.md").exists()
+    assert "  referencias actualizadas en docs/decisiones/D-001-uno.md" in report
+    assert any("Sustituida por D-002 (en parte)" in row for row in _index(tmp_path))
+    assert not any("D-XXX" in row for row in _index(tmp_path))
+
+
+def test_old_decision_outside_the_diff_is_not_touched(tmp_path: Path) -> None:
+    _setup(tmp_path, ("D-001", "uno", "Uno"), index=False)
+    old = _decision(tmp_path, ("D-001", "uno", "Uno"), state="Sustituida por D-XXX")
+    _decision(tmp_path, ("D-XXX", "nueva", "Nueva"))
+    elsewhere = _write(tmp_path, "docs/SPEC.md", "Ver D-XXX.\n")
+    report = script.renumber(tmp_path, files=[elsewhere])
+    assert "Estado: Sustituida por D-XXX\n" in old.read_text(encoding="utf-8")
+    assert any("D-001-uno.md" in line and "no se toca" in line for line in report)
+
+
+def test_numbered_decision_with_ambiguous_reference_is_left_and_reported(tmp_path: Path) -> None:
+    _setup(tmp_path, ("D-001", "uno", "Uno"), index=False)
+    old = _decision(tmp_path, ("D-001", "uno", "Uno"), state="Sustituida por D-XXX")
+    _decision(tmp_path, ("D-XXX", "primera", "Primera"))
+    _decision(tmp_path, ("D-XXX", "segunda", "Segunda"))
+    report = script.renumber(tmp_path, files=[old])
+    assert "Estado: Sustituida por D-XXX\n" in old.read_text(encoding="utf-8")
+    assert any("ambiguas" in line for line in report)
+
+
+def test_push_that_adds_a_decision_and_edits_an_old_one_updates_only_the_old_in_the_diff(
+    tmp_path: Path,
+) -> None:
+    _git(tmp_path, "init", "-q")
+    _setup(tmp_path, ("D-001", "uno", "Uno"), ("D-002", "dos", "Dos"), index=False)
+    _decision(tmp_path, ("D-002", "dos", "Dos"), state="Sustituida por D-XXX")  # ya estaba así
+    script.write_index(tmp_path)
+    before = _commit(tmp_path, "base")
+    _decision(tmp_path, ("D-XXX", "nueva", "Nueva"))
+    _decision(tmp_path, ("D-001", "uno", "Uno"), state="Sustituida por D-XXX")
+    after = _commit(tmp_path, "push")
+    assert script.main(["--root", str(tmp_path), "--before", before, "--after", after]) == 0
+    assert "Estado: Sustituida por D-003\n" in _read(tmp_path, "docs/decisiones/D-001-uno.md")
+    assert "Estado: Sustituida por D-XXX\n" in _read(tmp_path, "docs/decisiones/D-002-dos.md")
+    assert (tmp_path / "docs/decisiones/D-003-nueva.md").exists()
+    assert script.check_index(tmp_path) == []
 
 
 def test_crlf_line_endings_of_a_decision_are_preserved(tmp_path: Path) -> None:
