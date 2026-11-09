@@ -81,7 +81,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-14 | Proyección con DCA (`ProjectionOut`) en `planning/` | Dorado de Laura `on_track: true` | T1-07, T0-08 | `backend/app/planning/{service,projection}.py`, `backend/app/api/planning.py`, `backend/tests/test_projection.py` | Alons | ✅ hecho |
 | T1-15 | Analizador + `build_shockset` + pipeline de §2 + `/demo/replay` (impacto con mock al principio) | RF-11, RF-12; fallback probado | T0-10 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/`, `backend/app/api/events.py`, `scripts/replay_event.py` | Jaime | ✅ hecho |
 | T1-16 | Guardián: patrones, cifras, forma; un test por patrón y por formato de número | RF-16 | T0-05 | `backend/app/agents/guardian.py`, `backend/app/agents/prompts/forbidden.yaml`, `backend/tests/test_guardian*.py`, `backend/tests/fakes/` | Manu | ✅ hecho |
-| T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | Manu | 🔄 en curso |
+| T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | Manu | 🧪 en PR |
 | T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` | Javi | ✅ hecho |
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | Alons | 🔄 en curso |
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
@@ -149,6 +149,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
 
 ### T1-17 · Explicador: requisitos que deja T1-16 — Manu (para quien coja la tarea)
+**Estado (Manu, 9-nov):** PR #49 abierto (`t1-17/explainer`), con `main` integrado. Lint y 1295 tests del backend en verde, y las 7 pruebas `live` pasan con Claude real. Falta: la revisión de alguien del equipo y la CI (frontend incluido, no se pasó en local). Después, merge y `docs: done T1-17`. Lo de `_ORDER` en `analyzer.py`, `agent_log` y `GUARDIAN_LLM_CHECK` queda fuera de T1-17 (ver la decisión del explicador).
 **Guardián en `main` (#38):** la entrada es `guardian.check(GuardianRequest)`. Detalle en la decisión «Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma».
 - Las cifras se comparan en valor absoluto: el guardián no detecta un signo cambiado ("has ganado" con un −470 €). Escribe la dirección con el verbo a partir del signo de la herramienta ("te ha restado").
 - Pasa como evidencias los años y las cifras del evento que el texto vaya a citar.
