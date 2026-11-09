@@ -15,14 +15,7 @@ LAURA = f"{API_PREFIX}/portfolios/laura"
 READ_PATHS = ["events", "exposure", "radar", "status", "projection", "agenda", "move"]
 
 
-@pytest.mark.parametrize(
-    ("path", "example"),
-    [("radar", "RadarOut")],  # `move` ya es real (T2-07): ver `test_move.py`
-)
-def test_get_serves_example(client: TestClient, path: str, example: str) -> None:
-    response = client.get(f"{LAURA}/{path}")
-    assert response.status_code == 200
-    assert response.json() == examples.load(example)
+# `move` (T2-07) y `radar` (T2-05) ya son reales: ver `test_move.py` y `test_radar_service.py`.
 
 
 def test_agenda_lists_examples(client: TestClient) -> None:

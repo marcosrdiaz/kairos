@@ -1,6 +1,6 @@
 """Interfaz pública de exposición y radar (diseño del MVP §4.2).
 
-`get_radar` sigue en `mock.py` hasta T2-05.
+El radar se calcula en `radar.py` (reglas) y `radar_flow.py` (datos y trazas).
 """
 
 import csv
@@ -11,7 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from app.core import trace
-from app.exposure import engine, mock, repository
+from app.exposure import engine, radar_flow, repository
 from app.exposure.repository import CompositionRow
 from app.portfolio import service as portfolio_service
 from app.schemas.common import AssetType, SourceKind, SourceRef, TraceKind
@@ -155,4 +155,5 @@ def get_exposure(portfolio_id: str) -> ExposureOut:
 
 
 def get_radar(portfolio_id: str) -> RadarOut:
-    return mock.get_radar(portfolio_id)
+    """Riesgos y oportunidades de la cartera (RF-18, SPEC §8.5). Una traza por aviso."""
+    return radar_flow.get_radar(portfolio_id, get_exposure)

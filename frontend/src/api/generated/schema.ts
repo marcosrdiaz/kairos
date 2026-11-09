@@ -379,10 +379,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get Radar
-         * @description T2-05 puede moverlo a `api/radar.py`.
-         */
+        /** Get Radar */
         get: operations["get_radar_api_v1_portfolios__portfolio_id__radar_get"];
         put?: never;
         post?: never;
