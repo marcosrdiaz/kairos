@@ -148,6 +148,16 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #39; después, borrar esta subsección.
 **Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
 
+### T2-09 · Invalidar el contexto del explicador: lo que deja T1-17 — Manu (para quien coja la tarea)
+- Tras guardar el impacto de cada evento, llama a `agents.service.invalidate_context(portfolio_id)` (o sin argumento para todas las carteras). Si no se llama, `/ask` responde con el contexto de antes del evento hasta que se reinicia el backend.
+- `agents.service.write_event_explanation(impact)` ya es real (PR #49): devuelve `(texto, ExplanationStatus.OK)` si lo escribe Claude y `TEMPLATE` si sale de plantilla (sin clave o bloqueado dos veces). Tiene un plazo de 6 s y nunca lanza.
+
+### T2-03 · Integración: pendientes de agentes que deja T1-17 — Manu (para quien coja la tarea)
+- `analyzer.py` sigue filtrando las órdenes con su regex provisional `_ORDER`. Hay que sustituirla por `guardian.check` (regla 3 de producto).
+- La tabla `agent_log` (`SPEC.md` §6, modelo `AgentLog`) existe pero no se rellena: ni el explicador ni el redactor guardan sus turnos. Hoy solo van al log de la aplicación (uso de tokens, frases bloqueadas, plantilla).
+- `GUARDIAN_LLM_CHECK` (`settings.guardian_llm_check`) se carga en `config.py`, pero nada lo usa: el chequeo con modelo tras un `ok` del guardián no está hecho. O se implementa o se quita.
+- Detalle en la decisión D-066 (explicador de T1-17).
+
 ### T1-20 · DCA en la UI: API real que deja T1-06 — Alons (para quien coja la tarea)
 **Endpoints (reales en `main`, D-055 y D-056):** lista las aportaciones pendientes con `GET /portfolios/{id}/dca-executions?status=pending` y confirma o salta con `POST /dca-executions/{id}` (`{"action": "confirm" | "skip"}`; 422 si ya está resuelta). Los planes están en `GET/POST/PATCH /portfolios/{id}/dca-plans`; si el reparto no suma 1, responde 422 `DCA_ALLOCATION_INVALID`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo. Confirmar compra al precio del momento, así que las participaciones de la respuesta pueden diferir de las estimadas.
 
