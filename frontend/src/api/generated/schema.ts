@@ -309,7 +309,7 @@ export interface paths {
         };
         /**
          * Explain Move
-         * @description T2-07 puede moverlo a `api/move.py`.
+         * @description «¿Por qué ha bajado?» (`explain_move`, T2-07).
          */
         get: operations["explain_move_api_v1_portfolios__portfolio_id__move_get"];
         put?: never;

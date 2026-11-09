@@ -1,7 +1,4 @@
-"""Interfaz pública del motor de impacto (diseño del MVP §4.2).
-
-`explain_move` sigue en `mock.py` hasta T2-07.
-"""
+"""Interfaz pública del motor de impacto (diseño del MVP §4.2)."""
 
 from collections import defaultdict
 from collections.abc import Collection, Mapping, Sequence
@@ -14,7 +11,7 @@ from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.events import service as events_service
 from app.exposure import service as exposure_service
-from app.impact import engine, mock, repository, scenario
+from app.impact import engine, move_flow, repository, scenario
 from app.impact.betas import BetaEstimate
 from app.portfolio import service as portfolio_service
 from app.schemas.agents import ExplanationStatus
@@ -273,4 +270,6 @@ def reset() -> None:
 
 
 def explain_move(portfolio_id: str, period: MovePeriod) -> MoveAttributionOut:
-    return mock.explain_move(portfolio_id, period)
+    """«¿Por qué ha bajado?»: cambio real del periodo por activo y eventos que lo explican.
+    Deja traza `move`. Ver `move_flow.py` y `move.py`."""
+    return move_flow.explain_move(portfolio_id, period, list_event_impacts)

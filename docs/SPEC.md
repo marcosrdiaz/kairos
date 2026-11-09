@@ -268,6 +268,8 @@ Todo devuelve `calc_id` con entradas (betas, shocks, valores), salidas y fuentes
 
 Mismo cálculo con shocks fijados por el usuario (`{"EQ_GLOBAL": -0.10}`). Objetivo < 500 ms.
 
+**«¿Por qué ha bajado?» (`explain_move`, T2-07).** Ventana `[now − periodo, now]` (`day` = 1 día, `week` = 7, `month` = 30). Por activo: `Δ_i = V_i(end) − V_i(start) − flows_i + adj_i`, con `get_value_change` (precios reales) y el ajuste de demo de los eventos de la ventana, solo en activos que siguen en cartera. `change_pct = change / Σ V_i(start)` a 4 decimales (0 sin valor inicial). `by_asset` omite los activos sin cambio y va de mayor a menor |Δ|. `by_event` = impactos calculados en la ventana; `unexplained = change − Σ impact_eur`. Traza `move` con `parent_calc_ids` = `get_value_change` + impactos. Código: `move.py` (puro) y `move_flow.py`.
+
 ### 8.4 Exposición (look-through)
 
 `exposición_x = Σ_i V_i · Σ_c w_{i,c} · [c pertenece a x]` para país, sector, divisa y empresa. Acciones directas cuentan como un fondo de un solo componente. Solapamiento: empresas presentes en ≥ 2 posiciones, con la suma de su peso en la cartera. Las claves `OTROS_`, `GOV_` y `BONOS_` cuentan en país, sector y divisa, pero no son empresas. `coverage_pct` es la parte del patrimonio con país conocido; un depósito o un plan sin composición no la tiene (D-052).

@@ -3845,7 +3845,7 @@
     },
     "/api/v1/portfolios/{portfolio_id}/move": {
       "get": {
-        "description": "T2-07 puede moverlo a `api/move.py`.",
+        "description": "«¿Por qué ha bajado?» (`explain_move`, T2-07).",
         "operationId": "explain_move_api_v1_portfolios__portfolio_id__move_get",
         "parameters": [
           {
