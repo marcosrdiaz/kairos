@@ -1,4 +1,4 @@
-### D-XXX · Compra y venta FIFO (T1-04): redondeos, plusvalía, operaciones por importe y reparto de `portfolio/` en submódulos
+### D-054 · Compra y venta FIFO (T1-04): redondeos, plusvalía, operaciones por importe y reparto de `portfolio/` en submódulos
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-04 pasa a real `POST /portfolios/{id}/transactions` (RF-04, RF-05). Había que fijar cómo se calculan participaciones, importe y plusvalía con `Decimal`, qué pasa con las operaciones por importe y dónde va el código, porque `service.py` y `repository.py` ya pasaban de 300 líneas y T1-05 a T1-07 van a añadir más.
 - Decisión:
