@@ -1,0 +1,12 @@
+### D-XXX · Avisos de evento (T2-08): un aviso por evento y cartera, umbral gemelo del widget y sin migración
+- Fecha: 2026-11-09 · Autor: Marcos · Estado: Propuesta
+- Contexto: D-032 fija la puntuación (`|impacto| / max(150, 0,005 · patrimonio)`), el umbral (`score ≥ 1`) y el límite (2 por semana ISO), pero no dice qué pasa si el mismo evento se reinyecta, cómo se mantiene sincronizado con el estado «Atento» del widget ni dónde se guarda el `calc_id` del aviso.
+- Decisión:
+  - **Idempotencia:** un `(portfolio_id, event_id)` genera como máximo un aviso `event_impact`. Repetir el replay sin reset no duplica el aviso ni gasta cupo semanal. Se comprueba en `alerts/repository.py` bajo un cerrojo, sin índice único: evitarlo ahorra una migración y el backend corre con un solo proceso.
+  - **Umbral gemelo del widget:** `alerts/config.py` tiene sus propios `MIN_EUR` y `MIN_SHARE` (los módulos no se leen entre sí salvo por `service.py`), con un test que exige que valgan lo mismo que `status.config` y que `alerts.engine.is_significant` y `status.engine.is_significant` coincidan en una batería de importes. T3-04 debe cambiar los dos a la vez. El patrimonio es el de `portfolio.get_valued`, el mismo que usa `status`.
+  - **Semana ISO:** de lunes 00:00 UTC a lunes siguiente, según `clock.now()`. Los `dca_pending` no cuentan.
+  - **`calc_id` sin columna nueva:** el aviso no guarda `calc_id`; se resuelve al leer con el del impacto del mismo evento y cartera (`impact.list_event_impacts`). Así no hay migración y la cifra del aviso apunta a la traza del impacto. Si el impacto ya no existe, el `calc_id` es `null`.
+  - **Mensaje:** `agents.write_alert_message` recibe el impacto completo, y su `calc_id` y su cifra en euros son la evidencia del guardián. Si el guardián bloquea el texto del modelo, se usa la plantilla, que lleva la misma cifra.
+  - **Se borra `alerts/mock.py`** (su cabecera decía que lo sustituía T2-08).
+- Motivo: el paso 3 del guion necesita que el widget pase a «Atento» y que llegue el aviso a la vez, y que repetir el replay en un ensayo no deje avisos duplicados ni agote el cupo.
+- Alternativas descartadas: índice único `(portfolio_id, event_id, kind)` (migración y esperar al borrado del reset); leer `status.config` desde `alerts` (rompe la regla de acceso entre módulos); columna `calc_id` en `alert` (migración para un dato derivable).

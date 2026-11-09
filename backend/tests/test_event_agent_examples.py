@@ -144,10 +144,11 @@ def test_ask_rejects_invalid_channel(client: TestClient) -> None:
 # --- /alerts y replay ---
 
 
-def test_alerts_serves_example(client: TestClient) -> None:
+def test_alerts_start_empty(client: TestClient) -> None:
+    """Desde T2-08 son reales: sin eventos no hay avisos (los cubre `test_alerts_service.py`)."""
     response = client.get(f"{API_PREFIX}/portfolios/laura/alerts")
     assert response.status_code == 200
-    assert response.json() == [examples.load("AlertOut")]
+    assert response.json() == []
 
 
 def test_alerts_unknown_portfolio(client: TestClient) -> None:
