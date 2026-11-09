@@ -13,7 +13,15 @@ export interface DcaNotice {
   tone: "success" | "neutral";
 }
 
-const alreadyResolved = (error: unknown) => error instanceof ApiError && error.status === 422;
+/**
+ * 422 de «ya confirmada o saltada» (`portfolio/errors.py`, `dca_execution_resolved`): lo dicen
+ * `details.execution_id` y `details.status`. Otro 422 (p. ej. de validación) es un error normal.
+ */
+const alreadyResolved = (error: unknown, executionId: string) =>
+  error instanceof ApiError &&
+  error.status === 422 &&
+  error.details.execution_id === executionId &&
+  (error.details.status === "confirmed" || error.details.status === "skipped");
 
 function actionErrorText(error: unknown): string {
   if (error instanceof ApiError) {
@@ -52,7 +60,7 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
     onError: (error) => {
       // Ya resuelta (p. ej. en otra pestaña): al recargar sale de la lista, así que el aviso
       // va al bloque y no a esta tarjeta.
-      if (!alreadyResolved(error)) return;
+      if (!alreadyResolved(error, execution.id)) return;
       onResolved({
         tone: "neutral",
         text: `La aportación del ${formatDate(execution.scheduled_for)} ya estaba confirmada o saltada. No se ha cambiado nada.`,
@@ -61,6 +69,8 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
     },
   });
   const date = formatDate(execution.scheduled_for);
+  // Tras resolverla, la tarjeta sigue hasta que llega la lista nueva: sin segundo clic.
+  const locked = act.isPending || act.isSuccess;
 
   return (
     <li className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
@@ -88,8 +98,8 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
         <button
           type="button"
           className={buttonPrimary}
-          disabled={act.isPending}
-          aria-disabled={act.isPending}
+          disabled={locked}
+          aria-disabled={locked}
           onClick={() => act.mutate("confirm")}
         >
           {act.isPending && act.variables === "confirm" ? "Confirmando…" : "Confirmar aportación"}
@@ -97,15 +107,15 @@ function PendingExecution({ execution, portfolio, onResolved }: ExecutionProps) 
         <button
           type="button"
           className={buttonSecondary}
-          disabled={act.isPending}
-          aria-disabled={act.isPending}
+          disabled={locked}
+          aria-disabled={locked}
           onClick={() => act.mutate("skip")}
         >
           Saltar esta vez
         </button>
       </div>
       <p role="status" className="m-0 text-base font-medium text-error empty:hidden">
-        {act.isError && !alreadyResolved(act.error) ? actionErrorText(act.error) : ""}
+        {act.isError && !alreadyResolved(act.error, execution.id) ? actionErrorText(act.error) : ""}
       </p>
     </li>
   );

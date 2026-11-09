@@ -36,7 +36,7 @@ export function operationErrorText(error: unknown, kind: OperationKind, assetLab
     if (error.code === "INSUFFICIENT_UNITS") {
       const available = str(error.details.available_units);
       return available
-        ? `No hay tantas participaciones${of}: en la cartera hay ${formatUnits(available)}. ${NOTHING}`
+        ? `No hay tantas participaciones${of}: en la cartera hay ${formatUnits(available, 8)}. ${NOTHING}`
         : `No hay tantas participaciones${of} en la cartera. ${NOTHING}`;
     }
     if (error.code === "PRICE_UNAVAILABLE") {

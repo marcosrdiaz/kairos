@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiPatch } from "../../api/client";
 import type { DcaPlanOut, DcaPlanStatus, PortfolioOut } from "../../api/generated/schema";
+import type { PlanDraft } from "./planDraft";
 import { buttonSecondary } from "../../components/button";
-import { formatDate, formatEur, formatPercent } from "../../lib/format";
+import { formatDate, formatEur, formatWeight } from "../../lib/format";
 import { assetName } from "../operations/usePortfolio";
 import { DcaPlanForm } from "./DcaPlanForm";
 import { draftFromPlan } from "./planDraft";
@@ -27,7 +28,8 @@ interface DcaPlanCardProps {
 /** Un plan de aportaciones: qué, cuándo y a qué activos; pausar, reanudar o editar (RF-07). */
 export function DcaPlanCard({ plan, portfolioId, portfolio, onUpdated }: DcaPlanCardProps) {
   const queryClient = useQueryClient();
-  const [editing, setEditing] = useState(false);
+  // El borrador se crea al pulsar «Editar plan», con la cartera ya cargada (nombres de activos).
+  const [editDraft, setEditDraft] = useState<PlanDraft | null>(null);
   const paused = plan.status === "paused";
 
   const setStatus = useMutation({
@@ -40,17 +42,17 @@ export function DcaPlanCard({ plan, portfolioId, portfolio, onUpdated }: DcaPlan
     onSuccess: () => void queryClient.invalidateQueries(),
   });
 
-  if (editing) {
+  if (editDraft) {
     return (
       <DcaPlanForm
         portfolioId={portfolioId}
         plan={plan}
-        initial={draftFromPlan(plan, portfolio)}
+        initial={editDraft}
         onDone={() => {
-          setEditing(false);
+          setEditDraft(null);
           onUpdated();
         }}
-        onCancel={() => setEditing(false)}
+        onCancel={() => setEditDraft(null)}
       />
     );
   }
@@ -74,7 +76,7 @@ export function DcaPlanCard({ plan, portfolioId, portfolio, onUpdated }: DcaPlan
         {plan.allocations.map((a) => (
           <li key={a.asset_id} className="flex flex-wrap justify-between gap-2 text-ink">
             <span>{assetName(portfolio, a.asset_id)}</span>
-            <span className="tabular-nums">{formatPercent(a.weight)}</span>
+            <span className="tabular-nums">{formatWeight(a.weight)}</span>
           </li>
         ))}
       </ul>
@@ -91,7 +93,13 @@ export function DcaPlanCard({ plan, portfolioId, portfolio, onUpdated }: DcaPlan
         >
           {paused ? "Reanudar plan" : "Pausar plan"}
         </button>
-        <button type="button" className={buttonSecondary} onClick={() => setEditing(true)}>
+        <button
+          type="button"
+          className={buttonSecondary}
+          disabled={!portfolio}
+          aria-disabled={!portfolio}
+          onClick={() => portfolio && setEditDraft(draftFromPlan(plan, portfolio))}
+        >
           Editar plan
         </button>
       </div>

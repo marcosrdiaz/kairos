@@ -47,15 +47,38 @@ export function formatPercent(fraction: DecimalString): string {
   return percent.format(dec(fraction));
 }
 
-const units = new Intl.NumberFormat(LOCALE, {
+const weight = new Intl.NumberFormat(LOCALE, {
+  style: "percent",
   minimumFractionDigits: 0,
-  maximumFractionDigits: 4,
+  maximumFractionDigits: 6,
   roundingMode: "halfEven",
 });
 
-/** Participaciones: "12.5" -> "12,5". */
-export function formatUnits(value: DecimalString): string {
-  return units.format(dec(value));
+/**
+ * Peso de un reparto guardado con 8 decimales ("0.33333333") -> "33,333333 %"; "0.7" -> "70 %".
+ * Sin redondear a 1 decimal: tres tercios no deben verse como un 99,9 %.
+ */
+export function formatWeight(fraction: DecimalString): string {
+  return weight.format(dec(fraction));
+}
+
+const unitFormatters = new Map<number, Intl.NumberFormat>();
+
+/**
+ * Participaciones: "12.5" -> "12,5". Por defecto hasta 4 decimales; `maxDigits = 8` (los de
+ * `NUMERIC(20,8)`) cuando la cifra exacta importa, p. ej. las disponibles para vender.
+ */
+export function formatUnits(value: DecimalString, maxDigits = 4): string {
+  let f = unitFormatters.get(maxDigits);
+  if (!f) {
+    f = new Intl.NumberFormat(LOCALE, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: maxDigits,
+      roundingMode: "halfEven",
+    });
+    unitFormatters.set(maxDigits, f);
+  }
+  return f.format(dec(value));
 }
 
 const dateFmt = new Intl.DateTimeFormat(LOCALE, {
