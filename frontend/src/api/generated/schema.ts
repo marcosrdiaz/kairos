@@ -35,7 +35,8 @@ export interface paths {
         put?: never;
         /**
          * Act On Dca Execution
-         * @description Confirmar o saltar una aportación pendiente. T1-06 puede moverlo a `api/dca.py`.
+         * @description Confirmar (compra `dca_buy` al precio de ahora) o saltar una aportación pendiente. 422 si
+         *     ya está resuelta.
          */
         post: operations["act_on_dca_execution_api_v1_dca_executions__execution_id__post"];
         delete?: never;
@@ -453,6 +454,23 @@ export interface paths {
         put?: never;
         /** Register Transfer */
         post: operations["register_transfer_api_v1_portfolios__portfolio_id__transfers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/traces/{calc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trace */
+        get: operations["get_trace_api_v1_traces__calc_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1642,6 +1660,39 @@ export interface components {
             weight: string;
         };
         /**
+         * TraceKind
+         * @enum {string}
+         */
+        TraceKind: "valuation" | "transaction" | "transfer" | "dca" | "plan" | "exposure" | "event_impact" | "scenario" | "projection" | "status" | "radar" | "move" | "agenda";
+        /**
+         * TraceOut
+         * @description `GET /traces/{calc_id}` (endpoint en T2-01).
+         */
+        TraceOut: {
+            /** Calc Id */
+            calc_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Formula */
+            formula: string;
+            /** Inputs */
+            inputs: {
+                [key: string]: unknown;
+            };
+            kind: components["schemas"]["TraceKind"];
+            /** Outputs */
+            outputs: {
+                [key: string]: unknown;
+            };
+            /** Parent Calc Ids */
+            parent_calc_ids?: string[];
+            /** Sources */
+            sources: components["schemas"]["SourceRef"][];
+        };
+        /**
          * TransactionOut
          * @description Respuesta 201 de una operación o un traspaso.
          */
@@ -1832,6 +1883,8 @@ export type TargetAllocation = components['schemas']['TargetAllocation'];
 export type TopCompaniesGroup = components['schemas']['TopCompaniesGroup'];
 export type TopCompany = components['schemas']['TopCompany'];
 export type TopCountry = components['schemas']['TopCountry'];
+export type TraceKind = components['schemas']['TraceKind'];
+export type TraceOut = components['schemas']['TraceOut'];
 export type TransactionOut = components['schemas']['TransactionOut'];
 export type TransactionRequest = components['schemas']['TransactionRequest'];
 export type TransferRequest = components['schemas']['TransferRequest'];
@@ -1904,7 +1957,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2349,7 +2402,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2394,7 +2447,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2436,7 +2489,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2518,7 +2571,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2602,7 +2655,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2646,7 +2699,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2770,7 +2823,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2854,7 +2907,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2898,13 +2951,53 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    get_trace_api_v1_traces__calc_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2960,7 +3053,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Content */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
