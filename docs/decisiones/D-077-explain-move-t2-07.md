@@ -1,4 +1,4 @@
-### D-XXX · «¿Por qué ha bajado?» (T2-07): ventana, flujos y ajustes de demo del periodo
+### D-077 · «¿Por qué ha bajado?» (T2-07): ventana, flujos y ajustes de demo del periodo
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: el diseño (§4.3) fija la forma de `MoveAttributionOut` y que `by_asset` lleve precios reales, sin flujos y con los ajustes de demo (decisión 17, D-031). No dice cuánto dura cada periodo, qué ajustes entran si el evento es anterior a la ventana ni sobre qué base se calcula `change_pct`.
 - Decisión:
