@@ -171,6 +171,10 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **API (nota que dejó Alons, de T1-06):**
 **Endpoints (reales en `main`, D-055 y D-056):** lista las aportaciones pendientes con `GET /portfolios/{id}/dca-executions?status=pending` y confirma o salta con `POST /dca-executions/{id}` (`{"action": "confirm" | "skip"}`; 422 si ya está resuelta). Los planes están en `GET/POST/PATCH /portfolios/{id}/dca-plans`; si el reparto no suma 1, responde 422 `DCA_ALLOCATION_INVALID`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo. Confirmar compra al precio del momento, así que las participaciones de la respuesta pueden diferir de las estimadas.
 
+### T3-06 · README: limitación conocida «sin login» — Manu (para quien coja la tarea)
+- Añade al README un apartado de **limitaciones conocidas** que diga que no hay login ni usuarios: cualquiera que abra la app puede ver y modificar cualquier cartera (Laura, Javier o las que se den de alta), también registrar operaciones y planes DCA. Es una decisión del MVP (D-013, fuera del alcance en `docs/kairos-spec.md` e `INGENIERIA.md` §1): las carteras son ilustrativas, la app corre en local y no mueve dinero real.
+- Trabajo futuro: cuentas de usuario con autenticación, y que cada ruta del backend compruebe que la cartera es de quien la pide.
+
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
 
