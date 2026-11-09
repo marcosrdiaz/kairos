@@ -1,4 +1,4 @@
-### D-XXX · Traspaso fondo → fondo (T1-05): participaciones y coste de los lotes nuevos, libro y error con alternativa
+### D-062 · Traspaso fondo → fondo (T1-05): participaciones y coste de los lotes nuevos, libro y error con alternativa
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-05 pasa a real `POST /portfolios/{id}/transfers` (RF-06). El diseño fija que los lotes nuevos conservan la fecha y el coste total, y que un ETF o una acción da `TRANSFER_NOT_ALLOWED` con la alternativa. Faltaba decidir cómo se redondea, cómo queda el libro y de dónde sale `estimated_gain_eur`.
 - Decisión:
