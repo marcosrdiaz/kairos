@@ -107,7 +107,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
 | T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | Jaime | ✅ hecho |
 | T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | ✅ hecho |
-| T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` | Jaime | 🧪 en PR |
+| T2-15 | `agenda.json`, `DEMO_CLOCK` y revisión de los datos contra §5 | Las 5 filas de §5 se cumplen | T1-11, T1-13 | `data/events/agenda.json`, `data/seed/portfolios/` | Jaime | ✅ hecho |
 | T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | Javi | ✅ hecho |
 | T2-17 | Ticker de mercado en Inicio (entre la cabecera de estado y las tarjetas): barra que se desplaza sola con el último precio y la variación de los activos de la cartera | Precios reales con fecha (sin cifras inventadas); se pausa al pasar el ratón, con el foco y con un botón (WCAG 2.2.2); sin movimiento con `prefers-reduced-motion`. Necesita un endpoint de precios nuevo: petición de contrato en un PR propio | T1-02 | `backend/app/api/prices.py` (nuevo), `frontend/src/app/market/ticker/` | — | ⬜ |
 | T2-18 | Gráfica interactiva de la evolución del valor de la cartera en Inicio (contenedor grande junto al ticker) | Serie real calculada con `prices.history` (sin datos inventados); selector de periodo; punto activo con ratón y teclado; tabla alternativa para lector de pantalla. Necesita `GET /portfolios/{id}/history` y su esquema: petición de contrato en un PR propio. Si usa una librería de gráficos, decisión antes | T1-02, T1-03 | `backend/app/portfolio/history.py`, `backend/app/api/history.py` (nuevo), `frontend/src/app/market/chart/` | — | ⬜ |
@@ -190,12 +190,10 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Un padre que no existe no rompe la traza hija:** la hija se sirve igual, con su `parent_calc_ids` tal cual. Pedir ese padre devuelve `404` con el cuerpo estándar `ErrorOut` (`code: NOT_FOUND`, `details.calc_id`). Tratadlo como «traza no disponible», no como un error de la pantalla. Cualquier id desconocido o mal formado es 404, nunca 422. Ocurre con los `calc_id` de los mocks (no están en la BD) mientras un módulo aún no sea real.
 **Detalles:** hay 13 valores de `kind` (`valuation`, `transaction`, `transfer`, `dca`, `plan`, `exposure`, `event_impact`, `scenario`, `projection`, `status`, `radar`, `move`, `agenda`) y la pantalla debe tener un texto en español para cada uno. `sources` puede venir vacía.
 
-### T2-15 · Datos de demo — Jaime
-**Qué estaba haciendo:** PR #71 abierto: `agenda.json`, `DEMO_CLOCK=2026-11-06T18:00:00Z` en `.env.example` y `dca_laura.last_execution_at` → 2026-10-05 (`next_execution_at` sigue en 2026-12-05). Las filas de §5 se cumplen contra el motor real, con betas; detalle en el PR. 1556 tests en verde.
-**Siguiente paso exacto:** revisión de alguien del equipo, CI en verde y merge. Después, `docs: done T2-15` y cerrar el bloqueo del paso 5.
-**Ficheros tocados:** `data/events/agenda.json`, `data/seed/portfolios/laura.json`, `.env.example`, `backend/tests/test_{dca,radar_service}.py`, `docs/SPEC.md` y la decisión «Datos de la demo (T2-15): reloj, última aportación de Laura y formato de la agenda».
-**Para T2-06:** formato de la agenda en esa decisión. `company` es la clave del look-through (`NVDA`).
-**Para T2-03 y T3-05 (sin arreglar, fuera de T2-15):** `make up` y `make seed` no calculan `factor_beta`. Sin `make betas`, NVIDIA da −223,69 € con `low == high` y confianza baja, en lugar de −337,06 €. Hay que añadir `compute_betas.py` al servicio `seed` de `docker-compose.yml` o documentarlo en el README. Quien ya tenga `.env` debe añadir `DEMO_CLOCK` a mano.
+### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
+**T2-06:** el formato de `data/events/agenda.json` está en D-080. `company` es la clave del look-through (`NVDA`).
+**T2-03 (bloqueo de `factor_beta`):** verificado: con las betas calculadas, el rango se abre y NVIDIA da −337,06 € en Laura (−349,11 a −325,01, confianza alta) y −239,29 € en Javier.
+**Todos:** quien ya tenga `.env` debe añadir `DEMO_CLOCK=2026-11-06T18:00:00Z` a mano.
 
 ### T1-18 · T1-19 · T1-20 · Base del frontend que deja T0-07 — Marcos
 **Qué hay en `main`:** scaffold en `frontend/` (Vite, TS estricto, Tailwind 4, TanStack Query, `react-router`). Rutas `/inicio`, `/cartera`, `/pregunta` (dentro de `AppShell`, con pestañas abajo) y `/panel` (layout de escritorio). Decisión D-035; contexto en `PRODUCT.md` y `DESIGN.md`.
