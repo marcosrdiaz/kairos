@@ -86,7 +86,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | — | ⬜ |
 | T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | — | ⬜ |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
-| T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | 🔄 en curso |
+| T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | 🧪 en PR |
 
 ### Fase 2 · Experiencia e integración (hasta el mar 10, 18:00)
 
@@ -110,7 +110,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-16 | Medir latencia de voz (10 intentos) | 8/10 por debajo de 2 s o, si no, cambiar de modelo (decisión 4) | T2-14 | `scripts/measure_voice.py`, `docs/decisiones/` (fichero nuevo) | — | ⬜ |
 | T2-17 | Ticker de mercado en Inicio (entre la cabecera de estado y las tarjetas): barra que se desplaza sola con el último precio y la variación de los activos de la cartera | Precios reales con fecha (sin cifras inventadas); se pausa al pasar el ratón, con el foco y con un botón (WCAG 2.2.2); sin movimiento con `prefers-reduced-motion`. Necesita un endpoint de precios nuevo: petición de contrato en un PR propio | T1-02 | `backend/app/api/prices.py` (nuevo), `frontend/src/app/market/ticker/` | — | ⬜ |
 | T2-18 | Gráfica interactiva de la evolución del valor de la cartera en Inicio (contenedor grande junto al ticker) | Serie real calculada con `prices.history` (sin datos inventados); selector de periodo; punto activo con ratón y teclado; tabla alternativa para lector de pantalla. Necesita `GET /portfolios/{id}/history` y su esquema: petición de contrato en un PR propio. Si usa una librería de gráficos, decisión antes | T1-02, T1-03 | `backend/app/portfolio/history.py`, `backend/app/api/history.py` (nuevo), `frontend/src/app/market/chart/` | — | ⬜ |
-| T2-19 | Resumen de noticias en Inicio (debajo de las tarjetas): carrusel con ilustración por tipo de evento a la izquierda y texto a la derecha, flechas y avance automático cada 10 s | Datos de `GET /portfolios/{id}/events` (rango en €, confianza, fuente); botón de pausa y pausa con ratón y foco (WCAG 2.2.2); flechas usables con teclado; sin avance automático con `prefers-reduced-motion` | T1-13 | `frontend/src/app/news/` | Javi | 🔄 en curso |
+| T2-19 | Resumen de noticias en Inicio (debajo de las tarjetas): carrusel con ilustración por tipo de evento a la izquierda y texto a la derecha, flechas y avance automático cada 10 s | Datos de `GET /portfolios/{id}/events` (rango en €, confianza, fuente); botón de pausa y pausa con ratón y foco (WCAG 2.2.2); flechas usables con teclado; sin avance automático con `prefers-reduced-motion` | T1-13 | `frontend/src/app/news/` | Javi | 🧪 en PR |
 
 ### Fase 3 · Endurecer y entregar (mar 10, 18:00 → mié 11, 21:00)
 
@@ -174,6 +174,15 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - Hasta T0-03 no hay tipos generados ni mocks en `src/api/{generated,mocks}/`.
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
+
+### T1-18 · T1-22 · T2-19 · Inicio, tema claro/oscuro y noticias — Javi
+**Qué estaba haciendo:** tres ramas apiladas y subidas, cada una con su PR: `t1-18/home-widget` → `main`; `t1-22/theme-toggle` → `t1-18/home-widget`; `t2-19/news-carousel` → `t1-22/theme-toggle`. Se mergean en ese orden; tras cada merge, la base del PR siguiente pasa a `main`.
+**Siguiente paso exacto:** revisión y merge de los tres PRs. Después, en T1-18, falta el widget de la pantalla de inicio del móvil simulada (reutilizar `StatusBadge` y `src/widget/states.ts`; con la frase completa, sin `withoutTapHint`).
+**Para el resto del frontend:**
+- Los colores se definen en `frontend/src/styles/tokens.css` (`--kairos-color-*`, modo claro y oscuro). Las clases de Tailwind de siempre (`bg-paper`, `text-ink`, `text-accent`…) siguen funcionando. Un color nuevo va en los dos modos y debe pasar `src/styles/contrast.test.ts`.
+- El contenido de escritorio ocupa todo el ancho (barra lateral de 19 rem); hay que diseñar las pantallas para ese ancho.
+- T2-12 comparte `frontend/src/index.css` con T1-22: esperar a que T1-22 esté en `main`.
+**Ficheros tocados:** `frontend/index.html`, `frontend/src/{index.css,App.test.tsx}`, `frontend/src/app/{AppShell,InicioPage}.tsx`, `frontend/src/app/news/`, `frontend/src/components/`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/widget/`, `DESIGN.md`, tres decisiones nuevas en `docs/decisiones/`.
 
 ## 5. Bloqueos
 
