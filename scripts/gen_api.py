@@ -8,10 +8,12 @@
    (variantes incluidas). Copia lo que haya: si faltan esquemas de otras tareas, no falla.
 
 Se ejecuta desde `backend/` con su entorno: `cd backend && uv run python ../scripts/gen_api.py`.
-Opciones: `--skip-ts` para no llamar a npx (sin red o sin Node).
+Opciones: `--skip-ts` para no generar `schema.ts` (sin Node o sin `npm ci` hecho).
 
-openapi-typescript va por `npx` con versión fija y no en `package.json`: pide TypeScript 5 como
-peer y el frontend usa TypeScript 6 (ver decisiones). Los ficheros generados van al repo.
+openapi-typescript es una devDependency de `frontend/` con versión exacta (sin `^`): hace falta
+`npm ci` en `frontend/` y no se descarga nada al ejecutar, así que el resultado no depende de la
+red. Su peer de TypeScript 5 se resuelve con el TypeScript del proyecto con `overrides` en
+`frontend/package.json` (ver decisiones). Los ficheros generados van al repo.
 """
 
 from __future__ import annotations
@@ -27,10 +29,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 BACKEND = ROOT / "backend"
 EXAMPLES_DIR = BACKEND / "app" / "schemas" / "examples"
-GENERATED_DIR = ROOT / "frontend" / "src" / "api" / "generated"
-MOCKS_DIR = ROOT / "frontend" / "src" / "api" / "mocks"
+FRONTEND = ROOT / "frontend"
+GENERATED_DIR = FRONTEND / "src" / "api" / "generated"
+MOCKS_DIR = FRONTEND / "src" / "api" / "mocks"
 
-OPENAPI_TS = "openapi-typescript@7.13.0"
 OPENAPI_TS_FLAGS = ["--root-types", "--root-types-no-schema-prefix", "--alphabetize"]
 
 
@@ -57,9 +59,15 @@ def generate_ts(openapi_path: Path, out_dir: Path) -> Path:
         raise SystemExit(
             "gen-api: no encuentro `npx` (Node). Usa --skip-ts para solo copiar mocks."
         )
+    if not (FRONTEND / "node_modules" / "openapi-typescript" / "package.json").is_file():
+        raise SystemExit(
+            "gen-api: openapi-typescript no está instalado. Ejecuta `npm ci` en frontend/ "
+            "(o usa --skip-ts para solo copiar mocks)."
+        )
     out = out_dir / "schema.ts"
-    cmd = [npx, "--yes", OPENAPI_TS, str(openapi_path), "-o", str(out), *OPENAPI_TS_FLAGS]
-    subprocess.run(cmd, check=True, cwd=ROOT)
+    # `--no-install`: usa la versión de `frontend/package.json`; nunca descarga nada.
+    cmd = [npx, "--no-install", "openapi-typescript", str(openapi_path), "-o", str(out)]
+    subprocess.run([*cmd, *OPENAPI_TS_FLAGS], check=True, cwd=FRONTEND)
     # openapi-typescript escribe con el fin de línea del sistema; el repo es LF (.gitattributes).
     out.write_text(
         out.read_text(encoding="utf-8").replace("\r\n", "\n"), encoding="utf-8", newline="\n"

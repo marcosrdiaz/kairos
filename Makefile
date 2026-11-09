@@ -47,6 +47,8 @@ endif
 
 # Tipos TS desde el OpenAPI (frontend/src/api/generated/) y ejemplos a frontend/src/api/mocks/.
 # Ejecútalo tras cambiar un esquema o un ejemplo y sube lo generado en el mismo PR.
+# Usa el openapi-typescript instalado en frontend/ (devDependency con versión exacta; hace falta
+# `npm ci` allí) y no descarga nada, así que no depende de la red.
 # Sin Node: make gen-api GEN_API_ARGS=--skip-ts (solo OpenAPI y mocks).
 GEN_API_ARGS ?=
 gen-api:
