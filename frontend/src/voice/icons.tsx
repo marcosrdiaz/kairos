@@ -58,6 +58,19 @@ export const StopIcon = (p: P) => (
   </Icon>
 );
 
+export const RestartIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M4 12a8 8 0 1 0 2.4-5.7" />
+    <path d="M4 4.5v4h4" />
+  </Icon>
+);
+
+export const CloseIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </Icon>
+);
+
 export const InfoIcon = (p: P) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="9" />

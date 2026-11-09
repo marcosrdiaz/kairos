@@ -4,10 +4,212 @@
  *
  * - .chat-in-user / .chat-in-bot: entrada de cada burbuja (sube un poco y se asienta, desde su
  *   esquina: la del usuario desde abajo a la derecha, la de KAIROS desde arriba a la izquierda).
- * - .chat-line: cada frase de la respuesta aparece línea a línea (opacidad + desenfoque + leve
- *   subida), una detrás de otra: el componente pone en --d el retardo para que no se solapen.
+ * - .chat-word: la respuesta se escribe palabra a palabra (opacidad + desenfoque), una detrás de
+ *   otra: el componente pone en --d el retardo de cada palabra. .chat-caret: el cursor que
+ *   parpadea en la burbuja de lo que se está dictando.
  * - .chat-fade: aparición suave de avisos y del estado de la barra.
+ * - .chat-glow / .chat-wave-*: deriva lenta del fondo del asistente (ChatBackdrop).
+ * - .chat-launcher: el botón flotante. .voice-dial: el visual del modo voz (VoiceDial).
+ * - .chat-bubble-user / .chat-bubble-bot: la cola de cada burbuja.
  */
+
+/* En móvil el asistente es un modal a pantalla completa: la página de debajo no se desplaza. */
+@media (max-width: 63.999rem) {
+  html[data-chat-open] {
+    overflow: hidden;
+  }
+}
+
+/*
+ * Botón flotante del asistente: círculo con un degradado dorado suave y un aro dorado, para que
+ * el bocadillo blanco del logo se distinga del fondo y del borde. Sombra que lo despega del
+ * contenido: oscura en claro y un halo claro en oscuro.
+ */
+.chat-launcher {
+  background:
+    radial-gradient(circle at 30% 25%, var(--kairos-color-surface), transparent 60%),
+    linear-gradient(145deg, var(--kairos-color-primary-tint), var(--kairos-color-primary-tint-strong));
+  border: 2px solid var(--kairos-color-gold);
+  box-shadow:
+    0 14px 34px -10px rgb(40 28 0 / 0.5),
+    0 4px 10px -4px rgb(40 28 0 / 0.3),
+    0 0 0 6px color-mix(in srgb, var(--kairos-color-gold) 16%, transparent);
+}
+.chat-launcher:hover {
+  box-shadow:
+    0 18px 40px -10px rgb(40 28 0 / 0.55),
+    0 4px 10px -4px rgb(40 28 0 / 0.3),
+    0 0 0 8px color-mix(in srgb, var(--kairos-color-gold) 22%, transparent);
+}
+[data-theme="dark"] .chat-launcher {
+  box-shadow:
+    0 0 30px -2px rgb(255 236 190 / 0.35),
+    0 0 0 6px rgb(255 236 190 / 0.1);
+}
+[data-theme="dark"] .chat-launcher:hover {
+  box-shadow:
+    0 0 38px 0 rgb(255 236 190 / 0.45),
+    0 0 0 8px rgb(255 236 190 / 0.14);
+}
+
+/*
+ * Visual del modo voz (VoiceDial). `--level` (0-1) lo escribe el componente en cada fotograma:
+ * el disco crece un poco y el halo se enciende con la voz.
+ */
+.voice-dial {
+  --level: 0;
+  overflow: visible;
+}
+.voice-dial .vd-core,
+.voice-dial .vd-glow,
+.voice-dial .vd-orbit,
+.voice-dial .vd-ripple {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.voice-dial .vd-core {
+  transform: scale(calc(1 + var(--level) * 0.09));
+}
+.voice-dial .vd-glow {
+  opacity: calc(0.55 + var(--level) * 0.45);
+  transform: scale(calc(0.9 + var(--level) * 0.2));
+}
+.voice-dial .vd-ripple {
+  opacity: 0;
+}
+
+/* La esfera como botón (fuera del modo conversación): al pasar el ratón o con el foco se
+   enciende el halo y el disco crece un poco. */
+.voice-dial-button:hover .vd-glow,
+.voice-dial-button:focus-visible .vd-glow {
+  opacity: 1;
+  transform: scale(1.12);
+}
+.voice-dial-button:hover .vd-core,
+.voice-dial-button:focus-visible .vd-core {
+  transform: scale(1.06);
+}
+.voice-dial-button .vd-core,
+.voice-dial-button .vd-glow {
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .voice-dial .vd-core,
+  .voice-dial .vd-glow {
+    transition:
+      transform 80ms linear,
+      opacity 80ms linear;
+  }
+  .voice-dial .vd-orbit {
+    animation: dial-spin 14s linear infinite;
+  }
+  .voice-dial .vd-orbit-2 {
+    animation-duration: 22s;
+    animation-direction: reverse;
+  }
+  .voice-dial.is-idle .vd-glow {
+    animation: dial-breathe 4s ease-in-out infinite;
+  }
+  .voice-dial.is-listening .vd-orbit {
+    animation-duration: 5s;
+  }
+  .voice-dial.is-listening .vd-ripple {
+    animation: dial-ripple 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+  .voice-dial.is-listening .vd-ripple-2 {
+    animation-delay: 1.2s;
+  }
+  .voice-dial.is-transcribing .vd-orbit {
+    animation-duration: 2.5s;
+  }
+
+  .chat-glow {
+    animation: chat-drift 22s ease-in-out infinite alternate;
+  }
+  .chat-wave-a {
+    animation: chat-wave 26s ease-in-out infinite alternate;
+  }
+  .chat-wave-b {
+    animation: chat-wave 32s ease-in-out -10s infinite alternate-reverse;
+  }
+  .chat-wave-c {
+    animation: chat-wave 29s ease-in-out -5s infinite alternate;
+  }
+}
+
+@keyframes dial-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes dial-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes dial-ripple {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.95);
+  }
+}
+
+@keyframes chat-drift {
+  to {
+    translate: 2.5rem 1.5rem;
+    scale: 1.15;
+  }
+}
+
+@keyframes chat-wave {
+  to {
+    translate: -3rem 0.75rem;
+  }
+}
+
+/* Cola de la burbuja de la pregunta (abajo a la derecha), del mismo color que la burbuja. */
+.chat-bubble-user {
+  position: relative;
+}
+.chat-bubble-user::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  bottom: 0;
+  width: 14px;
+  height: 16px;
+  background: inherit;
+  clip-path: path("M0 0 C0 9 4 14 14 16 L0 16 Z");
+}
+
+/* Cola de la burbuja de KAIROS (arriba a la izquierda, hacia el avatar). */
+.chat-bubble-bot {
+  position: relative;
+}
+.chat-bubble-bot::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 0;
+  width: 14px;
+  height: 16px;
+  background: inherit;
+  clip-path: path("M14 0 L0 0 C10 2 14 7 14 16 Z");
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .chat-in-user {
     transform-origin: bottom right;
@@ -19,9 +221,13 @@
     animation: chat-bubble-in 380ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
   }
 
-  .chat-line {
-    animation: chat-line-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .chat-word {
+    animation: chat-word-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: var(--d, 0ms);
+  }
+
+  .chat-caret {
+    animation: chat-caret 1s steps(1, end) infinite;
   }
 
   .chat-fade {
@@ -44,16 +250,20 @@
   }
 }
 
-@keyframes chat-line-in {
+@keyframes chat-word-in {
   from {
     opacity: 0;
-    filter: blur(6px);
-    transform: translateY(6px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     filter: none;
-    transform: none;
+  }
+}
+
+@keyframes chat-caret {
+  50% {
+    opacity: 0;
   }
 }
 

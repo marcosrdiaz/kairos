@@ -1,15 +1,16 @@
 /**
- * Flujo de una pregunta (UC-05): mantener pulsado → `WS /voice/stt` → `POST /ask` (SSE) →
- * cada frase aprobada se muestra y se encola su audio (`/voice/tts`).
+ * Flujo de una pregunta (UC-05): `pressStart` (al abrir el modo voz) → `WS /voice/stt` →
+ * `pressEnd` → `POST /ask` (SSE) → cada frase aprobada se muestra y se encola su audio
+ * (`/voice/tts`). Quien usa el hook decide cuándo termina el prompt de voz (en `VoiceMode`: tras
+ * una pausa, sin voz o al llegar a `MAX_RECORDING_MS`).
  *
  * Plan B: si no hay micrófono o falla la transcripción, `problem` lo explica y la pantalla
- * ofrece las preguntas sugeridas y el campo de texto (RF-15). Si falla el TTS, la respuesta
- * se queda en texto (`Turn.ttsFailed`).
+ * ofrece el campo de texto (RF-15). Si falla el TTS, la respuesta se queda en texto
+ * (`Turn.ttsFailed`).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { streamAsk, type AskChannel } from "../api/ask";
 import {
-  DISCLAIMER_URL,
   STT_START,
   STT_STOP,
   fetchTts,
@@ -39,17 +40,37 @@ export interface Turn {
   done: boolean;
   error: string | null;
   ttsFailed: boolean;
+  /** El usuario cortó la lectura en voz alta (el texto se completa igual). */
+  interrupted: boolean;
+}
+
+/**
+ * Micrófono que ya estaba abierto (el que vigila si el usuario corta la respuesta) y que pasa
+ * directamente a la transcripción, con lo último que grabó: así no se pierden las primeras
+ * palabras de quien interrumpe.
+ */
+export interface MicHandoff {
+  mic: Microphone;
+  /** Audio PCM grabado justo antes de detectar la voz. */
+  preroll: ArrayBuffer[];
+  /** Redirige los trozos que siga grabando ese micrófono. */
+  attach: (onChunk: (pcm: ArrayBuffer) => void) => void;
 }
 
 export interface Problem {
-  kind: "mic" | "stt";
+  /** `silence`: se escuchó y no se oyó a nadie (no se manda nada a transcribir). */
+  kind: "mic" | "stt" | "silence";
   message: string;
 }
 
+/** Tope de un prompt de voz: al llegar, la pregunta se termina sola. */
+export const MAX_RECORDING_MS = 45000;
 const FINAL_TIMEOUT_MS = 12000;
 const MOCK_TRANSCRIBE_MS = 600;
-const MSG_MIC = "No puedo usar el micrófono. Puedes escribir tu pregunta o elegir una de estas.";
-const MSG_STT = "No te he entendido. Prueba otra vez o elige una de estas preguntas.";
+const MSG_MIC = "No puedo usar el micrófono. Puedes escribir tu pregunta.";
+const MSG_STT = "No te he entendido. Prueba otra vez o escribe tu pregunta.";
+const MSG_SILENCE = "No te he oído. Toca la esfera para seguir hablando.";
+const MESSAGES: Record<Problem["kind"], string> = { mic: MSG_MIC, stt: MSG_STT, silence: MSG_SILENCE };
 const MSG_ASK = "No puedo responder ahora mismo. Inténtalo de nuevo en unos minutos.";
 
 interface SttSession {
@@ -86,13 +107,33 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
   const abort = useRef<AbortController | null>(null);
   const streaming = useRef(false);
   const queue = useRef<AudioQueue | null>(null);
+  /**
+   * La lectura en voz alta de la respuesta en curso: si sigue activa, cómo cancelar sus audios
+   * pendientes y cómo marcar el turno como interrumpido.
+   */
+  const voiced = useRef<{ on: boolean; tts: AbortController; markInterrupted: () => void } | null>(null);
 
+  // Mientras se escucha al usuario, la cola de audio no cambia la fase.
   const getQueue = useCallback((): AudioQueue => {
     queue.current ??= new AudioQueue({
-      onPlaying: () => setPhase("speaking"),
-      onIdle: () => setPhase(streaming.current ? "thinking" : "idle"),
+      onPlaying: () => !stt.current && setPhase("speaking"),
+      onIdle: () => !stt.current && setPhase(streaming.current ? "thinking" : "idle"),
     });
     return queue.current;
+  }, []);
+
+  /**
+   * Interrumpe la respuesta en curso: corta el audio, cancela los audios que aún se estaban
+   * pidiendo y no lee lo que falta, pero el texto sigue llegando hasta completarse.
+   */
+  const interrupt = useCallback(() => {
+    const voice = voiced.current;
+    if (voice?.on && (queue.current?.busy || streaming.current)) voice.markInterrupted();
+    if (voice) {
+      voice.on = false;
+      voice.tts.abort();
+    }
+    queue.current?.stop();
   }, []);
 
   const closeStt = useCallback(() => {
@@ -123,11 +164,14 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
       const controller = new AbortController();
       abort.current = controller;
       streaming.current = true;
-      const speak = speakAnswers;
       const q = getQueue();
       const id = nextId.current++;
       const update = (patch: (t: Turn) => Partial<Turn>) =>
         setTurns((all) => all.map((t) => (t.id === id ? { ...t, ...patch(t) } : t)));
+      const tts = new AbortController();
+      controller.signal.addEventListener("abort", () => tts.abort(), { once: true });
+      const voice = { on: speakAnswers, tts, markInterrupted: () => update(() => ({ interrupted: true })) };
+      voiced.current = voice;
       const turn: Turn = {
         id,
         question,
@@ -137,6 +181,7 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
         done: false,
         error: null,
         ttsFailed: false,
+        interrupted: false,
       };
       setTurns((all) => [...all, turn].slice(-MAX_TURNS));
       setPhase("thinking");
@@ -144,18 +189,18 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
         const request = { question, channel, session_id: getSessionId() };
         for await (const event of streamAsk(portfolioId, request, controller.signal)) {
           if (event.type === "meta" && event.disclaimer) {
+            // El aviso de IA se muestra en texto, pero no se lee en voz alta (decisión del equipo).
             update(() => ({ showDisclaimer: true }));
-            if (speak) q.enqueue(Promise.resolve(DISCLAIMER_URL), false);
           } else if (event.type === "sentence") {
             const sentence = { index: event.index, text: event.text, calcIds: event.calc_ids };
             update((t) => ({ sentences: [...t.sentences, sentence].sort((a, b) => a.index - b.index) }));
-            if (speak) {
-              const audio = fetchTts({ turn_id: event.turn_id, index: event.index }, controller.signal);
+            if (voice.on) {
+              const audio = fetchTts({ turn_id: event.turn_id, index: event.index }, tts.signal);
               q.enqueue(
                 audio.then(
-                  (blob) => (blob ? URL.createObjectURL(blob) : null),
+                  (blob) => (blob && voice.on ? URL.createObjectURL(blob) : null),
                   () => {
-                    if (!controller.signal.aborted) update(() => ({ ttsFailed: true }));
+                    if (!tts.signal.aborted) update(() => ({ ttsFailed: true }));
                     return null;
                   },
                 ),
@@ -174,7 +219,7 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
       update(() => ({ done: true })); // también si se paró a medias
       if (abort.current !== controller) return;
       streaming.current = false;
-      if (!q.busy) setPhase("idle");
+      if (!q.busy && !stt.current) setPhase("idle");
     },
     [cancel, getQueue, portfolioId, speakAnswers],
   );
@@ -183,8 +228,8 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
     (kind: Problem["kind"]) => {
       closeStt();
       setPartial("");
-      setPhase("idle");
-      setProblem({ kind, message: kind === "mic" ? MSG_MIC : MSG_STT });
+      setPhase(streaming.current ? "thinking" : "idle");
+      setProblem({ kind, message: MESSAGES[kind] });
     },
     [closeStt],
   );
@@ -199,16 +244,34 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
     [ask, closeStt, failStt],
   );
 
-  const pressStart = useCallback(() => {
-    if (stt.current) return;
-    cancel();
+  /**
+   * Empieza a escuchar. La voz del usuario manda: si la respuesta anterior aún se está leyendo o
+   * escribiendo, se corta su audio al momento (el texto se completa). Con `handoff`, se usa el
+   * micrófono que ya estaba abierto y se manda primero lo que grabó justo antes.
+   */
+  const pressStart = useCallback((handoff?: MicHandoff) => {
+    if (stt.current) {
+      void handoff?.mic.stop();
+      return;
+    }
+    interrupt();
     setProblem(null);
     setPartial("");
     setPhase("listening");
     const ws = openStt();
-    const session: SttSession = { ws, mic: null, ready: Promise.resolve(), finished: false, timer: undefined };
+    const session: SttSession = {
+      ws,
+      mic: handoff?.mic ?? null, // el volumen de quien interrumpe se ve desde el primer momento
+      ready: Promise.resolve(),
+      finished: false,
+      timer: undefined,
+    };
     stt.current = session;
-    if (!ws) return; // modo mock: se simula al soltar
+    if (!ws) {
+      void handoff?.mic.stop(); // modo mock: se simula al terminar
+      session.mic = null;
+      return;
+    }
 
     ws.onmessage = (event: MessageEvent<string>) => {
       const message = JSON.parse(event.data) as SttServerMessage;
@@ -221,12 +284,19 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
     };
     // Micrófono y WebSocket arrancan a la vez; lo grabado antes de que abra el socket se
     // guarda y se manda después del `start`, para no perder la primera palabra.
-    const pending: ArrayBuffer[] = [];
+    const pending: ArrayBuffer[] = [...(handoff?.preroll ?? [])];
     let open = false;
-    const micReady = startMicrophone((pcm) => {
+    const sink = (pcm: ArrayBuffer) => {
       if (open && ws.readyState === WebSocket.OPEN) ws.send(pcm);
       else pending.push(pcm);
-    });
+    };
+    let micReady: Promise<Microphone>;
+    if (handoff) {
+      handoff.attach(sink);
+      micReady = Promise.resolve(handoff.mic);
+    } else {
+      micReady = startMicrophone(sink);
+    }
     session.ready = (async () => {
       const [mic] = await Promise.all([micReady, waitOpen(ws)]);
       ws.send(JSON.stringify(STT_START));
@@ -241,7 +311,7 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
     session.ready.catch((err: unknown) => {
       if (stt.current === session) failStt(err instanceof MicrophoneDeniedError ? "mic" : "stt");
     });
-  }, [cancel, failStt, handleFinal]);
+  }, [failStt, handleFinal, interrupt]);
 
   const pressEnd = useCallback(async () => {
     const session = stt.current;
@@ -263,5 +333,54 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
     session.timer = window.setTimeout(() => stt.current === session && failStt("stt"), FINAL_TIMEOUT_MS);
   }, [failStt, handleFinal]);
 
-  return { phase, partial, turns, problem, pressStart, pressEnd, ask, cancel };
+  /**
+   * Volumen (0-1) para el visual de voz: el del micrófono mientras se escucha y el de la
+   * respuesta mientras suena; 0 si no hay ninguno.
+   */
+  const getLevel = useCallback(
+    () => stt.current?.mic?.level?.() ?? queue.current?.level() ?? 0,
+    [],
+  );
+
+  /** Reinicia el chat: para lo que esté en marcha y borra la conversación de la pantalla. */
+  const reset = useCallback(() => {
+    cancel();
+    setTurns([]);
+    setProblem(null);
+    setPartial("");
+  }, [cancel]);
+
+  /** Volumen (0-1) de la respuesta que está sonando (para distinguirla de la voz del usuario). */
+  const playbackLevel = useCallback(() => queue.current?.level() ?? 0, []);
+
+  /** Se dejó de escuchar sin oír a nadie: no se transcribe nada y se avisa. */
+  const giveUp = useCallback(() => failStt("silence"), [failStt]);
+
+  /**
+   * Sale de la voz sin perder lo escrito: deja de escuchar y corta el audio, pero si una
+   * respuesta se está escribiendo, termina de escribirse.
+   */
+  const endVoice = useCallback(() => {
+    closeStt();
+    interrupt();
+    setPartial("");
+    setProblem(null);
+    setPhase(streaming.current ? "thinking" : "idle");
+  }, [closeStt, interrupt]);
+
+  return {
+    phase,
+    partial,
+    turns,
+    problem,
+    pressStart,
+    pressEnd,
+    giveUp,
+    endVoice,
+    ask,
+    cancel,
+    reset,
+    getLevel,
+    playbackLevel,
+  };
 }

@@ -140,6 +140,33 @@
       scroll-behavior: auto !important;
     }
   }
+  /*
+   * Barra de scroll propia (components/Scrollbar.tsx), para el <main> en escritorio y la
+   * conversación del asistente. El contenedor oculta su barra nativa (.kairos-scroll) y la
+   * propia se dibuja encima: pulgar dorado y redondeado que, al pasar el ratón o al arrastrar,
+   * se ensancha y se oscurece con transición (la barra nativa no admite transiciones).
+   */
+  .kairos-scroll {
+    scrollbar-width: none;
+  }
+  .kairos-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .kairos-scrollbar-thumb {
+    width: 6px;
+    background-color: color-mix(in srgb, var(--kairos-color-gold-deep) 40%, transparent);
+    transition:
+      width 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms ease-out;
+  }
+  .kairos-scrollbar:hover .kairos-scrollbar-thumb,
+  .kairos-scrollbar[data-dragging] .kairos-scrollbar-thumb {
+    width: 11px;
+    background-color: color-mix(in srgb, var(--kairos-color-gold-deep) 85%, transparent);
+  }
+  .kairos-scrollbar[data-dragging] .kairos-scrollbar-thumb {
+    background-color: var(--kairos-color-gold-deep);
+  }
   /* Modo de alto contraste de Windows: los bordes y el foco siguen viéndose. */
   @media (forced-colors: active) {
     :focus-visible {

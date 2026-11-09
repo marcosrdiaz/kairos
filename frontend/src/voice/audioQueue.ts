@@ -36,6 +36,40 @@ export class AudioQueue {
     return this.draining;
   }
 
+  private analyser: AnalyserNode | null = null;
+  private samples: Float32Array<ArrayBuffer> | null = null;
+
+  /**
+   * Engancha un analizador al elemento de audio (una sola vez) para saber el volumen de lo que
+   * suena y animar el visual de voz. Si el navegador no lo permite, la cola suena igual.
+   */
+  private tap(): void {
+    if (this.analyser || typeof AudioContext === "undefined") return;
+    if (typeof HTMLMediaElement === "undefined" || !(this.audio instanceof HTMLMediaElement)) return;
+    try {
+      const context = new AudioContext();
+      const source = context.createMediaElementSource(this.audio);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      analyser.connect(context.destination);
+      void context.resume();
+      this.analyser = analyser;
+      this.samples = new Float32Array(analyser.fftSize);
+    } catch {
+      // Sin analizador: el visual usa su movimiento propio.
+    }
+  }
+
+  /** Volumen de lo que suena ahora, de 0 a 1 (0 si no suena nada o no hay analizador). */
+  level(): number {
+    if (!this.analyser || !this.samples || this.audio.paused) return 0;
+    this.analyser.getFloatTimeDomainData(this.samples);
+    let sum = 0;
+    for (const s of this.samples) sum += s * s;
+    return Math.min(1, Math.sqrt(sum / this.samples.length) * 5);
+  }
+
   enqueue(url: Promise<string | null>, ownsUrl = true): void {
     // Evita "unhandled rejection" mientras espera su turno; el fallo se trata al reproducir.
     url.catch(() => undefined);
@@ -90,6 +124,7 @@ export class AudioQueue {
       this.audio.addEventListener("ended", done);
       this.audio.addEventListener("error", done);
       this.audio.src = url;
+      this.tap();
       this.events.onPlaying?.();
       this.audio.play().catch(done);
     });
