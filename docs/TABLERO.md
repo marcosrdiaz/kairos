@@ -101,7 +101,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` | — | ⬜ |
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | — | ⬜ |
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | — | ⬜ |
-| T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🔄 en curso |
+| T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` | — | ⬜ |
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | — | ⬜ |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
@@ -148,9 +148,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #39; después, borrar esta subsección.
 **Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
 
-### T2-09 · Invalidar el contexto del explicador: lo que deja T1-17 — Manu (para quien coja la tarea)
-- Tras guardar el impacto de cada evento, llama a `agents.service.invalidate_context(portfolio_id)` (o sin argumento para todas las carteras). Si no se llama, `/ask` responde con el contexto de antes del evento hasta que se reinicia el backend.
-- `agents.service.write_event_explanation(impact)` ya es real (PR #49): devuelve `(texto, ExplanationStatus.OK)` si lo escribe Claude y `TEMPLATE` si sale de plantilla (sin clave o bloqueado dos veces). Tiene un plazo de 6 s y nunca lanza.
+### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
+**Qué estaba haciendo:** PR #58 (`t2-09/event-explanations`): el pipeline y `/demo/reset` invalidan el contexto del explicador, y el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071). `ruff`, `mypy` y 1376 tests del backend en verde.
+**Siguiente paso exacto:** con `ANTHROPIC_API_KEY` en `.env`, desde `backend/`, `pytest -m live tests/test_event_explanations_live.py -s` (criterio con Claude real, aún sin ejecutar). Después, revisión de otra persona, merge de #58 y `docs: done T2-09`.
+**Ficheros tocados:** `backend/app/events/{pipeline,service}.py`, `backend/app/agents/context.py`, `backend/tests/test_event_explanations{,_live}.py`, `backend/tests/test_explainer_context.py`.
+**Sin hacer (D-071):** Claude a veces suma cifras en «¿Por qué ha bajado?». El guardián lo bloquea y acaba en plantilla; ajustar el prompt requiere medir con la clave.
 
 ### T2-03 · Integración: pendientes de agentes que deja T1-17 — Manu (para quien coja la tarea)
 - `analyzer.py` sigue filtrando las órdenes con su regex provisional `_ORDER`. Hay que sustituirla por `guardian.check` (regla 3 de producto).
