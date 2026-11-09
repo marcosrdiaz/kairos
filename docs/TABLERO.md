@@ -70,7 +70,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | ✅ hecho |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | ✅ hecho |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
-| T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | Alons | 🔄 en curso |
+| T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | Alons | 🧪 en PR |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | — | ⬜ |
 | T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | ✅ hecho |
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
@@ -132,6 +132,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T1-06 · DCA — Alons
+**Qué estaba haciendo:** dos PR en cadena. #34, solo de contrato: `GET /portfolios/{id}/dca-executions?status=` y respuesta de `/demo/dca/run`; sin modelos nuevos. #35, la implementación, tiene como base la rama de #34. Las dos tienen lint y tests en verde en local.
+**Siguiente paso exacto:** revisión y merge de #34. Después, comprobar que #35 ha cambiado su base a `main` (si no, cambiarla a mano), hacer merge de `main` en `t1-06/portfolio-dca` para recoger el ID real de la decisión de contrato, CI en verde, revisión y merge. Al final, `docs: done T1-06` y marcar como hecha la fila de *Peticiones de contrato*.
+**Ficheros tocados:** `backend/app/portfolio/{dca,dca_flow,dca_store,errors,mock,service}.py`, `backend/app/api/{portfolio,demo}.py`, `backend/tests/{test_dca,test_dca_executions,test_dca_contract,test_portfolio_mock}.py`, `frontend/src/api/generated/` (#34), `docs/SPEC.md`, `docs/decisiones/` (dos ficheros nuevos). Las rutas siguen en `api/portfolio.py`, no en `api/dca.py`: ver la decisión «DCA real (T1-06)».
+**Para T1-20 (UI de DCA):** lista las pendientes con `GET /portfolios/{id}/dca-executions?status=pending`; confirma o salta con `POST /dca-executions/{id}`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo.
 
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
