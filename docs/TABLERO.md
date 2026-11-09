@@ -143,11 +143,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
-### T1-16 · Seguimiento: `pyproject.toml` — Manu
-**Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
-**Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #39; después, borrar esta subsección.
-**Ficheros tocados:** `backend/pyproject.toml`, `backend/uv.lock`.
-
 ### T3-04 · Umbrales de avisos y de estado: cambiarlos a la vez — Marcos (para quien coja la tarea)
 **Qué hay que saber:** `alerts/config.py` (`MIN_EUR`, `MIN_SHARE`) y `status/config.py` (`ATENTO_MIN_EUR`, `ATENTO_MIN_SHARE`) tienen que valer lo mismo: el paso 3 del guion necesita el widget en «Atento» y el aviso a la vez. Dos tests lo comprueban (`backend/tests/test_alerts_engine.py`); si cambias uno y no el otro, fallan.
 **Siguiente paso exacto:** al calibrar, cambia los dos ficheros en el mismo PR. Ver D-076.
