@@ -153,8 +153,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** al calibrar, cambia los dos ficheros en el mismo PR. Ver D-076.
 
 ### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
-**Qué estaba haciendo:** PR #58 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador. PR #59 abierto (misma rama, CI en verde): el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071). `ruff`, `mypy` y 1376 tests del backend en verde.
-**Siguiente paso exacto:** con `ANTHROPIC_API_KEY` en `.env`, desde `backend/`, `pytest -m live tests/test_event_explanations_live.py -s` (criterio con Claude real, aún sin ejecutar). Después, revisión de otra persona, merge de #59 y `docs: done T2-09`.
+**Qué estaba haciendo:** #58 y #59 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador, y el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071).
+**Siguiente paso exacto:** con `ANTHROPIC_API_KEY` en `.env`, desde `backend/`, `pytest -m live tests/test_event_explanations_live.py -s` (criterio con Claude real, aún sin ejecutar). Si pasa, `docs: done T2-09`.
 **Ficheros tocados:** `backend/app/events/{pipeline,service}.py`, `backend/app/agents/context.py`, `backend/tests/test_event_explanations{,_live}.py`, `backend/tests/test_explainer_context.py`.
 **Sin hacer (D-071):** Claude a veces suma cifras en «¿Por qué ha bajado?». El guardián lo bloquea y acaba en plantilla; ajustar el prompt requiere medir con la clave.
 
