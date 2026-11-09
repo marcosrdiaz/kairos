@@ -1,4 +1,4 @@
-### D-XXX · Ajuste de demo (T2-02): se sustituye por evento, entra en el cambio semanal e ignora activos vendidos
+### D-075 · Ajuste de demo (T2-02): se sustituye por evento, entra en el cambio semanal e ignora activos vendidos
 - Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
 - Contexto: D-031 y la decisión 17 del diseño fijan que, en modo demo, la valoración suma el impacto central de cada posición tras un replay. No dicen qué pasa al repetir el replay de un evento, cómo entra en `change_week_*` si falta el precio de hace 7 días, ni qué hacer con una posición vendida después del evento.
 - Decisión:

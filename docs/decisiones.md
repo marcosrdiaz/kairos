@@ -104,4 +104,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-072](decisiones/D-072-pregunta-formato-chat.md) | 2026-11-09 | Pregunta en formato chat: historial, barra fija abajo, «Leer en voz alta» para todas las respuestas y texto línea a línea | Propuesta |
 | [D-073](decisiones/D-073-status-precalculado-t2-04.md) | 2026-11-09 | Estado del widget (T2-04): precalculado en memoria, lectura sin modelo y refresco cada 10 s | Propuesta |
 | [D-074](decisiones/D-074-openapi-typescript-devdependency.md) | 2026-11-09 | `openapi-typescript` como devDependency del frontend con versión exacta; `make gen-api` sin red | Propuesta |
+| [D-075](decisiones/D-075-ajuste-demo-t2-02.md) | 2026-11-09 | Ajuste de demo (T2-02): se sustituye por evento, entra en el cambio semanal e ignora activos vendidos | Propuesta |
 <!-- INDICE:FIN -->
