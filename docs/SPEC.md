@@ -206,7 +206,7 @@ erDiagram
 | `dca_execution` / `dca_execution_line` | dca_plan_id, scheduled_for, status (`pending`/`confirmed`/`skipped`), created_at, resolved_at / asset_id, amount_eur, price, price_at, units_estimated, transaction_id | Una ejecución por fecha; al confirmar, cada línea apunta a su `transaction` (D-042) |
 | `demo_adjustment` | portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at | Solo con `DEMO_MODE=true`; una fila por posición; la borra `/demo/reset` (D-031, D-042) |
 | `composition` | fund_asset_id, constituent_key, name, weight, country, sector, currency, as_of, source | Pesos normalizados; "Otros" para el resto |
-| `factor_beta` | asset_id, factor, beta, std_err, r2, n_obs, window_start, window_end | Calculado por `make betas` |
+| `factor_beta` | asset_id, factor, beta, std_err, r2, n_obs, window_start, window_end | Calculado por `make betas` y, al arrancar, por el servicio `seed` (`make up` y `make seed`) |
 | `event` | id, type, title, text, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model, created_at | |
 | `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, impact_pct, confidence, polarity, breakdown (json), explanation, explanation_status, calc_id, created_at | |
 | `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered | |
