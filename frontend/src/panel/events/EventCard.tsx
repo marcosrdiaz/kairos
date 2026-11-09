@@ -36,7 +36,7 @@ export function EventCard({ event }: { event: EventImpactOut }) {
           </p>
           <h3
             id={`evento-${event.event_id}-title`}
-            className="m-0 mt-1 text-xl font-semibold leading-snug text-ink"
+            className="m-0 mt-1 text-balance text-xl font-semibold leading-snug text-ink"
           >
             {event.title}
           </h3>

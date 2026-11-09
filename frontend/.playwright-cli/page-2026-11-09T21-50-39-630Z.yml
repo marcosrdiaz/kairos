@@ -1,0 +1,34 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: KAIROS
+      - generic [aria-hidden] [ref=e8]: Cartera
+      - navigation "Bloques del panel" [ref=e10]:
+        - link "Resumen" [ref=e11] [cursor=pointer]:
+          - /url: "#resumen"
+        - link "Eventos" [ref=e12] [cursor=pointer]:
+          - /url: "#eventos"
+        - link "Exposición" [ref=e13] [cursor=pointer]:
+          - /url: "#exposicion"
+        - link "Radar" [ref=e14] [cursor=pointer]:
+          - /url: "#radar"
+        - link "Volver a la app" [ref=e15] [cursor=pointer]:
+          - /url: /inicio?p=laura
+    - status [ref=e16]
+  - main [ref=e17]:
+    - heading "Panel de contexto" [level=1] [ref=e18]
+    - region [ref=e19]:
+      - heading "Resumen" [level=2] [ref=e20]
+      - status "Cargando el resumen" [ref=e22]
+    - region [ref=e25]:
+      - heading "Eventos" [level=2] [ref=e26]
+      - paragraph [ref=e27]: Lo que ha pasado en el mundo y cuánto te toca en euros. Solo salen los que afectan a tu cartera.
+      - status "Cargando los eventos" [ref=e29]
+    - region [ref=e30]:
+      - heading "Exposición" [level=2] [ref=e31]
+      - paragraph [ref=e32]: Qué hay realmente dentro de tu cartera, sumando lo que tienes directamente y lo que llevan tus fondos y ETF.
+      - status "Cargando la exposición" [ref=e34]
+    - region [ref=e35]:
+      - heading "Radar" [level=2] [ref=e36]
+      - paragraph [ref=e37]: Riesgos y oportunidades de tu cartera, siempre frente a tus propias reglas. Es contexto, no una orden.
+      - status "Cargando el radar" [ref=e39]
