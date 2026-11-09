@@ -1,4 +1,4 @@
-### D-XXX · Voz en el frontend (T2-14): PCM 16 kHz con AudioWorklet, cola de audio por frase, plan B siempre visible y clientes en `src/api/`
+### D-070 · Voz en el frontend (T2-14): PCM 16 kHz con AudioWorklet, cola de audio por frase, plan B siempre visible y clientes en `src/api/`
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: T2-14 lleva RF-14 (pregunta por voz) a la pestaña Pregunta sobre `WS /voice/stt`, `POST /portfolios/{id}/ask` (SSE) y `POST /voice/tts` (T1-17 y T1-21). Había que decidir cómo capturar el audio en el formato del contrato, cómo encadenar las frases habladas, dónde viven las llamadas al backend y cómo se ve el plan B. La pestaña Pregunta no tenía tarea propia, y RF-15 (pregunta por texto) es el mismo flujo.
 - Decisión:
