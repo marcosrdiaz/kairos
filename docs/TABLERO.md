@@ -103,7 +103,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | ✅ hecho |
 | T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/`, `frontend/src/api/hooks/{useEvents,useLivePortfolio,useExposure,useRadar,useAgenda}.ts` (nuevos) | Marcos | ✅ hecho |
-| T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | Jaime | 🧪 en PR |
+| T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | Jaime | ✅ hecho |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | — | ⬜ |
 | T2-13 | Polling de `/status` y `/alerts` cada 5 s; aviso en pantalla de inicio (paso 3) | El widget cambia solo tras un replay | T2-04, T2-08 | `frontend/src/api/hooks/`, `frontend/src/widget/` | Jaime | ✅ hecho |
 | T2-14 | `src/voice/`: push-to-talk, cola de audio por frase, disclaimer, plan B de preguntas sugeridas | RF-14 de punta a punta | T1-21, T1-17 | `frontend/src/voice/` | Javi | ✅ hecho |
@@ -167,16 +167,9 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
 
-### T2-11 · «¿De dónde sale?» en la UI — Jaime
-**Qué estaba haciendo:** PR #75 (`t2-11/trace-drawer`) abierta. Lint, typecheck y 289 tests del frontend en verde; probado en Edge con mocks.
-**Siguiente paso exacto:** revisión, CI en verde y merge. Después, abrir la hoja contra el backend real (`make up && make seed`, tras un replay), comprobar cadenas de padres y claves sin nombre en `labels.ts`, y marcar `docs: done T2-11`.
-**Ficheros tocados:** `frontend/src/components/trace/`, `frontend/src/api/trace.ts`, `frontend/src/App.tsx`, `frontend/src/panel/Traced.tsx`, y el enganche en `widget/`, `app/news/`, `app/onboarding/`, `app/operations/` y `voice/ChatMessages.tsx`.
-
-### T2-11 · «¿De dónde sale?»: lo que deja T2-01 — Marcos (para quien coja la tarea)
-**Endpoint (en `main`):** `GET /api/v1/traces/{calc_id}` devuelve `TraceOut` (tipo en `frontend/src/api/generated/schema.ts`, mock en `src/api/mocks/TraceOut.json`): `calc_id`, `kind`, `created_at` (UTC, `Z`), `formula`, `inputs`, `outputs`, `sources` (`kind`, `label`, `ref`, `as_of`, `url`) y `parent_calc_ids`. Los `Decimal` de `inputs` y `outputs` llegan como string: pásalos tal cual a `formatEur`/`formatPercent`, sin convertirlos a `number`.
-**Cómo seguir la cadena:** una cifra derivada de varias trazas lleva en `parent_calc_ids` los `calc_id` de origen. El endpoint no los expande: se llama de nuevo con cada uno (`GET /traces/{parent}`) y se recorre hasta que `parent_calc_ids` esté vacío. No hay ciclos por construcción, pero lleva un conjunto de ids ya vistos por si acaso.
-**Un padre que no existe no rompe la traza hija:** la hija se sirve igual, con su `parent_calc_ids` tal cual. Pedir ese padre devuelve `404` con el cuerpo estándar `ErrorOut` (`code: NOT_FOUND`, `details.calc_id`). Tratadlo como «traza no disponible», no como un error de la pantalla. Cualquier id desconocido o mal formado es 404, nunca 422. Ocurre con los `calc_id` de los mocks (no están en la BD) mientras un módulo aún no sea real.
-**Detalles:** hay 13 valores de `kind` (`valuation`, `transaction`, `transfer`, `dca`, `plan`, `exposure`, `event_impact`, `scenario`, `projection`, `status`, `radar`, `move`, `agenda`) y la pantalla debe tener un texto en español para cada uno. `sources` puede venir vacía.
+### T2-03 · Trazas de la UI sin probar contra el backend real (T2-11) — Jaime (para quien coja la tarea)
+**Qué falta:** T2-11 solo se ha probado con tests y en Edge con mocks. Con `make up && make seed` y tras un replay, abre «¿De dónde sale?» en el panel y comprueba las cadenas de `parent_calc_ids`, que no salga ninguna clave en inglés (se les da nombre en `frontend/src/components/trace/labels.ts`) y que los porcentajes y euros salgan bien (`traceFields.ts`).
+**Limpieza menor:** `frontend/.playwright-cli/` tiene capturas subidas a `main` por error; conviene quitarlas y añadir la carpeta a `.gitignore`.
 
 ### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
 **T2-06:** el formato de `data/events/agenda.json` está en D-080. `company` es la clave del look-through (`NVDA`).
