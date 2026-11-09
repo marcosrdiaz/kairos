@@ -1,0 +1,37 @@
+### D-XXX · Modo demo y modo producción: precios en directo y proveedor
+- Fecha: 2026-11-09 · Autor: Alons · Estado: Propuesta
+- Contexto: RF-03 (MVP) pide el último precio, intradía en acciones y ETF y VL diario en fondos. D-026 acepta un proveedor real que refresca cada 60 s, pero D-047 lo dejó sin hacer: con cualquier `MARKET_DATA_PROVIDER` se usan los CSV de `data/prices`, que terminan el 6-nov-2026, y las tablas `price` y `fx_rate` están vacías. Ninguna tarea se encargaba del proveedor, así que el sistema solo funciona como demo. Queremos que la presentación siga siendo reproducible y sin claves, y que el mismo código sirva para usarlo de verdad. La tarea es T2-24.
+- Decisión:
+  - **Dos modos con las variables que ya existen, sin añadir otra.**
+    - **Demo** (por defecto, la del jurado): `DEMO_MODE=true` y `MARKET_DATA_PROVIDER=offline`. Funciona igual que hoy: CSV, reloj fijable, `/demo/*`, replay y ajuste de demo.
+    - **Producción:** `DEMO_MODE=false` y un proveedor en directo, `MARKET_DATA_PROVIDER=yahoo`. El reloj es el real y `/demo/*` responde `DEMO_MODE_DISABLED`, como ya hace.
+    - `DEMO_MODE=false` con `offline` hace fallar el arranque con un mensaje claro: así no hay un modo "producción" que en realidad enseñe precios viejos.
+    - `/health` devuelve el modo y el proveedor.
+  - **Proveedor `yahoo`.** Es un adaptador nuevo detrás del `PriceProvider` de `prices/provider.py`. Usa el símbolo `yahoo:` que ya tiene cada activo en `assets.json` (acciones, ETF y fondos `0P…`) y `EURUSD=X` para el tipo de cambio. Va por HTTP con `httpx` (ya está en el entorno), sin clave y sin dependencias nuevas.
+  - **Refresco bajo demanda con caducidad**, no un proceso en segundo plano:
+    - `latest()` usa el precio guardado si tiene menos de 60 s en acciones, ETF y EUR/USD.
+    - En fondos (`nav_daily`), el VL se pide como mucho una vez cada 6 h, porque solo se publica uno al día.
+    - Fuera del horario de mercado no se vuelve a pedir un cierre que ya está guardado.
+    - Cada precio recibido se guarda en `price`/`fx_rate` con el `ts` que da el proveedor (no el de la petición) y `source = "yahoo"`.
+  - **Fallos.** Si el proveedor no responde o devuelve algo inválido, se sirve el último precio guardado con su `price_at` real, y la traza lo indica. Sin ningún precio guardado, 503 `PRICE_UNAVAILABLE`, como hoy. Nunca se rellena con el CSV ni se inventa un valor.
+  - `history()` en producción combina lo guardado en `price` con el histórico del proveedor. Las betas siguen saliendo de `make betas`; un recálculo diario automático queda fuera del MVP.
+  - **Fuera del alcance:**
+    - Noticias en directo: en producción no llegan eventos nuevos, porque los eventos siguen viniendo solo del replay.
+    - Composiciones automáticas: se actualizan a mano, como dice la decisión de T1-08.
+    - Proveedores con clave (`twelvedata`, `finnhub`, `alphavantage`): se pueden añadir más adelante como otro adaptador de la misma interfaz, con `MARKET_DATA_API_KEY`.
+  - **Tests.** Un proveedor falso para la caducidad, el fallo con último precio guardado y el arranque inválido, todos sin red en CI. Un test `@pytest.mark.live` que valora Laura con Yahoo de verdad.
+- Motivo:
+  - Yahoo es la única fuente sin clave que cubre todo el catálogo: ETF UCITS en Ámsterdam y Xetra, acciones del Mercado Continuo, acciones de EE. UU. y los VL de los fondos Vanguard. Además, es la misma fuente que los históricos (D-045), así que los precios en directo y las betas son coherentes.
+  - Los planes gratuitos con clave no cubren el catálogo. Twelve Data Basic (800 créditos/día, 8/min) solo da mercados de EE. UU., divisas y cripto, y los fondos y las bolsas europeas exigen planes de pago. Finnhub gratis es casi solo EE. UU. y no da fondos. Alpha Vantage gratis se queda en 25 peticiones al día.
+  - Refrescar bajo demanda gasta peticiones solo cuando alguien usa la app y no necesita un planificador.
+  - Mantener el modo demo como opción por defecto protege el guion: el día de la presentación no depende de la red.
+- Alternativas descartadas:
+  - Una variable nueva `APP_MODE` (se solaparía con `DEMO_MODE` y `MARKET_DATA_PROVIDER`).
+  - Refresco en segundo plano cada 60 s para todo el catálogo (unas 20.000 peticiones al día aunque nadie mire).
+  - Twelve Data o Finnhub en plan gratuito (no cubren ETF europeos, acciones españolas ni fondos).
+  - Volver al CSV si el proveedor falla en producción (enseñaría un precio de otra fecha como si fuera actual).
+- Consecuencias:
+  - Yahoo no tiene API oficial ni acuerdo de servicio, y sus condiciones no permiten uso comercial. Vale para el piloto y para enseñar el sistema funcionando, no para un lanzamiento. El lanzamiento necesita un proveedor con licencia (por ejemplo EODHD, Twelve Data de pago o Morningstar) como otro adaptador; está en el pitch como paso siguiente.
+  - `.env.example` pasa a listar `offline | yahoo` como valores implementados.
+  - El panel y el widget ya muestran `price_at` y `price_kind`. En producción la fecha es la de hoy, y en fondos la del último VL publicado.
+  - `SPEC.md` §8.1 y §12 se actualizan en T2-24. Complementa D-014, D-026 y D-047.
