@@ -367,6 +367,8 @@ sequenceDiagram
 - **STT**: `WS /voice/stt` devuelve la transcripción final.
 - **Respuesta**: `POST /ask` (SSE) emite solo frases ya validadas por el guardián.
 - **TTS**: `POST /voice/tts` recibe `turn_id` e `index` y **solo sintetiza frases aprobadas**, buscadas en una caché en memoria por turno (TTL 5 min), nunca texto libre del cliente; si no está aprobada, 404 `SENTENCE_NOT_APPROVED`. Así la regla 3 también cubre el audio.
+- **Cifras a palabras**: `voice/numbers.py` (`spell_out`) convierte importes, porcentajes, puntos, fechas y horas a palabras justo antes del TTS. Así el guardián valida dígitos y el audio lee palabras; el texto en pantalla conserva los dígitos (D-043).
+- Sin clave de ElevenLabs en `.env`, `voice/` usa el mock (tests y CI, sin red). Con clave, si ElevenLabs falla: `POST /voice/tts` → 503 `UPSTREAM_UNAVAILABLE` y el STT manda `error` `UPSTREAM_UNAVAILABLE`. Al arrancar, el backend calienta la voz en segundo plano (la primera llamada puede tardar 7–11 s).
 - Las claves de ElevenLabs y Anthropic no salen del backend.
 - El aviso de IA del inicio de la voz es un audio pregenerado (`GET /voice/disclaimer`, `data/voice/disclaimer.mp3`) que suena mientras Claude genera la primera frase: "Soy el asistente de KAIROS, una IA. No es asesoramiento financiero." Solo la primera vez de la sesión.
 - Plan B si falla el STT: botón de preguntas sugeridas que manda texto a `/ask` con la misma respuesta hablada. Si falla el TTS, la respuesta se muestra solo en texto.

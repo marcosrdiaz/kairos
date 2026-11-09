@@ -4,6 +4,7 @@
 """
 
 import logging
+import threading
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -16,8 +17,15 @@ from app.schemas.common import ErrorOut
 from app.schemas.voice import SttErrorMessage, SttStartMessage, SttStopMessage, TtsRequest
 from app.voice import service
 
-router = APIRouter(tags=["voice"])
 logger = logging.getLogger(__name__)
+
+
+def _warm_up_in_background() -> None:
+    """Calienta la voz sin retrasar el arranque (la primera llamada puede tardar 7–11 s)."""
+    threading.Thread(target=service.warm_up, name="voice-warm-up", daemon=True).start()
+
+
+router = APIRouter(tags=["voice"], on_startup=[_warm_up_in_background])
 
 _MP3: dict[int | str, dict[str, Any]] = {200: {"content": {"audio/mpeg": {}}}}
 _TTS_RESPONSES: dict[int | str, dict[str, Any]] = {
