@@ -90,4 +90,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-058](decisiones/D-058-guardian-reglas-cifras-forma.md) | 2026-11-09 | Guardián (T1-16): cómo casa cifras, qué patrones bloquea y cuándo aplica la forma | Propuesta |
 | [D-059](decisiones/D-059-app-adaptable-escritorio-t1-18.md) | 2026-11-09 | App adaptable a escritorio y tarjeta de estado en Inicio (T1-18) | Propuesta |
 | [D-060](decisiones/D-060-tema-claro-oscuro-t1-22.md) | 2026-11-09 | Tema claro/oscuro, tokens `--kairos-color-*` y estilo visual en oro (T1-22) | Propuesta |
+| [D-061](decisiones/D-061-carrusel-noticias-t2-19.md) | 2026-11-09 | Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19) | Propuesta |
 <!-- INDICE:FIN -->

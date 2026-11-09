@@ -1,4 +1,4 @@
-### D-XXX · Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19)
+### D-061 · Carrusel de noticias en Inicio: datos, ilustraciones y accesibilidad (T2-19)
 - Fecha: 2026-11-09 · Autor: Javi · Estado: Propuesta
 - Contexto: Javi pide un resumen de noticias en Inicio, debajo de las tarjetas de cifras: galería de imágenes a la izquierda, texto a la derecha, flechas a los lados y avance automático cada 10 s. Los eventos (`EventImpactOut`) no traen imágenes, y un contenido que se mueve solo más de 5 s exige poder pausarlo (WCAG 2.2.2).
 - Decisión:
