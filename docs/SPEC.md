@@ -320,6 +320,14 @@ La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validad
 4. Bloqueo → un reintento con el motivo como feedback → si falla, respuesta de plantilla construida con los datos de las herramientas.
 5. En streaming se valida **frase a frase** antes de mandarla al TTS.
 
+**Piezas del explicador** (detalle en la decisión del explicador, T1-17):
+
+- `context.py`: `ExplainerContext` por cartera desde los `service.py` (cartera, plan, proyección, eventos de 7 días, estado), cacheado en memoria; `agents.service.invalidate_context` lo invalida.
+- `facts.py` y `fact_format.py`: contratos → `facts` con `display` en español ("42.380 euros", "61 %") y evidencias del guardián (incluidos los números del título y el consenso de cada evento).
+- `tools.py`: las 6 herramientas; un error del módulo vuelve como `tool_result` de error.
+- `explainer.py` y `sentences.py`: turno de `/ask` en streaming, frase a frase por el guardián; las frases aprobadas se registran en `voice.service.register_approved` para el TTS.
+- `templates.py`: respuestas de plantilla por tema (movimiento, evento, plan) y textos de widget, avisos y explicación de evento; `writer.py` redacta estos últimos con el mismo esquema (modelo → guardián → reintento → plantilla).
+
 Prompts en `agents/prompts/*.md`, versionados. Ningún prompt lleva cifras de ejemplo.
 
 ## 10. Voz
