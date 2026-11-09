@@ -8,6 +8,8 @@ Reglas (`SPEC.md` §7, RF-03):
 - `weight` y `allocation` = valor / total, a 4 decimales.
 - `change_week_eur = total − valor de hace 7 días con las mismas participaciones`;
   `change_week_pct = cambio / valor de hace 7 días`, a 4 decimales.
+- Ajuste de demo (D-031, solo `DEMO_MODE=true`): se suma al `value_eur` de su posición, así que
+  entra en el total, el peso, la plusvalía y el cambio semanal. El valor de hace 7 días no lo lleva.
 """
 
 from collections.abc import Iterable, Mapping
@@ -24,7 +26,8 @@ UNIT_STEP = Decimal("0.00000001")
 ZERO = Decimal(0)
 
 FORMULA = (
-    "value_eur_i = units_i × price_i × fx_i (a céntimos); total_eur = Σ value_eur_i; "
+    "value_eur_i = units_i × price_i × fx_i (a céntimos) + ajuste_demo_i; "
+    "total_eur = Σ value_eur_i; "
     "weight_i = value_eur_i / total_eur; "
     "change_week = total_eur − Σ units_i × price_i,−7d × fx_i,−7d"
 )
@@ -107,17 +110,22 @@ def value_portfolio(
     lots: Iterable[LotIn],
     assets: Mapping[str, AssetIn],
     quotes: Mapping[str, QuoteIn],
+    adjustments: Mapping[str, Decimal] | None = None,
 ) -> Valuation:
-    """Valora los lotes abiertos. `assets` y `quotes` deben tener todos los activos de `lots`."""
+    """Valora los lotes abiertos. `assets` y `quotes` deben tener todos los activos de `lots`.
+
+    `adjustments`: ajuste de demo en € por activo. Los de activos sin posición se ignoran.
+    """
+    adjust = adjustments or {}
     holdings = aggregate_lots(lots)
     values: dict[str, Decimal] = {}
     week_total = ZERO
     for h in holdings:
         quote = quotes[h.asset_id]
-        value = _q(h.units * quote.price * quote.fx_rate, CENT)
-        values[h.asset_id] = value
+        market_value = _q(h.units * quote.price * quote.fx_rate, CENT)
+        values[h.asset_id] = market_value + adjust.get(h.asset_id, ZERO)
         week_unit = quote.week_ago_unit_eur
-        week_total += value if week_unit is None else _q(h.units * week_unit, CENT)
+        week_total += market_value if week_unit is None else _q(h.units * week_unit, CENT)
     total = sum(values.values(), ZERO)
 
     positions: list[PositionOut] = []
