@@ -13,6 +13,7 @@ dependencies = [
     "alembic>=1.14",
     "numpy>=2.1",
     "anthropic>=1.0",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]
@@ -66,5 +67,6 @@ module = [
     "app.portfolio.*",
     "app.impact.*",
     "app.agents.guardian",
+    "app.agents.guardian_figures",
 ]
 strict = true
