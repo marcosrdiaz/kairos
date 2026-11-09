@@ -74,7 +74,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | Alons | ✅ hecho |
 | T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | ✅ hecho |
 | T1-09 | Históricos diarios de 2–3 años (activos y factores) + `observed` de los 3 eventos calculado de esos datos | `data/prices`, `data/factors`, replay completo | T0-10 | `data/prices/`, `data/factors/`, `data/events/replay/*.json` (solo `observed`), `scripts/fetch_prices.py` | Jaime | ✅ hecho |
-| T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | Alons | 🔄 en curso |
+| T1-10 | Casos dorados Laura/Javier (exposición, 3 eventos, proyección) en hoja | Revisado por otra persona | T0-08, T1-08 | `backend/tests/golden/{exposure,impact,projection}*` | Alons | 🧪 en PR |
 | T1-11 | Look-through, solapamientos y `radiography` | RF-08, RF-09. Límite: lunes 14:00 | T1-08 | `backend/app/exposure/{service,engine,repository}.py`, `backend/app/api/exposure.py`, `backend/tests/test_exposure*.py` | Jaime | ✅ hecho |
 | T1-12 | `compute_betas.py` + `factor_beta` | Betas con R², error estándar y n | T1-09, T1-01 | `scripts/compute_betas.py`, `backend/app/impact/{betas,repository}.py` | Manu | ✅ hecho |
 | T1-13 | Motor de impacto: mercado, divisa, resultados, rango, confianza, polaridad; `estimate_scenario` comparte núcleo | RF-10 + dorados | T1-12 | `backend/app/impact/{service,engine,scenario}.py`, `backend/app/api/impact.py`, `backend/tests/test_impact*.py` | Jaime | ✅ hecho |
@@ -142,6 +142,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T1-10 · Casos dorados Laura/Javier — Alons
+**Qué estaba haciendo:** PR #48 (`t1-10/golden-cases`) con los dorados de exposición, impacto (3 eventos × 2 carteras) y proyección. Las hojas `*_sheet.csv` y los valores de `*_cases.json` salen de un cálculo independiente que no importa los motores. Cuadran al céntimo y los 1114 tests están en verde en local.
+**Siguiente paso exacto:** revisión de otra persona (criterio de hecho), CI en verde y merge. Para revisar: un par de filas de `impact_sheet.csv` en Excel o Sheets.
+**Ficheros tocados:** `backend/tests/golden/{exposure,impact,projection}_{cases.json,sheet.csv,golden_test.py}`.
 
 ### T1-16 · Seguimiento: `pyproject.toml` — Manu
 **Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
