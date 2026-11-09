@@ -2,6 +2,9 @@ import type { AssetOut, TransactionRequest, TransferRequest } from "../../api/ge
 import { parseDecimalInput } from "../onboarding/decimalInput";
 
 export type OperationKind = "buy" | "sell" | "transfer";
+
+/** Error del destino de un traspaso igual al origen (depende de los dos campos). */
+export const SAME_ASSET = "El destino tiene que ser distinto del origen.";
 /** Por importe en euros o por número de participaciones (el backend acepta uno de los dos). */
 export type QuantityMode = "amount" | "units";
 
@@ -54,7 +57,7 @@ export function buildOperation(draft: OperationDraft): BuiltOperation {
   if (draft.kind === "transfer") {
     if (!draft.asset) errors.asset = "Elige el fondo de destino.";
     else if (draft.asset.id === draft.heldAssetId) {
-      errors.asset = "El destino tiene que ser distinto del origen.";
+      errors.asset = SAME_ASSET;
     }
   }
   const asset = draft.asset;

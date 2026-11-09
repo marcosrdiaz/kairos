@@ -8,7 +8,7 @@ import { AssetCombobox } from "../onboarding/AssetCombobox";
 import { ASSET_TYPE_LABEL } from "../onboarding/labels";
 import { ChoiceGroup, SelectField, TextField } from "./fields";
 import { OperationResult } from "./OperationResult";
-import { buildOperation, emptyDraft, type DraftErrors, type OperationDraft, type OperationKind } from "./operationDraft";
+import { SAME_ASSET, buildOperation, emptyDraft, type DraftErrors, type OperationDraft, type OperationKind } from "./operationDraft";
 import { operationErrorText, transferNotAllowed } from "./operationError";
 import { TransferNotAllowedNotice } from "./TransferNotAllowedNotice";
 import { usePortfolio } from "./usePortfolio";
@@ -79,6 +79,8 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
     setErrors((e) => {
       const next = { ...e };
       for (const k of Object.keys(patch)) delete next[k as keyof DraftErrors];
+      // «Destino igual que origen» depende de los dos campos: cambiar el origen también lo borra.
+      if ("heldAssetId" in patch && next.asset === SAME_ASSET) delete next.asset;
       return next;
     });
   }
@@ -113,7 +115,7 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
 
   const positionOptions = positions.map((p) => ({
     value: p.asset_id,
-    label: `${p.name} (${ASSET_TYPE_LABEL[p.asset_type]}) · ${formatUnits(p.units)} participaciones`,
+    label: `${p.name} (${ASSET_TYPE_LABEL[p.asset_type]}) · ${formatUnits(p.units, 8)} participaciones`,
   }));
   let positionsHint: string | undefined;
   if (portfolio.isPending) positionsHint = "Cargando las posiciones…";

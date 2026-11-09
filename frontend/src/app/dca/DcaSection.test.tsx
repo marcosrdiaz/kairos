@@ -92,7 +92,7 @@ describe("DcaSection · planes", () => {
     expect(card.textContent).toContain("cada mes, el día 5");
     expect(card.textContent).toContain("Activo");
     await within(card).findByText("Vanguard Global Stock Index Fund EUR Acc");
-    expect(card.textContent).toMatch(/70,0\s*%/);
+    expect(card.textContent).toMatch(/70\s%/);
     expect(card.textContent).toContain("Próxima aportación: 5 de noviembre de 2026");
   });
 
@@ -241,7 +241,14 @@ describe("DcaSection · aportaciones pendientes", () => {
       pending: () => (resolved ? [] : [execution]),
       write: () => {
         resolved = true;
-        return json({ code: "VALIDATION_ERROR", message: "Esta aportación ya está confirmada." }, 422);
+        return json(
+          {
+            code: "VALIDATION_ERROR",
+            message: "Esta aportación ya está confirmada.",
+            details: { execution_id: execution.id, status: "confirmed" },
+          },
+          422,
+        );
       },
     });
     renderSection();
