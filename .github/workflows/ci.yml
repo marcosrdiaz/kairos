@@ -47,6 +47,21 @@ jobs:
           python3 scripts/renumber_decisions.py --check-index \
             --base ${{ github.event.pull_request.base.sha }}
 
+      # El cliente TS (frontend/src/api/generated/) y los mocks (frontend/src/api/mocks/) salen del
+      # backend con `make gen-api`. Falla si regenerarlos cambia algo: alguien tocó un esquema, un
+      # ejemplo o una ruta y no subió lo generado.
+      - name: Cliente TS y mocks al día (make gen-api)
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          make gen-api
+          paths="frontend/src/api/generated frontend/src/api/mocks"
+          if [ -n "$(git status --porcelain -- $paths)" ]; then
+            git status --short -- $paths
+            git --no-pager diff --stat -- $paths
+            echo "::error title=Cliente TS desactualizado::El cliente TS generado o los mocks no coinciden con el backend: ejecuta make gen-api y commitea."
+            exit 1
+          fi
+
       - name: Test
         run: make test
 

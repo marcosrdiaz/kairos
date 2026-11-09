@@ -46,7 +46,7 @@ make up          # docker compose up --build (db + backend + frontend)
 make seed        # carga data/seed en la base de datos (carteras Laura y Javier)
 make test        # pytest backend + vitest frontend
 make lint        # ruff + mypy (backend), eslint + tsc (frontend)
-make gen-api     # regenera tipos TS desde el OpenAPI del backend
+make gen-api     # regenera tipos TS y mocks desde el backend; sube lo generado en el mismo PR (el CI falla si cambia)
 make replay EVENT=bce-2025-06   # inyecta un evento del modo replay
 make betas       # recalcula factor_beta desde data/prices
 ```
