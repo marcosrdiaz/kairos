@@ -16,12 +16,29 @@ const mockModules = import.meta.glob("./mocks/*.json", { eager: true, import: "d
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string | undefined;
-  constructor(message: string, status: number, code?: string) {
+  /** `details` de `ErrorOut` (p. ej. `asset_id` en un 404), o {} si no vino. */
+  readonly details: Record<string, unknown>;
+  constructor(message: string, status: number, code?: string, details?: Record<string, unknown>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.details = details ?? {};
   }
+}
+
+/** Convierte una respuesta no-OK en `ApiError` leyendo el `ErrorOut` si lo hay. */
+async function toApiError(method: string, path: string, res: Response): Promise<ApiError> {
+  let code: string | undefined;
+  let details: Record<string, unknown> | undefined;
+  try {
+    const body = (await res.json()) as { code?: string; details?: Record<string, unknown> };
+    code = body.code;
+    details = body.details;
+  } catch {
+    // cuerpo no JSON
+  }
+  return new ApiError(`${method} ${path} -> ${res.status}`, res.status, code, details);
 }
 
 /** Devuelve el mock de un modelo por su nombre (p. ej. "PortfolioOut"), o undefined. */
@@ -44,14 +61,27 @@ export async function apiGet<T>(path: string, opts: GetOptions = {}): Promise<T>
   const init: RequestInit = { headers: { Accept: "application/json" } };
   if (opts.signal) init.signal = opts.signal;
   const res = await fetch(`${BASE}${path}`, init);
-  if (!res.ok) {
-    let code: string | undefined;
-    try {
-      code = ((await res.json()) as { code?: string }).code;
-    } catch {
-      // cuerpo no JSON
-    }
-    throw new ApiError(`GET ${path} -> ${res.status}`, res.status, code);
+  if (!res.ok) throw await toApiError("GET", path, res);
+  return (await res.json()) as T;
+}
+
+/**
+ * POST con cuerpo JSON. Con mocks no se escribe nada: devuelve el ejemplo del modelo de
+ * respuesta (o `mock_missing`), para poder recorrer la pantalla sin backend.
+ */
+export async function apiPost<T>(path: string, body?: unknown, opts: GetOptions = {}): Promise<T> {
+  if (USE_MOCKS && opts.mock) {
+    const m = getMock<T>(opts.mock);
+    if (m !== undefined) return m;
+    throw new ApiError(`No hay mock para ${opts.mock}`, 404, "mock_missing");
   }
+  const init: RequestInit = {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+  };
+  if (body !== undefined) init.body = JSON.stringify(body);
+  if (opts.signal) init.signal = opts.signal;
+  const res = await fetch(`${BASE}${path}`, init);
+  if (!res.ok) throw await toApiError("POST", path, res);
   return (await res.json()) as T;
 }
