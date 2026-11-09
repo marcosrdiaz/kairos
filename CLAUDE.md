@@ -62,7 +62,7 @@ Van en git (`.claude/settings.json`, `.claude/skills/`, `skills-lock.json`); ver
 - **playwright-cli** (skill + binario): para que el agente abra la app, la pruebe y haga capturas. No es `@playwright/test`, que se usa para los E2E de T3-02.
 - **superpowers** (plugin): plan, TDD y debugging. Es pesado para 4 días: brainstorming y planes solo en tareas que tocan más de un módulo; en tareas pequeñas, directo.
 
-Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala el binario y el navegador de playwright-cli) y aceptar los plugins al abrir Claude Code.
+Tras clonar, una vez: `bash scripts/setup-dev.sh` (instala las dependencias del frontend con `npm ci`, necesarias para `make gen-api`, y el binario y el navegador de playwright-cli) y aceptar los plugins al abrir Claude Code. Se puede repetir sin riesgo: solo reinstala el frontend si `node_modules` no está al día con `package-lock.json`.
 
 ## Convenciones de código
 

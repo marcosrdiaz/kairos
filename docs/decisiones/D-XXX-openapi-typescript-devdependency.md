@@ -12,5 +12,5 @@
 - Alternativas descartadas: seguir con `npx` (depende de la red y del registro en cada ejecución); `^7.13.0` (una versión menor nueva podría cambiar la salida); `--legacy-peer-deps` global (relaja la resolución de todas las dependencias); `overrides` a `typescript@5.9.3` (npm da `ERESOLVE`: un peer se resuelve con el TypeScript del nivel raíz); una herramienta aparte con su propio `package.json` y lockfile (otro lock que mantener).
 - Consecuencias:
   - `frontend/package.json` y `package-lock.json` cambian (una dependencia directa y sus transitivas, como `@redocly/openapi-core`). Solo desarrollo: no entra en el bundle de Vite. El `frontend/Dockerfile` ya hacía `npm ci`, así que la imagen solo instala algunos paquetes más.
-  - Quien quiera ejecutar `make gen-api` necesita haber hecho `npm ci` en `frontend/`; si no, el error lo dice.
+  - Quien quiera ejecutar `make gen-api` necesita haber hecho `npm ci` en `frontend/`; si no, el error lo dice. `scripts/setup-dev.sh` (el setup tras clonar) ya lo hace, de forma idempotente: solo reinstala si `node_modules` no está al día con `package-lock.json`.
   - Sustituye solo la parte de `npx` de D-037. El resto de D-037 (tipos raíz, mocks desde los ejemplos, salida en el repo, LF) sigue vigente, así que no se cambia su *Estado*.
