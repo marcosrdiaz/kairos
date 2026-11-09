@@ -8,8 +8,8 @@ Laura (patrimonio 42.363,67 €, plan 70 % renta variable, umbral 0,10):
 - Divisa: SALTA. EUR 34,86 % y 1,25 % de divisa desconocida: no EUR conocida = 63,89 %.
   El dólar solo, 52,5 %.
 - Desviación: NO salta. 75,99 % − 70 % = 5,99 puntos < 10. Tampoco reequilibrio ni traspaso.
-- Aportación más barata: NO salta. Su última aportación fue el 5-nov y el precio de ese día es el
-  último disponible: 0 %. (La caída del 3,2 % del 5-nov es la que provoca la propia aportación.)
+- Aportación más barata: SALTA en el fondo principal. Última aportación el 5-oct a 65,4599; último
+  precio 62,8352: −4,01 %. El fondo de bonos no cae más de un 3 %.
 
 Javier (patrimonio 180.000,25 €, plan 15 % renta variable):
 - Concentración: no (NVIDIA 0,58 %). Divisa: no (no EUR 9,3 %). Desviación: no (15 % − 15 % = 0).
@@ -24,16 +24,13 @@ Laura con un plan del 55 % (para ver oportunidades):
   y tiene un fondo traspasable de renta fija al que ir. `user_rule` = su plan.
 """
 
-from datetime import date
 from decimal import Decimal
 
-import pytest
 from fastapi.testclient import TestClient
 
 from app.core import trace
 from app.exposure import service
 from app.main import API_PREFIX
-from app.prices import service as prices_service
 from app.schemas.radar import RadarOut
 
 D = Decimal
@@ -49,8 +46,8 @@ def _radar(client: TestClient, base: str) -> dict[str, dict[str, object]]:
 
 def test_laura_radar_has_concentration_and_currency(client: TestClient) -> None:
     items = _radar(client, LAURA)
-    assert set(items) == {"concentration", "currency"}
-    assert all(item["kind"] == "risk" for item in items.values())
+    assert {"concentration", "currency"} <= set(items)
+    assert items["concentration"]["kind"] == items["currency"]["kind"] == "risk"
     concentration = items["concentration"]
     assert abs(D(str(concentration["weight"])) - D("0.0649")) <= TOLERANCE
     assert "NVIDIA" in str(concentration["title"])
@@ -62,9 +59,9 @@ def test_laura_radar_has_concentration_and_currency(client: TestClient) -> None:
     assert abs(D(str(currency["value_eur"])) - total * D("0.6389")) <= D("150")
 
 
-def test_laura_does_not_drift_and_has_no_opportunities(client: TestClient) -> None:
+def test_laura_does_not_drift_nor_rebalance(client: TestClient) -> None:
     items = _radar(client, LAURA)
-    for rule in ("drift", "rebalance_with_dca", "cheaper_contribution", "tax_free_transfer"):
+    for rule in ("drift", "rebalance_with_dca", "tax_free_transfer"):
         assert rule not in items
 
 
@@ -114,25 +111,14 @@ def test_laura_with_tighter_plan_shows_drift_and_tax_free_transfer(client: TestC
     assert abs(D(str(transfer["value_eur"])) - D("5269.58")) <= D("1")
 
 
-def test_laura_cheaper_contribution_when_price_falls_after_last_dca(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    real_history = prices_service.history
-
-    def history(asset_id: str, start: date, end: date):  # type: ignore[no-untyped-def]
-        points = real_history(asset_id, start, end)
-        if asset_id != "IE00B03HD191" or not points:
-            return points
-        # El día de la última aportación el fondo cotizaba un 5 % más alto que hoy.
-        raised = prices_service.latest(asset_id).price / D("0.95")
-        return [*points[:-1], points[-1].model_copy(update={"price": raised})]
-
-    monkeypatch.setattr(prices_service, "history", history)
-    items = _radar(client, LAURA)
-    cheaper = items["cheaper_contribution"]
+def test_laura_cheaper_contribution_for_the_demo(client: TestClient) -> None:
+    """Paso 5 del guion, con los datos reales del seed."""
+    body = client.get(f"{LAURA}/radar").json()
+    cheaper = next(item for item in body["items"] if item["rule"] == "cheaper_contribution")
+    assert cheaper["id"] == "rad_cheaper_contribution_IE00B03HD191"
     assert cheaper["kind"] == "opportunity"
     assert cheaper["user_rule"] == {"source": "dca_plan", "ref": "dca_laura"}
-    assert abs(D(str(cheaper["weight"])) - D("-0.05")) <= D("0.0005")
+    assert abs(D(str(cheaper["weight"])) - D("-0.0401")) <= D("0.0005")
     assert D(str(cheaper["value_eur"])) == D("210.00")  # 300 € · 70 %
 
 
