@@ -69,7 +69,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | ✅ hecho |
 | T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | ✅ hecho |
 | T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | ✅ hecho |
-| T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | Alons | 🧪 en PR |
+| T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | Alons | ✅ hecho |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | Alons | ✅ hecho |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | Alons | ✅ hecho |
 | T1-08 | Composición de los fondos/ETF de Laura y Javier (top-N + "Otros", `as_of`, fuente) | CSV completos; ≥ 90 % de cobertura en Laura. Límite: lunes 14:00 | — | `data/seed/compositions/`, `backend/tests/test_compositions.py` | Marcos | ✅ hecho |
@@ -136,11 +136,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
-
-### T1-05 · Traspaso fondo → fondo — Alons
-**Qué estaba haciendo:** PR #43 (`t1-05/fund-transfer`): traspaso real en `portfolio/transfers.py`, un lote de destino por lote consumido (misma fecha, mismo coste total), `transfer_out` + `transfer_in` en el libro y 422 `TRANSFER_NOT_ALLOWED` con `estimated_gain_eur` trazable. Quita `mock.register_transfer`. Lint, mypy y 1069 tests en verde en local. Decisión «Traspaso fondo → fondo (T1-05)».
-**Siguiente paso exacto:** revisión de otra persona, CI en verde y merge de #43; después, `docs: done T1-05` y borrar esta subsección.
-**Ficheros tocados:** `backend/app/portfolio/{transfers,service,mock}.py`, `backend/tests/{test_transfers,test_portfolio_mock}.py`, `docs/SPEC.md` §7, `docs/decisiones/` (fichero nuevo).
 
 ### T1-16 · Seguimiento: `pyproject.toml` — Manu
 **Qué falta:** PR #39 (`t1-16/pyproject-deps`) declara `pyyaml>=6.0` como dependencia directa (antes llegaba solo por `uvicorn[standard]`) y añade `app.agents.guardian_figures` a la lista de `mypy --strict`. Lint, mypy y 1053 tests en verde en local.
