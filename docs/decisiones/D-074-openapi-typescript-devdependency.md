@@ -1,4 +1,4 @@
-### D-XXX · `openapi-typescript` como devDependency del frontend con versión exacta; `make gen-api` sin red
+### D-074 · `openapi-typescript` como devDependency del frontend con versión exacta; `make gen-api` sin red
 - Fecha: 2026-11-09 19:00 · Autor: Marcos · Estado: Propuesta
 - Contexto: D-037 hizo que `scripts/gen_api.py` llamara a `npx --yes openapi-typescript@7.13.0` sin añadirlo a `package.json`, porque 7.13.0 pide `typescript@^5.x` como peer y el frontend usa TypeScript 6 (D-035): `npm install` fallaba con `ERESOLVE`. Pero `npx` descarga el paquete cada vez que se ejecuta, así que `make gen-api` depende de la red y del registro de npm. Ahora el CI ejecuta `make gen-api` y falla si cambia lo generado (PR del paso «Cliente TS y mocks al día»): el resultado tiene que ser reproducible y el paso no puede caerse por un problema de npm. Comprobado hoy: 7.13.0 sigue siendo la última versión (`latest`) y su peer sigue siendo `^5.x`.
 - Decisión:
