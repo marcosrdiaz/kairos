@@ -160,12 +160,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - `GUARDIAN_LLM_CHECK` (`settings.guardian_llm_check`) se carga en `config.py`, pero nada lo usa: el chequeo con modelo tras un `ok` del guardián no está hecho. O se implementa o se quita.
 - Detalle en la decisión D-066 (explicador de T1-17).
 
-### T2-10 · Panel de contexto en 3 PR — Marcos
-**Qué estaba haciendo:** PR 1 (#70, estructura + Resumen + Eventos) abierto. Los hooks nuevos van en `frontend/src/api/hooks/` (ficheros nuevos, no tocan los de T2-13): `useEvents` y `useLivePortfolio` (PR 1), `useExposure` y `useRadar` (PR 2), `useAgenda` (PR 3).
-**Siguiente paso exacto:** PR 2 (Exposición + Radar) en una rama que sale de la del #70; cuando el #70 se mergee con squash, rebasarla sobre `main` antes de abrir el PR. Después, PR 3 (Agenda + filtro de eventos + accesibilidad).
-**Ficheros tocados:** `frontend/src/panel/`, `frontend/src/api/hooks/`.
-**Ojo:** los rangos de los eventos salen colapsados por falta de betas en la BD (ver *Bloqueos*, T2-03). La UI muestra «≈ importe» cuando `low == high`.
-
 ### T3-06 · README: limitación conocida «sin login» — Manu (para quien coja la tarea)
 - Añade al README un apartado de **limitaciones conocidas** que diga que no hay login ni usuarios: cualquiera que abra la app puede ver y modificar cualquier cartera (Laura, Javier o las que se den de alta), también registrar operaciones y planes DCA. Es una decisión del MVP (D-013, fuera del alcance en `docs/kairos-spec.md` e `INGENIERIA.md` §1): las carteras son ilustrativas, la app corre en local y no mueve dinero real.
 - Trabajo futuro: cuentas de usuario con autenticación, y que cada ruta del backend compruebe que la cartera es de quien la pide.
