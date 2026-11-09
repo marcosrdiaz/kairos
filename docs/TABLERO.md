@@ -68,7 +68,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-01 | Modelos + migración (`SPEC.md` §6) | `alembic upgrade head` | T0-01 | `backend/alembic/`, `backend/app/{portfolio,prices,exposure,impact,events,alerts,agents}/models.py` | Alons | ✅ hecho |
 | T1-02 | `prices`: proveedor offline (CSV) + FX + `latest()` + `history()` | RF-03. Con CSV de prueba hasta que T1-09 esté | T1-01, T1-09 (b) | `backend/app/prices/`, `backend/tests/fakes/price_provider.py` | Alons | ✅ hecho |
 | T1-03 | Alta de posiciones + seed + `/demo/reset` + `/assets/lookup` | RF-01, RF-02 | T1-01, T0-08 | `backend/app/portfolio/{service,repository,engine}.py`, `backend/app/api/{portfolio,demo,assets}.py`, `scripts/seed_db.py`, `backend/tests/golden/portfolio_init*` | Alons | ✅ hecho |
-| T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | 🔄 en curso |
+| T1-04 | Compra/venta FIFO con casos dorados | RF-04, RF-05 | T1-03 | `backend/app/portfolio/{service,repository,engine,lots}.py`, `backend/tests/golden/portfolio_fifo*` | Alons | 🧪 en PR |
 | T1-05 | Traspaso fondo → fondo + error con alternativa | RF-06 | T1-04 | `backend/app/portfolio/{service,transfers}.py`, `backend/tests/test_transfers.py` | — | ⬜ |
 | T1-06 | DCA (planes, ejecución pendiente, confirmar/saltar, `/demo/dca/run`) | RF-07. Límite: martes 10:00 | T1-04 | `backend/app/portfolio/{service,dca}.py`, `backend/app/api/dca.py`, `backend/tests/test_dca.py` | — | ⬜ |
 | T1-07 | `/plan` + `get_value_change` | RF-22 (datos) | T1-03 | `backend/app/portfolio/{service,plan}.py`, `backend/app/api/plan.py`, `backend/tests/test_plan.py` | — | ⬜ |
@@ -155,6 +155,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 - `playwright-cli` en Windows necesita `--browser=msedge` (ver *Bloqueos*).
 **Ficheros tocados:** todo `frontend/` salvo `Dockerfile`, `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `docs/decisiones.md` (D-035) y `docs/SPEC.md` §2 (React 19, Tailwind 4).
 
+### T1-04 · Compra/venta FIFO — Alons
+**Qué estaba haciendo:** compra y venta FIFO reales, con casos dorados. PR #33 (implementación) y PR #32 (arreglo del contrato: el cero se serializaba como `0E-8`). Hay que mergear antes el #32; hasta entonces, el caso dorado de la venta entera de Apple falla en el #33.
+**Siguiente paso exacto:** que alguien revise los dos PR → mergear #32 → mergear #33 con el CI en verde → `docs: done T1-04`.
+**Para T1-05 y T1-06:** `portfolio/` está repartido en `lots.py` (cálculos sin BD), `operations.py` (`held_lots`, orquestación), `ledger.py` (tablas `transaction` y `tax_lot`), `quotes.py` (precios) y `errors.py`. Decisión «Compra y venta FIFO (T1-04)».
+**Ficheros tocados:** `backend/app/portfolio/{service,repository,seed,mock,lots,operations,ledger,quotes,errors}.py`, `backend/tests/golden/portfolio_fifo*`, `backend/tests/test_portfolio_mock.py`, `docs/SPEC.md` §7, `docs/decisiones/` (fichero nuevo); en el #32, `backend/app/schemas/common.py` y `backend/tests/test_schemas_common.py`.
+
 ## 5. Bloqueos
 
 | Fecha/hora | Tarea bloqueada | Por qué | Necesita de | Estado |
@@ -172,6 +178,7 @@ Cambios en `backend/app/schemas/` o en endpoints. Los contratos se cierran en la
 | 2026-11-08 | Marcos (T0-05) a Jaime (T0-04) | `ExplanationStatus`, `SentenceStatus`, `StatusState`, `StatusFacts` | Importar de `app.schemas.agents` en `schemas/impact.py` y `schemas/status.py` (no redefinirlos). `StatusFacts` es la entrada de `agents.write_status_sentence`; el módulo `status` la rellena | T0-04, T1-17, T2-04 | Pendiente de confirmar |
 | 2026-11-08 | Alons (T1-03) al equipo | `AssetOut` (`GET /assets/lookup`), `PriceOut` (`prices.latest`/`history`), `DemoResetRequest`/`DemoResetOut` (`POST /demo/reset`) | Modelos nuevos, sin cambios en los existentes. PR #20 (solo contrato); decisión «Contratos de activo, precio y reset de demo (T1-03)» | T1-02, T1-03, T1-19, T2-03 | Hecho: en `main` (#20) |
 | 2026-11-08 | Jaime (T1-15) al equipo | `ReplayRequest` (`POST /demo/replay/{event_id}`) | Modelo nuevo y cuerpo opcional (`occurred_at`, `silent`), definido en el diseño §4.6. PR propio, solo contrato | T1-15, T2-03 | Hecho: en `main` (#30) |
+| 2026-11-09 | Alons (T1-04) al equipo | `Money`, `Units`, `Price` (`schemas/common.py`) | Arreglo de serialización: el cero salía como `0E-8`; ahora sale en coma fija (`0.00000000`). No cambia la forma ni el OpenAPI. PR #32 (solo contrato) | T1-04 y cualquier respuesta con importes o participaciones a cero | En PR (#32) |
 
 ## 7. Preguntas abiertas
 
