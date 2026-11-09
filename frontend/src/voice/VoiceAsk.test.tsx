@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { AskEvent, AskRequest } from "../api/ask";
 import { VoiceAsk } from "./VoiceAsk";
 import { MicrophoneDeniedError } from "./microphone";
@@ -99,6 +99,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -183,14 +184,15 @@ describe("VoiceAsk", () => {
     await flush();
     expect(mic.stop).toHaveBeenCalled();
     expect(JSON.parse(ws.sent.at(-1) as string)).toEqual({ type: "stop" });
+    // Reloj real antes de la respuesta: el audio falso termina con un setTimeout que, con el reloj
+    // simulado, no llegaría a dispararse.
+    vi.useRealTimers();
     act(() => ws.receive({ type: "final", text: "¿Por qué ha bajado?" }));
     await flush();
-    vi.useRealTimers();
     expect(askCalls[0]).toMatchObject({ portfolioId: "javier", request: { channel: "voice", question: "¿Por qué ha bajado?" } });
     expect(sentence("Primera frase.")).toBeTruthy();
-    // Terminada la respuesta, vuelve a escuchar sin pulsar nada.
-    await flush();
-    expect(screen.getByRole("status").textContent).toBe("Te escucho…");
+    // Terminada la respuesta (suenan las dos frases), vuelve a escuchar sin pulsar nada.
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Te escucho…"));
   });
 
   it("«Terminar la conversación» sale del modo voz sin preguntar y vuelve la barra de texto", () => {
@@ -221,7 +223,7 @@ describe("VoiceAsk", () => {
     render(<VoiceAsk portfolioId="laura" />);
     typeAndSend("¿Voy bien?");
     await flush();
-    expect(screen.getByRole("status").textContent).toBe("Respondiendo en voz alta…");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Respondiendo en voz alta…"));
     openVoice();
     await flush();
     expect(pause).toHaveBeenCalled();
@@ -250,14 +252,13 @@ describe("VoiceAsk", () => {
     await flush();
     act(() => FakeSocket.last?.receive({ type: "final", text: "¿Voy bien?" }));
     await flush();
-    expect(screen.getByRole("status").textContent).toBe("Respondiendo en voz alta…");
-    expect(startMicrophone).toHaveBeenCalledTimes(2); // el de vigilar el corte
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Respondiendo en voz alta…"));
+    await waitFor(() => expect(startMicrophone).toHaveBeenCalledTimes(2)); // el de vigilar el corte
     const before = new ArrayBuffer(8);
     sinks[1]?.(before); // lo que dice justo antes de detectarse su voz
 
     level = 0.6; // el usuario habla por encima
-    await act(() => new Promise((r) => setTimeout(r, 400)));
-    expect(pause).toHaveBeenCalled();
+    await waitFor(() => expect(pause).toHaveBeenCalled());
     expect(screen.getByRole("status").textContent).toBe("Te escucho…");
     expect(screen.getByText("Has cortado la lectura. La respuesta queda aquí entera.")).toBeTruthy();
     expect(sentence("Segunda frase.")).toBeTruthy();
