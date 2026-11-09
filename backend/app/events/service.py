@@ -54,4 +54,7 @@ def preload() -> list[str]:
 
 def reset() -> None:
     """Borra los eventos. Antes hay que llamar a `impact.service.reset`."""
+    from app.agents import service as agents_service  # aquí por el mismo ciclo que `replay`
+
     repository.delete_all()
+    agents_service.invalidate_context()

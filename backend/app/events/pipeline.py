@@ -128,6 +128,7 @@ def run(event: EventIn, occurred_at: datetime | None, silent: bool) -> ReplayOut
         text, status = agents_service.write_event_explanation(stub)
         impact_service.attach_explanation(event.id, portfolio_id, text, status)
         status_service.recompute(portfolio_id)
+        agents_service.invalidate_context(portfolio_id)  # después de guardar impacto y estado
         if not silent:
             alerts_service.evaluate(portfolio_id, event.id)
     elapsed_ms = int((time.perf_counter() - started) * 1000)
