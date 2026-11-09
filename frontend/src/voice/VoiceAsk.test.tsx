@@ -58,6 +58,7 @@ vi.mock("./microphone", async (importOriginal) => ({
 const flush = () => act(() => new Promise((r) => setTimeout(r, 10)));
 
 beforeEach(() => {
+  localStorage.clear();
   askCalls.length = 0;
   tts.mockClear();
   startMicrophone.mockReset();
@@ -95,14 +96,32 @@ describe("VoiceAsk", () => {
     expect(tts).toHaveBeenCalledTimes(2);
   });
 
-  it("sin «leer en voz alta», una pregunta escrita no pide audio", async () => {
+  it("con «leer en voz alta» apagado no pide audio, y la preferencia se recuerda", async () => {
     render(<VoiceAsk portfolioId="laura" />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    const [toggle] = screen.getAllByRole("switch", { name: "Leer las respuestas en voz alta" });
+    expect(toggle?.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(toggle as HTMLElement);
+    expect(localStorage.getItem("kairos.speak_answers")).toBe("false");
     fireEvent.change(screen.getByLabelText("Escribe tu pregunta"), { target: { value: "¿Voy bien?" } });
-    fireEvent.click(screen.getByRole("button", { name: "Preguntar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar pregunta" }));
     await flush();
     expect(askCalls[0]?.request.question).toBe("¿Voy bien?");
     expect(tts).not.toHaveBeenCalled();
+  });
+
+  it("Intro envía la pregunta escrita y la conversación guarda el historial", async () => {
+    render(<VoiceAsk portfolioId="laura" />);
+    const input = screen.getByLabelText("Escribe tu pregunta");
+    fireEvent.change(input, { target: { value: "Primera" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    await flush();
+    fireEvent.change(screen.getByLabelText("Escribe tu pregunta"), { target: { value: "Segunda" } });
+    fireEvent.keyDown(screen.getByLabelText("Escribe tu pregunta"), { key: "Enter" });
+    await flush();
+    expect(askCalls.map((c) => c.request.question)).toEqual(["Primera", "Segunda"]);
+    expect(screen.getByText("Primera")).toBeTruthy();
+    expect(screen.getByText("Segunda")).toBeTruthy();
+    expect(screen.getAllByText("Primera frase.")).toHaveLength(2);
   });
 
   it("si falla el TTS, la respuesta se queda en texto con una nota", async () => {
@@ -111,14 +130,14 @@ describe("VoiceAsk", () => {
     fireEvent.click(screen.getByRole("button", { name: "¿Voy bien?" }));
     await flush();
     expect(screen.getByText("Primera frase.")).toBeTruthy();
-    expect(screen.getByText(/No he podido leer la respuesta en voz alta/)).toBeTruthy();
+    expect(screen.getByText(/No he podido leer esta respuesta en voz alta/)).toBeTruthy();
   });
 
   it("mantener pulsado transcribe y pregunta por voz", async () => {
     const mic = { stop: vi.fn(async () => undefined) };
     startMicrophone.mockResolvedValue(mic);
     render(<VoiceAsk portfolioId="javier" />);
-    const button = screen.getByRole("button", { name: "Hablar" });
+    const button = screen.getByRole("button", { name: "Mantén pulsado para hablar" });
     fireEvent.keyDown(button, { key: " " });
     await flush();
     expect(screen.getByRole("status").textContent).toBe("Te escucho…");
@@ -138,7 +157,7 @@ describe("VoiceAsk", () => {
   it("sin micrófono ofrece el plan B", async () => {
     startMicrophone.mockRejectedValue(new MicrophoneDeniedError("denegado"));
     render(<VoiceAsk portfolioId="laura" />);
-    fireEvent.keyDown(screen.getByRole("button", { name: "Hablar" }), { key: "Enter" });
+    fireEvent.keyDown(screen.getByRole("button", { name: "Mantén pulsado para hablar" }), { key: "Enter" });
     await flush();
     expect(screen.getByRole("alert").textContent).toMatch(/No puedo usar el micrófono/);
     expect(screen.getByRole("button", { name: "¿Me afecta lo del BCE?" })).toBeTruthy();
@@ -147,7 +166,7 @@ describe("VoiceAsk", () => {
   it("si la transcripción falla, dice que no ha entendido", async () => {
     startMicrophone.mockResolvedValue({ stop: vi.fn(async () => undefined) });
     render(<VoiceAsk portfolioId="laura" />);
-    fireEvent.keyDown(screen.getByRole("button", { name: "Hablar" }), { key: " " });
+    fireEvent.keyDown(screen.getByRole("button", { name: "Mantén pulsado para hablar" }), { key: " " });
     await flush();
     act(() => FakeSocket.last?.receive({ type: "error", code: "UPSTREAM_UNAVAILABLE", message: "x" }));
     expect(screen.getByRole("alert").textContent).toMatch(/No te he entendido/);
