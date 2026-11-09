@@ -1,6 +1,6 @@
 """Plan de inversión: asignación actual y desviación (RF-22). Funciones puras.
 
-Reglas (D-XXX):
+Reglas (D-057):
 
 - `current` reparte el valor de la cartera en renta variable, renta fija y liquidez, a 4
   decimales. `mixed` (el plan de pensiones de Javier) cuenta mitad renta variable y mitad renta

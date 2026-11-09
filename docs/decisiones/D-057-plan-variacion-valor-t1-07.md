@@ -1,4 +1,4 @@
-### D-XXX · Plan y variación de valor (T1-07): asignación actual con `mixed`, desviación, `PUT /plan` y `get_value_change`
+### D-057 · Plan y variación de valor (T1-07): asignación actual con `mixed`, desviación, `PUT /plan` y `get_value_change`
 - Fecha: 2026-11-09 11:00 · Autor: Alons · Estado: Propuesta
 - Contexto: T1-07 pasa a real `GET/PUT /portfolios/{id}/plan` y `portfolio.get_value_change` (RF-22; lo usará `explain_move` en T2-07). El contrato (§4.1) fija la forma de `PlanOut` y `ValueChangeOut`, pero no varias reglas. `PlanOut.current` no tiene campo `mixed`, y el plan de pensiones de Javier (`PP-MIXTO`) es de esa clase. No estaba fijado cuándo se supera el umbral, qué hace un `PUT` parcial ni cómo se cuentan las participaciones, los flujos y los precios entre dos fechas.
 - Decisión:

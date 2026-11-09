@@ -86,4 +86,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-054](decisiones/D-054-compraventa-fifo-t1-04.md) | 2026-11-09 | Compra y venta FIFO (T1-04): redondeos, plusvalía, operaciones por importe y reparto de `portfolio/` en submódulos | Propuesta |
 | [D-055](decisiones/D-055-contrato-ejecuciones-dca-t1-06.md) | 2026-11-09 | Contrato de las ejecuciones DCA (T1-06): listar las aportaciones de una cartera y respuesta de `/demo/dca/run` | Propuesta |
 | [D-056](decisiones/D-056-dca-real-t1-06.md) | 2026-11-09 | DCA real (T1-06): calendario, reparto en céntimos, ejecución forzada en demo y precio al confirmar | Propuesta |
+| [D-057](decisiones/D-057-plan-variacion-valor-t1-07.md) | 2026-11-09 | Plan y variación de valor (T1-07): asignación actual con `mixed`, desviación, `PUT /plan` y `get_value_change` | Propuesta |
 <!-- INDICE:FIN -->

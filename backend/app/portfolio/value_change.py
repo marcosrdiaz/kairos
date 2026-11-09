@@ -1,6 +1,6 @@
 """Variación de valor de una cartera entre dos instantes (`ValueChangeOut`). Funciones puras.
 
-Reglas (D-XXX):
+Reglas (D-057):
 
 - Participaciones en `t` = Σ de las operaciones del libro con `ts ≤ t` (entran `initial`, `buy`,
   `dca_buy` y `transfer_in`; salen `sell` y `transfer_out`).
