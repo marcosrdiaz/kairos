@@ -84,7 +84,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T1-17 | Explicador: contexto precargado + herramientas + `/ask` SSE + reintento + plantilla | 3 preguntas tipo responden con FakeClaude y con Claude real | T1-16 | `backend/app/agents/{explainer,tools,context,service}.py`, `backend/app/agents/prompts/explainer.md`, `backend/app/api/ask.py` | Manu | ✅ hecho |
 | T1-18 | Pantalla de inicio simulada con widget (3 estados, color + palabra) | RF-13 visual | T0-07 | `frontend/src/widget/` | Javi | ✅ hecho |
 | T1-19 | Alta de cartera + selector Laura/Javier (`?p=`) | RF-01, RF-02 | T0-07 | `frontend/src/app/onboarding/`, `frontend/src/app/portfolio-picker/` | Alons | 🧪 en PR |
-| T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | Manu | 🔄 en curso |
+| T1-20 | Operaciones (compra, venta, traspaso con error explicado) y DCA | RF-04–07 en UI | T0-07 | `frontend/src/app/operations/`, `frontend/src/app/dca/` | Manu | 🧪 en PR |
 | T1-21 | `voice/` backend: STT por WS, TTS de frases aprobadas, disclaimer | Audio de ida y vuelta con frase fija | T0-06, T0-09 | `backend/app/voice/`, `backend/app/api/voice.py`, `data/voice/disclaimer.mp3` | — | ⬜ |
 | T1-22 | Tema claro/oscuro: tokens `--kairos-color-*` de los dos modos, interruptor accesible y estilo visual nuevo (paleta dorada, barra lateral en escritorio) | Interruptor usable con teclado y lector de pantalla; preferencia guardada y sin parpadeo al cargar; un test comprueba contraste ≥ 4,5:1 (texto) y ≥ 3:1 (bordes y foco) en los dos modos | T0-07 | `frontend/index.html`, `frontend/src/index.css`, `frontend/src/styles/`, `frontend/src/theme/`, `frontend/src/components/`, `frontend/src/app/AppShell.tsx`, `DESIGN.md` | Javi | ✅ hecho |
 | T1-23 | Tests del backend más rápidos: `pytest-xdist` (`-n auto` en `make test-backend`) y fixture `db` sin `drop_all` innecesario | `make test` en verde y en menos de la mitad de tiempo que antes (~2 min en local) | T0-01 | `backend/pyproject.toml`, `backend/uv.lock`, `backend/tests/conftest.py`, `Makefile` (solo `test-backend`) | Alons | ✅ hecho |
@@ -164,7 +164,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** `frontend/src/app/{onboarding,portfolio-picker}/`, además de `frontend/src/api/client.ts` (`apiPost` y `ApiError.details`, que **T1-20 puede usar** cuando entre #50), `frontend/src/app/CarteraPage.tsx` y `frontend/src/app/AppShell.tsx`.
 **Para más adelante:** crear carteras nuevas (`POST /portfolios`, petición de contrato). Propuesta en la decisión «Alta de posiciones y selector de cartera en la UI (T1-19)».
 
-### T1-20 · DCA en la UI: API real que deja T1-06 — Alons (para quien coja la tarea)
+### T1-20 · Operaciones y DCA en la UI — Manu
+**Estado (Manu, 9-nov):** PR #51 (`t1-20/operations-dca`) abierta. Lint, typecheck y 205 tests del frontend en verde (Docker). Revisión interna con un agente en tres rondas, hasta «listo para PR».
+**Siguiente paso exacto:** revisión de alguien del equipo, CI en verde y merge. Después, probarlo en el navegador contra el backend (`make up && make seed`, `/cartera?p=laura`) y marcar `docs: done T1-20`.
+**Ficheros tocados:** `frontend/src/app/{operations,dca}/`, `frontend/src/app/CarteraPage{,.test}.tsx`, `frontend/src/api/client.ts` (`apiPatch`), `frontend/src/app/onboarding/AssetCombobox.tsx` (prop opcional `selectedError`) y la decisión «UI de operaciones y DCA (T1-20)».
+**API (nota que dejó Alons, de T1-06):**
 **Endpoints (reales en `main`, D-055 y D-056):** lista las aportaciones pendientes con `GET /portfolios/{id}/dca-executions?status=pending` y confirma o salta con `POST /dca-executions/{id}` (`{"action": "confirm" | "skip"}`; 422 si ya está resuelta). Los planes están en `GET/POST/PATCH /portfolios/{id}/dca-plans`; si el reparto no suma 1, responde 422 `DCA_ALLOCATION_INVALID`. En la demo, `POST /demo/dca/run` crea una aportación pendiente para hoy en cada plan activo. Confirmar compra al precio del momento, así que las participaciones de la respuesta pueden diferir de las estimadas.
 
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
