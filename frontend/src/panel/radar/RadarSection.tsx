@@ -29,7 +29,7 @@ function RadarCard({ item }: { item: RadarItem }) {
           {kind.label}
         </span>
       </div>
-      <p className="m-0 mt-3 max-w-[65ch] text-base text-ink">{item.detail}</p>
+      <p className="m-0 mt-3 max-w-[65ch] text-pretty text-base text-ink">{item.detail}</p>
       <dl className="m-0 mt-4 flex flex-wrap gap-x-8 gap-y-2">
         {item.value_eur && (
           <div>

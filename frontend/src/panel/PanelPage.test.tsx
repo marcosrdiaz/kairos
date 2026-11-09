@@ -6,6 +6,8 @@ import bce from "../api/mocks/EventImpactOut.json";
 import nvda from "../api/mocks/EventImpactOut.nvda.json";
 import javier from "../api/mocks/PortfolioOut.javier.json";
 import laura from "../api/mocks/PortfolioOut.json";
+import agendaBce from "../api/mocks/AgendaItemOut.json";
+import agendaDca from "../api/mocks/AgendaItemOut.dca.json";
 import exposure from "../api/mocks/ExposureOut.json";
 import radar from "../api/mocks/RadarOut.json";
 import status from "../api/mocks/StatusOut.json";
@@ -24,7 +26,7 @@ const json = (body: unknown, code = 200) =>
 /** Backend falso: sirve cada ruta según la cartera pedida. `events` por cartera. */
 function stubApi(
   events: Record<string, unknown[] | "error"> = { laura: [bce, nvda], javier: [nvda] },
-  others: { exposure?: unknown; radar?: Record<string, unknown> } = {},
+  others: { exposure?: unknown; radar?: Record<string, unknown>; agenda?: unknown[] } = {},
 ) {
   const radars = others.radar ?? { laura: radar, javier: EMPTY_RADAR };
   vi.stubGlobal(
@@ -34,6 +36,7 @@ function stubApi(
       if (url.endsWith("/portfolios")) return json(PORTFOLIOS);
       const id = /portfolios\/(\w+)/.exec(url)?.[1] ?? "laura";
       if (url.includes("/status")) return json({ ...status, state: "atento" });
+      if (url.includes("/agenda")) return json(others.agenda ?? [agendaDca, agendaBce]);
       if (url.includes("/exposure")) {
         return others.exposure === "error" ? json({ code: "INTERNAL" }, 500) : json(others.exposure ?? exposure);
       }
@@ -189,5 +192,89 @@ describe("PanelPage · Radar", () => {
     stubApi();
     renderPanel("/panel?p=javier");
     expect(await screen.findByText(/el radar no ve riesgos ni oportunidades/)).toBeTruthy();
+  });
+});
+
+describe("PanelPage · Agenda", () => {
+  it("muestra lo que da el backend, ordenado por fecha, con lo expuesto", async () => {
+    stubApi();
+    renderPanel();
+    const bceRow = (await screen.findByRole("heading", { level: 3, name: agendaBce.title })).closest("li")!;
+    const dcaRow = screen.getByRole("heading", { level: 3, name: agendaDca.title }).closest("li")!;
+    expect(bceRow.textContent).toMatch(/los tipos de interés del euro: un 28,5\s%/);
+    expect(within(bceRow).getByText(/9777\s€/)).toBeTruthy();
+    expect(within(dcaRow).getByText("Aportación prevista")).toBeTruthy();
+    // 12 nov antes que 5 dic, aunque el backend los mande al revés
+    expect(bceRow.compareDocumentPosition(dcaRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(bceRow.querySelector("[data-calc-id]")).not.toBeNull();
+  });
+
+  it("agenda vacía: lo dice, sin inventar", async () => {
+    stubApi(undefined, { agenda: [] });
+    renderPanel();
+    expect(await screen.findByText(/No hay nada previsto/)).toBeTruthy();
+  });
+});
+
+describe("PanelPage · filtro de eventos", () => {
+  it("filtra por tipo, cuenta lo que se ve y vuelve a Todos", async () => {
+    stubApi();
+    renderPanel();
+    await screen.findByRole("heading", { level: 3, name: bce.title });
+    const group = screen.getByRole("group", { name: "Filtrar por tipo" });
+    expect(within(group).getAllByRole("radio").map((r) => (r as HTMLInputElement).value)).toEqual([
+      "all",
+      "central_bank",
+      "earnings",
+    ]);
+    expect(within(group).getByRole("status").textContent).toBe("2 eventos");
+
+    fireEvent.click(within(group).getByRole("radio", { name: "Resultados" }));
+    expect(screen.queryByRole("heading", { level: 3, name: bce.title })).toBeNull();
+    expect(screen.getByRole("heading", { level: 3, name: nvda.title })).toBeTruthy();
+    expect(within(group).getByRole("status").textContent).toBe("1 de 2");
+
+    fireEvent.click(within(group).getByRole("radio", { name: "Todos" }));
+    expect(screen.getByRole("heading", { level: 3, name: bce.title })).toBeTruthy();
+  });
+
+  it("con un solo tipo de evento no hay filtro que ofrecer", async () => {
+    stubApi({ laura: [bce], javier: [] });
+    renderPanel();
+    await screen.findByRole("heading", { level: 3, name: bce.title });
+    expect(screen.queryByRole("group", { name: "Filtrar por tipo" })).toBeNull();
+  });
+
+  it("al cambiar de cartera el filtro vuelve a Todos", async () => {
+    stubApi({ laura: [bce, nvda], javier: [bce, nvda] });
+    renderPanel();
+    await screen.findByRole("heading", { level: 3, name: bce.title });
+    fireEvent.click(screen.getByRole("radio", { name: "Resultados" }));
+    fireEvent.click(await screen.findByRole("radio", { name: "Javier" }));
+    expect(await screen.findByRole("heading", { level: 3, name: bce.title })).toBeTruthy();
+    expect((screen.getByRole("radio", { name: "Todos" }) as HTMLInputElement).checked).toBe(true);
+  });
+});
+
+describe("PanelPage · accesibilidad", () => {
+  it("tiene enlace para saltar al contenido y un único h1", async () => {
+    stubApi();
+    renderPanel();
+    await screen.findByText("Patrimonio");
+    const skip = screen.getByRole("link", { name: "Saltar al contenido" });
+    expect(skip.getAttribute("href")).toBe("#contenido");
+    expect(document.getElementById("contenido")?.tagName).toBe("MAIN");
+    expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
+  });
+
+  it("cada bloque es una región con nombre y la cabecera enlaza a todos", async () => {
+    stubApi();
+    renderPanel();
+    await screen.findByText("Patrimonio");
+    const nav = screen.getByRole("navigation", { name: "Bloques del panel" });
+    for (const id of ["resumen", "eventos", "exposicion", "radar", "agenda"]) {
+      expect(nav.querySelector(`a[href="#${id}"]`)).not.toBeNull();
+      expect(document.getElementById(id)?.getAttribute("aria-labelledby")).toBe(`${id}-title`);
+    }
   });
 });

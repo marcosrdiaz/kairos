@@ -84,7 +84,7 @@ export function EventCard({ event }: { event: EventImpactOut }) {
       </dl>
 
       {event.explanation && (
-        <p className="m-0 mt-4 max-w-[65ch] text-base text-ink">{event.explanation}</p>
+        <p className="m-0 mt-4 max-w-[65ch] text-pretty text-base text-ink">{event.explanation}</p>
       )}
 
       {event.breakdown.length > 0 && (
