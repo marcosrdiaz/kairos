@@ -99,7 +99,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | Jaime | 🧪 en PR |
 | T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py` | — | ⬜ |
 | T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` | — | ⬜ |
-| T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | — | ⬜ |
+| T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | Alons | 🔄 en curso |
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | 🧪 en PR |
 | T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/` | — | ⬜ |
