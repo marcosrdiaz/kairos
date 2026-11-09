@@ -1,4 +1,4 @@
-### D-XXX · Estado del widget (T2-04): precalculado en memoria, lectura sin modelo y refresco cada 10 s
+### D-073 · Estado del widget (T2-04): precalculado en memoria, lectura sin modelo y refresco cada 10 s
 - Fecha: 2026-11-09 · Autor: Jaime · Estado: Propuesta
 - Contexto: T2-04 pasa a real `GET /portfolios/{id}/status`, con objetivo < 200 ms. El diseño (§4.3) y `SPEC.md` §8.6 fijan las reglas y que se lee precalculado, pero no dónde se guarda, qué pasa la primera vez que se lee, cómo se entera el estado de una operación del usuario ni qué fecha cuenta para las 72 h.
 - Decisión:

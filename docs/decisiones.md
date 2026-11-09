@@ -102,4 +102,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-070](decisiones/D-070-voz-frontend-t2-14.md) | 2026-11-09 | Voz en el frontend (T2-14): PCM 16 kHz con AudioWorklet, cola de audio por frase, plan B siempre visible y clientes en `src/api/` | Propuesta |
 | [D-071](decisiones/D-071-latencia-voz-t2-16.md) | 2026-11-09 | Latencia de voz (T2-16): 9/10 por debajo de 2 s con una primera frase corta en el prompt del explicador; sin cambiar de modelo ni de voz | Propuesta |
 | [D-072](decisiones/D-072-pregunta-formato-chat.md) | 2026-11-09 | Pregunta en formato chat: historial, barra fija abajo, «Leer en voz alta» para todas las respuestas y texto línea a línea | Propuesta |
+| [D-073](decisiones/D-073-status-precalculado-t2-04.md) | 2026-11-09 | Estado del widget (T2-04): precalculado en memoria, lectura sin modelo y refresco cada 10 s | Propuesta |
 <!-- INDICE:FIN -->
