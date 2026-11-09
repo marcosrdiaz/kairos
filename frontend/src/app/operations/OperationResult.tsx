@@ -1,5 +1,6 @@
 import type { ReactNode, Ref } from "react";
 import type { TransactionOut } from "../../api/generated/schema";
+import { TraceFigure } from "../../components/trace/TraceFigure";
 import { formatDate, formatEur, formatUnits } from "../../lib/format";
 import { findPosition, formatPrice } from "./usePortfolio";
 
@@ -16,7 +17,7 @@ function Row({ label, children, calcId }: { label: string; children: ReactNode; 
     <>
       <dt className="text-ink-muted">{label}</dt>
       <dd className="m-0 font-semibold text-ink tabular-nums" data-calc-id={calcId}>
-        {children}
+        <TraceFigure calcId={calcId}>{children}</TraceFigure>
       </dd>
     </>
   );

@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import type { StatusOut } from "../api/generated/schema";
 import { buttonPrimary } from "../components/button";
 import { ArrowRightIcon } from "../components/icons";
+import { TraceLink } from "../components/trace/TraceLink";
 import { HeroArt } from "./HeroArt";
 import { StatusBadge } from "./StatusBadge";
 import { stateBandClass, withoutTapHint } from "./states";
@@ -36,12 +37,15 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
         >
           {withoutTapHint(status.sentence)}
         </h2>
-        {hasReason && (
-          <Link to={detailHref} className={`${buttonPrimary} mt-6`}>
-            Ver por qué
-            <ArrowRightIcon className="size-5" />
-          </Link>
-        )}
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {hasReason && (
+            <Link to={detailHref} className={buttonPrimary}>
+              Ver por qué
+              <ArrowRightIcon className="size-5" />
+            </Link>
+          )}
+          <TraceLink calcId={status.calc_id} />
+        </div>
       </div>
       <HeroArt className="pointer-events-none absolute inset-y-0 right-0 -z-10 hidden h-full w-[52%] mask-[linear-gradient(to_right,transparent,black_35%)] sm:block" />
     </section>

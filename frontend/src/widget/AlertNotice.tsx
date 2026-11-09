@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { useAlerts } from "../api/hooks/useAlerts";
+import { TraceLink } from "../components/trace/TraceLink";
 
 const DISMISSED_KEY = "kairos-alert-dismissed";
 
@@ -46,15 +47,18 @@ export function AlertNotice({ portfolioId, href }: AlertNoticeProps) {
     <div aria-live="polite" data-testid="alert-notice">
       {visible && (
         <div className="flex items-start gap-1 rounded-card border border-line-strong bg-surface p-1 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out motion-safe:starting:-translate-y-2 starting:opacity-0">
-          <Link
-            to={href}
-            aria-label={visible.message}
-            data-calc-id={visible.calc_id ?? undefined}
-            className="flex-1 rounded-control p-3 text-ink no-underline hover:bg-surface-muted"
-          >
-            <span className="block text-sm font-semibold text-accent">Aviso de Kairos</span>
-            <span className="mt-0.5 block text-base leading-snug">{visible.message}</span>
-          </Link>
+          <div className="flex flex-1 flex-col items-start">
+            <Link
+              to={href}
+              aria-label={visible.message}
+              data-calc-id={visible.calc_id ?? undefined}
+              className="w-full rounded-control p-3 text-ink no-underline hover:bg-surface-muted"
+            >
+              <span className="block text-sm font-semibold text-accent">Aviso de Kairos</span>
+              <span className="mt-0.5 block text-base leading-snug">{visible.message}</span>
+            </Link>
+            <TraceLink calcId={visible.calc_id} className="px-3" />
+          </div>
           <button
             type="button"
             aria-label="Cerrar aviso"

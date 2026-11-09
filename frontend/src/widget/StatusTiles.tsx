@@ -8,6 +8,7 @@ import {
   CompassIcon,
   TrendIcon,
 } from "../components/icons";
+import { TraceFigure } from "../components/trace/TraceFigure";
 import { formatDate, formatEur } from "../lib/format";
 import { REASON_TEXT, signedPercent, trendOf } from "./states";
 
@@ -46,7 +47,9 @@ export function StatusTiles({ status }: { status: StatusOut }) {
   return (
     <dl className="m-0 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4">
       <Tile label="Valor total" tone="red" Icon={CoinsIcon}>
-        <span className="tabular-nums">{formatEur(status.total_eur)}</span>
+        <span className="tabular-nums">
+          <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
+        </span>
       </Tile>
       <Tile label="Esta semana" tone="green" Icon={TrendIcon}>
         <span
@@ -54,7 +57,7 @@ export function StatusTiles({ status }: { status: StatusOut }) {
         >
           {trend === "up" && <ArrowUpIcon className="size-5" />}
           {trend === "down" && <ArrowDownIcon className="size-5" />}
-          {signedPercent(status.change_week_pct)}
+          <TraceFigure calcId={status.calc_id}>{signedPercent(status.change_week_pct)}</TraceFigure>
         </span>
       </Tile>
       <Tile label="Motivo del estado" tone="purple" Icon={CompassIcon}>

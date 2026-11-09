@@ -7,6 +7,7 @@
  */
 import { Fragment, useState, type CSSProperties } from "react";
 import { LogoTile } from "../components/icons";
+import { TraceLink } from "../components/trace/TraceLink";
 import { InfoIcon, StopIcon } from "./icons";
 import { AI_DISCLAIMER } from "./texts";
 import type { Phase, Turn } from "./useVoiceAsk";
@@ -107,6 +108,7 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
   const speaking = activePhase === "speaking";
   const waiting = turn.sentences.length === 0 && !turn.done && !turn.error;
   const [scheduler] = useState(() => new LineScheduler());
+  const calcIds = [...new Set(turn.sentences.flatMap((s) => s.calcIds))];
   return (
     <li className="flex flex-col gap-3">
       <p className="chat-in-user chat-bubble-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
@@ -132,6 +134,17 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
                   {i > 0 && " "}
                   <GeneratedLine text={s.text} calcIds={s.calcIds} scheduler={scheduler} />
                 </Fragment>
+              ))}
+            </p>
+          )}
+          {turn.done && calcIds.length > 0 && (
+            <p className="chat-fade m-0 flex flex-wrap gap-x-4">
+              {calcIds.map((calcId, i) => (
+                <TraceLink
+                  key={calcId}
+                  calcId={calcId}
+                  label={calcIds.length > 1 ? `¿De dónde sale? (${i + 1})` : "¿De dónde sale?"}
+                />
               ))}
             </p>
           )}

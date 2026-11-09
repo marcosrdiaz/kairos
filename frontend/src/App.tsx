@@ -2,12 +2,14 @@ import { Navigate, Route, Routes } from "react-router";
 import { AppShell } from "./app/AppShell";
 import { CarteraPage } from "./app/CarteraPage";
 import { InicioPage } from "./app/InicioPage";
+import { TraceProvider } from "./components/trace/TraceProvider";
 import { PanelPage } from "./panel/PanelPage";
 import { PhoneHomePage } from "./widget/PhoneHomePage";
 import { OpenChatRoute } from "./voice/ChatDock";
 
 export function App() {
   return (
+    <TraceProvider>
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/inicio" replace />} />
@@ -19,5 +21,6 @@ export function App() {
       <Route path="widget" element={<PhoneHomePage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
+    </TraceProvider>
   );
 }
