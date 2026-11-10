@@ -65,6 +65,9 @@ def now() -> Iterator[None]:
 
 @pytest.fixture
 def source(db: None, now: None) -> Iterator[FakeChartSource]:
+    from app.portfolio import service as portfolio_service
+
+    portfolio_service.load_seed(portfolios=False)  # `price.asset_id` apunta a `asset` (FK)
     fake = FakeChartSource(
         {
             "NVDA": _chart(
