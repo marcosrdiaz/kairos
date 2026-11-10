@@ -71,3 +71,19 @@ export function useReadIds(portfolioId: string): ReadonlySet<string> {
   );
   return useMemo(() => new Set(parse(raw)), [raw]);
 }
+
+/** Leídos de varias carteras a la vez (bandeja de todas las carteras, T4-15). */
+export function useReadIdsByPortfolio(
+  portfolioIds: readonly string[],
+): ReadonlyMap<string, ReadonlySet<string>> {
+  const raw = useSyncExternalStore(
+    subscribe,
+    // Texto con los ids y lo guardado: estable mientras no cambie nada.
+    () => JSON.stringify(portfolioIds.map((id) => [id, load(id)])),
+    () => "[]",
+  );
+  return useMemo(() => {
+    const pairs = JSON.parse(raw) as [string, string][];
+    return new Map(pairs.map(([id, stored]) => [id, new Set(parse(stored))]));
+  }, [raw]);
+}
