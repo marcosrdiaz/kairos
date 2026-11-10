@@ -1,4 +1,4 @@
-### D-XXX · De dónde sale el shock de un evento en producción: cierre observado y rango histórico
+### D-089 · De dónde sale el shock de un evento en producción: cierre observado y rango histórico
 - Fecha: 2026-11-10 11:57 · Autor: Alons · Estado: Propuesta
 - Contexto: el motor de impacto necesita la variación de cada factor (bolsa, tecnológicas, tipos, petróleo, dólar) para pasar un evento a euros. Hoy esa variación viene ya calculada en el `observed` del JSON del replay. La calcula `scripts/fetch_prices.py` a mano, como el cierre del día frente al cierre anterior (D-025, D-045 y D-083). D-065 lleva los precios a producción, pero deja fuera las noticias en directo: con `DEMO_MODE=false` ningún evento tiene `observed`, así que el motor no tiene shock. Hay dos maneras de obtenerlo: medir lo que hizo el mercado o estimarlo con el histórico de eventos parecidos. El propio replay muestra el problema del histórico. En el BCE de junio de 2025 el consenso era −25 pb y salió −25 pb, y la bolsa global se movió +0,09 %. Lo que mueve el mercado es la sorpresa frente a lo esperado, no el tipo de noticia.
 - Decisión:
