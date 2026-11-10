@@ -28,6 +28,7 @@ DEMO_NOW = datetime(2026, 11, 6, 18, 0, tzinfo=UTC)
 NVDA_STOCK = "US67066G1040"
 BOND_FUND = "IE00B18GC888"
 WORLD_FUND = "IE00B4L5Y983"
+INDITEX = "ES0148396007"
 NO_BETAS = {"DEP-12M", "PP-MIXTO"}
 
 
@@ -43,13 +44,41 @@ def test_event_date_uses_the_day_of_now_not_its_time() -> None:
     assert agenda.event_date(late, 0, "08:00") == datetime(2026, 11, 6, 8, 0, tzinfo=UTC)
 
 
-def test_factor_exposure_sums_positions_with_abs_beta_at_least_threshold() -> None:
+def test_thresholds_follow_the_units_of_each_factor() -> None:
+    # |β| para que un día normal (1σ) del factor mueva el activo un 0,1 %: 0,001 / σ_diaria.
+    assert agenda.BETA_THRESHOLDS == {
+        Factor.EQ_GLOBAL: D("0.12"),
+        Factor.EQ_US_TECH: D("0.08"),
+        Factor.RATES_EUR: D("2.5"),
+        Factor.OIL: D("0.04"),
+        Factor.EURUSD: D("0.24"),
+    }
+
+
+@pytest.mark.parametrize(
+    ("beta", "std_err", "exposed"),
+    [
+        ("0.04", "0.01", True),  # justo en el umbral del petróleo, significativa
+        ("-0.09", "0.02", True),  # negativa: cuenta por valor absoluto
+        ("0.03", "0.001", False),  # significativa pero por debajo del umbral
+        ("0.08", "0.05", False),  # por encima del umbral pero ruido (|β| < 2·se)
+        ("0.08", "0.04", True),  # justo en 2·se
+        ("0.08", "0", True),  # error estándar nulo (el activo es el propio factor)
+    ],
+)
+def test_is_exposed_needs_threshold_and_significance(
+    beta: str, std_err: str, exposed: bool
+) -> None:
+    assert agenda.is_exposed((D(beta), D(std_err)), Factor.OIL) is exposed
+
+
+def test_factor_exposure_sums_only_exposed_positions() -> None:
     values = {"a": D("100"), "b": D("200"), "c": D("50"), "d": D("70")}
     betas = {
-        "a": {Factor.OIL: D("0.05")},  # por debajo del umbral
-        "b": {Factor.OIL: D("-0.30")},  # negativa: cuenta por valor absoluto
-        "c": {Factor.EQ_GLOBAL: D("1")},  # otro factor
-        "d": {Factor.OIL: D("0.1")},  # justo en el umbral
+        "a": {Factor.OIL: (D("0.02"), D("0.001"))},  # por debajo del umbral
+        "b": {Factor.OIL: (D("-0.30"), D("0.01"))},  # expuesta
+        "c": {Factor.EQ_GLOBAL: (D("1"), D("0.01"))},  # otro factor
+        "d": {Factor.OIL: (D("0.06"), D("0.02"))},  # expuesta
     }
     assert agenda.factor_exposure(values, betas, Factor.OIL) == D("270")
 
@@ -88,17 +117,18 @@ def test_load_events_reads_the_demo_agenda() -> None:
 
 @pytest.fixture
 def laura(client: TestClient) -> Iterator[None]:
-    """Reloj de demo y betas sintéticas: β 1 a `EQ_GLOBAL` en todo lo que cotiza;
-    `RATES_EUR` −2 en el fondo de bonos y 0,05 (por debajo del umbral) en el MSCI World."""
+    """Reloj de demo y betas sintéticas: β 1 a `EQ_GLOBAL` en todo lo que cotiza. A `RATES_EUR`
+    (umbral 2,5): −4 en el fondo de bonos (expuesto), 1 en el MSCI World (por debajo del umbral) y
+    3 ± 2 en NVIDIA (ruido). Al petróleo, −0,09 ± 0,02 en Inditex (expuesta)."""
     clock.set_now(DEMO_NOW)
     ids = {p.asset_id for p in portfolio_service.get_valued("laura").positions} - NO_BETAS
 
-    def beta(asset_id: str, factor: Factor, value: str) -> BetaEstimate:
+    def beta(asset_id: str, factor: Factor, value: str, std_err: str = "0.01") -> BetaEstimate:
         return BetaEstimate(
             asset_id=asset_id,
             factor=factor,
             beta=D(value),
-            std_err=D("0.01"),
+            std_err=D(std_err),
             r2=D("0.8"),
             n_obs=700,
             window_start=date(2023, 11, 7),
@@ -107,7 +137,12 @@ def laura(client: TestClient) -> Iterator[None]:
 
     impact_repository.replace_betas(
         [beta(a, Factor.EQ_GLOBAL, "1") for a in ids]
-        + [beta(BOND_FUND, Factor.RATES_EUR, "-2"), beta(WORLD_FUND, Factor.RATES_EUR, "0.05")]
+        + [
+            beta(BOND_FUND, Factor.RATES_EUR, "-4", "0.15"),
+            beta(WORLD_FUND, Factor.RATES_EUR, "1"),
+            beta(NVDA_STOCK, Factor.RATES_EUR, "3", "2"),
+            beta(INDITEX, Factor.OIL, "-0.09", "0.02"),
+        ]
     )
     yield
     clock.reset()
@@ -132,12 +167,12 @@ def test_agenda_is_sorted_and_dated_from_the_demo_clock(laura: None) -> None:
     ]
 
 
-def test_factor_events_count_only_positions_over_the_beta_threshold(laura: None) -> None:
+def test_factor_events_count_only_exposed_positions(laura: None) -> None:
     values = _values()
     total = sum(values.values(), D("0"))
     items = _by_kind(service.get_agenda("laura"))
 
-    ecb = items["central_bank"]
+    ecb = items["central_bank"]  # ni el MSCI World (bajo el umbral) ni NVIDIA (ruido)
     assert ecb.factor is Factor.RATES_EUR
     assert ecb.exposed_eur == values[BOND_FUND]
     assert ecb.exposed_weight == agenda.exposed_weight(values[BOND_FUND], total)
@@ -146,7 +181,13 @@ def test_factor_events_count_only_positions_over_the_beta_threshold(laura: None)
     priced = sum((v for a, v in values.items() if a not in NO_BETAS), D("0"))
     assert cpi.exposed_eur == priced
 
-    opec = items["commodity"]  # sin betas al petróleo: la cita sale, con exposición cero
+    opec = items["commodity"]
+    assert opec.exposed_eur == values[INDITEX]
+
+
+def test_event_without_exposed_positions_still_shows_with_zero(laura: None) -> None:
+    impact_repository.replace_betas([], clear=[INDITEX])
+    opec = _by_kind(service.get_agenda("laura"))["commodity"]
     assert opec.exposed_eur == D("0") and opec.exposed_weight == D("0")
 
 

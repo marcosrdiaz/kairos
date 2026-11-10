@@ -264,14 +264,16 @@ def default_channel_labels() -> Mapping[Factor, str]:
     return engine.DEFAULT_LABELS
 
 
-def get_factor_betas(asset_ids: Collection[str]) -> dict[str, dict[Factor, Decimal]]:
-    """Betas guardadas por activo y factor (T1-12): `{asset_id: {factor: β}}`.
+def get_factor_betas(
+    asset_ids: Collection[str],
+) -> dict[str, dict[Factor, tuple[Decimal, Decimal]]]:
+    """Betas guardadas por activo y factor (T1-12): `{asset_id: {factor: (β, error estándar)}}`.
 
     Sin fila, el activo no tiene beta en ese factor. La usa la agenda (T2-06).
     """
-    betas: dict[str, dict[Factor, Decimal]] = defaultdict(dict)
+    betas: dict[str, dict[Factor, tuple[Decimal, Decimal]]] = defaultdict(dict)
     for estimate in repository.get_betas(asset_ids):
-        betas[estimate.asset_id][estimate.factor] = estimate.beta
+        betas[estimate.asset_id][estimate.factor] = (estimate.beta, estimate.std_err)
     return dict(betas)
 
 

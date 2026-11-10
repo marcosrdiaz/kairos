@@ -178,7 +178,7 @@ def _event_item(
     event: agenda.AgendaEvent,
     now: datetime,
     values: dict[str, Decimal],
-    betas: dict[str, dict[Factor, Decimal]],
+    betas: dict[str, dict[Factor, agenda.BetaWithError]],
     weights: dict[str, dict[str, Decimal]],
     total_eur: Decimal,
     valuation_calc_id: str,
@@ -202,12 +202,17 @@ def _event_item(
         ]
     else:
         exposed = agenda.factor_exposure(values, betas, event.factor)
-        formula = f"exposed_eur = Σ V_i con |β_i,{event.factor}| ≥ {agenda.BETA_THRESHOLD}"
+        threshold = agenda.BETA_THRESHOLDS[event.factor]
+        formula = (
+            f"exposed_eur = Σ V_i con |β_i,{event.factor}| ≥ {threshold} "
+            f"y |β_i| ≥ {agenda.MIN_T_STAT}·error estándar"
+        )
         inputs = {
             "factor": event.factor,
-            "threshold": agenda.BETA_THRESHOLD,
+            "threshold": threshold,
+            "min_t_stat": agenda.MIN_T_STAT,
             "positions": {
-                a: {"value_eur": v, "beta": betas.get(a, {}).get(event.factor)}
+                a: _beta_input(v, betas.get(a, {}).get(event.factor), event.factor)
                 for a, v in values.items()
             },
         }
@@ -239,6 +244,16 @@ def _event_item(
         exposed_eur=exposed,
         calc_id=calc_id,
     )
+
+
+def _beta_input(
+    value_eur: Decimal, estimate: agenda.BetaWithError | None, factor: Factor
+) -> dict[str, Any]:
+    if estimate is None:
+        return {"value_eur": value_eur, "beta": None, "std_err": None, "exposed": False}
+    beta, std_err = estimate
+    exposed = agenda.is_exposed(estimate, factor)
+    return {"value_eur": value_eur, "beta": beta, "std_err": std_err, "exposed": exposed}
 
 
 def _dca_item(plan: DcaPlanOut, valuation_calc_id: str) -> AgendaItemOut:
