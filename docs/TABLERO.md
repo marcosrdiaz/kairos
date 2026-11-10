@@ -146,6 +146,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T2-17 · Ticker de mercado en Inicio — Jaime
+**Qué estaba haciendo:** dos PR abiertos. #84 (solo contrato: `TickerOut`, ruta `GET /portfolios/{id}/ticker` que responde `UPSTREAM_UNAVAILABLE`) y #85 (implementación, con base en la rama de #84). Lint y tests en verde en los dos.
+**Siguiente paso exacto:** revisión y merge de #84; después, comprobar que #85 apunta a `main` (si GitHub no lo reapunta solo, `gh pr edit 85 --base main`), revisión y merge. Al entrar, `docs: done T2-17`.
+**Ficheros tocados:** `backend/app/schemas/prices.py`, `backend/app/schemas/examples/TickerOut.json`, `backend/app/api/prices.py`, `backend/app/prices/{ticker,service}.py`, `backend/tests/test_ticker*.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/TickerOut.json`, `frontend/src/api/hooks/useTicker.ts`, `frontend/src/app/market/ticker/`, `frontend/src/app/InicioPage.tsx`, `docs/SPEC.md`.
+
 ### T3-04 · Umbrales de beta de la agenda — Alons (para quien coja la tarea)
 **Qué hay que saber:** `planning/agenda.py` (`BETA_THRESHOLDS`, `MIN_T_STAT`) decide qué posiciones cuentan como expuestas a cada evento de la agenda (D-084, en «Propuesta»: validarla en la llamada diaria). Los umbrales son 0,001 / σ diaria de cada factor en `data/factors`; si cambian esos datos, hay que recalcularlos.
 
