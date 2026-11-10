@@ -1,4 +1,4 @@
-### D-XXX · Catálogo fijo ampliado y comprobado en Yahoo en lugar de catálogo abierto en el MVP (T4-26)
+### D-101 · Catálogo fijo ampliado y comprobado en Yahoo en lugar de catálogo abierto en el MVP (T4-26)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: T4-07 (catálogo abierto: buscar en Yahoo cualquier activo y darlo de alta) llegó a estar hecha en dos PR (#123 y #124). Al probarla, se vio que mete en la app activos que nadie ha comprobado: sin composición, con la cobertura de la exposición más baja, con la clase de activo deducida del nombre y con cotizaciones en divisas que no sabemos convertir. Para un MVP es mejor un catálogo cerrado y comprobado.
 - Decisión:
