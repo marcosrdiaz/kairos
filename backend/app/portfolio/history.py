@@ -29,6 +29,7 @@ from app.schemas.common import SourceRef, TraceKind
 from app.schemas.history import HistoryPeriod, PortfolioHistoryOut, PortfolioHistoryPoint
 
 CENT = Decimal("0.01")
+PCT = Decimal("0.0001")
 MAX_PRICE_AGE = timedelta(days=10)
 WEEK = timedelta(days=7)
 MONTHS = {
@@ -112,6 +113,41 @@ def end_of(day: date) -> datetime:
     return datetime.combine(day, time(23, 59, 59), tzinfo=UTC)
 
 
+def _cents(value: Decimal) -> Decimal:
+    return value.quantize(CENT, rounding=ROUND_HALF_EVEN)
+
+
+def build_points(
+    values: Sequence[tuple[date, Decimal]], txs: Sequence[TxIn]
+) -> list[PortfolioHistoryPoint]:
+    """Puntos con su variación respecto al anterior (`change_eur`, `change_pct` a 4 decimales) y
+    el dinero que entró o salió entre los dos cierres (`flows_eur`). El primero, sin variación."""
+    points: list[PortfolioHistoryPoint] = []
+    previous: tuple[date, Decimal] | None = None
+    for day, value in values:
+        change: Decimal | None = None
+        pct: Decimal | None = None
+        flows = Decimal(0)
+        if previous is not None:
+            prev_day, prev_value = previous
+            change = value - prev_value
+            if prev_value:
+                pct = (change / prev_value).quantize(PCT, rounding=ROUND_HALF_EVEN)
+            moved = value_change.flows_between(txs, end_of(prev_day), end_of(day))
+            flows = sum(moved.values(), Decimal(0))
+        points.append(
+            PortfolioHistoryPoint(
+                date=datetime.combine(day, time(0), tzinfo=UTC),
+                value_eur=value,
+                change_eur=None if change is None else _cents(change),
+                change_pct=pct,
+                flows_eur=_cents(flows),
+            )
+        )
+        previous = (day, value)
+    return points
+
+
 # --- Precios: una lectura por activo y un fx por divisa y día ---
 
 
@@ -189,13 +225,13 @@ def get_history(portfolio_id: str, period: HistoryPeriod) -> PortfolioHistoryOut
     quotes = _Prices({tx.asset_id for tx in txs}, first_day, today)
     sampled = sample_days(quotes.last_market_day(today), period, first_day)
     days = [d for d in sampled if quotes.is_market_day(d)]
-    points: list[PortfolioHistoryPoint] = []
+    values: list[tuple[date, Decimal]] = []
     for day in days:
         units = value_change.units_at(txs, end_of(day))
         value = day_value(units, {a: quotes.unit_eur(a, day) for a in units})
         if value is not None:
-            midnight = datetime.combine(day, time(0), tzinfo=UTC)
-            points.append(PortfolioHistoryPoint(date=midnight, value_eur=value))
+            values.append((day, value))
+    points = build_points(values, txs)
     if not points:
         raise _no_prices(portfolio_id, period)
     first, last = points[0].date.date(), points[-1].date.date()

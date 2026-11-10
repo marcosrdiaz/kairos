@@ -1,4 +1,5 @@
 import type { HistoryPeriod, PortfolioHistoryOut } from "../../../api/generated/schema";
+import { formatEur } from "../../../lib/format";
 
 const LOCALE = "es-ES";
 
@@ -12,15 +13,66 @@ export const PERIODS: { value: HistoryPeriod; label: string; name: string }[] = 
 
 export const DEFAULT_PERIOD: HistoryPeriod = "1y";
 
-/** Punto de la serie listo para la gráfica: `value` solo sirve para dibujar; el texto sale de `raw`. */
+/**
+ * Punto de la serie listo para la gráfica: `value` solo sirve para dibujar; los textos salen de
+ * los strings del backend (`raw`, `change`, `pct`, `flows`), nunca de cuentas en el navegador.
+ */
 export interface ChartRow {
   date: string;
   value: number;
   raw: string;
+  change: string | null;
+  pct: string | null;
+  flows: string;
+  /** Entró o salió dinero entre este cierre y el anterior (compra, DCA, venta). */
+  hasFlow: boolean;
 }
 
+const isZero = (v: string) => /^[+-]?0*(\.0*)?$/.test(v.trim());
+
 export function toRows(history: PortfolioHistoryOut): ChartRow[] {
-  return history.points.map((p) => ({ date: p.date, value: Number(p.value_eur), raw: p.value_eur }));
+  return history.points.map((p) => ({
+    date: p.date,
+    value: Number(p.value_eur),
+    raw: p.value_eur,
+    change: p.change_eur ?? null,
+    pct: p.change_pct ?? null,
+    flows: p.flows_eur,
+    hasFlow: !isZero(p.flows_eur),
+  }));
+}
+
+export type Trend = "up" | "down" | "flat";
+
+/** Sentido de una variación a partir de su string decimal. */
+export function trendOf(value: string | null): Trend {
+  if (value === null || isZero(value)) return "flat";
+  return value.trim().startsWith("-") ? "down" : "up";
+}
+
+/** Importe con signo: "+292,55 €", "−285,33 €" (el signo menos tipográfico). */
+export function signedEur(value: string): string {
+  const v = value.trim();
+  const abs = v.replace(/^[+-]/, "");
+  if (isZero(v)) return formatEur(abs);
+  return `${v.startsWith("-") ? "−" : "+"}${formatEur(abs)}`;
+}
+
+// Dos decimales: las variaciones de un día suelen ser de centésimas (0,04 %, no "0,0 %").
+const pct2 = new Intl.NumberFormat(LOCALE, {
+  style: "percent",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  roundingMode: "halfEven",
+});
+
+/** Fracción con signo y dos decimales: "+0,88 %", "−0,04 %". */
+export function signedPct(value: string): string {
+  const v = value.trim();
+  const abs = v.replace(/^[+-]/, "") as `${number}`;
+  const text = pct2.format(abs);
+  if (isZero(v)) return text;
+  return `${v.startsWith("-") ? "−" : "+"}${text}`;
 }
 
 const dayMonth = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" });
@@ -52,9 +104,10 @@ export function chipDate(iso: string): string {
   return shortDay.format(new Date(iso));
 }
 
-/** Nombre del mes de un punto, para agrupar la tabla: "noviembre de 2026". */
+/** Nombre del mes de un punto, para agrupar la tabla: "Noviembre de 2026". */
 export function monthOf(iso: string): string {
-  return monthLong.format(new Date(iso));
+  const text = monthLong.format(new Date(iso));
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** Día de la semana y día del mes para la tabla: "vie 6". */

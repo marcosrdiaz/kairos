@@ -2,15 +2,18 @@ import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import type { HistoryPeriod, PortfolioHistoryOut } from "../../../api/generated/schema";
 import { usePortfolioHistory } from "../../../api/hooks/usePortfolioHistory";
 import { EmptyNote } from "../../../components/PageTitle";
-import { TraceFigure } from "../../../components/trace/TraceFigure";
 import { formatEur } from "../../../lib/format";
+import { createActivePointStore, useActivePoint, type ActivePointStore } from "./activePoint";
 import "./chart.css";
 import { ChartBackdrop } from "./ChartBackdrop";
-import { DEFAULT_PERIOD, PERIODS, pointDate, toRows, type ChartRow } from "./chartFormat";
+import { ChartLegend } from "./ChartLegend";
+import { Change } from "./Change";
+import { DEFAULT_PERIOD, PERIODS, chipDate, pointDate, signedEur, toRows } from "./chartFormat";
 import { HistoryChart } from "./HistoryChart";
 import { HistoryTable } from "./HistoryTable";
 import { PeriodPicker } from "./PeriodPicker";
 import { RangeSelector } from "./RangeSelector";
+import { TraceHint } from "./TraceHint";
 
 /** Desde cuántos puntos se ofrece la escala de tiempo para acotar el rango. */
 const RANGE_MIN_POINTS = 10;
@@ -33,104 +36,125 @@ function useCompact(): boolean {
   );
 }
 
-/** Aportaciones o retiradas del periodo, para no confundirlas con rentabilidad. */
-function FlowsNote({ history }: { history: PortfolioHistoryOut }) {
-  const flows = history.net_flows_eur;
-  if (Number(flows) === 0) return <>Sin aportaciones ni retiradas en el periodo.</>;
-  const amount = flows.startsWith("-") ? flows.slice(1) : flows;
-  return (
-    <>
-      {flows.startsWith("-") ? "Incluye retiradas por " : "Incluye aportaciones por "}
-      <TraceFigure calcId={history.calc_id}>{formatEur(amount)}</TraceFigure>.
-    </>
-  );
+/** Fuentes de la serie en una línea, para las pistas de «de dónde sale». */
+function sourceLine(history: PortfolioHistoryOut): string {
+  const assets = history.sources.filter((s) => s.kind === "price").length;
+  const fx = history.sources.some((s) => s.kind === "fx") ? " y tipo de cambio" : "";
+  const last = history.points[history.points.length - 1];
+  return `Precios de cierre de ${assets} ${assets === 1 ? "activo" : "activos"}${fx}. Datos a ${last ? chipDate(last.date) : "—"}.`;
 }
 
-const DOT = <span className="mx-2 text-(--kairos-color-gold-deep)" aria-hidden="true">·</span>;
+const DOT = <span className="mx-2 text-ink-muted" aria-hidden="true">·</span>;
 
 /** Valor del punto activo (o del último) en grande y, en una sola línea, fecha, inicio y flujos. */
-function Readout({ history, active }: { history: PortfolioHistoryOut; active: ChartRow | null }) {
-  const last = history.points[history.points.length - 1];
-  const raw = active?.raw ?? last?.value_eur;
-  const date = active?.date ?? last?.date;
-  if (!raw || !date) return null;
+function Readout({ history, store }: { history: PortfolioHistoryOut; store: ActivePointStore }) {
+  const active = useActivePoint(store);
+  const lastRow = useMemo(() => toRows(history).at(-1) ?? null, [history]);
+  const row = active ?? lastRow;
+  if (!row) return null;
+  const source = sourceLine(history);
+  const flows = history.net_flows_eur;
+  const noFlows = Number(flows) === 0;
   return (
     <div className="flex flex-col gap-1 px-5 sm:px-6">
-      <p className="kchart-value m-0 text-3xl font-semibold tabular-nums sm:text-4xl">
-        <TraceFigure calcId={history.calc_id}>{formatEur(raw)}</TraceFigure>
-      </p>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="m-0 text-3xl font-semibold tabular-nums text-ink sm:text-4xl">
+          <TraceHint calcId={history.calc_id} text="Valor de tu cartera ese día: participaciones × precio de cierre." source={source}>
+            {formatEur(row.raw)}
+          </TraceHint>
+        </p>
+        <span className="text-base">
+          <Change row={row} />
+        </span>
+      </div>
       <p className="m-0 text-sm text-ink-muted">
-        <span>{active ? pointDate(date) : `Último cierre: ${pointDate(date)}`}</span>
+        <span>{active ? pointDate(row.date) : `Último cierre: ${pointDate(row.date)}`}</span>
         {DOT}
         <span>
           Al empezar el periodo:{" "}
           <span className="font-semibold tabular-nums text-ink">
-            <TraceFigure calcId={history.calc_id}>{formatEur(history.start_value_eur)}</TraceFigure>
+            <TraceHint calcId={history.calc_id} text="Valor de tu cartera en el primer cierre del periodo." source={source}>
+              {formatEur(history.start_value_eur)}
+            </TraceHint>
           </span>
         </span>
         {DOT}
-        <span>
-          <FlowsNote history={history} />
-        </span>
+        {noFlows ? (
+          <span>Sin aportaciones ni retiradas en el periodo.</span>
+        ) : (
+          <span>
+            {flows.startsWith("-") ? "Retiradas: " : "Aportaciones: "}
+            <span className="font-semibold tabular-nums text-info">
+              <TraceHint calcId={history.calc_id} text="Dinero que entró o salió en el periodo (compras, aportaciones, ventas). No es rentabilidad." source={source}>
+                {signedEur(flows)}
+              </TraceHint>
+            </span>
+          </span>
+        )}
       </p>
     </div>
   );
 }
 
+/** Anuncia el punto activo al lector de pantalla (solo esto se repinta al mover el ratón). */
+function LiveActive({ store }: { store: ActivePointStore }) {
+  const active = useActivePoint(store);
+  return (
+    <p className="sr-only" aria-live="polite">
+      {active ? `${pointDate(active.date)}: ${formatEur(active.raw)}` : ""}
+    </p>
+  );
+}
+
 interface ChartBodyProps {
   history: PortfolioHistoryOut;
-  rows: ChartRow[];
   period: HistoryPeriod;
   periodName: string;
 }
 
 /** Gráfica, escala de tiempo y tabla. Se monta de nuevo al cambiar de serie (rango completo). */
-function ChartBody({ history, rows, period, periodName }: ChartBodyProps) {
+function ChartBody({ history, period, periodName }: ChartBodyProps) {
   const compact = useCompact();
-  const [active, setActive] = useState<ChartRow | null>(null);
-  const onActiveChange = useCallback((row: ChartRow | null) => setActive(row), []);
+  const rows = useMemo(() => toRows(history), [history]);
+  const [store] = useState(createActivePointStore);
   const [range, setRange] = useState({ start: 0, end: rows.length - 1 });
   const visible = useMemo(() => rows.slice(range.start, range.end + 1), [rows, range]);
+  const onRange = useCallback((start: number, end: number) => setRange({ start, end }), []);
   const zoomed = range.start > 0 || range.end < rows.length - 1;
+  const startValue = Number(history.start_value_eur);
   return (
     <>
-      <Readout history={history} active={active} />
-      <p className="sr-only" aria-live="polite">
-        {active ? `${pointDate(active.date)}: ${formatEur(active.raw)}` : ""}
-      </p>
+      <Readout history={history} store={store} />
+      <LiveActive store={store} />
       <div className="pr-1 sm:pr-2">
         <HistoryChart
           rows={visible}
           period={period}
+          startValue={startValue}
           label={`Valor de la cartera. ${periodName}. Usa las flechas para recorrer los días.`}
-          onActiveChange={onActiveChange}
+          store={store}
           reducedMotion={prefersReducedMotion()}
           compact={compact}
         />
       </div>
       {rows.length >= RANGE_MIN_POINTS && (
-        <div className="flex flex-col gap-2">
-          <RangeSelector
-            rows={rows}
-            start={range.start}
-            end={range.end}
-            onChange={(start, end) => setRange({ start, end })}
-          />
-          <div className="flex min-h-touch items-center justify-between gap-3 px-5 sm:px-6">
-            <p className="m-0 text-sm text-ink-muted">Arrastra la ventana o sus bordes para acercar la gráfica.</p>
-            {zoomed && (
+        <div className="flex flex-col gap-1">
+          <RangeSelector rows={rows} start={range.start} end={range.end} onChange={onRange} />
+          {zoomed && (
+            <div className="flex justify-end px-5 sm:px-6">
               <button
                 type="button"
-                onClick={() => setRange({ start: 0, end: rows.length - 1 })}
-                className="min-h-touch shrink-0 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-accent hover:bg-accent-tint"
+                onClick={() => onRange(0, rows.length - 1)}
+                className="min-h-touch shrink-0 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-accent hover:bg-surface-muted"
               >
                 Ver todo el periodo
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
-      <HistoryTable history={history} periodName={periodName} activeDate={active?.date ?? null} />
+      <ChartLegend />
+      <HistoryTable history={history} periodName={periodName} />
     </>
   );
 }
@@ -138,8 +162,8 @@ function ChartBody({ history, rows, period, periodName }: ChartBodyProps) {
 /**
  * Evolución del valor de la cartera en Inicio (T2-18): selector de periodo, gráfica interactiva
  * (ratón y teclado), escala de tiempo para acercar, punto activo anunciado al lector de pantalla
- * y tabla alternativa. Cifras del backend con `calc_id`; la serie usa precios de cierre, sin el
- * impacto de eventos. Estilos de marca en `chart.css`.
+ * y tabla alternativa. Cifras del backend con `calc_id` y una pista breve de dónde salen; la serie
+ * usa precios de cierre, sin el impacto de eventos. Estilos en `chart.css`.
  */
 export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
   const [period, setPeriod] = useState<HistoryPeriod>(DEFAULT_PERIOD);
@@ -147,11 +171,9 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
   const periodName = PERIODS.find((p) => p.value === period)?.name ?? "";
   // Respuesta sin puntos (o inesperada): estado vacío, nunca una gráfica inventada.
   const hasPoints = Array.isArray(data?.points) && data.points.length > 0;
-  // Filas estables entre renders: la gráfica y su efecto de punto activo dependen de ellas.
-  const rows = useMemo(() => (data && hasPoints ? toRows(data) : []), [data, hasPoints]);
 
   return (
-    <section aria-labelledby="chart-heading" className="kchart-card flex flex-col gap-4 rounded-card pt-5 sm:pt-6">
+    <section aria-labelledby="chart-heading" className="kchart-card flex flex-col gap-4 rounded-card border border-line bg-surface pt-5 sm:pt-6">
       <ChartBackdrop />
       <div className="flex flex-col gap-4 px-5 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
@@ -183,7 +205,7 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
           aria-busy={isPlaceholderData}
           className={`flex flex-col gap-4 transition-opacity duration-200 ${isPlaceholderData ? "opacity-60" : ""}`}
         >
-          <ChartBody key={`${period}-${rows.length}-${data.calc_id}`} history={data} rows={rows} period={period} periodName={periodName} />
+          <ChartBody key={data.calc_id} history={data} period={period} periodName={periodName} />
         </div>
       )}
     </section>

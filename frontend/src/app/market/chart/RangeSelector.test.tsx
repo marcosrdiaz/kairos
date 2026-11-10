@@ -9,6 +9,10 @@ const ROWS: ChartRow[] = Array.from({ length: 20 }, (_, i) => ({
   date: `2026-10-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
   value: 100 + i,
   raw: `${100 + i}.00`,
+  change: i === 0 ? null : "1.00",
+  pct: i === 0 ? null : "0.0100",
+  flows: "0.00",
+  hasFlow: false,
 }));
 
 function renderRange(start = 0, end = ROWS.length - 1) {

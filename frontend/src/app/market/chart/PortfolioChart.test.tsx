@@ -39,9 +39,10 @@ describe("PortfolioChart", () => {
     // En una sola línea: último cierre, valor al empezar y aportaciones.
     const line = lastClose.parentElement;
     expect(line?.textContent).toMatch(
-      /Último cierre: 6 de noviembre de 2026.*Al empezar el periodo: 33\.410,25.*Sin aportaciones ni retiradas/,
+      /Último cierre: 6 de noviembre de 2026.*Al empezar el periodo: 33\.410,25.*Aportaciones: \+300,00/,
     );
-    expect(line?.previousElementSibling?.textContent).toMatch(/34\.311,68/);
+    // Encima, el valor del último cierre y su variación respecto al anterior, con signo.
+    expect(line?.previousElementSibling?.textContent).toMatch(/34\.311,68.*−228,39/);
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/portfolios/laura/history?period=1y");
     expect(screen.getByRole("radio", { name: "Último año" })).toHaveProperty("checked", true);
   });
@@ -68,19 +69,55 @@ describe("PortfolioChart", () => {
   it("tiene una tabla alternativa con todos los puntos, agrupados por mes y del más reciente", async () => {
     stubApi();
     renderChart();
+    const summary = await screen.findByText(/^Ver tabla/);
+    expect(screen.queryByRole("table", { hidden: true })).toBeNull(); // plegada: sin filas
+    const details = summary.closest("details") as HTMLDetailsElement;
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
     const table = await screen.findByRole("table", { hidden: true });
     const rows = table.querySelectorAll("tr.kchart-row");
     expect(rows).toHaveLength(history.points.length);
-    expect(rows[0]?.textContent).toMatch(/6 de noviembre de 2026.*34\.311,68/);
+    // Del más reciente: valor y variación con signo; la aportación, en su etiqueta.
+    expect(rows[0]?.textContent).toMatch(/6 de noviembre de 2026.*34\.311,68.*−228,39.*\(−0,66\s%\)/);
+    expect(rows[3]?.textContent).toMatch(/\+447,32.*Aportación \+300,00/);
+    // Fondo suave según la variación: ganancia, pérdida o sin variación (el primero).
+    expect([...rows].map((r) => r.getAttribute("data-trend"))).toEqual(["down", "down", "up", "up", "up", "flat"]);
+    expect(rows[5]?.textContent).toMatch(/—/); // el primero no tiene variación
     const months = [...table.querySelectorAll("tr.kchart-month")].map((r) => r.textContent);
-    expect(months).toEqual(["noviembre de 2026", "octubre de 2026"]);
+    expect(months).toEqual(["Noviembre de 2026", "Octubre de 2026"]);
   });
 
-  it("dice si hubo aportaciones en el periodo", async () => {
-    stubApi({ ...history, net_flows_eur: "300.00" });
+  it("explica cómo leer la gráfica con una leyenda plegable", async () => {
+    stubApi();
     renderChart();
-    expect(await screen.findByText(/Incluye aportaciones por/)).toBeTruthy();
-    expect(screen.getByText(/300,00/)).toBeTruthy();
+    const toggle = await screen.findByRole("button", { name: "Mostrar leyenda" });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("heading", { name: "Cómo leer la gráfica" })).toBeNull(); // oculta
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.textContent).toBe("Ocultar leyenda");
+    const heading = screen.getByRole("heading", { name: "Cómo leer la gráfica" });
+    const items = heading.nextElementSibling?.querySelectorAll("li") ?? [];
+    const text = [...items].map((li) => li.textContent).join(" | ");
+    expect(text).toMatch(/Por encima del valor inicial.*Por debajo del valor inicial.*Línea dorada.*Zonas sombreadas.*Punto azul.*Escala de fechas/);
+  });
+
+  it("sin aportaciones lo dice en la línea de datos", async () => {
+    stubApi({ ...history, net_flows_eur: "0.00" });
+    renderChart();
+    expect(await screen.findByText("Sin aportaciones ni retiradas en el periodo.")).toBeTruthy();
+  });
+
+  it("de dónde sale: una pista breve al pasar por la cifra, sin abrir nada", async () => {
+    stubApi();
+    renderChart();
+    await screen.findByText(/Último cierre/);
+    const [hint] = screen.getAllByRole("tooltip", { hidden: true });
+    expect(hint?.textContent).toMatch(/participaciones × precio de cierre.*Precios de cierre de 1 activo y tipo de cambio/);
+    const figure = hint?.parentElement;
+    expect(figure?.getAttribute("tabindex")).toBe("0");
+    expect(figure?.getAttribute("aria-describedby")).toBe(hint?.id);
+    expect(figure?.getAttribute("data-calc-id")).toBe(history.calc_id);
   });
 
   it("sin datos explica que no se puede mostrar, sin cifras inventadas", async () => {

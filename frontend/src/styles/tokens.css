@@ -59,6 +59,8 @@
   /* Variación: sube / baja. Siempre con flecha y signo, no solo color */
   --kairos-color-trend-up: #145c33;
   --kairos-color-trend-down: #5a5246;
+  /* Pérdida en la gráfica de evolución (T2-18): naranja, no rojo (el rojo es solo para errores) */
+  --kairos-color-trend-loss: #b54708;
 
   /* Iconos de tarjeta: fondo suave + trazo del mismo tono */
   --kairos-color-icon-gold-bg: #f7edd5;
@@ -136,6 +138,7 @@
 
   --kairos-color-trend-up: #86dba8;
   --kairos-color-trend-down: #b8afa1;
+  --kairos-color-trend-loss: #fb8c4a;
 
   --kairos-color-icon-gold-bg: #2e2613;
   --kairos-color-icon-gold-fg: #f2c14e;

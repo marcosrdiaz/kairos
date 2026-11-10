@@ -14,6 +14,7 @@ from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.main import API_PREFIX
 from app.portfolio import history, service
+from app.portfolio.value_change import TxIn
 from app.schemas.history import HistoryPeriod
 from app.schemas.portfolio import TransactionRequest
 from tests.fakes.price_provider import FakePriceProvider, use_price_provider
@@ -134,6 +135,40 @@ def test_a_buy_inside_the_period_is_a_flow(seeded: None) -> None:
     out = history.get_history("laura", HistoryPeriod.ONE_MONTH)
     assert out.net_flows_eur == D("300.00")
     assert out.end_value_eur == service.get_valued("laura").total_eur
+    # La compra cae entre los dos cierres: el segundo punto la marca como aportación.
+    assert [p.flows_eur for p in out.points] == [D("0.00"), D("300.00")]
+
+
+# --- Variación por punto (puro) ---
+
+
+def test_points_carry_change_against_the_previous_one() -> None:
+    values = [(date(2026, 11, 2), D("1000.00")), (date(2026, 11, 3), D("1012.34"))]
+    first, second = history.build_points(values, [])
+    assert (first.change_eur, first.change_pct, first.flows_eur) == (None, None, D("0.00"))
+    assert second.change_eur == D("12.34")
+    assert second.change_pct == D("0.0123")
+    assert second.flows_eur == D("0.00")
+
+
+def test_points_split_out_the_money_that_came_in() -> None:
+    buy = TxIn(
+        asset_id="A",
+        ts=datetime(2026, 11, 3, 10, tzinfo=UTC),
+        type="buy",
+        units=D("1"),
+        amount_eur=D("500.00"),
+    )
+    values = [(date(2026, 11, 2), D("1000.00")), (date(2026, 11, 3), D("1490.00"))]
+    _, second = history.build_points(values, [buy])
+    assert second.change_eur == D("490.00")
+    assert second.flows_eur == D("500.00")
+
+
+def test_a_fall_has_a_negative_change() -> None:
+    values = [(date(2026, 11, 2), D("1000.00")), (date(2026, 11, 3), D("990.00"))]
+    _, second = history.build_points(values, [])
+    assert (second.change_eur, second.change_pct) == (D("-10.00"), D("-0.0100"))
 
 
 def test_series_is_traced(seeded: None) -> None:

@@ -63,11 +63,18 @@ export function RangeSelector({ rows, start, end, onChange }: RangeSelectorProps
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
+  // Al arrastrar, como mucho un cambio por fotograma: la gráfica se redibuja a 60 fps, no por evento.
+  const frame = useRef<number | null>(null);
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     if (!d) return;
-    const at = indexAt(e.clientX);
-    move(d.mode, d.mode === "pan" ? d.start + (at - d.from) : at, d);
+    const x = e.clientX;
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null;
+      const at = indexAt(x);
+      move(d.mode, d.mode === "pan" ? d.start + (at - d.from) : at, d);
+    });
   };
 
   const stop = () => {
@@ -129,7 +136,7 @@ export function RangeSelector({ rows, start, end, onChange }: RangeSelectorProps
   };
 
   return (
-    <div className="px-5 pt-9 sm:px-6">
+    <div className="px-5 pt-7 sm:px-6">
       <div
         ref={track}
         className="kchart-range-track"
@@ -139,8 +146,8 @@ export function RangeSelector({ rows, start, end, onChange }: RangeSelectorProps
         onPointerCancel={stop}
       >
         <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true" className="absolute inset-0 h-full w-full rounded-[14px]">
-          <path d={`${path} L100,40 L0,40 Z`} fill="var(--kairos-color-gold)" opacity={0.18} />
-          <path d={path} fill="none" stroke="var(--kairos-color-chart-1)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+          <path d={`${path} L100,40 L0,40 Z`} fill="var(--kairos-color-text-muted)" opacity={0.08} />
+          <path d={path} fill="none" stroke="var(--kairos-color-text-muted)" strokeWidth={1.25} opacity={0.7} vectorEffect="non-scaling-stroke" />
         </svg>
         <div className="kchart-range-shade left-0 rounded-l-[14px]" style={{ width: `${pct(start)}%` }} />
         <div className="kchart-range-shade right-0 rounded-r-[14px]" style={{ width: `${100 - pct(end)}%` }} />
