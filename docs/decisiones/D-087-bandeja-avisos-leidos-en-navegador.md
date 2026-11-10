@@ -1,4 +1,4 @@
-### D-XXX · Bandeja de avisos (T2-20): «leído» se guarda en el navegador, sin ruta nueva
+### D-087 · Bandeja de avisos (T2-20): «leído» se guarda en el navegador, sin ruta nueva
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: T2-20 (bandeja de avisos con campana y contador de no leídos) decía que marcar como leído necesitaba una ruta nueva (p. ej. `POST /alerts/{id}/read`) con su petición de contrato. Eso suponía un campo nuevo en `AlertOut`, una columna con migración y cambios en `alerts/{service,repository,models}.py`, los mismos ficheros que toca el PR #88 de T2-21, aún abierto, y todo a un día de la congelación. Además, la app no tiene login (D-013): «leído» no tendría un usuario al que pertenecer.
 - Decisión:
