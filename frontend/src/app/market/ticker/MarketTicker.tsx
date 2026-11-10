@@ -6,6 +6,7 @@ import { useTicker } from "../../../api/hooks/useTicker";
 import { PauseIcon, PlayIcon } from "../../../components/icons";
 import { TraceFigure } from "../../../components/trace/TraceFigure";
 import { signedPercent, trendOf } from "../../../widget/states";
+import { issuerOf } from "./issuer";
 import "./ticker.css";
 
 /** Segundos que tarda cada activo en cruzar: con más activos, la vuelta dura más (misma velocidad). */
@@ -54,8 +55,12 @@ const TREND = {
 function TickerEntry({ item, href }: { item: TickerItemOut & { change_pct: string }; href?: string }) {
   const trend = TREND[trendOf(item.change_pct)];
   const label = item.ticker ?? item.name;
+  const issuer = issuerOf(item.name);
   return (
     <li className="flex shrink-0 items-baseline gap-2 px-5 text-sm whitespace-nowrap">
+      <span aria-hidden="true" className="kairos-issuer-badge" data-issuer={issuer.key}>
+        {issuer.initials}
+      </span>
       {href ? (
         <Link
           to={href}

@@ -12,5 +12,6 @@
   "causal_chain": ["El BCE baja los tipos", "Baja la rentabilidad de los bonos", "Suben de precio los fondos de renta fija"],
   "relevance": "high",
   "analyzed_model": "claude-sonnet-5-5",
-  "fallback": false
+  "fallback": false,
+  "prompt_version": "3f9a2c1e7b04"
 }

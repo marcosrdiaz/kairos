@@ -26,6 +26,20 @@ export function badgeText(unread: number): string {
   return unread > 9 ? "9+" : String(unread);
 }
 
+/**
+ * Bandeja vacía. `undefined`: solo hay una cartera. `null`: varias, sin filtro. Un nombre: la
+ * cartera filtrada.
+ */
+export function emptyInboxText(portfolioName: string | null | undefined): string {
+  if (portfolioName === undefined) {
+    return "Todavía no hay avisos de esta cartera. Te avisaremos cuando una noticia la mueva lo bastante.";
+  }
+  if (portfolioName === null) {
+    return "Todavía no hay avisos de ninguna de tus carteras. Te avisaremos cuando una noticia mueva alguna lo bastante.";
+  }
+  return `Todavía no hay avisos de la cartera «${portfolioName}». Te avisaremos cuando una noticia la mueva lo bastante.`;
+}
+
 /** Pie de la bandeja (RF-20): los mensajes los redacta una IA y no son asesoramiento. */
 export const INBOX_NOTICE =
   "Los avisos los redacta una inteligencia artificial a partir de cálculos sobre tu cartera. Son contexto, no asesoramiento financiero.";

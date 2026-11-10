@@ -19,7 +19,6 @@ from app.schemas.events import (
     EventAnalysis,
     EventIn,
     EventObserved,
-    EventType,
     Relevance,
     ReplayOut,
     SelectedBy,
@@ -49,31 +48,14 @@ def _source(event: EventIn) -> SourceRef:
 
 
 def build_shockset(analysis: EventAnalysis, event: EventIn) -> ShockSet:
-    """Magnitudes de `observed` para los canales elegidos. El analizador no aporta cifras."""
+    """**Todos** los factores y empresas de `observed` (D-083): lo que el analizador diga de los
+    canales solo sirve para la narrativa y nunca cambia una cifra (regla 1 de `CLAUDE.md`)."""
     observed = _observed(event)
-    factors = {
-        c.factor: observed.factors[c.factor]
-        for c in analysis.channels
-        if c.factor in observed.factors
-    }
-    moves = {
-        c.key: observed.companies[c.key] for c in analysis.companies if c.key in observed.companies
-    }
-    if not moves and event.type is EventType.EARNINGS:
-        moves = dict(observed.companies)
-    if analysis.fallback or not (factors or moves):
-        return ShockSet(
-            event_id=event.id,
-            factor_shocks=observed.factors,
-            company_moves=observed.companies,
-            selected_by=SelectedBy.ALL_OBSERVED,
-            source=_source(event),
-        )
     return ShockSet(
         event_id=event.id,
-        factor_shocks=factors,
-        company_moves=moves,
-        selected_by=SelectedBy.ANALYZER,
+        factor_shocks=observed.factors,
+        company_moves=observed.companies,
+        selected_by=SelectedBy.ALL_OBSERVED,
         source=_source(event),
     )
 
@@ -105,17 +87,25 @@ def fallback_analysis(event: EventIn) -> EventAnalysis:
     )
 
 
-def _analyze(event: EventIn) -> EventAnalysis:
+def analyze(event: EventIn) -> EventAnalysis:
+    """Análisis del evento: el de la caché si ya se hizo con este prompt y esta entrada (T2-26);
+    si no, el del modelo, que se guarda; si el modelo falla, el de respaldo, que no se guarda."""
+    key = agents_service.analysis_cache_key(event)
+    cached = repository.get_cached_analysis(event.id, key)
+    if cached is not None:
+        return cached
     try:
-        return agents_service.analyze_event(event)
+        analysis = agents_service.analyze_event(event)
     except AnalyzerError:
         return fallback_analysis(event)
+    repository.save_cached_analysis(event.id, key, analysis, clock.now())
+    return analysis
 
 
 def save_pending(event: EventIn, companies: dict[str, str]) -> None:
     """Evento aún sin shock medido (T4-04): se guarda con su análisis (la cadena causal se puede
     ver) y sin impactos ni avisos. `events.service.process_pending` lo procesa tras el cierre."""
-    analysis = _analyze(event)
+    analysis = analyze(event)
     repository.save_event(event, event.occurred_at, analysis, clock.now(), replay=False)
     repository.save_pending(event, companies, clock.now())
 
@@ -125,7 +115,7 @@ def run(
 ) -> ReplayOut:
     """`event` trae la fecha real del JSON; `occurred_at` es la que se muestra en la app."""
     started = time.perf_counter()
-    analysis = _analyze(event)
+    analysis = analyze(event)
     shocks = build_shockset(analysis, event)
     repository.save_event(event, occurred_at or clock.now(), analysis, clock.now(), replay=replay)
 

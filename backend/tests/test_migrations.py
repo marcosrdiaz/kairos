@@ -34,6 +34,7 @@ EXPECTED_TABLES = {
     "factor_beta",
     "event",
     "pending_event",
+    "analysis_cache",
     "event_impact",
     "alert",
     "calc_trace",

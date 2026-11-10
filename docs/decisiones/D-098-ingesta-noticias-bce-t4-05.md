@@ -1,0 +1,16 @@
+### D-098 · Ingesta de noticias: solo las decisiones de política monetaria del BCE; resultados y OPEP, sin fuente usable todavía (T4-05)
+- Fecha: 2026-11-10 · Autor: Jaime (T4-05) · Estado: Propuesta
+- Contexto: T4-05 pide que las notas de prensa del BCE, las fechas de resultados de las acciones en cartera y las reuniones de la OPEP creen eventos reales (`EventIn` con `text` y `source_urls`) y los procese el pipeline de T4-04 (`events.service.ingest`, D-096). Al probar las fuentes el 10 nov: el RSS oficial del BCE (`https://www.ecb.europa.eu/rss/press.html`) responde sin clave, pero mezcla discursos, entrevistas y notas de todo tipo, y cada entrada solo trae el título. `opec.org` responde 403 a cualquier petición automática. Las fechas de resultados de Yahoo (`quoteSummary`, módulo `calendarEvents`) piden una cookie y un *crumb*, y el gráfico (`chart`, que ya usa `prices/yahoo.py`) no trae las fechas de resultados.
+- Decisión:
+  - **Solo cuentan las decisiones de política monetaria del BCE**: enlaces `/press/pr/date/<año>/html/ecb.mp<aammdd>…`. Un discurso o una nota de estadísticas no mueve los factores, y darlos de alta llenaría la app de eventos sin impacto.
+  - **Texto de la propia nota**: se descarga la versión en español (`.es.html`); si el BCE aún no la ha traducido, la inglesa. El texto son los párrafos del primer bloque de la nota (sin la fecha de publicación). `source_urls` = la URL descargada.
+  - **Clave del evento = URL sin el idioma** (`bce-<12 hex del sha256>`): la versión en inglés y la española son un solo evento; si ya hay un evento guardado con ese id (medido o pendiente), no se vuelve a dar de alta.
+  - Solo notas de los **últimos 30 días** (al arrancar con la BD vacía no se cargan meses de notas) y solo con `DEMO_MODE=false` (en demo los eventos salen del replay).
+  - `fallback_chain` fija y sin cifras; `observed` vacío: lo mide `ingest` con los cierres o queda pendiente de cierre (D-096).
+  - **Resultados y OPEP no entran en este PR.** No se esquivan bloqueos anti-bot (cookies, *crumb*, cabeceras de navegador) para leer webs que no lo permiten. Siguiente paso: una fuente oficial para cada una (las notas de prensa de cada empresa o un proveedor con licencia para los resultados; una fuente de la OPEP que acepte peticiones automáticas), o dejarlas fuera del alcance.
+  - Una pasada: `python -m app.events.ingest` (`runner.run_once()`). Engancharla a `scripts/daily_update.py` queda pendiente: ese fichero lo declara T4-03, que está en PR.
+- Alternativas descartadas:
+  - Dar de alta todas las notas de prensa del BCE: la mayoría no tiene efecto en los factores.
+  - Usar el título del RSS como texto: el analizador no tendría con qué trabajar («Monetary policy decisions»).
+  - Sacar las fechas de resultados con la cookie y el *crumb* de Yahoo: es saltarse una protección de la web, frágil y sin permiso.
+- Impacto: sin cambio de contrato ni dependencias nuevas (`httpx` ya está; XML y HTML con la biblioteca estándar). Código en `backend/app/events/ingest/`; tests sin red en `backend/tests/test_events_ingest.py`.

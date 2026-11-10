@@ -1,9 +1,18 @@
 import { useState, type SVGProps } from "react";
-import { useAlerts } from "../../api/hooks/useAlerts";
 import { usePortfolioId } from "../portfolio-picker/usePortfolioId";
 import { AlertsDialog } from "./AlertsDialog";
 import { badgeText, bellLabel } from "./labels";
-import { markRead, useReadIds } from "./readStore";
+import { markRead, useReadIdsByPortfolio } from "./readStore";
+import { useAllAlerts, type PortfolioAlert } from "./useAllAlerts";
+
+/** Marca como leídos esos avisos, cada uno en su cartera. */
+function markAllRead(items: readonly PortfolioAlert[]): void {
+  const byPortfolio = new Map<string, string[]>();
+  for (const { alert, portfolio } of items) {
+    byPortfolio.set(portfolio.id, [...(byPortfolio.get(portfolio.id) ?? []), alert.id]);
+  }
+  for (const [portfolioId, ids] of byPortfolio) markRead(portfolioId, ids);
+}
 
 /** Campana, decorativa: el significado lo da el nombre accesible del botón. */
 function BellIcon(props: Omit<SVGProps<SVGSVGElement>, "children">) {
@@ -34,13 +43,16 @@ interface AlertsBellProps {
  * Campana de avisos con el número de no leídos (T2-20). Los avisos llegan por el polling de
  * `useAlerts` (5 s, T2-13), así que el contador cambia solo tras un replay. No anuncia el
  * cambio: ya lo hace el aviso de Inicio (`widget/AlertNotice`), y duplicarlo sería ruido.
+ * Junta los avisos de todas las carteras (T4-15): el contador es la suma de los no leídos.
  */
 export function AlertsBell({ showLabel = false }: AlertsBellProps) {
   const [portfolioId] = usePortfolioId();
-  const { data: alerts, isPending, isError } = useAlerts(portfolioId);
-  const readIds = useReadIds(portfolioId);
+  const { portfolios, items, loading, failed } = useAllAlerts(portfolioId);
+  const readIds = useReadIdsByPortfolio(portfolios.map((p) => p.id));
   const [open, setOpen] = useState(false);
-  const unread = (alerts ?? []).filter((a) => !readIds.has(a.id)).length;
+  const isRead = (item: PortfolioAlert) =>
+    readIds.get(item.portfolio.id)?.has(item.alert.id) ?? false;
+  const unread = items.filter((item) => !isRead(item)).length;
 
   return (
     <>
@@ -73,12 +85,12 @@ export function AlertsBell({ showLabel = false }: AlertsBellProps) {
       </button>
       {open && (
         <AlertsDialog
-          portfolioId={portfolioId}
-          alerts={alerts}
-          loading={isPending}
-          failed={isError}
-          readIds={readIds}
-          onMarkRead={(ids) => markRead(portfolioId, ids)}
+          portfolios={portfolios}
+          items={items}
+          loading={loading}
+          failed={failed}
+          isRead={isRead}
+          onMarkRead={markAllRead}
           onClose={() => setOpen(false)}
         />
       )}

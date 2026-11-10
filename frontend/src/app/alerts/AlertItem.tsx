@@ -9,6 +9,8 @@ interface AlertItemProps {
   alert: AlertOut;
   /** Impacto del evento del aviso, si sigue en la ventana de eventos (los `market_move` no tienen). */
   impact: EventImpactOut | undefined;
+  /** Nombre de la cartera del aviso, si la bandeja junta varias (T4-15). */
+  portfolioName?: string;
   read: boolean;
   onMarkRead: (id: string) => void;
 }
@@ -18,7 +20,7 @@ interface AlertItemProps {
  * impacto con rango y confianza del motor de impacto, y «¿De dónde sale?».
  * «Nuevo» va en color y en palabra; las cifras no las calcula el frontend.
  */
-export function AlertItem({ alert, impact, read, onMarkRead }: AlertItemProps) {
+export function AlertItem({ alert, impact, portfolioName, read, onMarkRead }: AlertItemProps) {
   const titleId = useId();
   const calcId = alert.calc_id ?? impact?.calc_id ?? null;
   return (
@@ -40,10 +42,13 @@ export function AlertItem({ alert, impact, read, onMarkRead }: AlertItemProps) {
           {formatDate(alert.created_at)}
         </time>
       </div>
+      {portfolioName && (
+        <p className="m-0 text-sm font-medium text-ink-muted">Cartera «{portfolioName}»</p>
+      )}
       <p className="m-0 text-base leading-snug text-ink">{alert.message}</p>
       {impact && (
         <p className="m-0 text-sm text-ink-muted">
-          Impacto estimado en tu cartera: {formatEurRange(impact.low_eur, impact.high_eur)} ·{" "}
+          Impacto estimado en {portfolioName ? "esta cartera" : "tu cartera"}: {formatEurRange(impact.low_eur, impact.high_eur)} ·{" "}
           {CONFIDENCE_LABEL[impact.confidence]}
         </p>
       )}

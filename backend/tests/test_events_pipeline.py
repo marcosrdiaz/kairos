@@ -85,13 +85,14 @@ def _reset_client() -> Iterator[None]:
 # --- build_shockset ---
 
 
-def test_shockset_keeps_only_selected_factors_with_observed_magnitude() -> None:
+def test_shockset_uses_every_observed_factor_whatever_the_analyzer_chose() -> None:
+    # D-083: los canales del analizador solo son narrativa; nunca cambian una cifra.
     event = _event("bce-2025-06")
     assert event.observed is not None
     shocks = pipeline.build_shockset(_analysis(event, [RATES]), event)
-    assert shocks.factor_shocks == {RATES: event.observed.factors[RATES]}
+    assert shocks.factor_shocks == event.observed.factors
     assert shocks.company_moves == {}
-    assert shocks.selected_by is SelectedBy.ANALYZER
+    assert shocks.selected_by is SelectedBy.ALL_OBSERVED
     assert shocks.source.ref == "bce-2025-06"
     assert "jun 2025" in shocks.source.label
 
@@ -102,19 +103,13 @@ def test_shockset_ignores_companies_not_observed() -> None:
     assert shocks.company_moves == {}
 
 
-def test_shockset_uses_selected_company_move() -> None:
+def test_shockset_keeps_every_observed_company_move() -> None:
     event = _event("nvda-2025-02")
     assert event.observed is not None
-    shocks = pipeline.build_shockset(_analysis(event, [EQ], ["NVDA"]), event)
-    assert shocks.company_moves == {"NVDA": event.observed.companies["NVDA"]}
-
-
-def test_earnings_keep_the_company_move_if_the_analyzer_omits_it() -> None:
-    event = _event("nvda-2025-02")
-    assert event.observed is not None
-    shocks = pipeline.build_shockset(_analysis(event, [EQ]), event)
-    assert shocks.company_moves == event.observed.companies
-    assert shocks.selected_by is SelectedBy.ANALYZER
+    for companies in (["NVDA"], []):
+        shocks = pipeline.build_shockset(_analysis(event, [EQ], companies), event)
+        assert shocks.company_moves == event.observed.companies
+        assert shocks.selected_by is SelectedBy.ALL_OBSERVED
 
 
 def test_empty_selection_uses_everything_observed() -> None:
@@ -175,11 +170,85 @@ def test_replay_saves_event_with_analysis(client: TestClient) -> None:
         assert row.analyzed_model == "claude-sonnet-5-5"
 
 
-def test_replay_only_applies_channels_chosen_by_the_analyzer(client: TestClient) -> None:
+def _figures(client: TestClient) -> tuple[str, str, str]:
+    event = client.get(f"{API_PREFIX}/portfolios/laura/events").json()[0]
+    return event["impact_eur"], event["low_eur"], event["high_eur"]
+
+
+def test_figures_are_the_same_with_and_without_the_analyzer(client: TestClient) -> None:
+    # D-083: el analizador solo redacta. Sin él (respaldo) y con un análisis que solo elige la
+    # bolsa, el impacto y el rango son idénticos.
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+    without = _figures(client)
+
     analyzer.set_client(FakeClaude(_draft([EQ])))
     client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
     event = client.get(f"{API_PREFIX}/portfolios/laura/events").json()[0]
+
     assert event["causal_chain"][:2] == ["Pasa algo", "Y luego otra cosa"]
+    assert _figures(client) == without
+
+
+# --- Caché del análisis (T2-26) ---
+
+
+def test_replaying_again_reuses_the_cached_analysis(client: TestClient) -> None:
+    fake = FakeClaude(_draft([EQ]))  # una sola respuesta: una segunda llamada fallaría
+    analyzer.set_client(fake)
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+
+    assert len(fake.messages.calls) == 1
+    event = client.get(f"{API_PREFIX}/portfolios/laura/events").json()[0]
+    assert event["causal_chain"][:2] == ["Pasa algo", "Y luego otra cosa"]
+
+
+def test_the_cache_survives_demo_reset(client: TestClient) -> None:
+    fake = FakeClaude(_draft([EQ]))
+    analyzer.set_client(fake)
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+    assert client.post(f"{API_PREFIX}/demo/reset").status_code == 200
+
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+
+    assert len(fake.messages.calls) == 1
+
+
+def test_fallback_is_not_cached(client: TestClient) -> None:
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")  # sin clave: respaldo
+    fake = FakeClaude(_draft([EQ]))
+    analyzer.set_client(fake)
+
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+
+    assert len(fake.messages.calls) == 1
+
+
+def test_a_new_prompt_invalidates_the_cache(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fake = FakeClaude(_draft([EQ]), _draft([EQ]))
+    analyzer.set_client(fake)
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+    monkeypatch.setattr(analyzer, "prompt_version", lambda: "otraversion0")
+
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+
+    assert len(fake.messages.calls) == 2
+
+
+def test_preanalyze_fills_the_cache_for_the_replay(client: TestClient) -> None:
+    fake = FakeClaude(_draft([EQ]))
+    analyzer.set_client(fake)
+
+    assert service.preanalyze(["oil-2025-06"]) == {"oil-2025-06": True}
+    client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
+
+    assert len(fake.messages.calls) == 1
+
+
+def test_preanalyze_without_key_reports_fallback(client: TestClient) -> None:
+    assert service.preanalyze(["bce-2025-06"]) == {"bce-2025-06": False}
 
 
 def test_occurred_at_defaults_to_now(client: TestClient) -> None:
