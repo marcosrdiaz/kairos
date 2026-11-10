@@ -167,6 +167,7 @@ Los esquemas son la frontera entre tareas y entre backend y frontend. **Los cont
 | `events.py` · `agents.py` · `alerts.py` | `EventAnalysis`, `ShockSet`, `AskRequest` + SSE, `ExplainerContext`, `GuardianRequest/Verdict`, `AlertOut` | §4.2, §4.4 |
 | `impact.py` · `exposure.py` · `radar.py` · `status.py` · `planning.py` | `EventImpactOut`, `ScenarioOut`, `MoveAttributionOut`, `ExposureOut`, `RadarOut`, `StatusOut`, `ProjectionOut`, `AgendaItemOut` | §4.3 |
 | `voice.py` | WebSocket de STT, TTS, disclaimer | §4.5 |
+| `news.py` | `NewsItemOut`, `NewsEstimateOut`, `NewsChannel`, `NewsCategory` (noticias con su impacto estimado por cartera, T4-27). La clasificación no lleva números; la estimación la calcula el motor | — (hito E del tablero) |
 
 Cada esquema tiene un ejemplo en `schemas/examples/<Modelo>.json` (con `"illustrative": true`), validado por un test en CI. Esos ejemplos son los mocks del backend y del frontend (D-018).
 
@@ -414,6 +415,7 @@ sequenceDiagram
 | GET | `/portfolios/{id}/status` | Widget |
 | POST | `/portfolios/{id}/ask` (SSE) | Pregunta en texto |
 | GET | `/portfolios/{id}/alerts` | Avisos |
+| GET | `/portfolios/{id}/news?category=&affecting=&limit=` · `/portfolios/{id}/news/{news_id}` | Noticias con su impacto estimado en esa cartera (T4-27; con ejemplos hasta T4-28 y T4-30) |
 | WS | `/voice/stt` | Voz a texto |
 | POST | `/voice/tts` | Texto a voz, solo frases aprobadas |
 | GET | `/voice/disclaimer` | Audio pregenerado del aviso de IA |
