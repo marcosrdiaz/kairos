@@ -146,7 +146,13 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
           }}
         />
         {draft.kind === "buy" ? (
-          <AssetCombobox label="Activo" value={draft.asset} onChange={(asset) => update({ asset })} error={errors.asset} />
+          <AssetCombobox
+            label="Activo"
+            value={draft.asset}
+            onChange={(asset) => update({ asset })}
+            error={errors.asset}
+            allowMarketSearch
+          />
         ) : (
           <SelectField
             label={draft.kind === "sell" ? "Posición" : "Fondo de origen"}

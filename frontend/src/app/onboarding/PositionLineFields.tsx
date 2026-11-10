@@ -74,6 +74,7 @@ export function PositionLineFields({
         onChange={(asset) => onChange({ asset })}
         error={errors?.asset}
         autoFocus={autoFocus}
+        allowMarketSearch
       />
       <div className="grid gap-4 sm:grid-cols-3">
         <Field

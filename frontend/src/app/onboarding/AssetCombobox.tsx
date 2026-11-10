@@ -3,6 +3,7 @@ import type { AssetOut } from "../../api/generated/schema";
 import { buttonSecondary } from "../../components/button";
 import { assetDetails } from "./labels";
 import { MIN_QUERY_LENGTH, useAssetLookup } from "./useAssetLookup";
+import { useMarketSearch } from "./useMarketSearch";
 
 interface AssetComboboxProps {
   label: string;
@@ -16,6 +17,12 @@ interface AssetComboboxProps {
   selectedError?: string | undefined;
   /** Para la fila recién añadida: el foco va a su buscador. */
   autoFocus?: boolean;
+  /**
+   * Añade al final de la lista la opción «Buscar en el mercado» (`POST /assets`, T4-07) para
+   * activos que aún no están en el catálogo. Solo donde tiene sentido un activo nuevo (alta de
+   * posiciones, compra); no en la venta ni en el traspaso.
+   */
+  allowMarketSearch?: boolean;
 }
 
 /**
@@ -30,6 +37,7 @@ export function AssetCombobox({
   error,
   selectedError,
   autoFocus,
+  allowMarketSearch = false,
 }: AssetComboboxProps) {
   const uid = useId();
   const inputId = `${uid}-input`;
@@ -42,8 +50,15 @@ export function AssetCombobox({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const lookup = useAssetLookup(text);
+  const market = useMarketSearch(choose);
+  const query = text.trim();
   const results = lookup.enabled ? (lookup.data ?? []) : [];
-  const showList = open && results.length > 0;
+  const localDone = lookup.enabled && lookup.settled && !lookup.isFetching;
+  // La opción del mercado va siempre la última, detrás de los resultados locales.
+  const showMarket = allowMarketSearch && (localDone || market.pending);
+  const marketIndex = results.length;
+  const optionCount = results.length + (showMarket ? 1 : 0);
+  const showList = open && optionCount > 0;
 
   useEffect(() => {
     if (value === null && changeRef.current) {
@@ -63,14 +78,16 @@ export function AssetCombobox({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setOpen(true);
-      setActive((i) => Math.min(i + 1, results.length - 1));
+      setActive((i) => Math.min(i + 1, optionCount - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && showList) {
       e.preventDefault(); // no envía el formulario
-      const pick = results[active >= 0 ? active : 0];
+      const index = active >= 0 ? active : 0;
+      const pick = results[index];
       if (pick) choose(pick);
+      else if (showMarket && index === marketIndex) market.search(query);
     } else if (e.key === "Escape") {
       if (showList) setOpen(false);
       else setText("");
@@ -115,10 +132,13 @@ export function AssetCombobox({
     );
   }
 
-  let statusText = "";
-  if (open && lookup.enabled && lookup.settled && !lookup.isFetching) {
+  let statusText = market.statusText;
+  if (!statusText && open && localDone) {
     if (lookup.isError) statusText = "No hemos podido buscar ahora mismo. Vuelve a intentarlo.";
-    else if (results.length === 0) statusText = `No hay activos que coincidan con «${text.trim()}».`;
+    else if (results.length === 0)
+      statusText = showMarket
+        ? `No hay activos que coincidan con «${query}». Puedes buscarlo en el mercado.`
+        : `No hay activos que coincidan con «${query}».`;
     else statusText = results.length === 1 ? "1 activo encontrado." : `${results.length} activos encontrados.`;
   }
 
@@ -147,6 +167,7 @@ export function AssetCombobox({
             setText(e.target.value);
             setOpen(true);
             setActive(-1);
+            market.reset();
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
@@ -176,6 +197,22 @@ export function AssetCombobox({
               <span className="text-sm text-ink-muted">{assetDetails(a)}</span>
             </li>
           ))}
+          {showMarket && (
+            <li
+              id={`${listId}-${marketIndex}`}
+              role="option"
+              aria-selected={active === marketIndex}
+              aria-disabled={market.pending ? true : undefined}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => market.search(query)}
+              className={`flex flex-col rounded-control px-3 py-2 ${market.pending ? "cursor-progress" : "cursor-pointer"} ${active === marketIndex ? "bg-accent-tint" : "hover:bg-surface-muted"}`}
+            >
+              <span className="font-medium text-accent">
+                {market.pending ? "Buscando en el mercado…" : `Buscar «${query}» en el mercado`}
+              </span>
+              <span className="text-sm text-ink-muted">Para activos que aún no están en la lista.</span>
+            </li>
+          )}
         </ul>
       </div>
       <span id={hintId} className="text-sm text-ink-muted">

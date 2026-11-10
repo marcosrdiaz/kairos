@@ -18,12 +18,21 @@ export class ApiError extends Error {
   readonly code: string | undefined;
   /** `details` de `ErrorOut` (p. ej. `asset_id` en un 404), o {} si no vino. */
   readonly details: Record<string, unknown>;
-  constructor(message: string, status: number, code?: string, details?: Record<string, unknown>) {
+  /** `message` de `ErrorOut`: texto en español pensado para el usuario, o undefined si no vino. */
+  readonly serverMessage: string | undefined;
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    details?: Record<string, unknown>,
+    serverMessage?: string,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.details = details ?? {};
+    this.serverMessage = serverMessage;
   }
 }
 
@@ -31,14 +40,16 @@ export class ApiError extends Error {
 export async function toApiError(method: string, path: string, res: Response): Promise<ApiError> {
   let code: string | undefined;
   let details: Record<string, unknown> | undefined;
+  let serverMessage: string | undefined;
   try {
-    const body = (await res.json()) as { code?: string; details?: Record<string, unknown> };
+    const body = (await res.json()) as { code?: string; details?: Record<string, unknown>; message?: unknown };
     code = body.code;
     details = body.details;
+    if (typeof body.message === "string" && body.message) serverMessage = body.message;
   } catch {
     // cuerpo no JSON
   }
-  return new ApiError(`${method} ${path} -> ${res.status}`, res.status, code, details);
+  return new ApiError(`${method} ${path} -> ${res.status}`, res.status, code, details, serverMessage);
 }
 
 /** Devuelve el mock de un modelo por su nombre (p. ej. "PortfolioOut"), o undefined. */
