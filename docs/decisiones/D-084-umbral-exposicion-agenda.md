@@ -1,4 +1,4 @@
-### D-XXX · Exposición de la agenda: umbral de beta por factor y beta significativa (T2-06)
+### D-084 · Exposición de la agenda: umbral de beta por factor y beta significativa (T2-06)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: el diseño del MVP (§4.3, `AgendaItemOut`) define `exposed_eur` = Σ V_i de los activos con |β_{i,f}| ≥ 0,1 en el factor del evento. Con las betas reales de `factor_beta`, esa regla daba cifras engañosas: la Reunión del BCE salía con el 65 % de la cartera de Laura y la Reunión de la OPEP+ con 0 € en todas las carteras. El motivo es que cada factor tiene sus unidades: `RATES_EUR` es la variación absoluta de la rentabilidad del bono (betas entre −6,6 y +3,5) y `OIL` la variación porcentual del crudo (todas las betas por debajo de 0,1 en valor absoluto). Además entraban betas que son ruido: NVIDIA da 2,6 ± 1,9 al BCE y Apple −0,39 ± 1,36.
 - Decisión: una posición está expuesta al factor de un evento si cumple las dos condiciones:
