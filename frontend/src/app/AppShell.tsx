@@ -8,12 +8,14 @@ import { ThemeToggle } from "../theme/ThemeToggle";
 import { ChatLauncher, ChatPanel } from "../voice/ChatDock";
 import { ChatDockContext } from "../voice/chatDockContext";
 import { AlertsBell } from "./alerts/AlertsBell";
+import { NewsIcon } from "./news-feed/NewsIcon";
 import { FirstRunGate } from "./onboarding/FirstRunGate";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
   { to: "/inicio", label: "Inicio", Icon: HomeIcon },
   { to: "/cartera", label: "Cartera", Icon: WalletIcon },
+  { to: "/noticias", label: "Noticias", Icon: NewsIcon },
 ];
 
 const DESKTOP = "(min-width: 64rem)";
