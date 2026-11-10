@@ -18,6 +18,7 @@ import httpx
 from app.core import clock
 
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search"
 TIMEOUT_S = 5.0
 _STEP = Decimal("0.00000001")  # NUMERIC(20,8)
 
@@ -37,6 +38,18 @@ class Chart:
     """Si la sesión regular está abierta en el momento de la petición."""
     next_open: datetime | None
     """Apertura de la sesión de hoy si aún no ha empezado; `None` si no se sabe o ya pasó."""
+    currency: str | None = None
+    """Divisa de cotización según el proveedor (T4-07); `None` si no la da."""
+
+
+@dataclass(frozen=True)
+class Quote:
+    """Un resultado de la búsqueda de Yahoo (T4-07)."""
+
+    symbol: str
+    name: str
+    quote_type: str
+    """`EQUITY`, `ETF`, `MUTUALFUND`…"""
 
 
 def _decimal(value: object) -> Decimal | None:
@@ -90,13 +103,28 @@ def parse_chart(payload: dict[str, Any], now: datetime) -> Chart:
     start, end = _instant(regular.get("start")), _instant(regular.get("end"))
     market_open = start is not None and end is not None and start <= now < end
     next_open = start if start is not None and now < start else None
+    currency = meta.get("currency")
     return Chart(
         closes=sorted(closes.items()),
         last_price=last_price,
         last_at=last_at,
         market_open=market_open,
         next_open=next_open,
+        currency=currency if isinstance(currency, str) and currency else None,
     )
+
+
+def parse_search(payload: dict[str, Any]) -> list[Quote]:
+    """Resultados con símbolo, nombre y tipo; los demás (noticias, índices sin tipo) se omiten."""
+    quotes: list[Quote] = []
+    for raw in payload.get("quotes") or []:
+        if not isinstance(raw, dict):
+            continue
+        symbol, kind = raw.get("symbol"), raw.get("quoteType")
+        name = raw.get("longname") or raw.get("shortname")
+        if isinstance(symbol, str) and isinstance(kind, str) and isinstance(name, str):
+            quotes.append(Quote(symbol=symbol, name=name.strip(), quote_type=kind.upper()))
+    return quotes
 
 
 class YahooClient:
@@ -120,3 +148,17 @@ class YahooClient:
         if not isinstance(payload, dict):
             raise ProviderError(f"{symbol}: respuesta no válida")
         return parse_chart(payload, clock.now())
+
+    def search(self, query: str) -> list[Quote]:
+        """Busca por ISIN, ticker o nombre (T4-07). Lista vacía si Yahoo no conoce nada."""
+        try:
+            response = self._http.get(
+                SEARCH_URL, params={"q": query, "quotesCount": 6, "newsCount": 0}
+            )
+            response.raise_for_status()
+            payload = response.json()
+        except (httpx.HTTPError, ValueError) as error:
+            raise ProviderError(f"búsqueda «{query}»: {error}") from error
+        if not isinstance(payload, dict):
+            raise ProviderError(f"búsqueda «{query}»: respuesta no válida")
+        return parse_search(payload)

@@ -21,7 +21,7 @@ from typing import Protocol
 
 from app.core import clock
 from app.prices import repository
-from app.prices.catalog import load_catalog
+from app.prices.catalog import get_spec
 from app.prices.provider import PricePoint
 from app.prices.yahoo import Chart, ProviderError, YahooClient
 from app.schemas.common import PriceKind
@@ -88,7 +88,7 @@ class LiveProvider:
         self._failed: set[str] = set()
 
     def closes(self, asset_id: str) -> list[PricePoint]:
-        spec = load_catalog().get(asset_id)
+        spec = get_spec(asset_id)
         if spec is None or spec.symbol is None:
             return []
         ttl = NAV_TTL if spec.price_kind is PriceKind.NAV_DAILY else PRICE_TTL

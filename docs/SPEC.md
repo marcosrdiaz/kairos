@@ -392,6 +392,7 @@ sequenceDiagram
 | --- | --- | --- |
 | GET | `/health` | Comprobación de Docker |
 | GET | `/assets/lookup?q=` | Autocompletar por ISIN, ticker o nombre (`list[AssetOut]`) |
+| POST | `/assets` | Catálogo abierto (T4-07): `AssetCreateRequest` (`query`) → 201 `AssetOut`. Si no está en `asset`, lo busca en Yahoo (EUR o USD), lo da de alta y le calcula las betas. 404 si Yahoo no lo conoce; 503 si no responde o en modo demo |
 | GET | `/portfolios` · `/portfolios/{id}` | Lista (Laura, Javier) y detalle valorado |
 | POST | `/portfolios/{id}/positions` | Alta de posiciones |
 | POST | `/portfolios/{id}/transactions` | Compra / venta |

@@ -41,8 +41,6 @@ export interface paths {
          *     (ISIN, ticker o nombre), con su histórico y sus betas. Si ya está, devuelve el del catálogo.
          *     404 `NOT_FOUND` si el proveedor no lo conoce; 503 `UPSTREAM_UNAVAILABLE` si no responde o si
          *     no hay precios en directo (modo demo).
-         *
-         *     Contrato (T4-07): sirve el ejemplo hasta la implementación.
          */
         post: operations["create_asset_api_v1_assets_post"];
         delete?: never;

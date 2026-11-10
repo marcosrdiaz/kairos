@@ -1,0 +1,19 @@
+### D-XXX · Catálogo abierto: alta de activos desde Yahoo con `POST /assets`; la tabla `asset` es la fuente y `prices` la ve por una extensión (T4-07)
+- Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
+- Contexto: T4-07 pide dar de alta y valorar un activo que no está en `data/seed/assets.json` buscándolo en Yahoo, con un error claro si Yahoo no lo conoce, y que `prices/catalog.py` deje de leer solo `assets.json`. `prices` necesita la ficha de precio de cada activo (divisa, `price_kind`, símbolo), pero la tabla `asset` es de `portfolio`, y `portfolio` depende de `prices`.
+- Decisión:
+  - **Ruta explícita `POST /assets`** (`AssetCreateRequest` con `query`, PR de contrato aparte) en lugar de buscar en Yahoo desde el autocompletar. Así cada tecla no lanza peticiones ni da de alta activos. `GET /assets/lookup` no cambia: encuentra los activos ya dados de alta.
+  - **La fuente es la tabla `asset`.** `portfolio/asset_registry.py` guarda el activo nuevo con divisa, clase, `price_kind` y `price_source` (`yahoo:<símbolo>`). `prices` no consulta la tabla: `portfolio` le instala al importarse una **extensión del catálogo** (`prices.service.set_catalog_extension`), con una función que devuelve la ficha de un activo y otra que lista los ids. El catálogo base (`assets.json`) manda y nunca se busca en la extensión. Sin BD (scripts y tests puros), la extensión falla en silencio y solo queda el catálogo base.
+  - **Búsqueda** (`prices/discover.py`): búsqueda de Yahoo (`v1/finance/search`, sin clave, mismo `YahooClient`). Solo acciones, ETF y fondos. Se queda el primero de los 5 primeros resultados que tenga precios y cotice en **EUR o USD**, porque el único tipo de cambio en directo es EUR/USD. Una cotización en peniques (`GBp`) u otra divisa se salta: valorarla daría una cifra errónea.
+  - **Ficha:** id = el ISIN si la consulta lo era (Yahoo no lo devuelve); si no, `YF-<símbolo>`. Los fondos se marcan `nav_daily` y traspasables; el resto, `intraday`. El TER queda `null`. **Clase de activo por el nombre:** renta fija si dice «bond», «treasury», «aggregate», «govt»…; si no, renta variable. Es una aproximación: no hay otra fuente sin clave.
+  - **Al dar de alta:** la ruta llama a `impact.service.recompute_betas([id])` (T4-03). Si no hay datos suficientes, el activo queda «sin betas» (D-050) y el alta sigue valiendo. El histórico lo pide y lo guarda `prices` la primera vez que se valora (3 años, T2-24).
+  - **Errores:** 404 `NOT_FOUND` con la consulta en el mensaje si Yahoo no conoce nada utilizable; 503 `UPSTREAM_UNAVAILABLE` si Yahoo no responde o si no hay precios en directo (modo demo: no habría con qué valorarlo). Repetir el alta, por ISIN, ticker o símbolo, devuelve el mismo activo sin volver a buscar.
+- Motivo: cumple el criterio sin dependencias nuevas, sin tabla nueva ni migración, y sin que `prices` lea tablas de otro módulo. El modo demo no cambia.
+- Alternativas descartadas:
+  - Buscar en Yahoo desde `GET /assets/lookup`: una petición por tecla y activos dados de alta que nadie ha elegido.
+  - Una tabla propia de `prices` con las fichas: duplicaría la tabla `asset`.
+  - Que `prices` lea la tabla `asset`: rompe la regla de hablar solo por `service.py`.
+- Impacto:
+  - La exposición de un activo nuevo no tiene composición: la cobertura baja y lo dice `coverage_pct`. Las composiciones automáticas son T4-08.
+  - El frontend aún no llama a `POST /assets` (el alta usa el autocompletar). Falta un botón «Buscar fuera del catálogo» cuando el autocompletar no encuentra nada.
+  - La importación por CSV (T4-11) sigue aceptando solo activos ya dados de alta.

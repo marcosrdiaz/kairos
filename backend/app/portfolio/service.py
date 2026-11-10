@@ -12,6 +12,7 @@ from decimal import Decimal
 from app.core import clock, trace
 from app.core.db import session_scope
 from app.portfolio import (
+    asset_registry,
     dca_flow,
     demo_adjustment,
     engine,
@@ -210,6 +211,8 @@ update_portfolio = manage.update
 delete_portfolio = manage.delete
 import_portfolio = importer.import_portfolio
 held_asset_ids = manage.held_asset_ids
+register_asset = asset_registry.register_asset  # catálogo abierto (T4-07)
+asset_registry.install()  # `prices` sabe valorar los activos dados de alta fuera del catálogo
 
 
 def lookup_assets(query: str) -> list[AssetOut]:

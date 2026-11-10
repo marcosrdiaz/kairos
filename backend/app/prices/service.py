@@ -26,7 +26,13 @@ from decimal import Decimal
 from app.config import get_settings
 from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
-from app.prices.catalog import AssetPriceSpec, load_catalog
+from app.prices import catalog
+from app.prices.catalog import AssetPriceSpec as AssetPriceSpec
+from app.prices.catalog import IdsLookup, SpecLookup
+from app.prices.catalog import parse_spec as parse_spec
+from app.prices.discover import DiscoveredAsset as DiscoveredAsset
+from app.prices.discover import discover_asset as discover_asset
+from app.prices.discover import set_search_source as set_search_source
 from app.prices.factors import (
     FactorCloseOut,
     FactorSource,
@@ -73,7 +79,7 @@ def set_provider(provider: PriceProvider | None) -> PriceProvider | None:
 
 
 def _spec(asset_id: str) -> AssetPriceSpec:
-    spec = load_catalog().get(asset_id)
+    spec = catalog.get_spec(asset_id)
     if spec is None:
         raise AppError(
             ErrorCode.NOT_FOUND,
@@ -151,8 +157,15 @@ def history(asset_id: str, start: date, end: date) -> list[PriceOut]:
 
 
 def catalog_asset_ids() -> list[str]:
-    """Todos los activos que `prices` sabe valorar, también los de precio fijo."""
-    return list(load_catalog())
+    """Todos los activos que `prices` sabe valorar, también los de precio fijo y los dados de
+    alta fuera de `assets.json` (T4-07)."""
+    return catalog.all_asset_ids()
+
+
+def set_catalog_extension(get: SpecLookup | None, ids: IdsLookup | None = None) -> None:
+    """Activos dados de alta fuera de `assets.json` (T4-07). La pone `portfolio`, dueño de la
+    tabla `asset`; `prices` no la consulta."""
+    catalog.set_extension(get, ids)
 
 
 def beta_closes(asset_id: str) -> list[PricePoint]:
