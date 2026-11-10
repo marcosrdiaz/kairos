@@ -29,8 +29,9 @@ Atajo: `/inicio` hace estos pasos. `/coger <ID>`, `/cierre` y `/decision` comple
 
 No hay roles ni carpetas con dueño. Cualquiera hace cualquier tarea del pool de `docs/TABLERO.md` (IDs `T<fase>-<nn>`).
 
-- **Fases.** 0 cimientos y contratos · 1 datos y motores · 2 experiencia e integración · 3 endurecer y entregar. Una fase está **cerrada** cuando todas sus tareas están en `main` con `make lint && make test` en verde.
+- **Fases.** 0 cimientos y contratos · 1 datos y motores · 2 experiencia e integración · 3 endurecimiento · 4 producción (datos reales y varias carteras) · 5 rediseño visual · 6 entrega. Una fase está **cerrada** cuando todas sus tareas están en `main` con `make lint && make test` en verde. El estado de cada fase está al principio del pool, en `docs/TABLERO.md`.
 - **Adelantar.** Se puede coger una tarea de la fase siguiente solo si **todas** sus dependencias están hechas. Si una tarea depende de otra, se hace antes la dependencia.
+- **Excepción: fase 6 (entrega).** Tiene fecha fija, así que sus tareas se cogen en cuanto sus dependencias estén hechas, aunque las fases 4 y 5 sigan abiertas.
 - **Claim.** Coger una tarea es un commit al tablero (`docs: claim T1-04`) **antes de empezar**. Si ya está cogida, se elige otra. Usa `/coger <ID>`.
 - **Propiedad por tarea.** Mientras una tarea está en curso, quien la tiene es dueño de los ficheros de su columna *Ficheros que toca*. Otra sesión no los edita: si necesita algo de ellos, apunta un bloqueo en el tablero. No se coge una tarea cuyos ficheros solapen con los de otra en curso.
 - **Excepciones a la propiedad:** `docs/decisiones/` (se crea un fichero nuevo por decisión) y tu propia fila del tablero.

@@ -15,7 +15,7 @@ Flujo (si el `push` falla, repite desde el paso 1):
    - **Existe** el ID.
    - **Está libre**: estado `⬜ pendiente` y *Cogida por* vacío (`—`).
    - **Dependencias hechas**: cada ID de *Depende de* está en `✅ hecho`. Las marcadas `(b)` son blandas y no bloquean, pero avisa.
-   - **Fase**: es de la fase actual (la primera no cerrada) o, si es de la siguiente, todas sus dependencias están hechas (adelantar).
+   - **Fase**: es de la fase actual (la primera no cerrada) o, si es de la siguiente, todas sus dependencias están hechas (adelantar). Excepción: las de la fase 6 (entrega) se cogen en cuanto sus dependencias estén hechas, aunque haya fases anteriores abiertas.
    - **Sin solape de ficheros**: ninguna tarea `🔄 en curso`, `🧪 en PR` o `⛔ bloqueado` declara ficheros en común con los de esta.
 4. Pregunta al humano su nombre si no lo has oído en esta sesión.
 5. Edita **solo** la fila de esa tarea en `docs/TABLERO.md`: *Cogida por* = su nombre, *Estado* = `🔄 en curso`. No toques nada más.
