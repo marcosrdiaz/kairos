@@ -1,4 +1,4 @@
-### D-XXX · Laboratorio de componentes (`/lab`) y dependencias de la fase 5 (T5-01)
+### D-104 · Laboratorio de componentes (`/lab`) y dependencias de la fase 5 (T5-01)
 - Fecha: 2026-11-10 · Autor: Marcos · Estado: Aceptada (acuerdo del equipo, 10-nov)
 - Contexto: el equipo quiere ver en la web varios componentes de librerías externas (Bklit UI, Kokonut UI, Cult UI, Componentry y React Bits) antes de decidir cuáles aplicar en la fase 5. DESIGN.md pide no añadir librerías de componentes sin una decisión.
 - Decisión:

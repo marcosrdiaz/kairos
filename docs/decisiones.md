@@ -133,4 +133,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-101](decisiones/D-101-catalogo-fijo-ampliado-t4-26.md) | 2026-11-10 | Catálogo fijo ampliado y comprobado en Yahoo en lugar de catálogo abierto en el MVP (T4-26) | Propuesta |
 | [D-102](decisiones/D-102-fuentes-de-noticias-t4-28.md) | 2026-11-10 | Fuentes de noticias: Google Noticias (RSS de búsqueda), RSS de Yahoo Finance y de la Fed; GDELT opcional (T4-28) | Propuesta |
 | [D-103](decisiones/D-103-impacto-de-una-noticia-t4-29-t4-30.md) | 2026-11-10 | Impacto de una noticia: Claude elige canales y dirección; el motor pone el tamaño con datos (medido o estimado por días de noticia fuerte) (T4-29, T4-30) | Propuesta |
+| [D-104](decisiones/D-104-laboratorio-de-componentes-t5-01.md) | 2026-11-10 | Laboratorio de componentes (`/lab`) y dependencias de la fase 5 (T5-01) | Aceptada (acuerdo del equipo, 10-nov) |
 <!-- INDICE:FIN -->
