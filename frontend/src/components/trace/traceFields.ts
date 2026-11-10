@@ -1,5 +1,5 @@
 import { formatDate, formatEur, formatPercent, formatUnits } from "../../lib/format";
-import { FIELD_LABEL } from "./labels";
+import { FIELD_LABEL, VALUE_LABEL } from "./labels";
 
 /** Un dato de `inputs` u `outputs`, listo para pintar: texto o lista anidada. */
 export type TraceField =
@@ -15,6 +15,8 @@ const PERCENT_KEY = /(?:_pct|weights?|_drift)$/;
 /** Claves que el backend entrega como fracción (0.76 = 76 %) sin indicarlo en el nombre. */
 const PERCENT_KEYS = new Set([
   "allocation",
+  "annual_return",
+  "drop",
   "by_country",
   "by_currency",
   "by_sector",
@@ -27,7 +29,12 @@ const PERCENT_KEYS = new Set([
   "target",
 ]);
 /** Claves que nombran a un elemento de una lista, por orden de preferencia. */
-const ITEM_NAME_KEYS = ["asset_id", "company", "event_id", "id", "rule", "title"];
+const ITEM_NAME_KEYS = ["name", "asset_id", "company", "event_id", "id", "rule", "title", "label"];
+
+/** Valor de una enumeración en español (p. ej. `central_bank` → «Banco central»), si se conoce. */
+function valueLabel(key: string, text: string): string {
+  return VALUE_LABEL[key]?.[text] ?? text;
+}
 
 function unitOf(key: string): Unit | undefined {
   if (EUR_KEY.test(key)) return "eur";
@@ -55,8 +62,8 @@ function formatPrimitive(value: unknown, unit: Unit | undefined): string {
 function itemName(item: unknown, position: number): string {
   if (item !== null && typeof item === "object") {
     const record = item as Record<string, unknown>;
-    const name = ITEM_NAME_KEYS.map((key) => record[key]).find((v) => typeof v === "string");
-    if (typeof name === "string") return name;
+    const key = ITEM_NAME_KEYS.find((k) => typeof record[k] === "string");
+    if (key !== undefined) return valueLabel(key, record[key] as string);
   }
   return String(position);
 }
@@ -77,7 +84,7 @@ function toField(key: string, label: string, value: unknown, unit: Unit | undefi
     const fields = toTraceFields(value as Record<string, unknown>, unit);
     return fields.length > 0 ? { key, label, fields } : { key, label, text: "—" };
   }
-  return { key, label, text: formatPrimitive(value, unit) };
+  return { key, label, text: valueLabel(key, formatPrimitive(value, unit)) };
 }
 
 /**
