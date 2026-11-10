@@ -1,4 +1,4 @@
-### D-XXX · E2E del guion con `@playwright/test` contra el stack real en modo offline (T3-02)
+### D-091 · E2E del guion con `@playwright/test` contra el stack real en modo offline (T3-02)
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: T3-02 pide el guion de demo de 8 pasos en Playwright, «en verde en offline con fakes». `CLAUDE.md` ya reservaba `@playwright/test` para estos E2E (distinto de `playwright-cli`, que es para que el agente abra la app). Es una dependencia nueva del frontend, así que necesita decisión. El smoke por API (`scripts/demo_smoke.py`, T2-03) ya cubre el backend; faltaba comprobar lo que ve el jurado: la app en el navegador.
 - Decisión:

@@ -120,4 +120,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-088](decisiones/D-088-evaluacion-30-preguntas.md) | 2026-11-10 | Evaluación de respuestas (T3-01): 10 de impacto, 10 generales, 10 trampa y un detector de órdenes propio | Propuesta |
 | [D-089](decisiones/D-089-shocks-en-produccion.md) | 2026-11-10 | De dónde sale el shock de un evento en producción: cierre observado y rango histórico | Propuesta |
 | [D-090](decisiones/D-090-explicador-sin-repeticiones-ni-relleno.md) | 2026-11-10 | Explicador (T3-10): las repeticiones y el relleno tras un reintento se callan sin contar como bloqueo; evaluación de 40 preguntas | Propuesta |
+| [D-091](decisiones/D-091-e2e-guion-playwright.md) | 2026-11-10 | E2E del guion con `@playwright/test` contra el stack real en modo offline (T3-02) | Propuesta |
 <!-- INDICE:FIN -->
