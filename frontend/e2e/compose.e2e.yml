@@ -1,0 +1,19 @@
+# Override del E2E (T3-02): el stack de `make up` en modo offline, sin red y con datos fijos.
+#
+# `environment` manda sobre el `.env` de cada uno: sin claves de Claude ni de ElevenLabs, el
+# analizador usa el respaldo, el explicador responde con plantillas y la voz con el mock (D-027).
+# Así el guion da siempre las mismas cifras, tenga quien tenga claves en su `.env`.
+x-offline: &offline
+  ANTHROPIC_API_KEY: ""
+  ELEVENLABS_API_KEY: ""
+  MARKET_DATA_PROVIDER: offline
+  MARKET_DATA_API_KEY: ""
+  DEMO_MODE: "true"
+  DEMO_CLOCK: "2026-11-06T18:00:00Z"
+  DATABASE_URL: postgresql+psycopg://kairos:kairos@db:5432/kairos
+
+services:
+  seed:
+    environment: *offline
+  backend:
+    environment: *offline
