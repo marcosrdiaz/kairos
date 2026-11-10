@@ -153,9 +153,35 @@ def step_5_panel(client: httpx.Client) -> str:
     radar = _get(client, f"/portfolios/{LAURA}/radar")["items"]
     kinds = {item["kind"] for item in radar}
     _require({"risk", "opportunity"} <= kinds, f"radar sin riesgos y oportunidades: {kinds}")
-    agenda = _get(client, f"/portfolios/{LAURA}/agenda")
-    _require(agenda, "agenda vacía")
+    agenda = _check_agenda(client)
     return f"{len(events)} eventos, {len(radar)} avisos de radar, {len(agenda)} citas de agenda"
+
+
+def _check_agenda(client: httpx.Client) -> list[dict[str, Any]]:
+    """Agenda real (T2-06): citas de `agenda.json` tras el reloj, la del DCA y exposición > 0."""
+    now = _get(client, "/health")["now"]
+    agenda: list[dict[str, Any]] = _get(client, f"/portfolios/{LAURA}/agenda")
+    kinds = [item["kind"] for item in agenda]
+    _require("dca" in kinds, f"agenda sin la aportación del DCA: {kinds}")
+    events = [item for item in agenda if item["kind"] != "dca"]
+    _require(len(events) >= 4, f"agenda sin los eventos de agenda.json: {kinds}")
+    _require(
+        all(item["date"] > now for item in events), f"citas de agenda anteriores al reloj ({now})"
+    )
+    _require(
+        [item["date"] for item in agenda] == sorted(item["date"] for item in agenda),
+        "agenda desordenada",
+    )
+    exposed = {item["kind"]: Decimal(item["exposed_eur"]) for item in events}
+    _require(
+        exposed.get("central_bank", Decimal(0)) > 0 and exposed.get("earnings", Decimal(0)) > 0,
+        f"exposición del BCE o de NVIDIA a cero: {exposed}. ¿Faltan las betas?",
+    )
+    _require(
+        "9776.84" not in {item["exposed_eur"] for item in agenda},
+        "la agenda devuelve el ejemplo fijo del contrato, no la calculada",
+    )
+    return agenda
 
 
 def step_6_two_portfolios(client: httpx.Client) -> str:

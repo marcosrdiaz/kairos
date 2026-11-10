@@ -1,7 +1,9 @@
 """Interfaz pública de proyección y agenda (diseño del MVP §4.2, D-029).
 
 `get_projection` es real (T1-14): lee el plan, la valoración y los DCA de `portfolio.service` y
-los supuestos de `data/seed/assumptions.json`. `get_agenda` sigue en `mock.py` hasta T2-06.
+los supuestos de `data/seed/assumptions.json`. `get_agenda` también (T2-06): lee
+`data/events/agenda.json`, las betas de `impact.service`, el look-through de `exposure.service` y
+los DCA de `portfolio.service`.
 """
 
 import json
@@ -13,11 +15,13 @@ from typing import Any
 
 from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
-from app.planning import mock, projection
+from app.exposure import service as exposure_service
+from app.impact import service as impact_service
+from app.planning import agenda, projection
 from app.portfolio import service as portfolio_service
-from app.schemas.common import SourceKind, SourceRef, TraceKind
+from app.schemas.common import Factor, SourceKind, SourceRef, TraceKind
 from app.schemas.planning import AgendaItemOut, ProjectionOut, ProjectionScenario
-from app.schemas.portfolio import DcaPlanStatus
+from app.schemas.portfolio import DcaPlanOut, DcaPlanStatus
 
 ASSUMPTIONS_FILE = Path(__file__).resolve().parents[3] / "data" / "seed" / "assumptions.json"
 ASSUMPTIONS_REF = "data/seed/assumptions.json"
@@ -136,4 +140,140 @@ def _cited_sources() -> list[SourceRef]:
 
 
 def get_agenda(portfolio_id: str) -> list[AgendaItemOut]:
-    return mock.get_agenda(portfolio_id)
+    """Próximos eventos de `agenda.json` y aportaciones de los DCA activos, por fecha (T2-06).
+
+    Cada cita deja una traza `agenda` que cuelga de la valoración de la cartera.
+    """
+    valued = portfolio_service.get_valued(portfolio_id)  # 404 si no existe
+    values = {p.asset_id: p.value_eur for p in valued.positions}
+    events = agenda.load_events()
+    betas = impact_service.get_factor_betas(list(values))
+    companies = {e.company for e in events if e.company is not None}
+    weights = exposure_service.company_weights(list(values), companies)
+    for p in valued.positions:  # la propia acción pesa 1 en sus resultados
+        if p.ticker is not None and p.ticker in companies:
+            weights.setdefault(p.asset_id, {})[p.ticker] = Decimal("1")
+
+    now = clock.now()
+    items = [
+        _event_item(e, now, values, betas, weights, valued.total_eur, valued.calc_id)
+        for e in events
+    ]
+    items += [
+        _dca_item(p, valued.calc_id)
+        for p in portfolio_service.list_dca_plans(portfolio_id)
+        if p.status == DcaPlanStatus.ACTIVE
+        and p.next_execution_at is not None
+        and p.next_execution_at >= now
+    ]
+    return sorted(items, key=lambda item: item.date)
+
+
+_AGENDA_SOURCE = SourceRef(
+    kind=SourceKind.EVENT, label="Agenda de próximos eventos (ilustrativa)", ref=agenda.AGENDA_REF
+)
+
+
+def _event_item(
+    event: agenda.AgendaEvent,
+    now: datetime,
+    values: dict[str, Decimal],
+    betas: dict[str, dict[Factor, agenda.BetaWithError]],
+    weights: dict[str, dict[str, Decimal]],
+    total_eur: Decimal,
+    valuation_calc_id: str,
+) -> AgendaItemOut:
+    date = agenda.event_date(now, event.offset_days, event.time_utc)
+    if event.company is not None:
+        exposed = agenda.company_exposure(values, weights, event.company)
+        formula = f"exposed_eur = Σ V_i × peso de {event.company} en i (look-through)"
+        inputs: dict[str, Any] = {
+            "company": event.company,
+            "positions": {
+                a: {"value_eur": v, "weight": weights.get(a, {}).get(event.company)}
+                for a, v in values.items()
+            },
+        }
+        sources = [
+            _AGENDA_SOURCE,
+            SourceRef(
+                kind=SourceKind.COMPOSITION, label="Composición de los fondos", ref="composition"
+            ),
+        ]
+    else:
+        exposed = agenda.factor_exposure(values, betas, event.factor)
+        threshold = agenda.BETA_THRESHOLDS[event.factor]
+        formula = (
+            f"exposed_eur = Σ V_i con |β_i,{event.factor}| ≥ {threshold} "
+            f"y |β_i| ≥ {agenda.MIN_T_STAT}·error estándar"
+        )
+        inputs = {
+            "factor": event.factor,
+            "threshold": threshold,
+            "min_t_stat": agenda.MIN_T_STAT,
+            "positions": {
+                a: _beta_input(v, betas.get(a, {}).get(event.factor), event.factor)
+                for a, v in values.items()
+            },
+        }
+        sources = [
+            _AGENDA_SOURCE,
+            SourceRef(kind=SourceKind.BETA, label="Betas por factor", ref=event.factor.value),
+        ]
+    weight = agenda.exposed_weight(exposed, total_eur)
+    calc_id = trace.record(
+        TraceKind.AGENDA,
+        formula=f"{formula}; exposed_weight = exposed_eur / valor total",
+        inputs={
+            **inputs,
+            "event_id": event.id,
+            "offset_days": event.offset_days,
+            "now": now,
+            "total_eur": total_eur,
+        },
+        outputs={"date": date, "exposed_eur": exposed, "exposed_weight": weight},
+        sources=sources,
+        parent_calc_ids=[valuation_calc_id],
+    )
+    return AgendaItemOut(
+        date=date,
+        kind=event.kind,
+        title=event.title,
+        factor=event.factor,
+        exposed_weight=weight,
+        exposed_eur=exposed,
+        calc_id=calc_id,
+    )
+
+
+def _beta_input(
+    value_eur: Decimal, estimate: agenda.BetaWithError | None, factor: Factor
+) -> dict[str, Any]:
+    if estimate is None:
+        return {"value_eur": value_eur, "beta": None, "std_err": None, "exposed": False}
+    beta, std_err = estimate
+    exposed = agenda.is_exposed(estimate, factor)
+    return {"value_eur": value_eur, "beta": beta, "std_err": std_err, "exposed": exposed}
+
+
+def _dca_item(plan: DcaPlanOut, valuation_calc_id: str) -> AgendaItemOut:
+    assert plan.next_execution_at is not None
+    calc_id = trace.record(
+        TraceKind.AGENDA,
+        formula="Próxima aportación del DCA activo: fecha e importe del plan",
+        inputs={"dca_plan_id": plan.id, "frequency": plan.frequency, "day": plan.day},
+        outputs={"date": plan.next_execution_at, "exposed_eur": plan.amount_eur},
+        sources=[
+            SourceRef(kind=SourceKind.USER_INPUT, label="Tu plan de aportaciones", ref=plan.id)
+        ],
+        parent_calc_ids=[valuation_calc_id],
+    )
+    return AgendaItemOut(
+        date=plan.next_execution_at,
+        kind="dca",
+        title=agenda.dca_title(plan.frequency),
+        factor=None,
+        exposed_weight=None,
+        exposed_eur=plan.amount_eur,
+        calc_id=calc_id,
+    )

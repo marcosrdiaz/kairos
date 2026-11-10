@@ -15,12 +15,8 @@ LAURA = f"{API_PREFIX}/portfolios/laura"
 READ_PATHS = ["events", "exposure", "radar", "status", "projection", "agenda", "move"]
 
 
-# `move` (T2-07) y `radar` (T2-05) ya son reales: ver `test_move.py` y `test_radar_service.py`.
-
-
-def test_agenda_lists_examples(client: TestClient) -> None:
-    body = client.get(f"{LAURA}/agenda").json()
-    assert body == [examples.load("AgendaItemOut"), examples.load("AgendaItemOut.dca")]
+# `move` (T2-07), `radar` (T2-05) y `agenda` (T2-06) ya son reales: ver `test_move.py`,
+# `test_radar_service.py` y `test_agenda.py`.
 
 
 def test_scenario_rejects_unknown_factor(client: TestClient) -> None:
