@@ -1,0 +1,15 @@
+### D-XXX · Gestión de carteras: Laura y Javier siguen por defecto mientras Q10 esté abierta, y SQLite con claves foráneas (T4-10)
+- Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
+- Contexto: T4-10 pide crear, renombrar y borrar carteras de verdad y que la app deje de cargar a Laura y Javier. Q10 (qué entra de la fase 4 antes de la entrega) sigue abierta, y hoy dependen de Laura y Javier el frontend (`"laura"` es la cartera por defecto en `usePortfolioId.ts`, `InicioPage.tsx` y `PhoneHomePage.tsx`), el guion, el E2E de T3-02 y las cifras de T3-07. Sin T4-12 (asistente de primer uso) y T4-13 (selector), quitarlos del seed rompe la app a un día de la entrega. Además, la tabla `portfolio` no tenía `kind` ni `risk_profile`, y SQLite (la BD de los tests) no aplica `ON DELETE CASCADE` sin `PRAGMA foreign_keys=ON`.
+- Decisión:
+  - **Crear, renombrar y borrar son reales** (`POST /portfolios`, `PATCH` y `DELETE /portfolios/{id}`, en `portfolio/manage.py`). Id `pf_` + 32 hex. Columnas nuevas `kind` y `risk_profile` (migración `0003`; las carteras que ya había quedan `personal` y con el perfil de riesgo de su `profile`, `dinamico` → `agresivo`). `profile` (obsoleto) se sigue guardando a juego con `risk_profile` porque otros módulos aún lo leen.
+  - **Laura y Javier se siguen cargando por defecto.** `scripts/seed_db.py --catalog-only` (y `load_seed(portfolios=False)`) carga solo el catálogo: con la BD recién creada, `GET /portfolios` devuelve `[]`. Cuando el equipo cierre Q10 y estén T4-12 y T4-13, se cambia el valor por defecto. La variable de entorno equivalente irá en `config.py` cuando T2-24 (dueño de ese fichero ahora) esté en `main`.
+  - **Borrar una cartera:** `portfolio` borra sus propias tablas en orden y la fila; avisos e impactos se van por el `ON DELETE CASCADE` que ya tenían sus tablas, sin que `portfolio` consulte tablas de otros módulos. `core/db.py` activa `PRAGMA foreign_keys=ON` en cada conexión SQLite, para que los tests borren igual que Postgres (los 1730 tests que había siguen en verde con el `PRAGMA`).
+  - `GET /portfolios`: primero Laura y Javier y después el resto, por orden de alta (antes, por orden alfabético del id, que con ids aleatorios no tiene sentido).
+- Motivo: deja hecho el backend del hito A sin romper la demo ni el E2E antes de la congelación; quitar a Laura y Javier pasa a ser cambiar un valor por defecto.
+- Alternativas descartadas:
+  - Quitar a Laura y Javier del seed ya: rompe la app y el guion hasta T4-12 y T4-13.
+  - Borrado explícito llamando a funciones nuevas de `alerts` e `impact`: más ficheros de otros módulos para algo que la BD ya hace con la cascada.
+- Impacto:
+  - `make up` no cambia. Quien ya tenga una BD levantada necesita `alembic upgrade head` (el servicio `seed` de Compose lo hace en cada `up`).
+  - T4-11 (importar) puede reutilizar `manage.create` y `init_positions`. T4-12 y T4-13 ya tienen las rutas reales.

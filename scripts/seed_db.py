@@ -5,7 +5,9 @@ Idempotente (D-034): el servicio `seed` de Compose lo ejecuta en cada `up`, desp
 las devuelve a su estado inicial (lo mismo que `POST /demo/reset`).
 
     docker compose run --rm seed                       # lo hace `make seed`
-    cd backend && uv run python ../scripts/seed_db.py [--force]
+    cd backend && uv run python ../scripts/seed_db.py [--force] [--catalog-only]
+
+Con `--catalog-only` solo carga el catálogo: `GET /portfolios` devuelve `[]` (T4-10).
 """
 
 from __future__ import annotations
@@ -24,13 +26,21 @@ for candidate in (Path.cwd(), Path(__file__).resolve().parents[1] / "backend"):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--force", action="store_true", help="vuelve al estado inicial del seed")
+    parser.add_argument(
+        "--catalog-only",
+        action="store_true",
+        help="solo el catálogo de activos, sin Laura ni Javier (la app arranca sin carteras)",
+    )
     args = parser.parse_args()
 
     from app.exposure import service as exposure_service
     from app.portfolio import service
 
-    ids = service.load_seed(force=args.force)
+    ids = service.load_seed(force=args.force, portfolios=not args.catalog_only)
     exposure_service.load_compositions()
+    if args.catalog_only:
+        print("seed: catálogo listo, sin carteras")
+        return
     action = "recargadas" if args.force else "listas"
     print(f"seed: carteras {action}: {', '.join(ids)}")
 

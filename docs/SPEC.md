@@ -195,7 +195,7 @@ erDiagram
 
 | Tabla | Columnas clave | Notas |
 | --- | --- | --- |
-| `portfolio` | id, name, profile (`conservador`/`moderado`/`dinamico`), base_currency=EUR, created_at | Sin login: la demo elige Laura o Javier |
+| `portfolio` | id, name, profile (`conservador`/`moderado`/`dinamico`, obsoleto: a juego con risk_profile), kind (`personal`/`business`/`family`/`other`), risk_profile (`conservador`/`moderado`/`agresivo`), base_currency=EUR, created_at | Sin login. Las carteras nuevas tienen id `pf_` + hex (`POST /portfolios`, T4-10); borrar una se lleva todo lo suyo por `ON DELETE CASCADE`. Laura y Javier se cargan por defecto; `seed_db.py --catalog-only` carga solo el catálogo |
 | `plan` | portfolio_id, target_equity_pct, target_fixed_income_pct, target_cash_pct, drift_threshold (fracción, def. 0,10), goal_amount_eur, goal_year | |
 | `asset` | id, isin, ticker, name, asset_type, asset_class, currency, ter, transferable, price_kind, price_source | `transferable` = fondo de inversión (traspaso sin tributar) |
 | `price` | asset_id, ts, value, currency, source | PK (asset_id, ts) |
