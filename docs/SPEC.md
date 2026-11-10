@@ -162,7 +162,7 @@ Los esquemas son la frontera entre tareas y entre backend y frontend. **Los cont
 | --- | --- | --- |
 | `common.py` | `Money`, `SourceRef`, enums compartidos, `ErrorOut` (códigos de `core/errors.py`) | §3 |
 | `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut`, `AssetOut` | §4.1 |
-| `prices.py` | `PriceOut` (lo devuelven `prices.latest()` y `history()`; sin endpoint) | §4.1 |
+| `prices.py` | `PriceOut` (lo devuelven `prices.latest()` y `history()`; sin endpoint) y `TickerOut` / `TickerItemOut` (ticker de Inicio, T2-17) | §4.1 |
 | `demo.py` | `DemoResetRequest`, `DemoResetOut` (`ReplayOut` está en `events.py`) | §4.6 |
 | `events.py` · `agents.py` · `alerts.py` | `EventAnalysis`, `ShockSet`, `AskRequest` + SSE, `ExplainerContext`, `GuardianRequest/Verdict`, `AlertOut` | §4.2, §4.4 |
 | `impact.py` · `exposure.py` · `radar.py` · `status.py` · `planning.py` | `EventImpactOut`, `ScenarioOut`, `MoveAttributionOut`, `ExposureOut`, `RadarOut`, `StatusOut`, `ProjectionOut`, `AgendaItemOut` | §4.3 |
@@ -396,6 +396,7 @@ sequenceDiagram
 | GET/PUT | `/portfolios/{id}/plan` | Asignación objetivo y meta |
 | GET | `/portfolios/{id}/exposure` | Look-through y radiografía |
 | GET | `/portfolios/{id}/radar` | Riesgos y oportunidades |
+| GET | `/portfolios/{id}/ticker` | Último precio de cada posición y variación frente al cierre anterior, con `calc_id` (ticker de Inicio, T2-17) |
 | GET | `/portfolios/{id}/events` | Eventos con su impacto |
 | POST | `/portfolios/{id}/scenarios` | ¿Y si…? |
 | GET | `/portfolios/{id}/projection` | Proyección con DCA frente al objetivo |

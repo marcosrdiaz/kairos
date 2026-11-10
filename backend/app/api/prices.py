@@ -1,14 +1,16 @@
 """Ticker de mercado de Inicio (T2-17): último precio y variación de los activos de la cartera.
 
-Solo contrato por ahora: la implementación llega en el PR de T2-17 y, mientras, la ruta responde
-`UPSTREAM_UNAVAILABLE`.
+Las posiciones salen de `portfolio.service` y los precios, la variación y la traza de
+`prices.service`; aquí solo se juntan.
 """
 
 from typing import Any
 
 from fastapi import APIRouter
 
-from app.core.errors import AppError, ErrorCode
+from app.core import clock
+from app.portfolio import service as portfolio_service
+from app.prices import service as prices_service
 from app.schemas.common import ErrorOut
 from app.schemas.prices import TickerOut
 
@@ -20,8 +22,6 @@ _ERRORS: dict[int | str, dict[str, Any]] = {404: {"model": ErrorOut}, 503: {"mod
 @router.get("/portfolios/{portfolio_id}/ticker", response_model=TickerOut, responses=_ERRORS)
 def get_ticker(portfolio_id: str) -> TickerOut:
     """Último precio de cada posición y su variación frente al cierre anterior."""
-    raise AppError(
-        ErrorCode.UPSTREAM_UNAVAILABLE,
-        "El ticker de mercado todavía no está disponible.",
-        details={"portfolio_id": portfolio_id},
-    )
+    positions = portfolio_service.get_valued(portfolio_id).positions
+    items = [prices_service.ticker_item(p.asset_id, p.ticker, p.name) for p in positions]
+    return TickerOut(portfolio_id=portfolio_id, as_of=clock.now(), items=items)

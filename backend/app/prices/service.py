@@ -2,6 +2,9 @@
 
 - `latest(asset_id)`: último cierre (o VL) con fecha no posterior a `clock.now()`.
 - `history(asset_id, start, end)`: cierres entre dos fechas, ambas incluidas.
+- `previous_close(asset_id, day)`: último cierre anterior a `day` (`None` con precio fijo).
+- `ticker_item(asset_id, ticker, name)`: último precio y variación frente al cierre anterior,
+  con traza (ticker de Inicio, T2-17).
 - `fx_rate(pair, at)`: tipo `EURUSD` (dólares por euro), el inverso `USDEUR` o `1` si la divisa es
   la misma. `fx_quote` devuelve además el instante y la fuente para la traza.
 
@@ -15,12 +18,14 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
-from app.core import clock
+from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.prices.catalog import AssetPriceSpec, load_catalog
 from app.prices.provider import OfflineCsvProvider, PricePoint, PriceProvider
-from app.schemas.common import PriceKind, SourceKind, SourceRef
-from app.schemas.prices import PriceOut
+from app.prices.ticker import FORMULA as CHANGE_FORMULA
+from app.prices.ticker import change_pct
+from app.schemas.common import PriceKind, SourceKind, SourceRef, TraceKind
+from app.schemas.prices import PriceOut, TickerItemOut
 
 _FX_STEP = Decimal("0.00000001")
 
@@ -104,6 +109,57 @@ def history(asset_id: str, start: date, end: date) -> list[PriceOut]:
         return [_to_out(spec, PricePoint(day=d, value=spec.fixed_price)) for d in days]
     points = get_provider().closes(asset_id)
     return [_to_out(spec, p) for p in points if start <= p.day <= end]
+
+
+def previous_close(asset_id: str, day: date) -> PriceOut | None:
+    """Último cierre (o VL) anterior a `day`. `None` si no hay o si el precio es fijo."""
+    spec = _spec(asset_id)
+    if spec.fixed_price is not None:
+        return None
+    before = [p for p in get_provider().closes(asset_id) if p.day < day]
+    return _to_out(spec, before[-1]) if before else None
+
+
+# --- Ticker de mercado (T2-17) ---
+
+
+def ticker_item(asset_id: str, ticker: str | None, name: str) -> TickerItemOut:
+    """Último precio de un activo y su variación frente al cierre anterior, con traza."""
+    last = latest(asset_id)
+    previous = previous_close(asset_id, last.price_at.date())
+    previous_price = previous.price if previous else None
+    change = change_pct(last.price, previous_price)
+    if change is None:
+        formula = "Sin cierre anterior comparable: no se calcula la variación"
+    else:
+        formula = CHANGE_FORMULA
+    calc_id = trace.record(
+        TraceKind.VALUATION,
+        formula,
+        inputs={
+            "asset_id": asset_id,
+            "price": last.price,
+            "price_at": last.price_at,
+            "previous_price": previous_price,
+            "previous_price_at": previous.price_at if previous else None,
+        },
+        outputs={"change_pct": change},
+        sources=[last.source] + ([previous.source] if previous else []),
+    )
+    return TickerItemOut(
+        asset_id=asset_id,
+        ticker=ticker,
+        name=name,
+        price=last.price,
+        currency=last.currency,
+        price_at=last.price_at,
+        price_kind=last.price_kind,
+        previous_price=previous_price,
+        previous_price_at=previous.price_at if previous else None,
+        change_pct=change,
+        source=last.source,
+        calc_id=calc_id,
+    )
 
 
 # --- Tipos de cambio ---
