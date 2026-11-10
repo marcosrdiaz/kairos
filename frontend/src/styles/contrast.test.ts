@@ -66,6 +66,7 @@ const TEXT_PAIRS: [string, string][] = [
   ["trend-up", "surface"],
   ["trend-down", "surface"],
   ["trend-loss", "surface"],
+  ["trend-loss", "trend-loss-bg"],
 ];
 
 const UI_PAIRS: [string, string][] = [

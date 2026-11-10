@@ -18,7 +18,7 @@ import { formatEur } from "../../../lib/format";
 import type { ActivePointStore } from "./activePoint";
 import { Change, FlowTag } from "./Change";
 import { niceScale, pointDate, tickDate, tickEur, type ChartRow } from "./chartFormat";
-import { DOWN, INFO, REFERENCE, UP } from "./colors";
+import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
 
 
 /** Posición (0 arriba, 1 abajo) de `value` dentro de [`low`, `high`], acotada. */
@@ -30,7 +30,7 @@ function offsetIn(value: number, high: number, low: number): number {
 interface HistoryChartProps {
   rows: ChartRow[];
   period: HistoryPeriod;
-  /** Valor al empezar el periodo: la línea es verde por encima y naranja por debajo. */
+  /** Valor al empezar el periodo: la línea es verde por encima y granate por debajo. */
   startValue: number;
   /** Nombre accesible de la gráfica (el lector lo anuncia al entrar con Tab). */
   label: string;
@@ -67,7 +67,7 @@ function PointTooltip({ active, payload }: TooltipContentProps<TooltipValueType,
 }
 
 /**
- * Valor de la cartera: línea verde por encima del valor inicial y naranja por debajo, áreas
+ * Valor de la cartera: línea verde por encima del valor inicial y granate por debajo, áreas
  * rellenas hasta la referencia dorada (el valor inicial) y puntos azules donde entró o salió
  * dinero (Recharts,
  * decisión de T2-18). Accesible con teclado (`accessibilityLayer`). Memoizada: al mover el ratón
@@ -127,12 +127,12 @@ export const HistoryChart = memo(function HistoryChart({
             <stop offset={1} stopColor={DOWN} />
           </linearGradient>
           {/* Ganancia: verde intenso junto a la línea que se difumina hacia la referencia; pérdida,
-              naranja que se intensifica al alejarse de ella. */}
+              granate de fondo que se intensifica al alejarse de ella. */}
           <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
             <stop offset={0} stopColor={UP} stopOpacity={0.34} />
             <stop offset={fillSplit} stopColor={UP} stopOpacity={0.06} />
-            <stop offset={fillSplit} stopColor={DOWN} stopOpacity={0.06} />
-            <stop offset={1} stopColor={DOWN} stopOpacity={0.34} />
+            <stop offset={fillSplit} stopColor={DOWN_BG} stopOpacity={0.35} />
+            <stop offset={1} stopColor={DOWN_BG} stopOpacity={1} />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} stroke="var(--kairos-color-border)" strokeDasharray="2 6" />

@@ -5,7 +5,7 @@ const TONE = { up: "text-trend-up", down: "text-trend-loss", flat: "text-ink-mut
 
 /**
  * Variación respecto al cierre anterior: flecha + signo + color (nunca solo color, DESIGN.md).
- * Subida en verde (`trend-up`); bajada en naranja (`trend-loss`: sin rojo en el mercado).
+ * Subida en verde (`trend-up`); bajada en granate (`trend-loss`).
  */
 export function Change({ row, compact = false }: { row: ChartRow; compact?: boolean }) {
   if (row.change === null) return <span className="text-ink-muted">—</span>;

@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { DOWN, INFO, REFERENCE, UP } from "./colors";
+import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
 
 /** Muestra de línea (trazo) o de punto, decorativa: el significado lo da el texto. */
 function Swatch({ kind, color }: { kind: "line" | "dash" | "dot" | "area"; color: string }) {
@@ -11,7 +11,7 @@ function Swatch({ kind, color }: { kind: "line" | "dash" | "dot" | "area"; color
       {kind === "area" && (
         <>
           <rect x={1} y={1} width={26} height={6} fill={UP} opacity={0.3} />
-          <rect x={1} y={7} width={26} height={6} fill={DOWN} opacity={0.3} />
+          <rect x={1} y={7} width={26} height={6} fill={DOWN_BG} />
           <path d="M1 7 H27" stroke={REFERENCE} strokeWidth={1.2} strokeDasharray="3 3" />
         </>
       )}
@@ -23,7 +23,7 @@ const ITEMS = [
   { kind: "line", color: UP, label: "Por encima del valor inicial", text: "la cartera vale más que al empezar el periodo." },
   { kind: "line", color: DOWN, label: "Por debajo del valor inicial", text: "vale menos que al empezar." },
   { kind: "dash", color: REFERENCE, label: "Línea dorada", text: "el valor al empezar el periodo: la referencia para ganar o perder." },
-  { kind: "area", color: UP, label: "Zonas sombreadas", text: "la distancia a esa referencia: verde si se gana, naranja si se pierde." },
+  { kind: "area", color: UP, label: "Zonas sombreadas", text: "la distancia a esa referencia: verde si se gana, granate si se pierde." },
   { kind: "dot", color: INFO, label: "Punto azul", text: "ese día entró o salió dinero (compra, aportación o venta): un salto ahí no es rentabilidad." },
 ] as const;
 
@@ -52,7 +52,7 @@ export function ChartLegend() {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex min-h-touch items-center gap-2 rounded-full border-0 bg-transparent px-1 text-sm font-semibold text-accent hover:underline"
+        className="inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-1 text-sm font-semibold text-accent hover:underline"
       >
         <LegendIcon open={open} />
         {open ? "Ocultar leyenda" : "Mostrar leyenda"}

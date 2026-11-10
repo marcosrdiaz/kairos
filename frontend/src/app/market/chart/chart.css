@@ -205,18 +205,18 @@
 .kchart-table tbody tr.kchart-month th {
   background: var(--kairos-color-surface);
 }
-/* Fondo muy suave del color de la variación de cada fila (ganancia verde, pérdida naranja). */
+/* Fondo muy suave del color de la variación de cada fila (ganancia verde, pérdida granate). */
 .kchart-table tbody tr.kchart-row[data-trend="up"] {
   background: color-mix(in srgb, var(--kairos-color-trend-up) 6%, transparent);
 }
 .kchart-table tbody tr.kchart-row[data-trend="down"] {
-  background: color-mix(in srgb, var(--kairos-color-trend-loss) 6%, transparent);
+  background: color-mix(in srgb, var(--kairos-color-trend-loss-bg) 45%, transparent);
 }
 .kchart-table tbody tr.kchart-row[data-trend="up"]:hover {
   background: color-mix(in srgb, var(--kairos-color-trend-up) 12%, transparent);
 }
 .kchart-table tbody tr.kchart-row[data-trend="down"]:hover {
-  background: color-mix(in srgb, var(--kairos-color-trend-loss) 12%, transparent);
+  background: color-mix(in srgb, var(--kairos-color-trend-loss-bg) 80%, transparent);
 }
 .kchart-table tbody tr.kchart-row[data-trend="flat"]:hover {
   background: var(--kairos-color-surface-muted);

@@ -91,7 +91,7 @@ function Rows({ history, periodName }: HistoryTableProps) {
 
 /**
  * Tabla alternativa a la gráfica: los mismos puntos, agrupados por mes, con la variación respecto
- * al cierre anterior (flecha, signo y color; la fila, con un fondo muy suave verde o naranja) y
+ * al cierre anterior (flecha, signo y color; la fila, con un fondo muy suave verde o granate) y
  * las aportaciones en azul. Plegada por defecto; las
  * filas solo se pintan al abrirla. Barra de scroll propia (`components/Scrollbar`).
  */
