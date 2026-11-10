@@ -6,7 +6,7 @@ fecha según el libro de operaciones. No incluye los ajustes de demo del replay 
 
 from enum import StrEnum
 
-from app.schemas.common import ContractModel, Money, SourceRef, UtcDatetime
+from app.schemas.common import ContractModel, Fraction, Money, SourceRef, UtcDatetime
 from app.schemas.portfolio import CalcId
 
 
@@ -19,9 +19,20 @@ class HistoryPeriod(StrEnum):
 
 
 class PortfolioHistoryPoint(ContractModel):
+    """Un cierre de la serie.
+
+    - `change_eur` / `change_pct`: variación respecto al punto anterior (`null` en el primero).
+      Incluye las aportaciones o retiradas de entre medias: `flows_eur` dice cuánto fue dinero
+      que entró o salió, para no confundirlo con una subida o una bajada.
+    - `change_pct` es una fracción a 4 decimales (0.0123 = 1,23 %) sobre el valor anterior.
+    """
+
     date: UtcDatetime
     """Día del cierre (00:00 UTC)."""
     value_eur: Money
+    change_eur: Money | None = None
+    change_pct: Fraction | None = None
+    flows_eur: Money
 
 
 class PortfolioHistoryOut(ContractModel):

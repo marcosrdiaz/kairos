@@ -1300,13 +1300,30 @@ export interface components {
              */
             start_value_eur: string;
         };
-        /** PortfolioHistoryPoint */
+        /**
+         * PortfolioHistoryPoint
+         * @description Un cierre de la serie.
+         *
+         *     - `change_eur` / `change_pct`: variación respecto al punto anterior (`null` en el primero).
+         *       Incluye las aportaciones o retiradas de entre medias: `flows_eur` dice cuánto fue dinero
+         *       que entró o salió, para no confundirlo con una subida o una bajada.
+         *     - `change_pct` es una fracción a 4 decimales (0.0123 = 1,23 %) sobre el valor anterior.
+         */
         PortfolioHistoryPoint: {
+            /** Change Eur */
+            change_eur?: string | null;
+            /** Change Pct */
+            change_pct?: string | null;
             /**
              * Date
              * Format: date-time
              */
             date: string;
+            /**
+             * Flows Eur
+             * @description Importe en euros con 2 decimales
+             */
+            flows_eur: string;
             /**
              * Value Eur
              * @description Importe en euros con 2 decimales

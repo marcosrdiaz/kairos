@@ -3,16 +3,16 @@
   "portfolio_id": "laura",
   "period": "1m",
   "points": [
-    {"date": "2026-10-07T00:00:00Z", "value_eur": "33410.25"},
-    {"date": "2026-10-14T00:00:00Z", "value_eur": "33702.80"},
-    {"date": "2026-10-21T00:00:00Z", "value_eur": "34150.12"},
-    {"date": "2026-10-28T00:00:00Z", "value_eur": "34825.40"},
-    {"date": "2026-11-04T00:00:00Z", "value_eur": "34540.07"},
-    {"date": "2026-11-06T00:00:00Z", "value_eur": "34311.68"}
+    {"date": "2026-10-07T00:00:00Z", "value_eur": "33410.25", "change_eur": null, "change_pct": null, "flows_eur": "0.00"},
+    {"date": "2026-10-14T00:00:00Z", "value_eur": "33702.80", "change_eur": "292.55", "change_pct": "0.0088", "flows_eur": "0.00"},
+    {"date": "2026-10-21T00:00:00Z", "value_eur": "34150.12", "change_eur": "447.32", "change_pct": "0.0133", "flows_eur": "300.00"},
+    {"date": "2026-10-28T00:00:00Z", "value_eur": "34825.40", "change_eur": "675.28", "change_pct": "0.0198", "flows_eur": "0.00"},
+    {"date": "2026-11-04T00:00:00Z", "value_eur": "34540.07", "change_eur": "-285.33", "change_pct": "-0.0082", "flows_eur": "0.00"},
+    {"date": "2026-11-06T00:00:00Z", "value_eur": "34311.68", "change_eur": "-228.39", "change_pct": "-0.0066", "flows_eur": "0.00"}
   ],
   "start_value_eur": "33410.25",
   "end_value_eur": "34311.68",
-  "net_flows_eur": "0.00",
+  "net_flows_eur": "300.00",
   "calc_id": "calc_3f9a1c27b84e4d0e9a6b2d51c7e8f402",
   "sources": [
     {

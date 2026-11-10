@@ -1614,10 +1614,43 @@
       },
       "PortfolioHistoryPoint": {
         "additionalProperties": false,
+        "description": "Un cierre de la serie.\n\n- `change_eur` / `change_pct`: variación respecto al punto anterior (`null` en el primero).\n  Incluye las aportaciones o retiradas de entre medias: `flows_eur` dice cuánto fue dinero\n  que entró o salió, para no confundirlo con una subida o una bajada.\n- `change_pct` es una fracción a 4 decimales (0.0123 = 1,23 %) sobre el valor anterior.",
         "properties": {
+          "change_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Eur"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
           "date": {
             "format": "date-time",
             "title": "Date",
+            "type": "string"
+          },
+          "flows_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Flows Eur",
             "type": "string"
           },
           "value_eur": {
@@ -1629,7 +1662,8 @@
         },
         "required": [
           "date",
-          "value_eur"
+          "value_eur",
+          "flows_eur"
         ],
         "title": "PortfolioHistoryPoint",
         "type": "object"
