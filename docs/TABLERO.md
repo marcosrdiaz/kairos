@@ -46,7 +46,19 @@ Propuesta; ajustad a vuestros horarios de lunes a miércoles.
 
 Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md` §6. Formato de ID: `T<fase>-<nn>`. Añade tareas al final de su fase; no renumeres.
 
-### Fase 0 · Cimientos y contratos (hasta el dom 8, 23:59)
+**Estado de las fases** (actualízalo al cerrar una):
+
+| Fase | Nombre | Cuándo | Estado |
+| --- | --- | --- | --- |
+| 0 | Cimientos y contratos | dom 8 | ✅ cerrada |
+| 1 | Datos y motores | lun 9 | ✅ cerrada |
+| 2 | Experiencia e integración | hasta el mar 10, 18:00 | 🔄 abierta |
+| 3 | Endurecimiento | mar 10, 18:00 → mié 11, 16:00 | 🔄 abierta |
+| 4 | Producción: datos reales y varias carteras | propuestas; después de la entrega salvo acuerdo | 🔄 abierta |
+| 5 | Rediseño visual: interfaz y componentes | por definir | ⬜ sin tareas |
+| 6 | Entrega | mié 11, 21:00 (se coge sin esperar a las fases 4 y 5) | ⬜ pendiente |
+
+### Fase 0 · Cimientos y contratos (dom 8) · ✅ cerrada
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -61,7 +73,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T0-09 | Verificar IDs de Scribe v2 Realtime y Flash v2.5, y la voz en español; medir latencia | Anotado en `decisiones.md` | — | `docs/decisiones.md` (solo añadir) | Marcos | ✅ hecho |
 | T0-10 | Confirmar los 3 eventos (decisión 5 de §8) y redactar `title`, `text`, `source_urls`, `consensus`, `fallback_chain` | JSON sin `observed` todavía. Límite: lunes 14:00 | — | `data/events/replay/*.json` | Manu | ✅ hecho |
 
-### Fase 1 · Datos y motores (lun 9)
+### Fase 1 · Datos y motores (lun 9) · ✅ cerrada
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -122,9 +134,9 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-26 | Analizador sin influencia en las cifras y coherente con el dato: las cifras se calculan siempre con **todos** los factores de `observed`; `channels` solo sirve para la narrativa; la dirección observada va al prompt y se valida; timeout de 10 s; caché del análisis y pre-análisis de los 3 eventos | Con `ANTHROPIC_API_KEY`, los 3 eventos salen analizados por el modelo (no `fallback`), con `channels[].direction` igual al signo de `observed` y las mismas cifras que sin analizador; repetir el replay no llama al modelo. Detalle en *Notas para retomar* (T2-26) | T1-15, T2-09 | `backend/app/agents/{analyzer,service}.py`, `backend/app/agents/prompts/analyzer.md`, `backend/app/events/{pipeline,service,repository}.py`, `scripts/preanalyze_events.py` (nuevo), `backend/tests/test_analyzer*.py`, `backend/tests/test_events_pipeline.py` | — | ⬜ |
 | T2-28 | *Propuesta (Javi, pendiente de validar en la llamada diaria).* Distintivo del emisor en el ticker de Inicio (T2-17): delante de cada activo, una pastilla redonda con las iniciales del grupo al que pertenece (Vanguard, iShares/BlackRock, Apple, NVIDIA, Microsoft, Inditex, Iberdrola…) y un color fijo por grupo, para reconocerlos de un vistazo. Solo frontend: un mapa pequeño nombre/`asset_id` → emisor; sin logos de terceros ni peticiones externas | Cada activo del ticker lleva su distintivo; un emisor desconocido sale con una pastilla neutra y la primera letra del nombre, nunca vacía. Funciona en modo demo sin red (sin servicios de logos, sin dependencias nuevas). Decorativo (`aria-hidden`): el nombre sigue en texto. Colores de los tokens `--kairos-*` con contraste AA en claro y oscuro. No cambia el contrato ni el backend; el ticker sigue pausándose como hoy (WCAG 2.2.2) | T2-17 | `frontend/src/app/market/ticker/` | — | ⬜ |
 
-### Fase 3 · Endurecer (mar 10, 18:00 → mié 11, 16:00)
+### Fase 3 · Endurecimiento (mar 10, 18:00 → mié 11, 16:00)
 
-Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** como T6-01 a T6-04 (acuerdo del equipo, 10 nov). La fase 3 queda para endurecer.
+Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** como T6-01 a T6-04 (acuerdo del equipo, 10 nov). La fase 3 queda para el endurecimiento.
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -135,7 +147,7 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 | T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | ✅ hecho |
 | T3-10 | Explicador sin frases repetidas ni de relleno tras el reintento (lo que encontró T3-01) y evaluación ampliada: columnas de repetidas y relleno, y 10 trampas indirectas | Con Claude real, 0 órdenes, 0 frases repetidas y 0 de relleno en la evaluación; tests con FakeClaude del descarte | T3-01 | `backend/app/agents/{explainer,emitter,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py` (nuevo), `scripts/eval_answers.py`, `backend/tests/eval/` (los dos últimos los comparte con T3-01, también de Manu), `scripts/eval_checks.py` (nuevo), `docs/SPEC.md` §9 | Manu | 🧪 en PR |
 
-### Fase 4 · Producción: datos reales y varias carteras (propuestas, después de la entrega salvo acuerdo del equipo)
+### Fase 4 · Producción: datos reales y varias carteras (propuestas; después de la entrega salvo acuerdo del equipo)
 
 *Propuestas de Alons, pendientes de validar en la llamada diaria.* Llevan el sistema al uso real: datos de mercado en directo en lugar de los CSV del 6 nov, noticias que llegan solas en lugar del replay, carteras que crea el usuario en lugar de Laura y Javier y un modo demo determinista sobre datos reales (T4-16 a T4-22). Qué entra antes de la congelación del mié 11 a las 16:00 lo decide el equipo (ver Q10). Base: «Modo demo y modo producción: precios en directo y proveedor» (D-065) y «De dónde sale el shock de un evento en producción» (D-089).
 
@@ -176,14 +188,14 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 | T4-23 | *Propuesta (Alons, pendiente de validar en la llamada diaria).* **VL de los fondos más fresco**: Yahoo da el VL de los fondos (`0P…`, vía Morningstar) con una sesión más de retraso de lo necesario. Comprobado el 10 nov con IE00B03HD191: Yahoo, 6 nov (63,03 €); Financial Times, 9 nov (64,16 €). Un adaptador solo para los `nav_daily` que lee el VL de otra fuente por ISIN (web de Vanguard o FT, sin clave; con licencia, EODHD), detrás del mismo `PriceProvider`. Yahoo sigue para acciones, ETF y EUR/USD. Antes, una decisión con la fuente elegida y sus condiciones de uso | Con `MARKET_DATA_PROVIDER=yahoo`, los 6 fondos del catálogo tienen el VL del día hábil anterior en cuanto la gestora lo publica; si la fuente nueva falla, sirve Yahoo o el último guardado con su fecha, nunca uno inventado. Tests sin red y uno `live`. Sin dependencias nuevas | T2-24 | `backend/app/prices/` (adaptador nuevo y su selección en `live.py`), `backend/tests/test_prices_nav.py` (nuevo) | — | ⬜ |
 | T4-24 | *Propuesta (Alons, pendiente de validar en la llamada diaria; amplía `INGENIERIA.md` §4).* **Valor estimado en directo de los fondos**: un fondo solo tiene un VL al día, pero los indexados siguen el mismo índice que un ETF que cotiza cada minuto (Global Stock → `IWDA`, US 500 → `CSPX`…). Estimación = último VL × variación del ETF de referencia desde la fecha de ese VL, con rango (error de seguimiento y beta frente al ETF) y `calc_id`. Se muestra **aparte** del VL oficial y etiquetada «estimado»; la valoración oficial no cambia. Necesita campos opcionales nuevos en la posición (p. ej. `estimated_value` con `low`/`high`, `calc_id`): petición de contrato en un PR propio | En producción, los fondos de Laura tienen un valor estimado que se mueve con su ETF de referencia, con rango y traza («¿De dónde sale?»); el VL oficial y su fecha siguen visibles; un fondo sin ETF de referencia no tiene estimación (nunca una inventada). Tests con proveedor falso | T2-24, T4-23 (b) | `backend/app/prices/estimate.py` (nuevo), `data/seed/assets.json` (solo el ETF de referencia de cada fondo), `backend/app/schemas/portfolio.py` (PR de contrato), `backend/tests/test_nav_estimate.py` (nuevo), `frontend/src/app/` (solo mostrar el estimado junto al VL) | — | ⬜ |
 
-### Fase 5 · Rediseño de la interfaz y ajuste visual de componentes
+### Fase 5 · Rediseño visual: interfaz y componentes (por definir)
 
 *Tareas por definir.* Rediseño de las pantallas y pulido visual de los componentes (skills `impeccable` y `emil-design-eng`). Se añaden aquí con IDs `T5-<nn>`.
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 
-### Fase 6 · Entrega (antes del mié 11, 21:00)
+### Fase 6 · Entrega (mié 11, 21:00)
 
 **Excepción al orden de fases:** la entrega tiene fecha fija, así que estas tareas se pueden coger en cuanto sus dependencias estén hechas, aunque las fases 4 y 5 no estén cerradas.
 
