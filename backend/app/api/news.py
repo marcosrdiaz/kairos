@@ -1,16 +1,14 @@
-"""Noticias de una cartera (T4-27): `GET /portfolios/{id}/news` y `.../news/{news_id}`.
+"""Noticias de una cartera: `GET /portfolios/{id}/news` y `.../news/{news_id}` (T4-27, T4-30).
 
-Rutas provisionales del contrato: **no sirven datos de ejemplo**. Hasta que la ingesta (T4-28) y
-la estimación (T4-30) estén, la lista sale vacía y el detalle da 404. Los ejemplos de
-`schemas/examples/NewsItemOut*.json` son solo mocks del frontend y de los tests.
+Noticias reales (T4-28) clasificadas por Claude (T4-29) con su impacto en la cartera calculado
+por el motor (T4-30). Sin datos de ejemplo.
 """
 
 from typing import Any
 
 from fastapi import APIRouter, Query
 
-from app.core.errors import AppError, ErrorCode
-from app.portfolio import service as portfolio_service
+from app.news import service as news_service
 from app.schemas.common import ErrorOut
 from app.schemas.news import NewsCategory, NewsItemOut
 
@@ -30,10 +28,9 @@ def list_news(
 ) -> list[NewsItemOut]:
     """Noticias de la más reciente a la más antigua, con su impacto en esta cartera.
 
-    `affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.
-    404 si la cartera no existe."""
-    portfolio_service.ensure_exists(portfolio_id)
-    return []
+    `affecting=true` (por defecto): solo las que mueven alguna posición; `category` filtra por
+    tipo. 404 si la cartera no existe."""
+    return news_service.list_for_portfolio(portfolio_id, category, affecting, limit)
 
 
 @router.get(
@@ -43,5 +40,4 @@ def list_news(
 )
 def get_news(portfolio_id: str, news_id: str) -> NewsItemOut:
     """Una noticia con su impacto en esta cartera. 404 si no existe la cartera o la noticia."""
-    portfolio_service.ensure_exists(portfolio_id)
-    raise AppError(ErrorCode.NOT_FOUND, "No encontramos esa noticia.", {"news_id": news_id})
+    return news_service.get_for_portfolio(portfolio_id, news_id)

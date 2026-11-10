@@ -5,7 +5,7 @@ import type {
   NewsEstimateOut,
   NewsEstimateStatus,
 } from "../../api/generated/schema";
-import { formatDate, formatEurRange, formatPercent } from "../../lib/format";
+import { formatDate, formatEur, formatEurRange, formatPercent } from "../../lib/format";
 
 /** Orden de los filtros de la pantalla Noticias. */
 export const CATEGORIES: NewsCategory[] = [
@@ -59,22 +59,35 @@ export function methodText(estimate: NewsEstimateOut): string {
       const n = estimate.analogs_count;
       return n ? `Según ${n} casos parecidos del histórico` : "Según casos parecidos del histórico";
     }
-    case "volatility":
-      return "Según la volatilidad histórica (pocos casos parecidos)";
+    case "volatility": {
+      const n = estimate.analogs_count;
+      return n
+        ? `Según cómo se movió en ${n} días de noticias fuertes de los últimos tres años`
+        : "Según cómo se movió en días de noticias fuertes de los últimos tres años";
+    }
     case "measured":
-      return "Medido con los precios de cierre";
+      return "Medido con los precios de cierre de esa sesión, que recogen todo lo que movió el mercado ese día";
     default:
       return "";
   }
+}
+
+/** "entre -270 € y -110 €"; si los dos extremos se ven igual (una cifra medida), "-121 €". */
+export function eurRangeText(low: string, high: string): string {
+  const range = formatEurRange(low, high);
+  const lowText = formatEur(low, 0);
+  return range === `entre ${lowText} y ${lowText}` ? lowText : range;
 }
 
 /** "entre -270 € y -110 €" y "entre -0,6 % y -0,3 %", o null si la estimación no tiene cifras. */
 export function rangeTexts(estimate: NewsEstimateOut): { eur: string; pct: string } | null {
   const { low_eur, high_eur, low_pct, high_pct } = estimate;
   if (!low_eur || !high_eur || !low_pct || !high_pct) return null;
+  const low = formatPercent(low_pct);
+  const high = formatPercent(high_pct);
   return {
-    eur: formatEurRange(low_eur, high_eur),
-    pct: `entre ${formatPercent(low_pct)} y ${formatPercent(high_pct)}`,
+    eur: eurRangeText(low_eur, high_eur),
+    pct: low === high ? low : `entre ${low} y ${high}`,
   };
 }
 

@@ -87,6 +87,19 @@ describe("NewsPage", () => {
     ).toBeTruthy();
   });
 
+  it("«Ver más noticias» pide la página siguiente", async () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({
+      ...(estimated as NewsItemOut),
+      id: `news_${i}`,
+    }));
+    serveNews(many);
+    renderPage();
+    expect(await screen.findAllByRole("article")).toHaveLength(30);
+    expect(lastUrl()).toContain("limit=30");
+    fireEvent.click(screen.getByRole("button", { name: "Ver más noticias" }));
+    await waitFor(() => expect(lastUrl()).toContain("limit=60"));
+  });
+
   it("si la API falla, no inventa nada", async () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 503 }));
     renderPage();

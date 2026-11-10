@@ -47,13 +47,23 @@ export function NewsEffect({ estimate }: { estimate: NewsEstimateOut | null }) {
           </>
         )}
       </dl>
-      <p className="m-0 text-lg font-semibold text-ink">
-        Tu cartera podría moverse{" "}
-        <span className="tabular-nums">
-          <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
-        </span>{" "}
-        {horizonText(estimate.horizon_sessions)}.
-      </p>
+      {estimate.status === "measured" ? (
+        <p className="m-0 text-lg font-semibold text-ink">
+          Ese día tu cartera se movió{" "}
+          <span className="tabular-nums">
+            <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
+          </span>{" "}
+          por esta vía.
+        </p>
+      ) : (
+        <p className="m-0 text-lg font-semibold text-ink">
+          Tu cartera podría moverse{" "}
+          <span className="tabular-nums">
+            <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
+          </span>{" "}
+          {horizonText(estimate.horizon_sessions)}.
+        </p>
+      )}
       <p className="m-0 text-sm text-ink-muted">
         Equivale a <span className="tabular-nums">{ranges.pct}</span> del valor de la cartera.
         {method && ` ${method}.`}
