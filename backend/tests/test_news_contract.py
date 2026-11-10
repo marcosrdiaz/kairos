@@ -73,24 +73,15 @@ def test_alerts_have_a_news_kind_and_an_optional_news_id() -> None:
 # --- Rutas provisionales ---
 
 
-def test_list_leaves_out_news_that_do_not_affect_the_portfolio(client: TestClient) -> None:
-    response = client.get(URL)
+def test_provisional_routes_never_serve_the_examples(client: TestClient) -> None:
+    """Sin ingesta (T4-28) no hay noticias: nada de datos de ejemplo en la app."""
+    response = client.get(URL, params={"affecting": "false"})
     assert response.status_code == 200, response.text
-    items = response.json()
-    assert [item["estimate"]["status"] for item in items] == ["pending", "estimated"]
-
-
-def test_list_filters_by_category_and_can_show_everything(client: TestClient) -> None:
-    earnings = client.get(URL, params={"category": "earnings"}).json()
-    assert [item["category"] for item in earnings] == ["earnings"]
-    everything = client.get(URL, params={"affecting": "false"}).json()
-    assert len(everything) == 3
-    assert client.get(URL, params={"limit": 1}).json()[0]["category"] == "central_bank"
-
-
-def test_get_one_and_404s(client: TestClient) -> None:
+    assert response.json() == []
     news_id = examples.load("NewsItemOut")["id"]
-    assert client.get(f"{URL}/{news_id}").json()["id"] == news_id
-    assert client.get(f"{URL}/news_missing").status_code == 404
+    assert client.get(f"{URL}/{news_id}").status_code == 404
+
+
+def test_routes_check_the_portfolio_and_the_filters(client: TestClient) -> None:
     assert client.get(f"{API_PREFIX}/portfolios/missing/news").status_code == 404
     assert client.get(URL, params={"category": "sports"}).status_code == 422
