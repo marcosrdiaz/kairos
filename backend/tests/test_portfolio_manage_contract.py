@@ -56,18 +56,29 @@ def test_update_needs_at_least_one_field() -> None:
         PortfolioUpdateRequest.model_validate({})
 
 
+def _new_portfolio_id(client: TestClient) -> str:
+    body = {"name": "Mía", "risk_profile": "moderado"}
+    portfolio_id: str = client.post(f"{API_PREFIX}/portfolios", json=body).json()["id"]
+    return portfolio_id
+
+
 def test_update_echoes_changes(client: TestClient) -> None:
+    portfolio_id = _new_portfolio_id(client)
     body = {"name": "Hijos", "risk_profile": "conservador"}
-    response = client.patch(f"{API_PREFIX}/portfolios/pf_abc", json=body)
+    response = client.patch(f"{API_PREFIX}/portfolios/{portfolio_id}", json=body)
 
     assert response.status_code == 200
     data = response.json()
-    assert (data["id"], data["name"], data["risk_profile"]) == ("pf_abc", "Hijos", "conservador")
+    assert (data["id"], data["name"], data["risk_profile"]) == (
+        portfolio_id,
+        "Hijos",
+        "conservador",
+    )
     assert data["profile"] == "conservador"
 
 
 def test_delete_returns_204(client: TestClient) -> None:
-    response = client.delete(f"{API_PREFIX}/portfolios/pf_abc")
+    response = client.delete(f"{API_PREFIX}/portfolios/{_new_portfolio_id(client)}")
     assert response.status_code == 204
     assert response.content == b""
 

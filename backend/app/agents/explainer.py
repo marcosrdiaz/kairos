@@ -108,6 +108,10 @@ class Turn:
 
     def _sentences(self, sentences: list[str]) -> Stream:
         for sentence in sentences:
+            skip = self.out.skip_reason(sentence)
+            if skip is not None:
+                logger.info("Explicador %s: frase descartada (%s)", self.turn_id, skip)
+                continue
             outcome = self.out.approve(sentence)
             if isinstance(outcome, str):
                 return prompt.feedback(sentence, outcome, self.out.emitted)

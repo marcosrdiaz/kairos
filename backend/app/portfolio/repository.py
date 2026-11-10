@@ -130,12 +130,22 @@ def get_portfolio(session: Session, portfolio_id: str) -> Portfolio | None:
 
 
 def list_portfolio_ids(session: Session) -> list[str]:
-    return list(session.scalars(select(Portfolio.id)))
+    """Por orden de alta (la más antigua primero)."""
+    return list(session.scalars(select(Portfolio.id).order_by(Portfolio.created_at, Portfolio.id)))
 
 
 def upsert_portfolio(
-    session: Session, portfolio_id: str, name: str, profile: str, base_currency: str, now: datetime
+    session: Session,
+    portfolio_id: str,
+    name: str,
+    profile: str,
+    base_currency: str,
+    now: datetime,
+    *,
+    kind: str | None,
+    risk_profile: str | None,
 ) -> None:
+    """Crea la fila o, si ya existe, cambia sus datos (sin tocar `created_at`)."""
     row = session.get(Portfolio, portfolio_id)
     if row is None:
         session.add(
@@ -143,12 +153,23 @@ def upsert_portfolio(
                 id=portfolio_id,
                 name=name,
                 profile=profile,
+                kind=kind,
+                risk_profile=risk_profile,
                 base_currency=base_currency,
                 created_at=now,
             )
         )
     else:
         row.name, row.profile, row.base_currency = name, profile, base_currency
+        row.kind, row.risk_profile = kind, risk_profile
+    session.flush()
+
+
+def delete_portfolio(session: Session, portfolio_id: str) -> None:
+    """Borra lo de `portfolio` en orden y después la fila; avisos, impactos y lo demás que cuelga
+    de la cartera se van por `ON DELETE CASCADE`."""
+    clear_portfolio(session, portfolio_id)
+    session.execute(delete(Portfolio).where(Portfolio.id == portfolio_id))
     session.flush()
 
 

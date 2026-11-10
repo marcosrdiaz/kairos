@@ -1,0 +1,20 @@
+### D-091 · E2E del guion con `@playwright/test` contra el stack real en modo offline (T3-02)
+- Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
+- Contexto: T3-02 pide el guion de demo de 8 pasos en Playwright, «en verde en offline con fakes». `CLAUDE.md` ya reservaba `@playwright/test` para estos E2E (distinto de `playwright-cli`, que es para que el agente abra la app). Es una dependencia nueva del frontend, así que necesita decisión. El smoke por API (`scripts/demo_smoke.py`, T2-03) ya cubre el backend; faltaba comprobar lo que ve el jurado: la app en el navegador.
+- Decisión:
+  - **`@playwright/test` 1.64.1** (Apache-2.0, versión exacta, solo `devDependencies`). Es la última estable con más de dos semanas; 1.65.0 salió el 5 de noviembre.
+  - **Contra el backend real, no contra mocks:** el mismo stack de `make up` (migraciones, seed y betas) con el override `frontend/e2e/compose.e2e.yml`, que vacía las claves de Claude y ElevenLabs y fija `DEMO_CLOCK`. Sin clave, el analizador usa el respaldo, el explicador las plantillas y la voz el mock (D-027): esos son los «fakes», y las cifras salen de los motores reales con los datos de `data/`. El override va en `environment`, que manda sobre el `.env`, así que el resultado no depende de las claves de cada uno.
+  - **`e2e/global-setup.ts`** levanta el stack si no responde (`docker compose ... up --build -d --wait`, construyendo antes el backend para evitar un fallo de la caché de Docker) y se para con instrucciones si el backend no tiene el reloj de demo o responde con Claude real (frase de estado que no sale de plantilla).
+  - **Un test por paso del guion**, todos tras `POST /demo/reset` con `preload`, en serie (`workers: 1`): la demo es un estado global del backend. El paso 3 lanza el replay de NVIDIA por API, como `make replay`. La voz se prueba por escrito (el plan B de preguntas del asistente, T2-14).
+  - **Qué se comprueba:** estados (Tranquilo → Atento), aviso, radiografía, 3 eventos con cadena causal, rango en € y confianza, filtro, Laura ≠ Javier, respuestas del asistente con el aviso de IA, traza de una cifra en cada paso (entradas, fórmula, resultado y fuentes) y que ningún texto mostrado contiene órdenes de compraventa. **No se fijan cifras exactas**, solo su forma: las calibra T3-04 y no deben romper el E2E.
+  - Selectores por rol y nombre accesible (lo que anuncia el lector de pantalla), no por clases ni `data-testid`.
+  - Ficheros: `frontend/playwright.config.ts` y `frontend/e2e/` (los specs son `*.e2e.ts` para que vitest no los recoja; `e2e/tsconfig.json` con `npm run e2e:typecheck`, porque el `tsconfig` del frontend solo incluye `src`). Se ejecuta con `npm run e2e` en `frontend/`. `E2E_BROWSER_CHANNEL=msedge` usa el Edge instalado en vez del Chromium de Playwright (`npx playwright install chromium`).
+- Motivo: es el criterio de hecho de T3-02 y la herramienta que ya preveía `CLAUDE.md`. Probar la app real contra el backend real detecta lo que ni el smoke por API ni los tests de componentes ven (polling, navegación, traza, textos en pantalla).
+- Alternativas descartadas:
+  - Frontend con mocks (`VITE_USE_MOCKS`): no prueba la integración y los mocks no cambian con el replay.
+  - `webServer` de Playwright con `docker compose up` en primer plano: al terminar, Playwright mata el proceso y en Windows los contenedores no siempre se paran bien; el `globalSetup` deja el stack levantado, como `make up`.
+  - Meterlo en el CI: el job `compose` ya levanta el stack, pero añadir el navegador y Playwright alarga el CI de todos. Se ejecuta en local antes de cada ensayo; si el equipo lo quiere en el CI, es un cambio pequeño en `ci.yml`.
+- Impacto:
+  - `frontend/package.json` y `package-lock.json`: `@playwright/test` y los scripts `e2e` y `e2e:typecheck`.
+  - `npm run e2e` resetea la demo: no se lanza durante un ensayo (T3-09).
+  - `make lint` no comprueba los tipos de `e2e/` (sí su ESLint): hay que pasar `npm run e2e:typecheck` al tocarlos.

@@ -2,7 +2,8 @@
 
 Otros módulos importan solo las funciones de *Interfaz entre módulos*. El resto las usa la API.
 Reales desde T1-03: valoración, alta, catálogo, seed y reset; desde T1-04, compra y venta; desde
-T1-06, DCA; desde T1-07, plan y variación de valor; desde T1-05, traspaso.
+T1-06, DCA; desde T1-07, plan y variación de valor; desde T1-05, traspaso; desde T4-10, crear,
+renombrar y borrar carteras (`manage.py`).
 """
 
 from datetime import datetime
@@ -16,6 +17,7 @@ from app.portfolio import (
     engine,
     errors,
     ledger,
+    manage,
     operations,
     plan_flow,
     repository,
@@ -24,7 +26,7 @@ from app.portfolio import (
     value_change,
 )
 from app.portfolio import quotes as pricing
-from app.schemas.common import Profile, SourceRef, TraceKind
+from app.schemas.common import SourceRef, TraceKind
 from app.schemas.impact import EventImpactOut
 from app.schemas.portfolio import (
     AssetOut,
@@ -60,7 +62,7 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
         row = repository.get_portfolio(session, portfolio_id)
         if row is None:
             raise errors.portfolio_not_found(portfolio_id)
-        name, profile = row.name, Profile(row.profile)
+        about = manage.summary(row)
         lots = ledger.open_lots(session, portfolio_id)
         assets = repository.get_assets(session, {lot.asset_id for lot in lots})
         adjustment_rows = demo_adjustment.load(session, portfolio_id)
@@ -88,8 +90,10 @@ def get_valued(portfolio_id: str) -> PortfolioOut:
     )
     return PortfolioOut(
         id=portfolio_id,
-        name=name,
-        profile=profile,
+        name=about.name,
+        profile=about.profile,
+        kind=about.kind,
+        risk_profile=about.risk_profile,
         total_eur=valuation.total_eur,
         change_week_eur=valuation.change_week_eur,
         change_week_pct=valuation.change_week_pct,
@@ -176,11 +180,11 @@ def get_value_change(portfolio_id: str, start: datetime, end: datetime) -> Value
 
 
 def list_portfolio_ids() -> list[str]:
-    """Primero las del seed (Laura, Javier); después el resto, por orden alfabético."""
+    """Primero las del seed (Laura, Javier); después el resto, por orden de alta."""
     with session_scope() as session:
         ids = repository.list_portfolio_ids(session)
     order = {pid: n for n, pid in enumerate(seed.SEED_PORTFOLIOS)}
-    return sorted(ids, key=lambda pid: (order.get(pid, len(order)), pid))
+    return sorted(ids, key=lambda pid: order.get(pid, len(order)))
 
 
 def ensure_exists(portfolio_id: str) -> None:
@@ -197,11 +201,12 @@ def list_portfolios() -> list[PortfolioSummaryOut]:
     ids = list_portfolio_ids()
     with session_scope() as session:
         rows = [repository.get_portfolio(session, pid) for pid in ids]
-        return [
-            PortfolioSummaryOut(id=r.id, name=r.name, profile=Profile(r.profile))
-            for r in rows
-            if r is not None
-        ]
+        return [manage.summary(r) for r in rows if r is not None]
+
+
+create_portfolio = manage.create
+update_portfolio = manage.update
+delete_portfolio = manage.delete
 
 
 def lookup_assets(query: str) -> list[AssetOut]:
@@ -244,10 +249,10 @@ def init_positions(portfolio_id: str, request: PositionsInitRequest) -> Portfoli
 # --- Seed y demo ---
 
 
-def load_seed(force: bool = False) -> list[str]:
+def load_seed(force: bool = False, portfolios: bool = True) -> list[str]:
     """Carga `data/seed` (idempotente; con `force`, vuelve al estado inicial). La usa
-    `scripts/seed_db.py` en cada arranque de Compose."""
-    return seed.load(force=force)
+    `scripts/seed_db.py` en cada arranque de Compose. Con `portfolios=False`, solo el catálogo."""
+    return seed.load(force=force, portfolios=portfolios)
 
 
 def reset_demo() -> list[str]:
