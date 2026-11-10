@@ -5529,7 +5529,7 @@
     },
     "/api/v1/portfolios/{portfolio_id}/news": {
       "get": {
-        "description": "Noticias de la más reciente a la más antigua, con su impacto en esta cartera.\n\n`affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.\n404 si la cartera no existe.",
+        "description": "Noticias de la más reciente a la más antigua, con su impacto en esta cartera.\n\n`affecting=true` (por defecto): solo las que mueven alguna posición; `category` filtra por\ntipo. 404 si la cartera no existe.",
         "operationId": "list_news_api_v1_portfolios__portfolio_id__news_get",
         "parameters": [
           {
