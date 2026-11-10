@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router";
 import { useStatus } from "../api/hooks/useStatus";
 import { ArrowRightIcon, ChatIcon, PanelIcon, WalletIcon } from "../components/icons";
 import { EmptyNote, PageTitle } from "../components/PageTitle";
+import { MarketTicker } from "./market/ticker/MarketTicker";
 import { NewsSection } from "./news/NewsSection";
 import { AlertNotice } from "../widget/AlertNotice";
 import { StatusCard } from "../widget/StatusCard";
@@ -103,7 +104,8 @@ export function InicioPage() {
           </EmptyNote>
         )}
         {data && <StatusCard status={data} detailHref={`/panel${query}`} />}
-        {/* Aquí irán el ticker de mercado (T2-17) y la gráfica interactiva (T2-18) cuando haya datos. */}
+        <MarketTicker portfolioId={portfolioId} />
+        {/* Aquí irá la gráfica interactiva (T2-18) cuando haya datos. */}
         {data && <StatusTiles status={data} />}
         <NewsSection portfolioId={portfolioId} panelHref={`/panel${query}`} />
         <Shortcuts query={query} />
