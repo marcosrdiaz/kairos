@@ -194,6 +194,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 ### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
 **T2-06:** el formato de `data/events/agenda.json` está en D-080. `company` es la clave del look-through (`NVDA`).
+**T2-06 y el smoke (`scripts/demo_smoke.py`, #78):** al terminar la agenda real hay que actualizar el **paso 5** del smoke. Hoy solo comprueba `_require(agenda, "agenda vacía")` sobre `GET /portfolios/laura/agenda`, y eso pasa también con el ejemplo fijo de `planning/mock.py`: el smoke no distingue la agenda real de la mock. Debe comprobar, como mínimo, citas de `agenda.json` con fecha posterior al `DEMO_CLOCK`, la cita de DCA y los `exposed_eur`/`exposed_weight` que salen del look-through de Laura; y fallar si devuelve el ejemplo fijo. Ese fichero lo declara T2-03 (Jaime) mientras esté en curso: al coger T2-06, añadir `scripts/demo_smoke.py` a *Ficheros que toca* (o pedírselo a Jaime si T2-03 sigue abierta). Además, al sustituir `get_agenda`, borrar `planning/mock.py` (ver nota de T2-03).
 **T2-03 (bloqueo de `factor_beta`):** verificado: con las betas calculadas, el rango se abre y NVIDIA da −337,06 € en Laura (−349,11 a −325,01, confianza alta) y −239,29 € en Javier.
 **Todos:** quien ya tenga `.env` debe añadir `DEMO_CLOCK=2026-11-06T18:00:00Z` a mano.
 
