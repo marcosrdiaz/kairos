@@ -2507,7 +2507,7 @@
       },
       "TickerItemOut": {
         "additionalProperties": false,
-        "description": "Un activo de la cartera en el ticker: último precio y variación frente al cierre anterior.\n\n`change_pct` es una fracción (`\"-0.0123\"` = −1,23 %) y la calcula el backend:\n`(price - previous_price) / previous_price`. Es `null` si no hay cierre anterior o si el precio\nes fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus fuentes.",
+        "description": "Un activo de la cartera en el ticker: último precio y variación frente al cierre anterior.\n\n`change_pct` es una fracción (`\"-0.0123\"` = −1,23 %) y la calcula el backend:\n`(price - previous_price) / previous_price`. Es `null` si no hay cierre anterior o si el precio\nes fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus\nfuentes.",
         "properties": {
           "asset_id": {
             "title": "Asset Id",

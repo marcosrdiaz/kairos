@@ -1680,7 +1680,8 @@ export interface components {
          *
          *     `change_pct` es una fracción (`"-0.0123"` = −1,23 %) y la calcula el backend:
          *     `(price - previous_price) / previous_price`. Es `null` si no hay cierre anterior o si el precio
-         *     es fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus fuentes.
+         *     es fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus
+         *     fuentes.
          */
         TickerItemOut: {
             /** Asset Id */
