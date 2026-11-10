@@ -1,4 +1,4 @@
-### D-XXX · Shock medido automático: lógica de `fetch_prices.py` en `events`, eventos pendientes de cierre y cifras desde el día siguiente (T4-04)
+### D-096 · Shock medido automático: lógica de `fetch_prices.py` en `events`, eventos pendientes de cierre y cifras desde el día siguiente (T4-04)
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: D-089 decide que en producción el shock de un evento se mide siempre con cierres (sesión del evento frente a la anterior) y que, hasta el cierre, el evento sale sin cifra, «pendiente de cierre». T4-04 lo implementa. La lógica estaba solo en `scripts/fetch_prices.py`, que calcula el `observed` de los JSON del replay a partir de CSV. En producción los cierres salen de `prices` (T2-24 y T4-01), y `LiveFactors` nunca da por cerrada la sesión de hoy. Además, el BCE publica la rentabilidad a 10 años de un día al día siguiente.
 - Decisión:
