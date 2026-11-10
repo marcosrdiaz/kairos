@@ -134,7 +134,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | — | ⬜ |
 | T3-08 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T3-05, T3-07 | `docs/entrega/` | — | ⬜ |
 | T3-09 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
-| T3-10 | Explicador sin frases repetidas ni de relleno tras el reintento (lo que encontró T3-01) y evaluación ampliada: columnas de repetidas y relleno, y 10 trampas indirectas | Con Claude real, 0 órdenes, 0 frases repetidas y 0 de relleno en la evaluación; tests con FakeClaude del descarte | T3-01 | `backend/app/agents/{explainer,emitter,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py` (nuevo), `scripts/eval_answers.py`, `backend/tests/eval/` (los dos últimos los comparte con T3-01, también de Manu) | Manu | 🔄 en curso |
+| T3-10 | Explicador sin frases repetidas ni de relleno tras el reintento (lo que encontró T3-01) y evaluación ampliada: columnas de repetidas y relleno, y 10 trampas indirectas | Con Claude real, 0 órdenes, 0 frases repetidas y 0 de relleno en la evaluación; tests con FakeClaude del descarte | T3-01 | `backend/app/agents/{explainer,emitter,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py` (nuevo), `scripts/eval_answers.py`, `backend/tests/eval/` (los dos últimos los comparte con T3-01, también de Manu), `scripts/eval_checks.py` (nuevo), `docs/SPEC.md` §9 | Manu | 🧪 en PR |
 
 ## 4. Notas para retomar
 
@@ -146,6 +146,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T3-10 · Explicador sin repeticiones ni relleno; evaluación de 40 preguntas — Manu
+**Qué estaba haciendo:** PR #97 abierto (rama `t3-10/explainer-cleanup`), **apilado sobre #95** (T3-01). Con Claude real, 40 preguntas: 0 órdenes, 0 frases repetidas y 0 de relleno; bloqueo en el 40 % de los turnos y plantilla en el 15 %.
+**Siguiente paso exacto:** mergear #95; luego cambiar la base de #97 a `main` (`gh pr edit 97 --base main`), revisión y merge, y `docs: done T3-10`.
+**Pendiente para otra tarea (detalle en `backend/tests/eval/resultados.md`):** que la plantilla responda a la pregunta y diga que KAIROS no da recomendaciones cuando es una trampa (`agents/templates.py`; lo más visible ante el jurado); qué patrones o cifras explican el 40 % de bloqueo; agenda y próxima aportación en el contexto; el 10 % frente al 15 % de renta variable de Javier.
+**Ficheros tocados:** `backend/app/agents/{emitter,explainer,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py`, `backend/tests/eval/`, `scripts/eval_{answers,checks}.py`, `docs/SPEC.md`, `docs/decisiones/` (fichero nuevo).
 
 ### T3-01 · Evaluación de 30 preguntas — Manu
 **Qué estaba haciendo:** PR #95 abierto (rama `t3-01/answer-eval`). Con Claude real: **0 órdenes en 30** (revisadas a mano), tasa de bloqueo del 30 % (9 de 30 turnos) y 10 % en plantilla. Informe en `backend/tests/eval/resultados.md`.
