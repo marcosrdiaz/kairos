@@ -1,4 +1,5 @@
-"""Umbrales del estado del widget (`SPEC.md` §8.6). T3-04 los calibra con datos reales."""
+"""Umbrales del estado del widget (`SPEC.md` §8.6). Calibrados con datos reales en T3-04: se
+mantienen (ver la decisión de calibración de umbrales de T3-04)."""
 
 from datetime import timedelta
 from decimal import Decimal
