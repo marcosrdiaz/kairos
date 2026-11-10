@@ -6,18 +6,23 @@
 """
 
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from app.agents import news_classifier
 from app.core import clock
-from app.news import repository
-from app.news.ingest import runner
+from app.core.errors import AppError, ErrorCode
+from app.news import portfolio_view, repository
+from app.news.ingest import runner, topics
 from app.news.ingest.sources import RawNews, news_id
 from app.news.models import NewsItem
 from app.news.repository import as_utc
+from app.schemas.news import NewsCategory, NewsItemOut
 
 NEWS_DIR = Path(__file__).resolve().parents[3] / "data" / "news"
+log = logging.getLogger(__name__)
 
 NewsIngestReport = runner.NewsIngestReport
 
@@ -32,6 +37,64 @@ def ingest(
 ) -> NewsIngestReport:
     """Noticias reales publicadas entre `start` y `end`, sin duplicados."""
     return runner.run_once(start, end, use_google=use_google, use_gdelt=use_gdelt, use_rss=use_rss)
+
+
+def list_for_portfolio(
+    portfolio_id: str, category: NewsCategory | None = None, affecting: bool = True, limit: int = 50
+) -> list[NewsItemOut]:
+    """Noticias con su impacto en esta cartera (T4-30). Ver `portfolio_view.py`."""
+    return portfolio_view.list_for_portfolio(portfolio_id, category, affecting, limit)
+
+
+def get_for_portfolio(portfolio_id: str, news_id: str) -> NewsItemOut:
+    """Una noticia con su impacto en esta cartera. 404 si no existe la cartera o la noticia."""
+    item = portfolio_view.get_for_portfolio(portfolio_id, news_id)
+    if item is None:
+        raise AppError(ErrorCode.NOT_FOUND, "No encontramos esa noticia.", {"news_id": news_id})
+    return item
+
+
+def known_companies() -> dict[str, str]:
+    """Empresas que puede citar el clasificador: clave (ticker) → nombre."""
+    return {c.key: c.name for c in topics.COMPANIES}
+
+
+def classify_pending(limit: int = 1000) -> int:
+    """Clasifica con Claude las noticias sin clasificar (o de otra versión del clasificador), por
+    lotes. Devuelve cuántas se han clasificado. Sin `ANTHROPIC_API_KEY` no hace nada.
+
+    Llama al clasificador directamente (`agents.news_classifier`) y no por `agents/service.py`,
+    que tiene en curso T2-26: se moverá allí cuando T2-26 esté en `main`."""
+    key = news_classifier.classifier_key()
+    rows = repository.unclassified(key, limit)
+    companies = known_companies()
+    done = 0
+    for start in range(0, len(rows), news_classifier.BATCH_SIZE):
+        batch = rows[start : start + news_classifier.BATCH_SIZE]
+        inputs = [
+            news_classifier.NewsInput(
+                index=i,
+                title=row.title,
+                summary=row.summary,
+                source=row.source_name,
+                published_at=as_utc(row.published_at),
+            )
+            for i, row in enumerate(batch)
+        ]
+        try:
+            accepted = news_classifier.classify(inputs, companies)
+        except news_classifier.ClassifierError as error:
+            log.warning("Clasificador de noticias: lote sin clasificar (%s)", error)
+            if "ANTHROPIC_API_KEY" in str(error):
+                return done
+            continue
+        now = clock.now()
+        for index, result in accepted.items():
+            repository.save_classification(
+                batch[index].id, result.model_dump(mode="json"), key, now
+            )
+            done += 1
+    return done
 
 
 def _row_to_json(row: NewsItem) -> dict[str, Any]:
