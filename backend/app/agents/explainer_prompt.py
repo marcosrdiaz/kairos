@@ -43,7 +43,8 @@ def feedback(sentence: str, detail: str, said: list[str]) -> str:
         quoted = " ".join(f"«{s}»" for s in said)
         text += (
             f"El usuario ya ha oído estas frases: {quoted}. Escribe solo la continuación de la "
-            "respuesta al usuario, sin repetirlas."
+            "respuesta al usuario: no repitas ninguna, ni con otras palabras, y no digas que "
+            "continúas ni que ya has dado una parte."
         )
     else:
         text += "Escribe de nuevo la respuesta al usuario desde el principio."
