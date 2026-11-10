@@ -8,7 +8,7 @@ SCRIPTS := scripts
 HAS_FRONTEND := $(wildcard $(FRONTEND)/package.json)
 
 .PHONY: up down seed test test-backend test-frontend lint lint-backend lint-frontend \
-        gen-api replay betas
+        gen-api replay betas news
 
 up:  ## db + seed + backend + frontend
 	docker compose up --build
@@ -61,3 +61,9 @@ replay:  ## make replay EVENT=bce-2025-06
 
 betas:  ## recalcula factor_beta desde data/prices
 	docker compose run --rm --build seed python /scripts/compute_betas.py
+
+NEWS_START ?=
+NEWS_END ?=
+news:  ## make news NEWS_START=2026-11-01 NEWS_END=2026-11-10: noticias reales, clasificadas
+	@test -n "$(NEWS_START)" -a -n "$(NEWS_END)" || (echo "Uso: make news NEWS_START=AAAA-MM-DD NEWS_END=AAAA-MM-DD" && exit 1)
+	docker compose run --rm --build seed python /scripts/news_backfill.py --start $(NEWS_START) --end $(NEWS_END) --classify
