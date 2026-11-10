@@ -161,3 +161,29 @@ class ReplayOut(ContractModel):
     event_id: str
     portfolios: dict[str, str]
     elapsed_ms: int
+
+
+# --- Eventos pendientes de cierre (T4-04, D-089) ---
+
+
+class EventStatus(StrEnum):
+    PENDING_CLOSE = "pending_close"
+    """La sesión que recoge el evento aún no ha cerrado: no hay shock medido ni cifras."""
+
+
+class PendingEventOut(ContractModel):
+    """Elemento de `GET /events/pending`: evento real cuyo impacto aún no se puede calcular.
+
+    **No lleva ninguna cifra** (ni impacto, ni rango, ni `calc_id`): hasta el cierre solo se
+    muestran la noticia y la cadena causal del analizador. Tras el cierre deja de salir aquí y
+    aparece, con sus cifras, en `GET /portfolios/{id}/events`. Es igual para todas las carteras.
+    `occurred_at` es cuándo ocurrió; `sources`, de dónde sale la noticia.
+    """
+
+    event_id: str
+    title: str
+    event_type: EventType
+    occurred_at: UtcDatetime
+    causal_chain: list[str]
+    status: EventStatus
+    sources: list[SourceRef]

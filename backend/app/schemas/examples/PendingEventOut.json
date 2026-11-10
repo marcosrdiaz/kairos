@@ -1,0 +1,22 @@
+{
+  "illustrative": true,
+  "event_id": "opec-2026-11-10",
+  "title": "La OPEP+ anuncia un recorte de producción a partir de diciembre",
+  "event_type": "commodity",
+  "occurred_at": "2026-11-10T13:00:00Z",
+  "causal_chain": [
+    "La OPEP+ reduce la producción de crudo que pone en el mercado.",
+    "Con menos oferta, el precio del petróleo tiende a subir.",
+    "Las petroleras suelen beneficiarse y los sectores que consumen mucha energía, sufrir."
+  ],
+  "status": "pending_close",
+  "sources": [
+    {
+      "kind": "event",
+      "label": "Noticia de la OPEP+",
+      "ref": "opec-2026-11-10",
+      "as_of": "2026-11-10T13:00:00Z",
+      "url": "https://www.opec.org/"
+    }
+  ]
+}
