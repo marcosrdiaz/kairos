@@ -3,8 +3,8 @@ import type { HistoryPeriod, PortfolioHistoryOut } from "../../../api/generated/
 const LOCALE = "es-ES";
 
 export const PERIODS: { value: HistoryPeriod; label: string; name: string }[] = [
+  { value: "1w", label: "1S", name: "Última semana" },
   { value: "1m", label: "1M", name: "Último mes" },
-  { value: "3m", label: "3M", name: "Últimos 3 meses" },
   { value: "6m", label: "6M", name: "Últimos 6 meses" },
   { value: "1y", label: "1A", name: "Último año" },
   { value: "max", label: "Todo", name: "Todo el historial" },
@@ -24,6 +24,14 @@ export function toRows(history: PortfolioHistoryOut): ChartRow[] {
 }
 
 const dayMonth = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" });
+const weekDay = new Intl.DateTimeFormat(LOCALE, { weekday: "short", day: "numeric", timeZone: "UTC" });
+const monthLong = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" });
+const shortDay = new Intl.DateTimeFormat(LOCALE, {
+  day: "numeric",
+  month: "short",
+  year: "2-digit",
+  timeZone: "UTC",
+});
 const monthYear = new Intl.DateTimeFormat(LOCALE, { month: "short", year: "2-digit", timeZone: "UTC" });
 const fullDay = new Intl.DateTimeFormat(LOCALE, {
   day: "numeric",
@@ -32,10 +40,26 @@ const fullDay = new Intl.DateTimeFormat(LOCALE, {
   timeZone: "UTC",
 });
 
-/** Etiqueta del eje X: "6 oct" en periodos cortos; "oct 25" desde un año. */
+/** Etiqueta del eje X: "lun 2" en una semana; "6 oct" hasta 6 meses; "oct 25" desde un año. */
 export function tickDate(iso: string, period: HistoryPeriod): string {
   const date = new Date(iso);
+  if (period === "1w") return weekDay.format(date);
   return period === "1y" || period === "max" ? monthYear.format(date) : dayMonth.format(date);
+}
+
+/** Fecha corta de los tiradores de la escala de tiempo: "6 nov 26". */
+export function chipDate(iso: string): string {
+  return shortDay.format(new Date(iso));
+}
+
+/** Nombre del mes de un punto, para agrupar la tabla: "noviembre de 2026". */
+export function monthOf(iso: string): string {
+  return monthLong.format(new Date(iso));
+}
+
+/** Día de la semana y día del mes para la tabla: "vie 6". */
+export function weekdayOf(iso: string): string {
+  return weekDay.format(new Date(iso));
 }
 
 /** Fecha del punto activo y de la tabla: "6 de noviembre de 2026" (el día del cierre, en UTC). */

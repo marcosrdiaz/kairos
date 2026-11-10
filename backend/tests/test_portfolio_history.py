@@ -64,9 +64,13 @@ def test_end_on_a_weekend_moves_back_to_friday() -> None:
     assert days[-1] == date(2026, 11, 6)
 
 
-def test_three_and_six_months_and_one_year_start_on_the_same_day() -> None:
+def test_one_week_is_the_weekdays_since_the_same_day_last_week() -> None:
+    days = history.sample_days(date(2026, 11, 6), HistoryPeriod.ONE_WEEK, date(2020, 1, 1))
+    assert days == [date(2026, 10, 30)] + [date(2026, 11, d) for d in (2, 3, 4, 5, 6)]
+
+
+def test_six_months_and_one_year_start_on_the_same_day() -> None:
     end, first = date(2026, 11, 6), date(2020, 1, 1)
-    assert history.sample_days(end, HistoryPeriod.THREE_MONTHS, first)[0] == date(2026, 8, 6)
     assert history.sample_days(end, HistoryPeriod.SIX_MONTHS, first)[0] == date(2026, 5, 6)
     assert history.sample_days(end, HistoryPeriod.ONE_YEAR, first)[0] == date(2025, 11, 6)
 

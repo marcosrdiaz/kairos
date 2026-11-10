@@ -2,11 +2,11 @@
 
 Reglas (las de `value_change.py`, D-057, aplicadas a una serie de días):
 
-- Días: hábiles (lunes a viernes) desde el mismo día de hace 1, 3, 6 o 12 meses hasta el último
-  día con algún cierre de mercado no posterior a hoy. Con `max`, uno por semana hacia atrás desde
-  ese último día. Nunca antes de la primera operación de la cartera. Solo se dibujan los días con
-  algún cierre de mercado (festivos y días aún sin cierre fuera); los activos de valor fijo no
-  cuentan, porque tienen un punto por día natural.
+- Días: hábiles (lunes a viernes) desde el mismo día de hace 1 semana o 1, 6 o 12 meses hasta el
+  último día con algún cierre de mercado no posterior a hoy. Con `max`, uno por semana hacia
+  atrás desde ese último día. Nunca antes de la primera operación de la cartera. Solo se dibujan
+  los días con algún cierre de mercado (festivos y días aún sin cierre fuera); los activos de
+  valor fijo no cuentan, porque tienen un punto por día natural.
 - Participaciones del día `d` = operaciones con `ts` hasta el final de `d` (23:59:59 UTC).
 - Valor de un activo en `d` = participaciones × último cierre no posterior a `d` (como mucho 10
   días antes) × fx de `d`, a céntimos. Si falta el precio de algún activo, el día se omite.
@@ -30,9 +30,9 @@ from app.schemas.history import HistoryPeriod, PortfolioHistoryOut, PortfolioHis
 
 CENT = Decimal("0.01")
 MAX_PRICE_AGE = timedelta(days=10)
+WEEK = timedelta(days=7)
 MONTHS = {
     HistoryPeriod.ONE_MONTH: 1,
-    HistoryPeriod.THREE_MONTHS: 3,
     HistoryPeriod.SIX_MONTHS: 6,
     HistoryPeriod.ONE_YEAR: 12,
 }
@@ -76,7 +76,8 @@ def sample_days(today: date, period: HistoryPeriod, first: date) -> list[date]:
             days.append(day)
             day -= timedelta(days=7)
         return days[::-1]
-    start = max(_months_back(end, MONTHS[period]), first)
+    back = end - WEEK if period is HistoryPeriod.ONE_WEEK else _months_back(end, MONTHS[period])
+    start = max(back, first)
     count = (end - start).days + 1
     every = (start + timedelta(days=n) for n in range(count))
     return [d for d in every if d.weekday() < 5]

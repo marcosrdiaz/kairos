@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import history from "../../../api/mocks/PortfolioHistoryOut.json";
 import { PortfolioChart } from "./PortfolioChart";
@@ -36,29 +36,44 @@ describe("PortfolioChart", () => {
     const fetchMock = stubApi();
     renderChart();
     const lastClose = await screen.findByText(/Último cierre: 6 de noviembre de 2026/);
-    expect(lastClose.previousElementSibling?.textContent).toMatch(/34\.311,68/);
+    // En una sola línea: último cierre, valor al empezar y aportaciones.
+    const line = lastClose.parentElement;
+    expect(line?.textContent).toMatch(
+      /Último cierre: 6 de noviembre de 2026.*Al empezar el periodo: 33\.410,25.*Sin aportaciones ni retiradas/,
+    );
+    expect(line?.previousElementSibling?.textContent).toMatch(/34\.311,68/);
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/portfolios/laura/history?period=1y");
     expect(screen.getByRole("radio", { name: "Último año" })).toHaveProperty("checked", true);
+  });
+
+  it("ofrece 1 semana, 1 mes, 6 meses, 1 año y todo", async () => {
+    stubApi();
+    renderChart();
+    await screen.findByText(/Último cierre/);
+    const names = screen.getAllByRole("radio").map((r) => r.getAttribute("aria-label"));
+    expect(names).toEqual(["Última semana", "Último mes", "Últimos 6 meses", "Último año", "Todo el historial"]);
   });
 
   it("cambiar de periodo pide la serie de ese periodo", async () => {
     const fetchMock = stubApi();
     renderChart();
     await screen.findByText(/Último cierre/);
-    fireEvent.click(screen.getByRole("radio", { name: "Último mes" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Última semana" }));
     await waitFor(() =>
-      expect(fetchMock.mock.calls.some(([url]) => String(url).includes("period=1m"))).toBe(true),
+      expect(fetchMock.mock.calls.some(([url]) => String(url).includes("period=1w"))).toBe(true),
     );
-    expect(screen.getByRole("radio", { name: "Último mes" })).toHaveProperty("checked", true);
+    expect(screen.getByRole("radio", { name: "Última semana" })).toHaveProperty("checked", true);
   });
 
-  it("tiene una tabla alternativa con todos los puntos, del más reciente al más antiguo", async () => {
+  it("tiene una tabla alternativa con todos los puntos, agrupados por mes y del más reciente", async () => {
     stubApi();
     renderChart();
     const table = await screen.findByRole("table", { hidden: true });
-    const rows = within(table).getAllByRole("row", { hidden: true }).slice(1);
+    const rows = table.querySelectorAll("tr.kchart-row");
     expect(rows).toHaveLength(history.points.length);
     expect(rows[0]?.textContent).toMatch(/6 de noviembre de 2026.*34\.311,68/);
+    const months = [...table.querySelectorAll("tr.kchart-month")].map((r) => r.textContent);
+    expect(months).toEqual(["noviembre de 2026", "octubre de 2026"]);
   });
 
   it("dice si hubo aportaciones en el periodo", async () => {
