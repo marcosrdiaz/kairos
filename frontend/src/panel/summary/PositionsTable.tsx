@@ -1,4 +1,6 @@
+import { Link } from "react-router";
 import type { PortfolioOut } from "../../api/generated/schema";
+import { assetHref } from "../../app/market/asset-chart/assetHref";
 import { formatPrice } from "../../app/operations/usePortfolio";
 import { formatDate, formatEur, formatPercent, formatUnits } from "../../lib/format";
 import { signedEur } from "../figures";
@@ -51,7 +53,13 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
             {portfolio.positions.map((pos) => (
               <tr key={pos.asset_id} className="border-b border-line last:border-b-0">
                 <th scope="row" className="py-3 pl-6 pr-4 text-left font-medium text-ink">
-                  {pos.name}
+                  <Link
+                    to={assetHref(pos.asset_id, portfolio.id)}
+                    className="text-ink underline decoration-line-strong underline-offset-4 hover:text-accent hover:decoration-current"
+                  >
+                    {pos.name}
+                    <span className="sr-only">: ver su evolución</span>
+                  </Link>
                   <span className="block text-sm font-normal text-ink-muted">
                     {pos.ticker ?? pos.isin}
                   </span>

@@ -146,7 +146,15 @@ export function niceScale(values: number[], target = 5): { domain: [number, numb
   return { domain: [low, high], ticks };
 }
 
-/** Marcas del eje Y ("34,5 mil €"): son divisiones de la escala, no cifras del cálculo. */
+const wholeEur = new Intl.NumberFormat(LOCALE, {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
+
+/** Marcas del eje Y ("34,5 mil €"; por debajo de 10.000 €, en euros enteros, "1250 €", para que
+ *  dos marcas cercanas de una posición pequeña no salgan iguales). Son divisiones de la escala,
+ *  no cifras del cálculo. */
 export function tickEur(value: number): string {
-  return compactEur.format(value);
+  return Math.abs(value) < 10_000 ? wholeEur.format(value) : compactEur.format(value);
 }
