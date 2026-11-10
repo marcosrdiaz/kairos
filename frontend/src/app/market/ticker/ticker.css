@@ -20,6 +20,57 @@
   animation-play-state: paused;
 }
 
+/*
+ * Distintivo del emisor (T2-28): pastilla redonda con color fijo por grupo. Los colores salen de
+ * los pares fg/bg de los tokens --kairos-* (contraste AA en claro y oscuro); es decorativa.
+ */
+.kairos-issuer-badge {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--kairos-color-chip-nodata-fg);
+  background: var(--kairos-color-chip-nodata-bg);
+  border: 1px solid var(--kairos-color-border);
+}
+
+.kairos-issuer-badge[data-issuer="vanguard"] {
+  color: var(--kairos-color-chip-error-fg);
+  background: var(--kairos-color-chip-error-bg);
+}
+.kairos-issuer-badge[data-issuer="ishares"] {
+  color: var(--kairos-color-chip-info-fg);
+  background: var(--kairos-color-chip-info-bg);
+}
+.kairos-issuer-badge[data-issuer="apple"] {
+  color: var(--kairos-color-primary);
+  background: var(--kairos-color-primary-tint);
+}
+.kairos-issuer-badge[data-issuer="nvidia"] {
+  color: var(--kairos-color-chip-success-fg);
+  background: var(--kairos-color-chip-success-bg);
+}
+.kairos-issuer-badge[data-issuer="microsoft"] {
+  color: var(--kairos-color-chip-warn-fg);
+  background: var(--kairos-color-chip-warn-bg);
+}
+.kairos-issuer-badge[data-issuer="inditex"] {
+  color: var(--kairos-color-state-atento-fg);
+  background: var(--kairos-color-state-atento-bg);
+}
+.kairos-issuer-badge[data-issuer="iberdrola"] {
+  color: var(--kairos-color-icon-gold-fg);
+  background: var(--kairos-color-icon-gold-bg);
+}
+
 /* Respaldo de `prefers-reduced-motion`: el componente ya pinta la lista quieta en ese caso. */
 @media (prefers-reduced-motion: reduce) {
   .kairos-ticker-track {

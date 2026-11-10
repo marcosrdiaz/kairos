@@ -92,6 +92,34 @@ describe("TickerStrip", () => {
     expect(track().dataset.state).toBe("running");
   });
 
+  it("cada activo lleva su distintivo decorativo; un emisor desconocido sale neutro con su inicial", () => {
+    setReducedMotion(true);
+    const base = QUOTED[0]!;
+    const items = [
+      { ...base, asset_id: "a", name: "Vanguard Global Stock Index Fund EUR Acc" },
+      { ...base, asset_id: "b", name: "iShares Core MSCI World UCITS ETF" },
+      { ...base, asset_id: "c", name: "Zorrilla Capital" },
+      { ...base, asset_id: "d", name: "" },
+    ];
+    render(<TickerStrip items={items} />);
+    const badges = Array.from(lists()[0]!.querySelectorAll<HTMLElement>(".kairos-issuer-badge"));
+    expect(badges.map((b) => [b.dataset.issuer, b.textContent])).toEqual([
+      ["vanguard", "VG"],
+      ["ishares", "iS"],
+      ["neutral", "Z"],
+      ["neutral", "·"],
+    ]);
+    expect(badges.every((b) => b.getAttribute("aria-hidden") === "true")).toBe(true);
+  });
+
+  it("todos los activos del mock llevan distintivo y ninguno sale vacío", () => {
+    setReducedMotion(true);
+    render(<TickerStrip items={ITEMS} />);
+    const badges = lists()[0]!.querySelectorAll(".kairos-issuer-badge");
+    expect(badges).toHaveLength(QUOTED.length);
+    badges.forEach((b) => expect((b.textContent ?? "").length).toBeGreaterThan(0));
+  });
+
   it("con prefers-reduced-motion no se mueve: una sola lista y sin botón de pausa", () => {
     setReducedMotion(true);
     render(<TickerStrip items={ITEMS} />);
