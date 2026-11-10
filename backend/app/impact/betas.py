@@ -13,8 +13,8 @@ numpy solo aquí dentro; la salida es `Decimal` con 8 decimales (`NUMERIC(20,8)`
 """
 
 from collections.abc import Mapping
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import date, datetime
 from decimal import ROUND_HALF_EVEN, Decimal
 from itertools import pairwise
 
@@ -44,6 +44,9 @@ class BetaEstimate:
     n_obs: int
     window_start: date
     window_end: date
+    computed_at: datetime | None = field(default=None, compare=False)
+    """Cuándo se calculó (T4-03). Lo pone `repository` al guardar; `None` en filas antiguas. No
+    cuenta al comparar: la misma estimación calculada otro día es la misma."""
 
 
 @dataclass(frozen=True)

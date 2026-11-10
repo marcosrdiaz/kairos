@@ -1,5 +1,6 @@
 """Actualización diaria tras el cierre: guarda los cierres de los activos en cartera, el EUR/USD y
-los 5 factores sin que nadie abra la app (T4-02).
+los 5 factores sin que nadie abra la app (T4-02). Después procesa los eventos pendientes de cierre
+(T4-04) y, si las últimas betas tienen una semana o más, las recalcula (T4-03).
 
 Solo en producción (`MARKET_DATA_PROVIDER=yahoo`); en modo demo no hace nada y termina. Usa los
 proveedores en directo del backend (T2-24 y T4-01): piden a Yahoo y al BCE y guardan en `price`,
@@ -44,6 +45,8 @@ class Report:
     failed: dict[str, str] = field(default_factory=dict)
     events: list[str] = field(default_factory=list)
     """Eventos pendientes de cierre que se han podido medir y procesar (T4-04)."""
+    betas: list[str] | None = None
+    """Activos con betas recalculadas, si tocaba el recálculo semanal (T4-03); `None` si no."""
 
 
 def _update(report: Report, key: str, fetch: Callable[[], str]) -> None:
@@ -87,6 +90,13 @@ def update_once() -> Report:
         report.events = events_service.process_pending()  # con los cierres ya guardados
     except Exception as error:
         report.failed["events:pending"] = str(error) or type(error).__name__
+    from app.impact import service as impact_service
+
+    try:
+        run = impact_service.recompute_betas_if_due()  # cada semana, con los cierres guardados
+        report.betas = None if run is None else run.estimated
+    except Exception as error:
+        report.failed["betas"] = str(error) or type(error).__name__
     return report
 
 
@@ -124,6 +134,8 @@ def _run_and_log() -> None:
         log.warning("  %s: %s", key, reason)
     if report.events:
         log.info("Eventos procesados tras el cierre: %s", ", ".join(report.events))
+    if report.betas is not None:
+        log.info("Betas semanales recalculadas: %d activos", len(report.betas))
 
 
 def main(argv: list[str] | None = None) -> int:

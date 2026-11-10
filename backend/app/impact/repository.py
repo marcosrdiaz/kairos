@@ -2,9 +2,9 @@
 
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 
 from app.core import clock
 from app.core.db import session_scope
@@ -73,12 +73,25 @@ def list_event_impacts(portfolio_id: str, since: datetime) -> list[StoredImpact]
         return [StoredImpact(r.calc_id, r.explanation, r.explanation_status) for r in rows]
 
 
-def replace_betas(estimates: Sequence[BetaEstimate], clear: Iterable[str] = ()) -> int:
+def _utc(value: datetime | None) -> datetime | None:
+    """SQLite devuelve las fechas sin zona; se guardan siempre en UTC."""
+    if value is None or value.tzinfo is not None:
+        return value
+    return value.replace(tzinfo=UTC)
+
+
+def replace_betas(
+    estimates: Sequence[BetaEstimate],
+    clear: Iterable[str] = (),
+    computed_at: datetime | None = None,
+) -> int:
     """Sustituye las betas de los activos de `estimates` y de `clear`. Idempotente.
 
     `clear` son activos cuyas betas antiguas se borran aunque ahora no tengan estimación (p. ej.
     porque sus datos ya no bastan): así no quedan sensibilidades obsoletas en `factor_beta`.
+    `computed_at` (por defecto, `clock.now()`) queda en cada fila (T4-03).
     """
+    stamp = computed_at or clock.now()
     asset_ids = {e.asset_id for e in estimates} | set(clear)
     if not asset_ids:
         return 0
@@ -94,10 +107,17 @@ def replace_betas(estimates: Sequence[BetaEstimate], clear: Iterable[str] = ()) 
                 n_obs=e.n_obs,
                 window_start=e.window_start,
                 window_end=e.window_end,
+                computed_at=stamp,
             )
             for e in estimates
         )
     return len(estimates)
+
+
+def last_computed_at() -> datetime | None:
+    """Cuándo se calcularon por última vez unas betas; `None` si nunca (o solo filas antiguas)."""
+    with session_scope() as session:
+        return _utc(session.scalar(select(func.max(FactorBeta.computed_at))))
 
 
 def get_betas(asset_ids: Iterable[str]) -> list[BetaEstimate]:
@@ -119,6 +139,7 @@ def get_betas(asset_ids: Iterable[str]) -> list[BetaEstimate]:
                 n_obs=r.n_obs,
                 window_start=r.window_start,
                 window_end=r.window_end,
+                computed_at=_utc(r.computed_at),
             )
             for r in rows
         ]

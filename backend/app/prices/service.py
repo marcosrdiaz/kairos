@@ -35,7 +35,12 @@ from app.prices.factors import (
     last_close,
 )
 from app.prices.live import LiveProvider
-from app.prices.provider import OfflineCsvProvider, PricePoint, PriceProvider
+from app.prices.provider import (
+    AdjustedPriceProvider,
+    OfflineCsvProvider,
+    PricePoint,
+    PriceProvider,
+)
 from app.prices.ticker import FORMULA as CHANGE_FORMULA
 from app.prices.ticker import change_pct
 from app.schemas.common import Factor, PriceKind, SourceKind, SourceRef, TraceKind
@@ -143,6 +148,28 @@ def history(asset_id: str, start: date, end: date) -> list[PriceOut]:
         return [_to_out(spec, PricePoint(day=d, value=spec.fixed_price)) for d in days]
     points = get_provider().closes(asset_id)
     return [_to_out(spec, p) for p in points if start <= p.day <= end]
+
+
+def catalog_asset_ids() -> list[str]:
+    """Todos los activos que `prices` sabe valorar, también los de precio fijo."""
+    return list(load_catalog())
+
+
+def beta_closes(asset_id: str) -> list[PricePoint]:
+    """Serie con la que `impact` estima las betas (T4-03), hasta hoy según `clock`: los cierres
+    ajustados por dividendos si el proveedor los da (CSV de `data/prices`, D-045) y, si no, los
+    cierres. Vacía con precio fijo: no hay sensibilidad que estimar."""
+    spec = _spec(asset_id)
+    if spec.fixed_price is not None:
+        return []
+    provider = get_provider()
+    points: list[PricePoint] = []
+    if isinstance(provider, AdjustedPriceProvider):
+        points = provider.adjusted_closes(asset_id)
+    if not points:
+        points = provider.closes(asset_id)
+    today = clock.now().date()
+    return [p for p in points if p.day <= today]
 
 
 def previous_close(asset_id: str, day: date) -> PriceOut | None:

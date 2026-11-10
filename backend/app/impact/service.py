@@ -13,6 +13,10 @@ from app.events import service as events_service
 from app.exposure import service as exposure_service
 from app.impact import engine, move_flow, repository, scenario
 from app.impact.betas import BetaEstimate
+from app.impact.betas_flow import BetaRun as BetaRun
+from app.impact.betas_flow import betas_due as betas_due
+from app.impact.betas_flow import recompute_betas as recompute_betas
+from app.impact.betas_flow import recompute_betas_if_due as recompute_betas_if_due
 from app.portfolio import service as portfolio_service
 from app.schemas.agents import ExplanationStatus
 from app.schemas.common import AssetClass, AssetType, Factor, SourceKind, SourceRef, TraceKind
