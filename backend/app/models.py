@@ -11,6 +11,7 @@ from app.core import trace as core_trace
 from app.events import models as events_models
 from app.exposure import models as exposure_models
 from app.impact import models as impact_models
+from app.news import models as news_models
 from app.portfolio import models as portfolio_models
 from app.prices import models as prices_models
 
@@ -21,6 +22,7 @@ __all__ = [
     "events_models",
     "exposure_models",
     "impact_models",
+    "news_models",
     "portfolio_models",
     "prices_models",
 ]
