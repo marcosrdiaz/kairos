@@ -126,4 +126,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-094](decisiones/D-094-calibracion-umbrales-t3-04.md) | 2026-11-10 | Calibración de umbrales con datos reales (T3-04): se mantienen los de estado, avisos y confianza | Propuesta |
 | [D-095](decisiones/D-095-fases-rediseno-y-entrega.md) | 2026-11-10 | Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento y la fase 4 se valida | Aceptada (acuerdo del equipo) |
 | [D-096](decisiones/D-096-shock-medido-automatico-t4-04.md) | 2026-11-10 | Shock medido automático: lógica de `fetch_prices.py` en `events`, eventos pendientes de cierre y cifras desde el día siguiente (T4-04) | Propuesta |
+| [D-097](decisiones/D-097-limite-avisos-por-cartera.md) | 2026-11-10 | El límite de 2 avisos por semana es por cartera; la bandeja junta todas | Aceptada |
 <!-- INDICE:FIN -->
