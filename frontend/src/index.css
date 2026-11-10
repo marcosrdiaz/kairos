@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
 
+/* El laboratorio de componentes (/lab, T5-01) solo existe en desarrollo: que sus clases no entren en el CSS del build. */
+@source not "./lab";
+
 /*
  * Utilidades de Tailwind sobre los tokens --kairos-* (src/styles/tokens.css, ver DESIGN.md).
  * `@theme inline` hace que cada clase lea la variable en tiempo de ejecución: al cambiar
