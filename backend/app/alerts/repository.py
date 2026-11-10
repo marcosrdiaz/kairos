@@ -21,6 +21,7 @@ class StoredAlert:
     message: str
     created_at: datetime
     delivered: bool
+    calc_id: str | None = None
 
 
 def _utc(value: datetime) -> datetime:
@@ -37,7 +38,24 @@ def _stored(row: Alert) -> StoredAlert:
         message=row.message,
         created_at=_utc(row.created_at),
         delivered=row.delivered,
+        calc_id=row.calc_id,
     )
+
+
+def exists_between(portfolio_id: str, kind: AlertKind, start: datetime, end: datetime) -> bool:
+    """¿Hay un aviso de ese tipo creado en [`start`, `end`)?"""
+    with session_scope() as session:
+        found = session.scalar(
+            select(Alert.id)
+            .where(
+                Alert.portfolio_id == portfolio_id,
+                Alert.kind == kind.value,
+                Alert.created_at >= start.astimezone(UTC),
+                Alert.created_at < end.astimezone(UTC),
+            )
+            .limit(1)
+        )
+        return found is not None
 
 
 def exists(portfolio_id: str, event_id: str, kind: AlertKind) -> bool:
@@ -79,6 +97,7 @@ def save(
     score: Decimal,
     message: str,
     created_at: datetime,
+    calc_id: str | None = None,
 ) -> StoredAlert:
     row = Alert(
         id=f"alr_{uuid.uuid4().hex}",
@@ -89,6 +108,7 @@ def save(
         message=message,
         created_at=created_at.astimezone(UTC),
         delivered=False,
+        calc_id=calc_id,
     )
     with session_scope() as session:
         session.add(row)

@@ -209,7 +209,7 @@ erDiagram
 | `factor_beta` | asset_id, factor, beta, std_err, r2, n_obs, window_start, window_end | Calculado por `make betas` y, al arrancar, por el servicio `seed` (`make up` y `make seed`) |
 | `event` | id, type, title, text, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model, created_at | |
 | `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, impact_pct, confidence, polarity, breakdown (json), explanation, explanation_status, calc_id, created_at | |
-| `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered | |
+| `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered, calc_id | `calc_id` solo en los avisos sin evento (`market_move`); los de evento toman el del impacto (D-076) |
 | `calc_trace` | id, kind, formula, inputs (json), outputs (json), sources (json), parent_calc_ids (json), created_at | Trazabilidad de cada cifra. Modelo en `core/trace.py` (D-034) |
 | `agent_log` | id, agent, model, prompt_hash, tool_calls (json), output, guardian_verdict (json), latency_ms, created_at | Para depurar y para la métrica de latencia |
 

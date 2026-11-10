@@ -4,11 +4,13 @@
 `event_impact` por cartera, solo si `score >= 1` y queda cupo en la semana ISO.
 """
 
+from datetime import datetime
 from decimal import ROUND_HALF_EVEN, Decimal
 from threading import Lock
 
 from app.agents import service as agents_service
-from app.alerts import config, engine, repository
+from app.alerts import config, engine, market_move, repository
+from app.config import get_settings
 from app.core import clock
 from app.impact import service as impact_service
 from app.portfolio import service as portfolio_service
@@ -18,6 +20,7 @@ from app.schemas.impact import EventImpactOut
 
 _SCORE_STEP = Decimal("0.0001")
 _lock = Lock()  # comprobar-y-guardar sin que dos replays seguidos dupliquen el aviso
+_last_market_check: dict[str, datetime] = {}  # cartera → última comprobación de `market_move`
 
 
 def _impact_of(portfolio_id: str, event_id: str) -> EventImpactOut | None:
@@ -55,8 +58,57 @@ def evaluate(portfolio_id: str, event_id: str) -> None:
         )
 
 
+def reset_market_move_checks() -> None:
+    """Olvida cuándo se comprobó cada cartera (tests)."""
+    with _lock:
+        _last_market_check.clear()
+
+
+def check_market_move(portfolio_id: str) -> None:
+    """Aviso `market_move` (T2-21) si la cartera se ha movido hoy más que el umbral y ningún
+    evento lo explica. Uno por cartera y día; comparte el límite semanal con `event_impact`.
+    Se comprueba al leer los avisos, como mucho cada `MARKET_MOVE_CHECK_EVERY`."""
+    if get_settings().demo_mode and not config.MARKET_MOVE_IN_DEMO:
+        return  # no gasta el cupo que necesita el aviso del evento del guion
+    now = clock.now()
+    with _lock:
+        last = _last_market_check.get(portfolio_id)
+        if last is not None and last <= now < last + config.MARKET_MOVE_CHECK_EVERY:
+            return
+        _last_market_check[portfolio_id] = now
+        if not _market_move_allowed(portfolio_id, now):
+            return
+    move = impact_service.explain_move(portfolio_id, "day")
+    total_eur = portfolio_service.get_valued(portfolio_id).total_eur  # mismo total que `status`
+    score = market_move.score_if_alert(move.change_eur, move.unexplained_eur, total_eur)
+    if score is None:
+        return
+    message = agents_service.write_market_move_message(move)  # fuera del cerrojo: tarda
+    with _lock:
+        if not _market_move_allowed(portfolio_id, now):
+            return  # otro aviso ha llegado mientras se redactaba
+        repository.save(
+            portfolio_id,
+            None,
+            AlertKind.MARKET_MOVE,
+            score.quantize(_SCORE_STEP, rounding=ROUND_HALF_EVEN),
+            message,
+            now,
+            calc_id=move.calc_id,
+        )
+
+
+def _market_move_allowed(portfolio_id: str, now: datetime) -> bool:
+    """Sin aviso `market_move` hoy y con cupo en la semana ISO. Llamar con `_lock`."""
+    if repository.exists_between(portfolio_id, AlertKind.MARKET_MOVE, *market_move.day_bounds(now)):
+        return False
+    week_start, week_end = engine.iso_week_bounds(now)
+    return engine.within_weekly_limit(repository.count_between(portfolio_id, week_start, week_end))
+
+
 def list_alerts(portfolio_id: str) -> list[AlertOut]:
     portfolio_service.ensure_exists(portfolio_id)  # NOT_FOUND si la cartera no existe
+    check_market_move(portfolio_id)
     calc_ids = {
         i.event_id: i.calc_id
         for i in impact_service.list_event_impacts(portfolio_id, config.IMPACT_LOOKBACK_DAYS)
@@ -70,7 +122,7 @@ def list_alerts(portfolio_id: str) -> list[AlertOut]:
             message=a.message,
             created_at=a.created_at,
             delivered=a.delivered,
-            calc_id=calc_ids.get(a.event_id) if a.event_id else None,
+            calc_id=a.calc_id or (calc_ids.get(a.event_id) if a.event_id else None),
         )
         for a in repository.list_for(portfolio_id)
     ]
