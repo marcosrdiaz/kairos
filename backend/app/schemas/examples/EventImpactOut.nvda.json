@@ -24,7 +24,9 @@
       "impact_eur": "-210.00",
       "market_eur": "-210.00",
       "fx_eur": "0.00",
-      "channel": "resultados NVDA"
+      "channel": "resultados NVDA",
+      "low_eur": "-290.00",
+      "high_eur": "-130.00"
     },
     {
       "asset_id": "US67066G1040",
@@ -33,7 +35,9 @@
       "impact_eur": "-180.00",
       "market_eur": "-180.00",
       "fx_eur": "0.00",
-      "channel": "resultados NVDA"
+      "channel": "resultados NVDA",
+      "low_eur": "-230.00",
+      "high_eur": "-130.00"
     },
     {
       "asset_id": "IE00B03HD191",
@@ -42,7 +46,9 @@
       "impact_eur": "-80.00",
       "market_eur": "-80.00",
       "fx_eur": "0.00",
-      "channel": "resultados NVDA"
+      "channel": "resultados NVDA",
+      "low_eur": "-120.00",
+      "high_eur": "-40.00"
     }
   ],
   "surprise": {

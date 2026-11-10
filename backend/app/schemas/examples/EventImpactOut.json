@@ -24,7 +24,9 @@
       "impact_eur": "61.00",
       "market_eur": "61.00",
       "fx_eur": "0.00",
-      "channel": "tipos"
+      "channel": "tipos",
+      "low_eur": "5.00",
+      "high_eur": "117.00"
     },
     {
       "asset_id": "IE00B4L5Y983",
@@ -33,7 +35,9 @@
       "impact_eur": "18.00",
       "market_eur": "18.00",
       "fx_eur": "0.00",
-      "channel": "tipos"
+      "channel": "tipos",
+      "low_eur": "-8.00",
+      "high_eur": "44.00"
     },
     {
       "asset_id": "IE00B03HD191",
@@ -42,7 +46,9 @@
       "impact_eur": "11.00",
       "market_eur": "11.00",
       "fx_eur": "0.00",
-      "channel": "tipos"
+      "channel": "tipos",
+      "low_eur": "-14.00",
+      "high_eur": "36.00"
     }
   ],
   "surprise": {

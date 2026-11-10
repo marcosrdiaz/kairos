@@ -6,7 +6,15 @@ fecha según el libro de operaciones. No incluye los ajustes de demo del replay 
 
 from enum import StrEnum
 
-from app.schemas.common import ContractModel, Fraction, Money, SourceRef, UtcDatetime
+from app.schemas.common import (
+    ContractModel,
+    Fraction,
+    Money,
+    Price,
+    SourceRef,
+    Units,
+    UtcDatetime,
+)
 from app.schemas.portfolio import CalcId
 
 
@@ -49,6 +57,45 @@ class PortfolioHistoryOut(ContractModel):
     portfolio_id: str
     period: HistoryPeriod
     points: list[PortfolioHistoryPoint]
+    start_value_eur: Money
+    end_value_eur: Money
+    net_flows_eur: Money
+    calc_id: CalcId
+    sources: list[SourceRef]
+
+
+class AssetHistoryPoint(PortfolioHistoryPoint):
+    """Un cierre de la serie de una posición (T2-23). Como `PortfolioHistoryPoint`, más:
+
+    - `price`: cierre del activo ese día (VL en los fondos) en su divisa (`currency` de la serie),
+      el último no posterior a la fecha.
+    - `units`: participaciones que había al final del día. Con 0 (posición ya vendida), `value_eur`
+      es 0 y el precio sigue saliendo.
+    """
+
+    price: Price
+    units: Units
+
+
+class AssetHistoryOut(ContractModel):
+    """`GET /portfolios/{id}/positions/{asset_id}/history?period=` (T2-23).
+
+    Evolución de una posición con las mismas reglas que `PortfolioHistoryOut`: precios de cierre
+    reales (`prices.history`), participaciones según el libro de operaciones, sin ajustes de demo
+    y sin rellenar días sin precio. Los flujos son solo los de este activo.
+
+    - `currency`: divisa de `price`; `value_eur` y los importes, siempre en euros.
+    - `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.
+    - 404 si la cartera no existe o nunca tuvo el activo; 503 (`PRICE_UNAVAILABLE`) si no hay
+      ningún precio en el periodo.
+    """
+
+    portfolio_id: str
+    asset_id: str
+    name: str
+    currency: str
+    period: HistoryPeriod
+    points: list[AssetHistoryPoint]
     start_value_eur: Money
     end_value_eur: Money
     net_flows_eur: Money
