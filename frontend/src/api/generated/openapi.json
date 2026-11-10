@@ -2505,6 +2505,139 @@
         "title": "TargetAllocation",
         "type": "object"
       },
+      "TickerItemOut": {
+        "additionalProperties": false,
+        "description": "Un activo de la cartera en el ticker: último precio y variación frente al cierre anterior.\n\n`change_pct` es una fracción (`\"-0.0123\"` = −1,23 %) y la calcula el backend:\n`(price - previous_price) / previous_price`. Es `null` si no hay cierre anterior o si el precio\nes fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus\nfuentes.",
+        "properties": {
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "calc_id": {
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "previous_price": {
+            "anyOf": [
+              {
+                "description": "Precio con 8 decimales",
+                "pattern": "^-?\\d+\\.\\d{8}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Price"
+          },
+          "previous_price_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Price At"
+          },
+          "price": {
+            "description": "Precio con 8 decimales",
+            "pattern": "^-?\\d+\\.\\d{8}$",
+            "title": "Price",
+            "type": "string"
+          },
+          "price_at": {
+            "format": "date-time",
+            "title": "Price At",
+            "type": "string"
+          },
+          "price_kind": {
+            "$ref": "#/components/schemas/PriceKind"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          }
+        },
+        "required": [
+          "asset_id",
+          "ticker",
+          "name",
+          "price",
+          "currency",
+          "price_at",
+          "price_kind",
+          "previous_price",
+          "previous_price_at",
+          "change_pct",
+          "source",
+          "calc_id"
+        ],
+        "title": "TickerItemOut",
+        "type": "object"
+      },
+      "TickerOut": {
+        "additionalProperties": false,
+        "description": "Respuesta de `GET /portfolios/{id}/ticker`: un elemento por posición, en el orden de la\ncartera. `as_of` es el instante de la consulta (`clock.now()`).",
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TickerItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "portfolio_id",
+          "as_of",
+          "items"
+        ],
+        "title": "TickerOut",
+        "type": "object"
+      },
       "TopCompaniesGroup": {
         "additionalProperties": false,
         "properties": {
@@ -4391,6 +4524,69 @@
         "summary": "Get Status",
         "tags": [
           "status"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/ticker": {
+      "get": {
+        "description": "Último precio de cada posición y su variación frente al cierre anterior.",
+        "operationId": "get_ticker_api_v1_portfolios__portfolio_id__ticker_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TickerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Ticker",
+        "tags": [
+          "prices"
         ]
       }
     },
