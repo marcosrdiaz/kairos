@@ -1,7 +1,7 @@
 """Interfaz pública de `events`: control del replay (diseño del MVP §4.6)."""
 
 import json
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.config import get_settings
@@ -31,6 +31,12 @@ def get_event(event_id: str) -> EventIn:
     # SQLite devuelve la fecha sin zona; en BD siempre es UTC.
     utc = occurred_at if occurred_at.tzinfo else occurred_at.replace(tzinfo=UTC)
     return event.model_copy(update={"occurred_at": utc})
+
+
+def get_market_date(event_id: str) -> datetime:
+    """Fecha real del evento en el mercado (la del JSON del replay), aunque se haya inyectado
+    con otra fecha. Es el día de los precios con los que se mide su movimiento."""
+    return _load_replay(event_id).occurred_at
 
 
 def replay(event_id: str, request: ReplayRequest | None = None) -> ReplayOut:

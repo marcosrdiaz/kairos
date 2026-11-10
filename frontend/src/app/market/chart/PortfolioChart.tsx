@@ -9,7 +9,8 @@ import { ChartBackdrop } from "./ChartBackdrop";
 import { ChartLegend } from "./ChartLegend";
 import { Change } from "./Change";
 import { DEFAULT_PERIOD, PERIODS, chipDate, pointDate, signedEur, toRows } from "./chartFormat";
-import { HistoryChart } from "./HistoryChart";
+import { MarkedChart } from "./markers/MarkedChart";
+import { useEventMarkers } from "./markers/useEventMarkers";
 import { HistoryTable } from "./HistoryTable";
 import { PeriodPicker } from "./PeriodPicker";
 import { RangeSelector } from "./RangeSelector";
@@ -107,15 +108,17 @@ function LiveActive({ store }: { store: ActivePointStore }) {
 }
 
 interface ChartBodyProps {
+  portfolioId: string;
   history: PortfolioHistoryOut;
   period: HistoryPeriod;
   periodName: string;
 }
 
 /** Gráfica, escala de tiempo y tabla. Se monta de nuevo al cambiar de serie (rango completo). */
-function ChartBody({ history, period, periodName }: ChartBodyProps) {
+function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps) {
   const compact = useCompact();
   const rows = useMemo(() => toRows(history), [history]);
+  const markers = useEventMarkers(portfolioId, rows);
   const [store] = useState(createActivePointStore);
   const [range, setRange] = useState({ start: 0, end: rows.length - 1 });
   const visible = useMemo(() => rows.slice(range.start, range.end + 1), [rows, range]);
@@ -127,11 +130,14 @@ function ChartBody({ history, period, periodName }: ChartBodyProps) {
       <Readout history={history} store={store} />
       <LiveActive store={store} />
       <div className="pr-1 sm:pr-2">
-        <HistoryChart
+        <MarkedChart
           rows={visible}
+          markers={markers}
           period={period}
           startValue={startValue}
-          label={`Valor de la cartera. ${periodName}. Usa las flechas para recorrer los días.`}
+          label={`Valor de la cartera. ${periodName}. Usa las flechas para recorrer los días${
+            markers.length > 0 ? "; con Tab, las noticias marcadas" : ""
+          }.`}
           store={store}
           reducedMotion={prefersReducedMotion()}
           compact={compact}
@@ -154,7 +160,7 @@ function ChartBody({ history, period, periodName }: ChartBodyProps) {
         </div>
       )}
       <ChartLegend />
-      <HistoryTable history={history} periodName={periodName} />
+      <HistoryTable history={history} periodName={periodName} markers={markers} />
     </>
   );
 }
@@ -205,7 +211,7 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
           aria-busy={isPlaceholderData}
           className={`flex flex-col gap-4 transition-opacity duration-200 ${isPlaceholderData ? "opacity-60" : ""}`}
         >
-          <ChartBody key={data.calc_id} history={data} period={period} periodName={periodName} />
+          <ChartBody key={data.calc_id} portfolioId={portfolioId} history={data} period={period} periodName={periodName} />
         </div>
       )}
     </section>

@@ -177,6 +177,8 @@ def compute_event_impact(
         explanation_status=ExplanationStatus.PENDING,
         sources=sources,
         calc_id="",
+        market_date=events_service.get_market_date(analysis.event_id),
+        factor_moves=dict(shocks.factor_shocks),
     )
     calc_id = trace.record(
         TraceKind.EVENT_IMPACT,
