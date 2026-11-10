@@ -67,6 +67,8 @@ export function TextMorph({ text, className }: TextMorphProps) {
       wrapper.style.overflow = "";
     });
     return () => {
+      // Si el texto cambia a mitad de camino, la siguiente animación parte de lo que se ve.
+      if (grow) lastHeight.current = wrapper.getBoundingClientRect().height;
       fade.stop();
       grow?.stop();
       wrapper.style.height = "";
