@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 """En local, `<repo>/data`; en Docker, `/data` (montado en Compose)."""
@@ -40,6 +40,16 @@ class PriceProvider(Protocol):
 
     def fx_closes(self, pair: str) -> list[PricePoint]:
         """Tipos del par (`EURUSD`) en orden ascendente de fecha. Vacío si no hay datos."""
+        ...
+
+
+@runtime_checkable
+class AdjustedPriceProvider(Protocol):
+    """Proveedor que además da cierres ajustados por dividendos (T4-03). Opcional: quien no lo
+    implementa sirve sus cierres para las betas (`service.beta_closes`)."""
+
+    def adjusted_closes(self, asset_id: str) -> list[PricePoint]:
+        """Cierres ajustados del activo en orden ascendente de fecha. Vacío si no hay datos."""
         ...
 
 
@@ -70,15 +80,20 @@ class OfflineCsvProvider:
     ) -> None:
         self.prices_dir = prices_dir
         self.factors_dir = factors_dir
-        self._cache: dict[Path, list[PricePoint]] = {}
+        self._cache: dict[tuple[Path, str], list[PricePoint]] = {}
 
     def _series(self, path: Path, value_column: str) -> list[PricePoint]:
-        if path not in self._cache:
-            self._cache[path] = _read_series(path, value_column)
-        return self._cache[path]
+        key = (path, value_column)
+        if key not in self._cache:
+            self._cache[key] = _read_series(path, value_column)
+        return self._cache[key]
 
     def closes(self, asset_id: str) -> list[PricePoint]:
         return list(self._series(self.prices_dir / f"{asset_id}.csv", "close"))
+
+    def adjusted_closes(self, asset_id: str) -> list[PricePoint]:
+        """`adj_close` de los CSV: la serie con la que se estiman las betas (D-045)."""
+        return list(self._series(self.prices_dir / f"{asset_id}.csv", "adj_close"))
 
     def fx_closes(self, pair: str) -> list[PricePoint]:
         return list(self._series(self.factors_dir / f"{pair}.csv", "value"))

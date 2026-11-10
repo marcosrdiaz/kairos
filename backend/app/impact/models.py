@@ -14,7 +14,8 @@ STAT = Numeric(20, 8)
 
 
 class FactorBeta(Base):
-    """Sensibilidad de un activo a un factor. La calcula `make betas` (T1-12)."""
+    """Sensibilidad de un activo a un factor. La calcula `impact.service.recompute_betas` (T4-03):
+    `make betas`, el arranque, la actualización semanal y el alta de un activo."""
 
     __tablename__ = "factor_beta"
 
@@ -28,6 +29,7 @@ class FactorBeta(Base):
     n_obs: Mapped[int] = mapped_column(Integer)
     window_start: Mapped[date] = mapped_column(Date)
     window_end: Mapped[date] = mapped_column(Date)
+    computed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class EventImpact(Base):

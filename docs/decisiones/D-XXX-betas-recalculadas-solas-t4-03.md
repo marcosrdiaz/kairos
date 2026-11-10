@@ -1,0 +1,20 @@
+### D-XXX · Betas recalculadas solas: función de `impact` sobre las series de `prices`, cada semana y al dar de alta un activo (T4-03)
+- Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
+- Contexto: T4-03 pide que `compute_betas.py` deje de leer los CSV por su cuenta y pase a ser una función de `impact` sobre la serie guardada, que `factor_beta` lleve fecha de cálculo, que se recalcule cada semana y al dar de alta un activo, y que `make betas` siga funcionando en modo demo. Desde T2-24 y T4-01 los precios y los factores en directo están en BD (`price`, `factor_close`), pero las betas solo salían de `data/prices` y `data/factors`.
+- Decisión:
+  - **`impact.service.recompute_betas(asset_ids=None, years=3, save=True)`** (código en `impact/betas_flow.py`) pide las series a `prices.service`: `beta_closes(asset_id)` y `factor_closes(factor)`. Así el mismo código usa los CSV en modo demo y lo guardado en BD en directo. Por defecto recalcula todo el catálogo de `prices`.
+  - **Cierres ajustados si el proveedor los da.** Las betas se estimaban con `adj_close` (D-045). `prices` añade la interfaz opcional `AdjustedPriceProvider` (`adjusted_closes`), que implementa `OfflineCsvProvider`. Quien no la implementa (el proveedor en directo y el `FakePriceProvider` de los tests) sirve sus cierres. `PriceProvider` no cambia.
+  - **Ventana hasta el reloj:** los últimos 3 años hasta el último cierre común de los cinco factores, sin pasar de `clock.now()`: nunca se mira al futuro. En modo demo da exactamente las mismas betas que antes (comparado con `compute_betas.py --dry-run`).
+  - **`factor_beta.computed_at`** (migración `0007`, nullable: las filas antiguas no tienen fecha). Lo pone `repository.replace_betas`. `BetaEstimate.computed_at` no cuenta al comparar.
+  - **Cada semana:** `scripts/daily_update.py` llama a `recompute_betas_if_due()` después de guardar los cierres y procesar los eventos pendientes. Recalcula todo el catálogo si las últimas betas tienen 7 días o más (`betas_due`). Un fallo se apunta en el informe (`betas`) y no para el resto.
+  - **Al dar de alta un activo:** `recompute_betas([asset_id])`. Lo llama el alta del catálogo abierto (T4-07). Si no hay datos suficientes, el activo se queda sin betas («sin betas», D-050), nunca con unas antiguas.
+  - `scripts/compute_betas.py` queda como envoltorio de `recompute_betas` (`--years`, `--dry-run`). `make betas` y el servicio `seed` no cambian.
+- Motivo: un solo cálculo para demo y producción, sin que `impact` lea ficheros ni tablas de `prices`; el modo demo da las mismas cifras.
+- Alternativas descartadas:
+  - Añadir `adjusted_closes` a `PriceProvider`: obliga a cambiar el `FakePriceProvider` que usan muchos tests (como en D-093).
+  - Leer `price` y `factor_close` desde `impact`: rompe la regla de hablar solo por `service.py` y no serviría en modo demo.
+  - Un proceso semanal aparte: `daily_update.py` ya corre cada día laborable; basta con mirar la fecha del último cálculo.
+- Impacto:
+  - Migración `0007` sobre la `0005`. T2-26 añade la `0006` en su rama: la que entre después en `main` debe encadenar su `down_revision` con la otra para que no haya dos cabezas.
+  - En directo, el recálculo semanal pide el histórico de todo el catálogo, no solo de los activos en cartera.
+  - El proveedor en directo no da cierres ajustados: en acciones con dividendo, las betas en directo se estiman con el cierre (diferencia pequeña, solo los días de pago).

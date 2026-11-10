@@ -116,7 +116,11 @@ def test_update_saves_last_close_of_assets_fx_and_factors(
     with session_scope() as session:
         days = set(session.scalars(select(FactorClose.day)))
     assert MON in days
-    assert _count(Price) == 2 * len(market)
+    with session_scope() as session:  # el recálculo semanal de betas (T4-03) pide el resto
+        held_rows = session.scalar(
+            select(func.count()).select_from(Price).where(Price.asset_id.in_(market))
+        )
+    assert held_rows == 2 * len(market)
     assert _count(FxRate) == 2
     assert _count(FactorClose) == 2 * 4 + 1
 
@@ -145,6 +149,44 @@ def test_failures_are_reported_and_the_rest_is_saved(
     assert set(report.failed) == {"asset:US67066G1040", "factor:OIL", "factor:RATES_EUR"}
     assert all(report.failed.values())
     assert "asset:IE00B4L5Y983" in report.updated  # iShares MSCI World (en cartera)
+
+
+def test_betas_are_recomputed_weekly_after_saving_the_closes(
+    daily_update: ModuleType,
+    live: tuple[FakeCharts, FakeRates],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.impact import service as impact_service
+
+    calls: list[int] = []
+
+    def fake_if_due() -> impact_service.BetaRun | None:
+        calls.append(_count(FactorClose))  # los cierres ya están guardados
+        return impact_service.BetaRun(computed_at=NOW, estimated=["IE00B4L5Y983"])
+
+    monkeypatch.setattr(impact_service, "recompute_betas_if_due", fake_if_due)
+    report = daily_update.update_once()
+
+    assert calls == [2 * 4 + 1]
+    assert report.betas == ["IE00B4L5Y983"]
+    assert "betas" not in report.failed
+
+
+def test_a_failed_beta_recompute_is_reported(
+    daily_update: ModuleType,
+    live: tuple[FakeCharts, FakeRates],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.impact import service as impact_service
+
+    def boom() -> None:
+        raise RuntimeError("sin datos")
+
+    monkeypatch.setattr(impact_service, "recompute_betas_if_due", boom)
+    report = daily_update.update_once()
+
+    assert report.failed["betas"] == "sin datos"
+    assert report.betas is None
 
 
 def test_a_stale_value_counts_as_a_failure(
