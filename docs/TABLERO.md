@@ -55,7 +55,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | 2 | Experiencia e integración | hasta el mar 10, 18:00 | 🔄 abierta |
 | 3 | Endurecimiento | mar 10, 18:00 → mié 11, 16:00 | 🔄 abierta |
 | 4 | Producción: datos reales y varias carteras | validada; después de la entrega salvo acuerdo | 🔄 abierta |
-| 5 | Rediseño visual: interfaz y componentes | por definir | ⬜ sin tareas |
+| 5 | Rediseño visual: interfaz y componentes | por definir | 🔄 abierta |
 | 6 | Entrega | mié 11, 21:00 (se coge sin esperar a las fases 4 y 5) | ⬜ pendiente |
 
 ### Fase 0 · Cimientos y contratos (dom 8) · ✅ cerrada
@@ -203,6 +203,7 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
+| T5-01 | **Laboratorio de componentes (`/lab`)**: ruta solo de desarrollo con candidatos de Bklit (banda de rango y sparklines primero), Kokonut, Cult UI y Componentry, copiados a mano, con los tokens de KAIROS, datos mock ilustrativos y una etiqueta «encaja / choca con DESIGN.md». No toca ninguna pantalla real | `/lab` carga con `npm run dev`, no existe en `npm run build` ni en el bundle principal; modo claro y oscuro; `prefers-reduced-motion` respetado; decisión de dependencias y licencias; `make lint && make test` en verde; PR con capturas | — | `frontend/src/ui/` (nuevo), `frontend/src/lab/` (nuevo), `frontend/src/lib/cn.ts` (nuevo), `frontend/src/App.tsx` (solo la ruta `/lab`), `frontend/package.json` y `package-lock.json` (solo dependencias: `motion`, d3, `clsx`, `tailwind-merge`), `docs/decisiones/` (decisión nueva) | Marcos | 🔄 en curso |
 
 ### Fase 6 · Entrega (mié 11, 21:00)
 
