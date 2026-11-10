@@ -264,6 +264,17 @@ def default_channel_labels() -> Mapping[Factor, str]:
     return engine.DEFAULT_LABELS
 
 
+def get_factor_betas(asset_ids: Collection[str]) -> dict[str, dict[Factor, Decimal]]:
+    """Betas guardadas por activo y factor (T1-12): `{asset_id: {factor: β}}`.
+
+    Sin fila, el activo no tiene beta en ese factor. La usa la agenda (T2-06).
+    """
+    betas: dict[str, dict[Factor, Decimal]] = defaultdict(dict)
+    for estimate in repository.get_betas(asset_ids):
+        betas[estimate.asset_id][estimate.factor] = estimate.beta
+    return dict(betas)
+
+
 def reset() -> None:
     """Borra los impactos guardados (`/demo/reset`)."""
     repository.delete_event_impacts()
