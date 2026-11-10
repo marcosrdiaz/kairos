@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import type { StatusOut } from "../api/generated/schema";
 import { LogoTile } from "../components/icons";
 import { formatEur } from "../lib/format";
+import { TextMorph } from "../ui/TextMorph";
 import { StatusBadge } from "./StatusBadge";
 import { signedPercent, stateBandClass } from "./states";
 
@@ -42,7 +43,7 @@ export function HomeWidget({ status, href }: HomeWidgetProps) {
         Esta semana:{" "}
         <span className="tabular-nums text-ink">{signedPercent(status.change_week_pct)}</span>
       </span>
-      <span className="mt-2 block text-base leading-snug">{status.sentence}</span>
+      <TextMorph text={status.sentence} className="mt-2 text-base leading-snug" />
     </Link>
   );
 }

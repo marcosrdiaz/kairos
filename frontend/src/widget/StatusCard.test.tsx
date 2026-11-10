@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { StatusOut } from "../api/generated/schema";
 import atento from "../api/mocks/StatusOut.json";
@@ -9,7 +9,10 @@ import { StatusCard } from "./StatusCard";
 import { StatusTiles } from "./StatusTiles";
 import { signedPercent, trendOf, withoutTapHint } from "./states";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 function renderStatus(status: StatusOut) {
   return render(
@@ -33,15 +36,21 @@ function definition(term: string): string {
 }
 
 describe("StatusCard + StatusTiles", () => {
-  it.each(CASES)("estado %s: color + palabra, frase como titular y traza", (state, status, word) => {
-    const { container } = renderStatus(status);
-    const badge = container.querySelector(`[data-state="${state}"]`);
-    expect(badge?.textContent).toContain(word);
-    expect(
-      screen.getByRole("heading", { level: 2, name: withoutTapHint(status.sentence) }),
-    ).toBeTruthy();
-    expect(container.querySelector(`[data-calc-id="${status.calc_id}"]`)).not.toBeNull();
-  });
+  it.each(CASES)(
+    "estado %s: color + palabra, frase como titular y traza",
+    (state, status, word) => {
+      const { container } = renderStatus(status);
+      const badge = container.querySelector(`[data-state="${state}"]`);
+      expect(badge?.textContent).toContain(word);
+      expect(
+        screen.getByRole("heading", {
+          level: 2,
+          name: withoutTapHint(status.sentence),
+        }),
+      ).toBeTruthy();
+      expect(container.querySelector(`[data-calc-id="${status.calc_id}"]`)).not.toBeNull();
+    },
+  );
 
   it("las cifras van en una lista de descripción", () => {
     renderStatus(atento as StatusOut);
@@ -63,6 +72,29 @@ describe("StatusCard + StatusTiles", () => {
     const { container } = renderStatus(atento as StatusOut);
     const live = container.querySelector('[aria-live="polite"]') as HTMLElement;
     expect(within(live).getByText("Atento")).toBeTruthy();
+  });
+
+  it("al cambiar el estado, la frase nueva está una sola vez y la antigua solo oculta al lector", () => {
+    vi.useFakeTimers();
+    const view = renderStatus(tranquilo as StatusOut);
+    const before = withoutTapHint((tranquilo as StatusOut).sentence);
+    const after = withoutTapHint((atento as StatusOut).sentence);
+    view.rerender(
+      <MemoryRouter>
+        <StatusCard status={atento as StatusOut} />
+        <StatusTiles status={atento as StatusOut} />
+      </MemoryRouter>,
+    );
+    // Durante el fundido.
+    expect(screen.getAllByText(after)).toHaveLength(1);
+    expect(screen.getByText(before).closest("[aria-hidden='true']")).not.toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: after })).toBeTruthy();
+    // Después.
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(screen.queryByText(before)).toBeNull();
+    expect(screen.getAllByText(after)).toHaveLength(1);
   });
 
   it("los iconos son decorativos", () => {

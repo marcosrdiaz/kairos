@@ -3,6 +3,7 @@ import type { StatusOut } from "../api/generated/schema";
 import { buttonPrimary } from "../components/button";
 import { ArrowRightIcon } from "../components/icons";
 import { TraceLink } from "../components/trace/TraceLink";
+import { TextMorph } from "../ui/TextMorph";
 import { HeroArt } from "./HeroArt";
 import { StatusBadge } from "./StatusBadge";
 import { stateBandClass, withoutTapHint } from "./states";
@@ -35,7 +36,7 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
           id="status-heading"
           className="mb-0 mt-5 max-w-[26ch] text-2xl font-semibold leading-tight text-ink lg:text-[2.25rem]"
         >
-          {withoutTapHint(status.sentence)}
+          <TextMorph text={withoutTapHint(status.sentence)} />
         </h2>
         <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
           {hasReason && (
