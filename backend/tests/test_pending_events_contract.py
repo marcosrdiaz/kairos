@@ -24,14 +24,13 @@ def test_pending_event_carries_no_figures() -> None:
         assert not re.search(r"\d", line), line
 
 
-def test_route_lists_pending_events(client: TestClient) -> None:
+def test_route_answers_an_empty_list_without_pending_events(client: TestClient) -> None:
+    # Implementada (T4-04): con el seed no hay eventos reales pendientes. Con uno, ver
+    # `test_events_observed.py`.
     response = client.get(URL)
 
     assert response.status_code == 200
-    [event] = response.json()
-    assert event["status"] == "pending_close"
-    assert event["causal_chain"]
-    assert not FIGURE_FIELDS & set(event)
+    assert response.json() == []
 
 
 def test_route_is_in_the_openapi(client: TestClient) -> None:

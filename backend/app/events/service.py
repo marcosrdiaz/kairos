@@ -21,8 +21,16 @@ from app.core import clock
 from app.core.errors import AppError, ErrorCode
 from app.events import observed, repository
 from app.prices import service as prices_service
-from app.schemas.common import Factor
-from app.schemas.events import EventAnalysis, EventIn, EventObserved, ReplayOut, ReplayRequest
+from app.schemas.common import Factor, SourceKind, SourceRef
+from app.schemas.events import (
+    EventAnalysis,
+    EventIn,
+    EventObserved,
+    EventStatus,
+    PendingEventOut,
+    ReplayOut,
+    ReplayRequest,
+)
 
 log = logging.getLogger(__name__)
 
@@ -146,6 +154,37 @@ def process_pending() -> list[str]:
 
 def list_pending() -> list[str]:
     return [event.id for event, _ in repository.list_pending()]
+
+
+def list_pending_out() -> list[PendingEventOut]:
+    """`GET /events/pending`: cada pendiente con la cadena causal de su análisis guardado (o la
+    de respaldo del evento) y sus fuentes. Sin ninguna cifra."""
+    out: list[PendingEventOut] = []
+    for event, _ in repository.list_pending():
+        analysis = repository.get_analysis(event.id)
+        chain = analysis.causal_chain if analysis is not None else event.fallback_chain
+        sources = [
+            SourceRef(
+                kind=SourceKind.EVENT,
+                label=f"Noticia: {event.title}",
+                ref=event.id,
+                as_of=event.occurred_at,
+                url=url,
+            )
+            for url in event.source_urls
+        ]
+        out.append(
+            PendingEventOut(
+                event_id=event.id,
+                title=event.title,
+                event_type=event.type,
+                occurred_at=event.occurred_at,
+                causal_chain=chain,
+                status=EventStatus.PENDING_CLOSE,
+                sources=sources,
+            )
+        )
+    return out
 
 
 def get_analysis(event_id: str) -> EventAnalysis | None:
