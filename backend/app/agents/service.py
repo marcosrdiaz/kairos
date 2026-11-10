@@ -63,6 +63,12 @@ def analyze_event(event: EventIn) -> EventAnalysis:
     return analyzer.analyze(event)
 
 
+def analysis_cache_key(event: EventIn) -> str:
+    """Clave con la que `events` guarda el análisis como caché (T2-26): versión del prompt y
+    huella de la entrada. Si cambia, el análisis guardado ya no vale."""
+    return analyzer.input_key(event)
+
+
 def write_event_explanation(impact: EventImpactStub) -> tuple[str, ExplanationStatus]:
     task = _EVENT_TASK.format(chain=" → ".join(impact.causal_chain), title=impact.title)
     text, by_model = writer.write(

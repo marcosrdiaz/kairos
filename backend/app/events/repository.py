@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import delete, select
 
 from app.core.db import session_scope
-from app.events.models import Event, PendingEvent
+from app.events.models import AnalysisCache, Event, PendingEvent
 from app.schemas.events import EventAnalysis, EventIn
 
 
@@ -58,6 +58,33 @@ def delete_all() -> None:
     with session_scope() as session:
         session.execute(delete(PendingEvent))
         session.execute(delete(Event))
+
+
+# --- Caché de análisis (T2-26) ---
+
+
+def get_cached_analysis(event_id: str, key: str) -> EventAnalysis | None:
+    with session_scope() as session:
+        raw = session.scalar(
+            select(AnalysisCache.analysis).where(
+                AnalysisCache.event_id == event_id, AnalysisCache.key == key
+            )
+        )
+    return EventAnalysis.model_validate(raw) if raw is not None else None
+
+
+def save_cached_analysis(
+    event_id: str, key: str, analysis: EventAnalysis, created_at: datetime
+) -> None:
+    with session_scope() as session:
+        session.merge(
+            AnalysisCache(
+                event_id=event_id,
+                key=key,
+                analysis=analysis.model_dump(mode="json"),
+                created_at=created_at,
+            )
+        )
 
 
 # --- Pendientes de cierre (T4-04) ---

@@ -1,17 +1,23 @@
 """Analizador de eventos (`SPEC.md` §9, diseño del MVP §4.2).
 
-Clasifica el evento, elige canales y redacta la cadena causal. No recibe ni produce magnitudes:
-salen de `observed` (D-025). Si falla tras un reintento lanza `AnalyzerError` y `events` usa el
-análisis de respaldo.
+Clasifica el evento, describe los canales y redacta la cadena causal. No recibe ni produce
+magnitudes: salen de `observed` (D-025) y las cifras usan siempre todos los factores observados
+(D-083), así que los canales solo sirven para la narrativa.
+
+Recibe la **dirección** observada de cada factor (sube o baja, sin cuánto). Tras la respuesta,
+`channels[].direction` se corrige al signo observado; si la cadena causal contradice un dato
+observado, se reintenta con ese motivo como feedback. Si falla tras el reintento lanza
+`AnalyzerError` y `events` usa el análisis de respaldo.
 """
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
 import anthropic
 from pydantic import ValidationError, field_validator
 
-from app.agents import guardian
+from app.agents import analyzer_directions, guardian
 from app.config import get_settings
 from app.schemas.common import ContractModel
 from app.schemas.events import (
@@ -27,8 +33,25 @@ from app.schemas.events import (
 
 _PROMPT_PATH = Path(__file__).parent / "prompts" / "analyzer.md"
 _ATTEMPTS = 2
-_TIMEOUT_S = 4.0
+_TIMEOUT_S = 10.0
+"""Con Claude real las llamadas tardaban 3–4 s y con 4 s se agotaban los dos intentos (D-083)."""
 _MAX_TOKENS = 2048
+
+
+def _prompt() -> str:
+    return _PROMPT_PATH.read_text(encoding="utf-8")
+
+
+def prompt_version() -> str:
+    """Primeros 12 hex del SHA-256 del prompt: cambia en cuanto cambia el prompt (T2-26)."""
+    return hashlib.sha256(_prompt().encode("utf-8")).hexdigest()[:12]
+
+
+def input_key(event: EventIn) -> str:
+    """Clave de caché del análisis: versión del prompt y huella de lo que se le envía al modelo.
+    Si cambia cualquiera de los dos, el análisis guardado deja de valer."""
+    message = hashlib.sha256(_user_message(event, None).encode("utf-8")).hexdigest()[:12]
+    return f"{prompt_version()}:{message}"
 
 
 class AnalyzerError(Exception):
@@ -73,13 +96,13 @@ def _get_client() -> Any:
 
 def _user_message(event: EventIn, feedback: str | None) -> str:
     observed = event.observed
-    factors = ", ".join(sorted(observed.factors)) if observed else ""
-    companies = ", ".join(sorted(observed.companies)) if observed else ""
+    factors = analyzer_directions.describe(observed.factors) if observed else "ninguno"
+    companies = analyzer_directions.describe(observed.companies) if observed else "ninguna"
     parts = [
         f"Tipo indicado: {event.type.value}",
         f"Título: {event.title}",
-        f"Factores disponibles: {factors}",
-        f"Empresas disponibles: {companies or 'ninguna'}",
+        f"Movimiento observado de cada factor ese día (solo la dirección): {factors}",
+        f"Empresas disponibles y su movimiento observado: {companies or 'ninguna'}",
     ]
     if event.consensus is not None:
         consensus = event.consensus
@@ -112,7 +135,7 @@ def _attempt(client: Any, event: EventIn, model: str, feedback: str | None) -> A
         model=model,
         max_tokens=_MAX_TOKENS,
         output_config={"effort": "low"},
-        system=_PROMPT_PATH.read_text(encoding="utf-8"),
+        system=_prompt(),
         messages=[{"role": "user", "content": _user_message(event, feedback)}],
         output_format=AnalyzerDraft,
     )
@@ -120,6 +143,10 @@ def _attempt(client: Any, event: EventIn, model: str, feedback: str | None) -> A
     if response.stop_reason == "refusal" or draft is None:
         raise ValueError(f"sin resultado ({response.stop_reason})")
     _check_no_orders(draft)
+    if event.observed is not None:
+        analyzer_directions.check_chain(draft.causal_chain, event.observed.factors)
+        channels = analyzer_directions.correct(draft.channels, event.observed.factors)
+        draft = draft.model_copy(update={"channels": channels})
     return draft  # type: ignore[no-any-return]
 
 
@@ -144,5 +171,6 @@ def analyze(event: EventIn) -> EventAnalysis:
             relevance=draft.relevance,
             analyzed_model=model,
             fallback=False,
+            prompt_version=prompt_version(),
         )
     raise AnalyzerError(feedback or "sin resultado")
