@@ -1,4 +1,4 @@
-### D-XXX · Calibración de umbrales con datos reales (T3-04): se mantienen los de estado, avisos y confianza
+### D-094 · Calibración de umbrales con datos reales (T3-04): se mantienen los de estado, avisos y confianza
 - Fecha: 2026-11-10 · Autor: Javi · Estado: Propuesta
 - Contexto: T3-04 pide calibrar con datos reales los umbrales de estado («Atento»), avisos y confianza, con el criterio de que el guion salga estable 3 veces seguidas. Se midió con `make up` (Postgres, `factor_beta` con 75 filas), `DEMO_CLOCK=2026-11-06T18:00:00Z` y `scripts/demo_smoke.py`: 3 pasadas sin clave de Claude (modo offline, el del jurado) y 3 con Claude real (`claude-sonnet-5-5` en el analizador).
 - Decisión: **no se cambia ningún umbral.** Se quedan `ATENTO_MIN_EUR` = `MIN_EUR` = 150 €, `ATENTO_MIN_SHARE` = `MIN_SHARE` = 0,5 %, la ventana de 72 h y la confianza (`alta` con R² ≥ 0,6 y cobertura ≥ 90 %, `media` con R² ≥ 0,3).
