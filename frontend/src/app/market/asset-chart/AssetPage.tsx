@@ -1,13 +1,13 @@
 import { Link, useParams, useSearchParams } from "react-router";
 import { PageTitle } from "../../../components/PageTitle";
-import { DEFAULT_PORTFOLIO } from "../../portfolio-picker/usePortfolioId";
+import { usePortfolioId } from "../../portfolio-picker/usePortfolioId";
 import { AssetChart } from "./AssetChart";
 
 /** `/activo/:assetId?p=`: evolución de una posición (T2-23), enlazada desde el ticker y el panel. */
 export function AssetPage() {
   const { assetId = "" } = useParams();
   const [params] = useSearchParams();
-  const portfolioId = params.get("p") || DEFAULT_PORTFOLIO;
+  const [portfolioId] = usePortfolioId();
   const query = params.toString() ? `?${params.toString()}` : "";
   return (
     <>

@@ -103,3 +103,13 @@ export async function apiPatch<T>(path: string, body: unknown, opts: GetOptions 
   if (!res.ok) throw await toApiError("PATCH", path, res);
   return (await res.json()) as T;
 }
+
+/** DELETE sin cuerpo (el backend responde 204). Con mocks no se borra nada. */
+export async function apiDelete(path: string): Promise<void> {
+  if (USE_MOCKS) return;
+  const res = await fetch(`${BASE}${path}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw await toApiError("DELETE", path, res);
+}
