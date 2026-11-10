@@ -124,4 +124,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-092](decisiones/D-092-gestion-carteras-t4-10.md) | 2026-11-10 | Gestión de carteras: Laura y Javier siguen por defecto mientras Q10 esté abierta, y SQLite con claves foráneas (T4-10) | Propuesta |
 | [D-093](decisiones/D-093-factores-en-directo-t4-01.md) | 2026-11-10 | Cierres de los 5 factores en directo: Yahoo y BCE, tabla `factor_close` y fuente aparte del `PriceProvider` (T4-01) | Propuesta |
 | [D-094](decisiones/D-094-calibracion-umbrales-t3-04.md) | 2026-11-10 | Calibración de umbrales con datos reales (T3-04): se mantienen los de estado, avisos y confianza | Propuesta |
+| [D-095](decisiones/D-095-fases-rediseno-y-entrega.md) | 2026-11-10 | Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento y la fase 4 se valida | Aceptada (acuerdo del equipo) |
 <!-- INDICE:FIN -->

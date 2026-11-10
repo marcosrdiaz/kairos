@@ -1,4 +1,4 @@
-### D-XXX · Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento y la fase 4 se valida
+### D-095 · Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento y la fase 4 se valida
 - Fecha: 2026-11-10 · Autor: Javi · Estado: Aceptada (acuerdo del equipo)
 - Contexto: la fase 3 («Endurecer y entregar») mezclaba el endurecimiento del código con las tareas de entrega (máquina limpia, PDF y PPT, vídeo y formulario, ensayos). Además, el equipo quiere una fase de rediseño de la interfaz y ajuste visual de componentes, y la fase 4 (producción) ya existe como propuesta.
 - Decisión:
