@@ -1,0 +1,28 @@
+/*
+ * Ticker de mercado (T2-17). La pista lleva dos copias de la lista y se desplaza la mitad de su
+ * ancho: al acabar, la segunda copia está donde empezó la primera y el bucle no se nota.
+ * La duración la fija el componente (`--ticker-duration`) según el número de activos.
+ */
+@keyframes kairos-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.kairos-ticker-track {
+  animation: kairos-ticker-scroll var(--ticker-duration, 40s) linear infinite;
+}
+
+.kairos-ticker-track[data-state="paused"] {
+  animation-play-state: paused;
+}
+
+/* Respaldo de `prefers-reduced-motion`: el componente ya pinta la lista quieta en ese caso. */
+@media (prefers-reduced-motion: reduce) {
+  .kairos-ticker-track {
+    animation: none;
+  }
+}
