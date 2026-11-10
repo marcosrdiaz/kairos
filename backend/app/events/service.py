@@ -86,6 +86,22 @@ def replay(event_id: str, request: ReplayRequest | None = None) -> ReplayOut:
     return pipeline.run(_load_replay(event_id), options.occurred_at, options.silent)
 
 
+def replay_ids() -> list[str]:
+    return sorted(path.stem for path in REPLAY_DIR.glob("*.json"))
+
+
+def preanalyze(event_ids: list[str] | None = None) -> dict[str, bool]:
+    """Deja en la caché el análisis del modelo de cada evento del replay (T2-26), para que la demo
+    no lo llame. Devuelve, por evento, si está analizado por el modelo (`False` = respaldo: falta la
+    clave o el modelo falló; se reintentará la próxima vez)."""
+    from app.events import pipeline  # aquí por el ciclo events → impact → events
+
+    return {
+        event_id: not pipeline.analyze(_load_replay(event_id)).fallback
+        for event_id in event_ids or replay_ids()
+    }
+
+
 def preload() -> list[str]:
     """Precarga del guion: BCE y petróleo, fuera de las 72 h de Atento y sin gastar avisos."""
     occurred_at = clock.now() - _PRELOAD_AGE

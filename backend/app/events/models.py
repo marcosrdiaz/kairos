@@ -33,6 +33,22 @@ class Event(Base):
     `data/events/replay`."""
 
 
+class AnalysisCache(Base):
+    """Análisis del modelo ya hechos (T2-26, D-083), para no volver a llamarlo al repetir un evento.
+
+    `key` = versión del prompt + huella de la entrada (`agents.analysis_cache_key`): si cambia el
+    prompt o el evento, la fila ya no se usa. A diferencia de `event`, `/demo/reset` no la borra:
+    así el guion no llama al modelo en cada ensayo. Solo guarda análisis del modelo, no respaldos.
+    """
+
+    __tablename__ = "analysis_cache"
+
+    event_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    key: Mapped[str] = mapped_column(String(40), primary_key=True)
+    analysis: Mapped[dict[str, Any]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class PendingEvent(Base):
     """Evento pendiente de cierre (T4-04, D-089): aún no se puede medir su shock. Guarda el
     `EventIn` completo y las empresas que hay que medir (`clave → asset_id`) para procesarlo
