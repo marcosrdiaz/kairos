@@ -4,10 +4,29 @@ import { Scrollbar } from "../../../components/Scrollbar";
 import { formatEur } from "../../../lib/format";
 import { Change, FlowTag } from "./Change";
 import { monthOf, pointDate, toRows, trendOf, weekdayOf, type ChartRow } from "./chartFormat";
+import { formatEurRange } from "../../../lib/format";
+import { EVENT_TYPE_LABEL } from "../../news/labels";
+import { markersByDate, type EventMarker } from "./markers/placeMarkers";
 
 interface HistoryTableProps {
   history: PortfolioHistoryOut;
   periodName: string;
+  /** Noticias colocadas en la serie (T2-22): salen en la fila de su cierre. */
+  markers?: EventMarker[];
+}
+
+/** Noticia en la tabla: tipo, título e impacto como rango (cifras del backend). */
+function EventTag({ marker }: { marker: EventMarker }) {
+  const e = marker.event;
+  return (
+    <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={e.calc_id}>
+      <span className="font-semibold text-accent">{EVENT_TYPE_LABEL[e.event_type]}</span>
+      <span>{e.title}</span>
+      <span className="text-ink-muted">
+        · impacto {formatEurRange(e.low_eur, e.high_eur)} ({pointDate(marker.marketDate)})
+      </span>
+    </span>
+  );
 }
 
 /** Puntos agrupados por mes, del más reciente al más antiguo. */
@@ -22,8 +41,9 @@ function byMonth(rows: ChartRow[]) {
   return groups;
 }
 
-function Rows({ history, periodName }: HistoryTableProps) {
+function Rows({ history, periodName, markers = [] }: HistoryTableProps) {
   const groups = useMemo(() => byMonth(toRows(history)), [history]);
+  const byDate = useMemo(() => markersByDate(markers), [markers]);
   const scroller = useRef<HTMLDivElement>(null);
   return (
     <div className="relative border-t border-line">
@@ -62,6 +82,7 @@ function Rows({ history, periodName }: HistoryTableProps) {
                       <span className="hidden sm:inline">{pointDate(r.date)}</span>
                       {/* En móvil, fecha corta para que quepan el valor y la variación. */}
                       <span className="sm:hidden">{weekdayOf(r.date)}</span>
+                      {byDate.get(r.date)?.map((m) => <EventTag key={m.event.event_id} marker={m} />)}
                     </th>
                     <td className="px-4 py-2 pr-6 text-right font-medium tabular-nums text-ink sm:pr-4" data-calc-id={history.calc_id}>
                       {formatEur(r.raw)}
@@ -92,10 +113,10 @@ function Rows({ history, periodName }: HistoryTableProps) {
 /**
  * Tabla alternativa a la gráfica: los mismos puntos, agrupados por mes, con la variación respecto
  * al cierre anterior (flecha, signo y color; la fila, con un fondo muy suave verde o granate) y
- * las aportaciones en azul. Plegada por defecto; las
- * filas solo se pintan al abrirla. Barra de scroll propia (`components/Scrollbar`).
+ * las aportaciones en azul; las noticias de la gráfica (T2-22) salen en la fila de su cierre.
+ * Plegada por defecto; las filas solo se pintan al abrirla. Barra de scroll propia.
  */
-export const HistoryTable = memo(function HistoryTable({ history, periodName }: HistoryTableProps) {
+export const HistoryTable = memo(function HistoryTable({ history, periodName, markers }: HistoryTableProps) {
   const [open, setOpen] = useState(false);
   return (
     <details
@@ -111,7 +132,7 @@ export const HistoryTable = memo(function HistoryTable({ history, periodName }: 
           <path d="m6 9 6 6 6-6" />
         </svg>
       </summary>
-      {open && <Rows history={history} periodName={periodName} />}
+      {open && <Rows history={history} periodName={periodName} markers={markers} />}
     </details>
   );
 });

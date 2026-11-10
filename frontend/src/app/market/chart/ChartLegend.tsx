@@ -2,12 +2,13 @@ import { useId, useState } from "react";
 import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
 
 /** Muestra de línea (trazo) o de punto, decorativa: el significado lo da el texto. */
-function Swatch({ kind, color }: { kind: "line" | "dash" | "dot" | "area"; color: string }) {
+function Swatch({ kind, color }: { kind: "line" | "dash" | "dot" | "area" | "news"; color: string }) {
   return (
     <svg viewBox="0 0 28 14" className="h-3.5 w-7 shrink-0" aria-hidden="true">
       {kind === "line" && <path d="M1 10 C 8 2, 14 12, 27 4" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" />}
       {kind === "dash" && <path d="M1 7 H27" stroke={color} strokeWidth={1.5} strokeDasharray="5 4" />}
       {kind === "dot" && <circle cx={14} cy={7} r={5} fill={color} />}
+      {kind === "news" && <circle cx={14} cy={7} r={5.5} fill="var(--kairos-color-surface)" stroke={color} strokeWidth={1.8} />}
       {kind === "area" && (
         <>
           <rect x={1} y={1} width={26} height={6} fill={UP} opacity={0.3} />
@@ -25,6 +26,7 @@ const ITEMS = [
   { kind: "dash", color: REFERENCE, label: "Línea dorada", text: "el valor al empezar el periodo: la referencia para ganar o perder." },
   { kind: "area", color: UP, label: "Zonas sombreadas", text: "la distancia a esa referencia: verde si se gana, granate si se pierde." },
   { kind: "dot", color: INFO, label: "Punto azul", text: "ese día entró o salió dinero (compra, aportación o venta): un salto ahí no es rentabilidad." },
+  { kind: "news", color: REFERENCE, label: "Círculo con icono", text: "una noticia que afectó a tu cartera, en su fecha real. Pasa el ratón o llega con Tab para ver qué pasó, cómo se movió el mercado y su impacto estimado." },
 ] as const;
 
 /** Icono de información con el aro que gira a «cerrar» al abrir la leyenda (decorativo). */

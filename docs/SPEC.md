@@ -456,6 +456,8 @@ Formato de un evento replay (contrato completo en el diseño §4.2):
 
 Replay: el evento se reinyecta con `occurred_at = clock.now()` (o el instante indicado) y el impacto se calcula sobre la valoración actual de la cartera. Los precios no se reescriben; con `DEMO_MODE=true` la valoración suma además el impacto estimado como ajuste aparte, con etiqueta y `calc_id` (D-031).
 
+`EventImpactOut` lleva además (T2-22) `market_date`, la fecha real del evento en el mercado (la del JSON del replay, `events.service.get_market_date`), y `factor_moves`, el movimiento observado de cada factor del `ShockSet` con el que se calculó el impacto. La gráfica de evolución usa `market_date` para situar el marcador de la noticia; `occurred_at` sigue siendo la fecha que se muestra en la app. Los dos son opcionales: valen `null` en los impactos guardados antes de existir.
+
 ## 13. Configuración (`.env.example`)
 
 ```

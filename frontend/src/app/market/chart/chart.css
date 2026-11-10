@@ -17,7 +17,11 @@
 .kchart-card {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+}
+/* Con una noticia abierta, el tooltip del punto de la línea se oculta: una sola tarjeta a la vez. */
+/* `!important`: Recharts pone `visibility` en el estilo en línea del tooltip. */
+[data-marker-active] .recharts-tooltip-wrapper {
+  visibility: hidden !important;
 }
 .kchart-glow {
   position: absolute;
@@ -139,6 +143,24 @@
   background: var(--kairos-color-primary-tint);
   border: 1px solid color-mix(in srgb, var(--kairos-color-primary) 40%, transparent);
   pointer-events: none;
+}
+
+/* --- Marcadores de noticias (T2-22) --- */
+.kchart-marker {
+  cursor: pointer;
+  outline: none;
+}
+.kchart-marker .kchart-marker-halo {
+  opacity: 0;
+}
+.kchart-marker:hover .kchart-marker-halo,
+.kchart-marker:focus-visible .kchart-marker-halo {
+  opacity: 0.22;
+}
+/* Foco visible en SVG: aro del color de foco alrededor del círculo. */
+.kchart-marker:focus-visible circle:nth-of-type(3) {
+  stroke: var(--kairos-color-focus);
+  stroke-width: 3px;
 }
 
 /* --- Tooltip de la gráfica --- */

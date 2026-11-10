@@ -19,6 +19,9 @@ import type { ActivePointStore } from "./activePoint";
 import { Change, FlowTag } from "./Change";
 import { niceScale, pointDate, tickDate, tickEur, type ChartRow } from "./chartFormat";
 import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
+import { EventMarkerDot } from "./markers/EventMarkerDot";
+import type { MarkerStore } from "./markers/markerStore";
+import type { EventMarker } from "./markers/placeMarkers";
 
 
 /** Posición (0 arriba, 1 abajo) de `value` dentro de [`low`, `high`], acotada. */
@@ -38,6 +41,12 @@ interface HistoryChartProps {
   reducedMotion: boolean;
   /** Pantalla estrecha: gráfica más baja, ejes más pequeños. */
   compact: boolean;
+  /** Noticias del periodo (T2-22), con su almacén y el id de la tarjeta que las describe. */
+  markers?: EventMarker[];
+  /** Piso de cada marcador (por `event_id`) para que los cercanos no se pisen. */
+  markerLevels?: Map<string, number>;
+  markerStore?: MarkerStore;
+  markerCardId?: string;
 }
 
 /** Lleva el punto activo al almacén. El efecto depende solo de la fecha (string estable). */
@@ -81,6 +90,10 @@ export const HistoryChart = memo(function HistoryChart({
   store,
   reducedMotion,
   compact,
+  markers = [],
+  markerLevels,
+  markerStore,
+  markerCardId = "",
 }: HistoryChartProps) {
   const id = useId().replace(/:/g, "");
   const values = useMemo(() => rows.map((r) => r.value), [rows]);
@@ -115,7 +128,13 @@ export const HistoryChart = memo(function HistoryChart({
     <ResponsiveContainer width="100%" height={compact ? 230 : 300} debounce={50}>
       <AreaChart
         data={rows}
-        margin={{ top: 16, right: compact ? 12 : 20, bottom: 0, left: compact ? 0 : 4 }}
+        // Con noticias, más margen arriba: el círculo del marcador va por encima del punto.
+        margin={{
+          top: markers.length > 0 ? 44 + 30 * Math.max(0, ...(markerLevels?.values() ?? [])) : 16,
+          right: compact ? 12 : 20,
+          bottom: 0,
+          left: compact ? 0 : 4,
+        }}
         accessibilityLayer
         title={label}
       >
@@ -185,6 +204,24 @@ export const HistoryChart = memo(function HistoryChart({
             strokeWidth={2}
           />
         ))}
+        {markerStore &&
+          markers.map((m) => (
+            <ReferenceDot
+              key={m.event.event_id}
+              x={m.date}
+              y={m.value}
+              shape={(p: { cx?: number; cy?: number }) => (
+                <EventMarkerDot
+                  cx={p.cx}
+                  cy={p.cy}
+                  marker={m}
+                  level={markerLevels?.get(m.event.event_id) ?? 0}
+                  store={markerStore}
+                  cardId={markerCardId}
+                />
+              )}
+            />
+          ))}
         <ActivePointReporter rows={rows} store={store} />
       </AreaChart>
     </ResponsiveContainer>
