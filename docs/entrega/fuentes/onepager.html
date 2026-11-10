@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>KAIROS · Resumen de una cara</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #1d1a15; --bronze: #765600; --gold: #f2c14e; --tint: #f7edd5;
+    --paper: #f5f3ee; --muted: #5a5246; --line: #e6e0d4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 210mm; height: 297mm; overflow: hidden; background: #fff; color: var(--ink);
+    font-family: Calibri, "Segoe UI", Arial, sans-serif; font-size: 10.3pt; line-height: 1.34;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  h1, h2, .big { font-family: Cambria, Georgia, serif; }
+  header { background: var(--ink); color: #fff; padding: 9mm 14mm 7mm; }
+  .brand { display: flex; align-items: center; gap: 4mm; }
+  .k { width: 11mm; height: 11mm; border-radius: 50%; background: var(--gold); color: var(--ink);
+       display: grid; place-items: center; font: 700 15pt Cambria, Georgia, serif; }
+  h1 { font-size: 30pt; margin: 0; letter-spacing: .5px; }
+  .tag { font: italic 15pt Cambria, Georgia, serif; color: var(--gold); margin: 2mm 0 2.5mm; }
+  .pitch { color: #e8e2d6; font-size: 11pt; margin: 0; max-width: 165mm; }
+  main { padding: 6mm 14mm 0; }
+  h2 { font-size: 13.5pt; color: var(--bronze); margin: 0 0 2mm; }
+  section { margin-bottom: 4.2mm; }
+  p { margin: 0 0 1.6mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 3mm; padding: 3.2mm 3.6mm; }
+  .card.hl { background: var(--tint); }
+  .big { font-size: 21pt; font-weight: 700; color: var(--bronze); line-height: 1.05; margin-bottom: 1.2mm; }
+  .card b { display: block; margin-bottom: .8mm; }
+  ul { margin: 0; padding-left: 4.5mm; }
+  li { margin-bottom: 0.8mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.8pt; }
+  th { background: var(--ink); color: #fff; text-align: left; padding: 1.6mm 2.4mm; font-weight: 700; }
+  td { border: 1px solid var(--line); padding: 1.5mm 2.4mm; }
+  td.hl { background: var(--tint); font-weight: 700; }
+  .src { color: var(--muted); font-size: 8.4pt; font-style: italic; margin-top: 1.4mm; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  footer { position: absolute; bottom: 7mm; left: 14mm; right: 14mm; color: var(--muted); font-size: 8.4pt;
+           border-top: 1px solid var(--line); padding-top: 2mm; display: flex; justify-content: space-between; }
+  .nw { white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="k">K</div><h1>KAIROS</h1></div>
+  <div class="tag">El mundo, traducido a tu cartera</div>
+  <p class="pitch">KAIROS vigila mercados, noticias y bancos centrales y lo traduce a la cartera de cada inversor: qué ha pasado, cuánto le afecta en euros y qué significa para su plan. Una frase en el móvil, una pregunta por voz y un panel para profundizar. Sin ruido y sin decirle qué comprar.</p>
+</header>
+
+<main>
+  <section>
+    <h2>El problema</h2>
+    <div class="grid3">
+      <div class="card"><div class="big">19,1&nbsp;M</div>cuentas en fondos españoles, frente al 12,2&nbsp;% de hogares con acciones: se invierte a través de fondos, sin saber qué hay dentro.</div>
+      <div class="card"><div class="big">19&nbsp;%</div>de los inversores españoles vendió en la caída del COVID: sin contexto, se decide por pánico.</div>
+      <div class="card"><div class="big">¿Y a mí?</div>«El BCE baja los tipos» no dice nada de lo que pasa con tus 40.000&nbsp;€. Las noticias hablan del mercado, no de tu cartera.</div>
+    </div>
+    <p class="src">Fuentes: CNMV y Encuesta Financiera de las Familias; ING, vía Funds Society.</p>
+  </section>
+
+  <section>
+    <h2>La solución</h2>
+    <div class="two">
+      <ul>
+        <li><b>Widget:</b> una cifra y una frase, con tres estados (Tranquilo, Atento, Revisa tu plan).</li>
+        <li><b>Voz:</b> «¿por qué ha bajado?», «¿voy bien?». Primera palabra hablada en 1,7&nbsp;s (mediana).</li>
+        <li><b>Panel:</b> eventos traducidos a euros, exposición real mirando dentro de los fondos y la traza de cada cifra.</li>
+      </ul>
+      <ul>
+        <li><b>Avisos que importan:</b> como mucho 2 por semana, solo si algo te toca o te alejas de tu plan.</li>
+        <li><b>La IA explica, los motores calculan:</b> agentes de Claude entienden y redactan; el gestor de cartera y el motor de impacto, deterministas, calculan todas las cifras.</li>
+        <li><b>Guardián:</b> revisa cada frase. 0 órdenes de compraventa en 30 preguntas, 10 de ellas trampa.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>La misma noticia, dos carteras</h2>
+    <table>
+      <tr><th>Evento real</th><th>Laura · 42.364&nbsp;€ · 76&nbsp;% renta variable</th><th>Javier · 180.000&nbsp;€ · 65&nbsp;% renta fija</th></tr>
+      <tr><td>El BCE baja los tipos (5 jun 2025)</td><td><span class="nw">entre −89&nbsp;€ y −73&nbsp;€</span> (−0,19&nbsp;%)</td><td><span class="nw">entre −243&nbsp;€ y −206&nbsp;€</span> (−0,12&nbsp;%)</td></tr>
+      <tr><td>El petróleo sube un 7&nbsp;% (13 jun 2025)</td><td><span class="nw">entre −250&nbsp;€ y −207&nbsp;€</span> (−0,54&nbsp;%)</td><td><span class="nw">entre −451&nbsp;€ y −352&nbsp;€</span> (−0,22&nbsp;%)</td></tr>
+      <tr><td>Resultados de NVIDIA (26 feb 2025)</td><td class="hl"><span class="nw">entre −349&nbsp;€ y −325&nbsp;€</span> (−0,80&nbsp;%)</td><td><span class="nw">entre −273&nbsp;€ y −206&nbsp;€</span> (−0,13&nbsp;%)</td></tr>
+    </table>
+    <p class="src">Laura tiene el 63,7&nbsp;% de su dinero en EE.&nbsp;UU. y el 25,9&nbsp;% en 7 empresas repetidas en sus fondos. Carteras de ejemplo ilustrativas, movimientos reales del mercado de cada día; cifras del motor de impacto, cada una con su traza.</p>
+  </section>
+
+  <section class="two">
+    <div>
+      <h2>Valor diferencial</h2>
+      <ul>
+        <li><b>Mira dentro de los fondos:</b> avisa aunque la empresa esté dentro de tu fondo indexado.</li>
+        <li><b>Avisa sin que preguntes,</b> en euros y con la cadena causal, no solo con una puntuación.</li>
+        <li><b>Del evento a tu plan:</b> cada noticia se cruza con tu objetivo y tus aportaciones.</li>
+        <li><b>Hecho para España:</b> fondos y planes, traspasos sin tributar, FIFO, valor liquidativo.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Negocio y confianza</h2>
+      <ul>
+        <li><b>B2B2C:</b> marca blanca para brókers y neobancos, por usuario activo al mes. Al bróker le interesa que su cliente no venda en pánico y siga aportando.</li>
+        <li><b>Contexto, no órdenes</b> (MiFID&nbsp;II): nunca «compra» ni «vende».</li>
+        <li><b>AI Act:</b> aviso de IA en la app y en la voz; cada cifra, trazable.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>KAIROS · Hack Finance · BEST UC3M · noviembre de 2026</span>
+  <span>Información, no asesoramiento. Las respuestas las genera una IA.</span>
+</footer>
+</body>
+</html>
