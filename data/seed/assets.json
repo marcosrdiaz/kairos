@@ -17,6 +17,10 @@
     {
       "label": "justETF, fichas de los ETF",
       "url": "https://www.justetf.com/en/etf-profile.html?isin=IE00B5BMR087"
+    },
+    {
+      "label": "justETF, fichas de VUSA, SPPW y VWRL (consultadas el 10-11-2026)",
+      "url": "https://www.justetf.com/en/etf-profile.html?isin=IE00BFY0GT14"
     }
   ],
   "assets": [
@@ -151,6 +155,45 @@
       "price_source": "yahoo:IEAC.AS"
     },
     {
+      "id": "IE00B3XXRP09",
+      "isin": "IE00B3XXRP09",
+      "ticker": "VUSA",
+      "name": "Vanguard S&P 500 UCITS ETF (USD) Distributing",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0007",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:VUSA.AS"
+    },
+    {
+      "id": "IE00BFY0GT14",
+      "isin": "IE00BFY0GT14",
+      "ticker": "SPPW",
+      "name": "SPDR MSCI World UCITS ETF",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0012",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:SPPW.DE"
+    },
+    {
+      "id": "IE00B3RBWM25",
+      "isin": "IE00B3RBWM25",
+      "ticker": "VWRL",
+      "name": "Vanguard FTSE All-World UCITS ETF (USD) Distributing",
+      "asset_type": "etf",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": "0.0014",
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:VWRL.AS"
+    },
+    {
       "id": "US0378331005",
       "isin": "US0378331005",
       "ticker": "AAPL",
@@ -214,6 +257,71 @@
       "transferable": false,
       "price_kind": "intraday",
       "price_source": "yahoo:IBE.MC"
+    },
+    {
+      "id": "US0231351067",
+      "isin": "US0231351067",
+      "ticker": "AMZN",
+      "name": "Amazon.com Inc.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:AMZN"
+    },
+    {
+      "id": "US02079K3059",
+      "isin": "US02079K3059",
+      "ticker": "GOOGL",
+      "name": "Alphabet Inc. (clase A)",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:GOOGL"
+    },
+    {
+      "id": "US30303M1027",
+      "isin": "US30303M1027",
+      "ticker": "META",
+      "name": "Meta Platforms Inc.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:META"
+    },
+    {
+      "id": "US88160R1014",
+      "isin": "US88160R1014",
+      "ticker": "TSLA",
+      "name": "Tesla Inc.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "USD",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:TSLA"
+    },
+    {
+      "id": "NL0010273215",
+      "isin": "NL0010273215",
+      "ticker": "ASML",
+      "name": "ASML Holding N.V.",
+      "asset_type": "stock",
+      "asset_class": "equity",
+      "currency": "EUR",
+      "ter": null,
+      "transferable": false,
+      "price_kind": "intraday",
+      "price_source": "yahoo:ASML.AS"
     },
     {
       "id": "DEP-12M",
