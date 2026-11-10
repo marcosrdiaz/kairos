@@ -951,6 +951,13 @@ export interface components {
         /**
          * EventImpactOut
          * @description `GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.
+         *
+         *     - `occurred_at`: cuándo se muestra en la app (en el replay, la hora de la inyección).
+         *     - `market_date`: cuándo ocurrió de verdad en el mercado (el día de los precios con los que
+         *       se mide el movimiento). Sirve para situar el evento en la gráfica de evolución (T2-22).
+         *       `null` en los impactos guardados antes de existir el campo.
+         *     - `factor_moves`: movimiento observado de cada factor ese día (fracción: 0.0074 = +0,74 %),
+         *       el del `ShockSet` con el que se calculó el impacto. `null` si no se guardó.
          */
         EventImpactOut: {
             /** Breakdown */
@@ -970,6 +977,10 @@ export interface components {
             /** Explanation */
             explanation: string | null;
             explanation_status: components["schemas"]["ExplanationStatus"];
+            /** Factor Moves */
+            factor_moves?: {
+                [key: string]: string;
+            } | null;
             /**
              * High Eur
              * @description Importe en euros con 2 decimales
@@ -990,6 +1001,8 @@ export interface components {
              * @description Importe en euros con 2 decimales
              */
             low_eur: string;
+            /** Market Date */
+            market_date?: string | null;
             /**
              * Occurred At
              * Format: date-time

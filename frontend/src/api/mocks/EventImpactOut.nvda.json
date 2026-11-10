@@ -62,5 +62,13 @@
       "url": null
     }
   ],
-  "calc_id": "calc_dbc20f11e3115888f2fd8a3c3619c961"
+  "calc_id": "calc_dbc20f11e3115888f2fd8a3c3619c961",
+  "market_date": "2025-02-26T21:20:00Z",
+  "factor_moves": {
+    "EQ_GLOBAL": "0.00179",
+    "EQ_US_TECH": "-0.02754",
+    "OIL": "0.02082",
+    "EURUSD": "-0.00336",
+    "RATES_EUR": "-0.00009"
+  }
 }
