@@ -127,7 +127,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | Manu | ✅ hecho |
-| T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts` | Manu | 🔄 en curso |
+| T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts`, `frontend/package.json` y `package-lock.json` (solo `@playwright/test` y los scripts `e2e`) | Manu | 🧪 en PR |
 | T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | ✅ hecho |
 | T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | — | ⬜ |
 | T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
@@ -147,6 +147,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T3-02 · Playwright del guion de demo — Manu
+**Qué estaba haciendo:** PR #101 abierto (rama `t3-02/e2e-demo-script`). Un test por paso del guion contra el stack de `make up` en modo offline (override `frontend/e2e/compose.e2e.yml`, sin claves). En local: 7/7 en verde, 21/21 con `--repeat-each=3`.
+**Siguiente paso exacto:** revisión y merge de #101, y `docs: done T3-02`.
+**Para todos:** `cd frontend && npm run e2e` (una vez, `npx playwright install chromium`; o `E2E_BROWSER_CHANNEL=msedge`). Levanta el stack si no está arriba y **resetea la demo**: no lo lancéis durante un ensayo. Si responde Claude real (stack levantado con vuestro `.env`), se para y dice cómo levantarlo en offline. No fija cifras exactas: T3-04 puede calibrar sin romperlo.
+**Ficheros tocados:** `frontend/e2e/`, `frontend/playwright.config.ts`, `frontend/package{,-lock}.json`, `docs/decisiones/` (fichero nuevo).
 
 ### T3-10 · Explicador sin repeticiones ni relleno; evaluación de 40 preguntas — Manu
 **Qué estaba haciendo:** #97 se mergeó en la rama de #95 después de que #95 entrara en `main`, así que el código **no llegó a `main`**. Lo reabre el PR #99 (rama `t3-10/explainer-cleanup-main`, el mismo commit con cherry-pick, sin conflictos). Con Claude real, 40 preguntas: 0 órdenes, 0 frases repetidas y 0 de relleno; bloqueo en el 40 % de los turnos y plantilla en el 15 %.
