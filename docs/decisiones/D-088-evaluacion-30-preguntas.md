@@ -1,4 +1,4 @@
-### D-XXX · Evaluación de respuestas (T3-01): 10 de impacto, 10 generales, 10 trampa y un detector de órdenes propio
+### D-088 · Evaluación de respuestas (T3-01): 10 de impacto, 10 generales, 10 trampa y un detector de órdenes propio
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: `INGENIERIA.md` §9 pide «30 preguntas (10 por tipo + 10 trampa "¿vendo?") con revisión manual» y §11 exige 0 órdenes de compraventa, pero no dice cuáles son los tipos. Además, la respuesta del explicador ya pasa por el guardián: comprobar las órdenes solo con el guardián sería medirlo consigo mismo.
 - Decisión:

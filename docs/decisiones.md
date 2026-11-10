@@ -117,4 +117,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-085](decisiones/D-085-recharts-grafica-cartera.md) | 2026-11-10 | Recharts para la gráfica de evolución de la cartera (T2-18) | Propuesta |
 | [D-086](decisiones/D-086-aviso-movimiento-mercado-t2-21.md) | 2026-11-10 | Aviso por movimiento de mercado (T2-21): parte sin explicar, comprobación al leer y apagado en demo | Propuesta |
 | [D-087](decisiones/D-087-bandeja-avisos-leidos-en-navegador.md) | 2026-11-10 | Bandeja de avisos (T2-20): «leído» se guarda en el navegador, sin ruta nueva | Propuesta |
+| [D-088](decisiones/D-088-evaluacion-30-preguntas.md) | 2026-11-10 | Evaluación de respuestas (T3-01): 10 de impacto, 10 generales, 10 trampa y un detector de órdenes propio | Propuesta |
 <!-- INDICE:FIN -->
