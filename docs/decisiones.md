@@ -119,4 +119,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-087](decisiones/D-087-bandeja-avisos-leidos-en-navegador.md) | 2026-11-10 | Bandeja de avisos (T2-20): «leído» se guarda en el navegador, sin ruta nueva | Propuesta |
 | [D-088](decisiones/D-088-evaluacion-30-preguntas.md) | 2026-11-10 | Evaluación de respuestas (T3-01): 10 de impacto, 10 generales, 10 trampa y un detector de órdenes propio | Propuesta |
 | [D-089](decisiones/D-089-shocks-en-produccion.md) | 2026-11-10 | De dónde sale el shock de un evento en producción: cierre observado y rango histórico | Propuesta |
+| [D-090](decisiones/D-090-explicador-sin-repeticiones-ni-relleno.md) | 2026-11-10 | Explicador (T3-10): las repeticiones y el relleno tras un reintento se callan sin contar como bloqueo; evaluación de 40 preguntas | Propuesta |
 <!-- INDICE:FIN -->

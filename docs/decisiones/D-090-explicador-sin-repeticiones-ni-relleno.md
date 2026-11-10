@@ -1,4 +1,4 @@
-### D-XXX · Explicador (T3-10): las repeticiones y el relleno tras un reintento se callan sin contar como bloqueo; evaluación de 40 preguntas
+### D-090 · Explicador (T3-10): las repeticiones y el relleno tras un reintento se callan sin contar como bloqueo; evaluación de 40 preguntas
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: la evaluación de T3-01 encontró, con Claude real, frases repetidas tras un reintento (imp-09, trap-06) y un comentario del modelo sobre su propia respuesta (gen-07: «Ya te he dado el reparto principal, así que completo con lo que falta»). Al reintentar, el explicador conserva las frases ya emitidas y pide al modelo que continúe, pero el modelo a menudo vuelve a empezar, a veces con otro orden de palabras. Bloquear esas frases gastaría el único reintento y acabaría en plantilla por algo que no es un error de contenido.
 - Decisión:
