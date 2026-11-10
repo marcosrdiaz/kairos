@@ -2,11 +2,8 @@
 
 Nullable: las filas que ya había no tienen fecha y la próxima actualización las sustituye.
 
-Ojo: T2-26 (rama `t2-26/analyzer-all-factors`) añade la `0006` sobre la `0005`. La que entre
-después en `main` debe apuntar `down_revision` a la otra para que no haya dos cabezas.
-
 Revision ID: 0007
-Revises: 0005
+Revises: 0006
 Create Date: 2026-11-10
 """
 
@@ -16,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "0007"
-down_revision: str | None = "0005"
+down_revision: str | None = "0006"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

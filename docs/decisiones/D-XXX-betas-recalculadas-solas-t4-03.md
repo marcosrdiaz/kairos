@@ -16,6 +16,6 @@
   - Leer `price` y `factor_close` desde `impact`: rompe la regla de hablar solo por `service.py` y no serviría en modo demo.
   - Un proceso semanal aparte: `daily_update.py` ya corre cada día laborable; basta con mirar la fecha del último cálculo.
 - Impacto:
-  - Migración `0007` sobre la `0005`. T2-26 añade la `0006` en su rama: la que entre después en `main` debe encadenar su `down_revision` con la otra para que no haya dos cabezas.
+  - Migración `0007`, sobre la `0006` de T2-26 (`analysis_cache`).
   - En directo, el recálculo semanal pide el histórico de todo el catálogo, no solo de los activos en cartera.
   - El proveedor en directo no da cierres ajustados: en acciones con dividendo, las betas en directo se estiman con el cierre (diferencia pequeña, solo los días de pago).
