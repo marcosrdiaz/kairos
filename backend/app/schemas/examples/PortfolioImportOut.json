@@ -1,0 +1,25 @@
+{
+  "illustrative": true,
+  "dry_run": false,
+  "portfolio": {
+    "id": "pf_3f9a2c1e7b04",
+    "name": "Hijos",
+    "profile": "conservador",
+    "kind": "family",
+    "risk_profile": "conservador"
+  },
+  "positions": [
+    {
+      "asset_id": "IE00BK5BQT80",
+      "units": "25.00000000",
+      "avg_cost_eur": "98.40",
+      "acquired_at": "2024-09-02T00:00:00Z"
+    },
+    {
+      "asset_id": "IE00B18GC888",
+      "units": "40.50000000",
+      "avg_cost_eur": "91.10",
+      "acquired_at": null
+    }
+  ]
+}

@@ -16,9 +16,11 @@ from app.schemas.common import (
     ContractModel,
     Fraction,
     Money,
+    PortfolioKind,
     Price,
     PriceKind,
     Profile,
+    RiskProfile,
     SourceRef,
     TraceKind,
     Units,
@@ -111,11 +113,17 @@ class DemoAdjustmentOut(ContractModel):
 
 
 class PortfolioOut(ContractModel):
-    """`GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes."""
+    """`GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.
+
+    `profile` está obsoleto: usa `risk_profile` (T4-09). `kind` y `risk_profile` son `null` en
+    las carteras creadas antes de T4-10.
+    """
 
     id: str
     name: str
     profile: Profile
+    kind: PortfolioKind | None = None
+    risk_profile: RiskProfile | None = None
     total_eur: Money
     change_week_eur: Money
     change_week_pct: Fraction
@@ -127,11 +135,14 @@ class PortfolioOut(ContractModel):
 
 
 class PortfolioSummaryOut(ContractModel):
-    """Elemento de `GET /portfolios` (selector Laura/Javier)."""
+    """Elemento de `GET /portfolios` (selector de carteras). `profile` está obsoleto: usa
+    `risk_profile` (T4-09)."""
 
     id: str
     name: str
     profile: Profile
+    kind: PortfolioKind | None = None
+    risk_profile: RiskProfile | None = None
 
 
 class AssetOut(ContractModel):

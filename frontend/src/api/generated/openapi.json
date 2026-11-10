@@ -1582,6 +1582,31 @@
         "title": "Polarity",
         "type": "string"
       },
+      "PortfolioCreateRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios` → 201 `PortfolioSummaryOut`. La cartera nace vacía: las posiciones se\ndan de alta con `POST /portfolios/{id}/positions` o se importan con `/portfolios/import`.",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PortfolioKind",
+            "default": "personal"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "risk_profile": {
+            "$ref": "#/components/schemas/RiskProfile"
+          }
+        },
+        "required": [
+          "name",
+          "risk_profile"
+        ],
+        "title": "PortfolioCreateRequest",
+        "type": "object"
+      },
       "PortfolioHistoryOut": {
         "additionalProperties": false,
         "description": "Serie de valor de la cartera en el periodo pedido.\n\n- `points`: en orden de fecha. Un punto por día hábil hasta un año; con `max`, uno por semana\n  (y siempre el último día). Se omiten las fechas sin precio de algún activo: nunca se rellenan.\n- `start_value_eur` / `end_value_eur`: valor del primer y del último punto.\n- `net_flows_eur`: dinero aportado (+) o retirado (−) entre el primer y el último punto\n  (compras, DCA, ventas), para no confundir aportaciones con rentabilidad.\n- `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.",
@@ -1700,9 +1725,91 @@
         "title": "PortfolioHistoryPoint",
         "type": "object"
       },
+      "PortfolioImportOut": {
+        "additionalProperties": false,
+        "description": "Respuesta de `POST /portfolios/import`. `positions` son las filas ya resueltas contra el\ncatálogo (`asset_id` del activo), en el orden del fichero.",
+        "properties": {
+          "dry_run": {
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "portfolio": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PortfolioSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionInitLine"
+            },
+            "title": "Positions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "dry_run",
+          "portfolio",
+          "positions"
+        ],
+        "title": "PortfolioImportOut",
+        "type": "object"
+      },
+      "PortfolioImportRequest": {
+        "additionalProperties": false,
+        "description": "`POST /portfolios/import`: crea una cartera a partir de un CSV.\n\n`csv` es el texto del fichero (el navegador lo lee y lo envía). Cabecera obligatoria y una\nfila por posición:\n\n- `asset`: ISIN o ticker de un activo del catálogo (`GET /assets/lookup`).\n- `units`: participaciones, > 0.\n- `avg_cost_eur`: precio medio de compra en euros, ≥ 0.\n- `acquired_at` (opcional): fecha de compra `AAAA-MM-DD`; si falta, la de hoy.\n\nDecimales con punto o con coma; separador de columnas `,` o `;`. Si alguna fila falla no se\ncrea nada: 422 `VALIDATION_ERROR` con `details.rows` = lista de `ImportRowError`. Con\n`dry_run` solo se valida (200 y `portfolio` = `null`); sin él, 201.",
+        "properties": {
+          "csv": {
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Csv",
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PortfolioKind",
+            "default": "personal"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "risk_profile": {
+            "$ref": "#/components/schemas/RiskProfile"
+          }
+        },
+        "required": [
+          "name",
+          "risk_profile",
+          "csv"
+        ],
+        "title": "PortfolioImportRequest",
+        "type": "object"
+      },
+      "PortfolioKind": {
+        "description": "Tipo de cartera (T4-09). Cada cartera es independiente: nunca se suman entre sí.",
+        "enum": [
+          "personal",
+          "business",
+          "family",
+          "other"
+        ],
+        "title": "PortfolioKind",
+        "type": "string"
+      },
       "PortfolioOut": {
         "additionalProperties": false,
-        "description": "`GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.",
+        "description": "`GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.\n\n`profile` está obsoleto: usa `risk_profile` (T4-09). `kind` y `risk_profile` son `null` en\nlas carteras creadas antes de T4-10.",
         "properties": {
           "allocation": {
             "$ref": "#/components/schemas/AllocationOut"
@@ -1735,6 +1842,16 @@
             "title": "Id",
             "type": "string"
           },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PortfolioKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -1748,6 +1865,16 @@
           },
           "profile": {
             "$ref": "#/components/schemas/Profile"
+          },
+          "risk_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "total_eur": {
             "description": "Importe en euros con 2 decimales",
@@ -1778,11 +1905,21 @@
       },
       "PortfolioSummaryOut": {
         "additionalProperties": false,
-        "description": "Elemento de `GET /portfolios` (selector Laura/Javier).",
+        "description": "Elemento de `GET /portfolios` (selector de carteras). `profile` está obsoleto: usa\n`risk_profile` (T4-09).",
         "properties": {
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PortfolioKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "name": {
             "title": "Name",
@@ -1790,6 +1927,16 @@
           },
           "profile": {
             "$ref": "#/components/schemas/Profile"
+          },
+          "risk_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1798,6 +1945,47 @@
           "profile"
         ],
         "title": "PortfolioSummaryOut",
+        "type": "object"
+      },
+      "PortfolioUpdateRequest": {
+        "additionalProperties": false,
+        "description": "`PATCH /portfolios/{id}` → 200 `PortfolioSummaryOut`. Solo cambia lo que se envía.",
+        "properties": {
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PortfolioKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "risk_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "PortfolioUpdateRequest",
         "type": "object"
       },
       "PositionInitLine": {
@@ -1994,6 +2182,7 @@
         "type": "string"
       },
       "Profile": {
+        "description": "Obsoleto (T4-09): las peticiones usan `RiskProfile`. Se mantiene en las respuestas.",
         "enum": [
           "conservador",
           "moderado",
@@ -2297,6 +2486,16 @@
         },
         "title": "ReplayRequest",
         "type": "object"
+      },
+      "RiskProfile": {
+        "description": "Perfil de riesgo de una cartera (T4-09). Sustituye a `Profile` en las peticiones.",
+        "enum": [
+          "conservador",
+          "moderado",
+          "agresivo"
+        ],
+        "title": "RiskProfile",
+        "type": "string"
       },
       "ScenarioOut": {
         "additionalProperties": false,
@@ -3243,6 +3442,41 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/ask": {
+      "post": {
+        "description": "Como `POST /portfolios/{id}/ask`, sin cartera elegida: el asistente deduce de la pregunta\na qué cartera o carteras se refiere y responde por separado para cada una, sin sumarlas\n(`AskSentenceEvent.portfolio_ids`). Si la pregunta es ambigua, pregunta a cuál se refiere.",
+        "operationId": "ask_any_portfolio_api_v1_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask Any Portfolio",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
     "/api/v1/assets/lookup": {
       "get": {
         "description": "Busca por ISIN, ticker o nombre. Lista vacía si no hay coincidencias.",
@@ -3346,7 +3580,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -3637,9 +3871,145 @@
         "tags": [
           "portfolio"
         ]
+      },
+      "post": {
+        "description": "Crea una cartera vacía con id generado (`pf_` + hex). 422 si el nombre está vacío.",
+        "operationId": "create_portfolio_api_v1_portfolios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Create Portfolio",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
+    "/api/v1/portfolios/import": {
+      "post": {
+        "description": "Crea una cartera desde un CSV (formato en `PortfolioImportRequest`). Con `dry_run`, 200\nsin crear nada. Si alguna fila falla, 422 con `details.rows` (lista de `ImportRowError`).",
+        "operationId": "import_portfolio_api_v1_portfolios_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioImportOut"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioImportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Import Portfolio",
+        "tags": [
+          "portfolio"
+        ]
       }
     },
     "/api/v1/portfolios/{portfolio_id}": {
+      "delete": {
+        "description": "Borra la cartera y todo lo suyo: operaciones, plan, DCA, avisos, impactos y ajustes.\nNo afecta a las demás carteras. 404 si no existe.",
+        "operationId": "delete_portfolio_api_v1_portfolios__portfolio_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Portfolio",
+        "tags": [
+          "portfolio"
+        ]
+      },
       "get": {
         "operationId": "get_portfolio_api_v1_portfolios__portfolio_id__get",
         "parameters": [
@@ -3686,6 +4056,67 @@
           }
         },
         "summary": "Get Portfolio",
+        "tags": [
+          "portfolio"
+        ]
+      },
+      "patch": {
+        "description": "Renombra la cartera o cambia su tipo o su perfil de riesgo. 404 si no existe.",
+        "operationId": "update_portfolio_api_v1_portfolios__portfolio_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Update Portfolio",
         "tags": [
           "portfolio"
         ]
@@ -4029,7 +4460,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -4100,7 +4531,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
@@ -4167,7 +4598,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "List Event Impacts",
@@ -4359,7 +4790,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Explain Move",
@@ -4471,7 +4902,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -4533,7 +4964,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
@@ -4699,7 +5130,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Estimate Scenario",
@@ -4876,7 +5307,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -4938,7 +5369,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
@@ -5054,7 +5485,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Tts",

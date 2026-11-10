@@ -28,6 +28,8 @@
     "id": "laura",
     "name": "Laura",
     "profile": "dinamico",
+    "kind": "personal",
+    "risk_profile": "agresivo",
     "total_eur": "33918.39",
     "change_week_eur": "-514.00",
     "change_week_pct": "-0.015",

@@ -105,9 +105,28 @@ class PriceKind(StrEnum):
 
 
 class Profile(StrEnum):
+    """Obsoleto (T4-09): las peticiones usan `RiskProfile`. Se mantiene en las respuestas."""
+
     CONSERVADOR = "conservador"
     MODERADO = "moderado"
     DINAMICO = "dinamico"
+
+
+class RiskProfile(StrEnum):
+    """Perfil de riesgo de una cartera (T4-09). Sustituye a `Profile` en las peticiones."""
+
+    CONSERVADOR = "conservador"
+    MODERADO = "moderado"
+    AGRESIVO = "agresivo"
+
+
+class PortfolioKind(StrEnum):
+    """Tipo de cartera (T4-09). Cada cartera es independiente: nunca se suman entre sí."""
+
+    PERSONAL = "personal"
+    BUSINESS = "business"
+    FAMILY = "family"
+    OTHER = "other"
 
 
 class Factor(StrEnum):

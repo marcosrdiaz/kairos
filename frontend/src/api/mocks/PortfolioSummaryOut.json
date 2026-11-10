@@ -2,5 +2,7 @@
   "illustrative": true,
   "id": "laura",
   "name": "Laura",
-  "profile": "dinamico"
+  "profile": "dinamico",
+  "kind": "personal",
+  "risk_profile": "agresivo"
 }
