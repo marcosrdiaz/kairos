@@ -26,6 +26,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Asset
+         * @description Da de alta un activo que no está en el catálogo buscándolo en el proveedor en directo
+         *     (ISIN, ticker o nombre), con su histórico y sus betas. Si ya está, devuelve el del catálogo.
+         *     404 `NOT_FOUND` si el proveedor no lo conoce; 503 `UPSTREAM_UNAVAILABLE` si no responde o si
+         *     no hay precios en directo (modo demo).
+         *
+         *     Contrato (T4-07): sirve el ejemplo hasta la implementación.
+         */
+        post: operations["create_asset_api_v1_assets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assets/lookup": {
         parameters: {
             query?: never;
@@ -765,6 +790,16 @@ export interface components {
          * @enum {string}
          */
         AssetClass: "equity" | "fixed_income" | "cash" | "mixed";
+        /**
+         * AssetCreateRequest
+         * @description Alta de un activo que no está en el catálogo (`POST /assets`, T4-07): se busca en el
+         *     proveedor de precios en directo por ISIN, ticker o nombre y se da de alta el primero que tenga
+         *     precios. Si ya está en el catálogo, se devuelve ese.
+         */
+        AssetCreateRequest: {
+            /** Query */
+            query: string;
+        };
         /**
          * AssetHistoryOut
          * @description `GET /portfolios/{id}/positions/{asset_id}/history?period=` (T2-23).
@@ -2348,6 +2383,7 @@ export type AllocationOut = components['schemas']['AllocationOut'];
 export type AskChannel = components['schemas']['AskChannel'];
 export type AskRequest = components['schemas']['AskRequest'];
 export type AssetClass = components['schemas']['AssetClass'];
+export type AssetCreateRequest = components['schemas']['AssetCreateRequest'];
 export type AssetHistoryOut = components['schemas']['AssetHistoryOut'];
 export type AssetHistoryPoint = components['schemas']['AssetHistoryPoint'];
 export type AssetImpact = components['schemas']['AssetImpact'];
@@ -2469,6 +2505,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_asset_api_v1_assets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
