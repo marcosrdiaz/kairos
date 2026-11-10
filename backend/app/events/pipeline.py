@@ -79,8 +79,9 @@ def build_shockset(analysis: EventAnalysis, event: EventIn) -> ShockSet:
 
 
 def fallback_analysis(event: EventIn) -> EventAnalysis:
-    """Respaldo sin LLM: todos los factores observados y la cadena que escribió un humano."""
-    observed = _observed(event)
+    """Respaldo sin LLM: todos los factores observados y la cadena que escribió un humano. Sin
+    `observed` (pendiente de cierre, T4-04), sin canales: no se inventa ninguna dirección."""
+    observed = event.observed or EventObserved(factors={}, companies={})
     labels = impact_service.default_channel_labels()
     return EventAnalysis(
         schema_version=1,
@@ -111,12 +112,22 @@ def _analyze(event: EventIn) -> EventAnalysis:
         return fallback_analysis(event)
 
 
-def run(event: EventIn, occurred_at: datetime | None, silent: bool) -> ReplayOut:
+def save_pending(event: EventIn, companies: dict[str, str]) -> None:
+    """Evento aún sin shock medido (T4-04): se guarda con su análisis (la cadena causal se puede
+    ver) y sin impactos ni avisos. `events.service.process_pending` lo procesa tras el cierre."""
+    analysis = _analyze(event)
+    repository.save_event(event, event.occurred_at, analysis, clock.now(), replay=False)
+    repository.save_pending(event, companies, clock.now())
+
+
+def run(
+    event: EventIn, occurred_at: datetime | None, silent: bool, replay: bool = True
+) -> ReplayOut:
     """`event` trae la fecha real del JSON; `occurred_at` es la que se muestra en la app."""
     started = time.perf_counter()
     analysis = _analyze(event)
     shocks = build_shockset(analysis, event)
-    repository.save_event(event, occurred_at or clock.now(), analysis, clock.now())
+    repository.save_event(event, occurred_at or clock.now(), analysis, clock.now(), replay=replay)
 
     calc_ids: dict[str, str] = {}
     for portfolio_id in portfolio_service.list_portfolio_ids():

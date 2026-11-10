@@ -42,6 +42,8 @@ _STALE_MARK = "no respondió"
 class Report:
     updated: list[str] = field(default_factory=list)
     failed: dict[str, str] = field(default_factory=dict)
+    events: list[str] = field(default_factory=list)
+    """Eventos pendientes de cierre que se han podido medir y procesar (T4-04)."""
 
 
 def _update(report: Report, key: str, fetch: Callable[[], str]) -> None:
@@ -59,7 +61,8 @@ def _update(report: Report, key: str, fetch: Callable[[], str]) -> None:
 
 
 def update_once() -> Report:
-    """Pide y guarda el último cierre de cada activo en cartera, del EUR/USD y de cada factor."""
+    """Pide y guarda el último cierre de cada activo en cartera, del EUR/USD y de cada factor, y
+    después procesa los eventos pendientes de cierre que ya se pueden medir."""
     from app.portfolio import service as portfolio_service
     from app.prices import service as prices_service
     from app.schemas.common import Factor
@@ -78,6 +81,12 @@ def update_once() -> Report:
             f"factor:{factor.value}",
             lambda f=factor: _label(prices_service.factor_latest(f)),
         )
+    from app.events import service as events_service
+
+    try:
+        report.events = events_service.process_pending()  # con los cierres ya guardados
+    except Exception as error:
+        report.failed["events:pending"] = str(error) or type(error).__name__
     return report
 
 
@@ -113,6 +122,8 @@ def _run_and_log() -> None:
     )
     for key, reason in sorted(report.failed.items()):
         log.warning("  %s: %s", key, reason)
+    if report.events:
+        log.info("Eventos procesados tras el cierre: %s", ", ".join(report.events))
 
 
 def main(argv: list[str] | None = None) -> int:

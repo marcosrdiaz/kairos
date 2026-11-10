@@ -208,7 +208,8 @@ erDiagram
 | `demo_adjustment` | portfolio_id, event_id, asset_id, impact_eur, label, calc_id, created_at | Solo con `DEMO_MODE=true`; una fila por posición; la borra `/demo/reset` (D-031, D-042) |
 | `composition` | fund_asset_id, constituent_key, name, weight, country, sector, currency, as_of, source | Pesos normalizados; "Otros" para el resto |
 | `factor_beta` | asset_id, factor, beta, std_err, r2, n_obs, window_start, window_end | Calculado por `make betas` y, al arrancar, por el servicio `seed` (`make up` y `make seed`) |
-| `event` | id, type, title, text, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model, created_at | |
+| `event` | id, type, title, text, occurred_at, replay, source_urls, entities (json), analysis (json `EventAnalysis`), analyzed_model, created_at, payload (json `EventIn`, solo eventos reales) | Los del replay leen su `EventIn` de `data/events/replay`; los reales (T4-04), de `payload` |
+| `pending_event` | id (FK `event`), payload (json `EventIn`), companies (json clave → `asset_id`), created_at | Eventos pendientes de cierre (T4-04, D-089): guardados con su análisis y sin impactos hasta que se puede medir su shock. `events.service.process_pending` (lo llama `scripts/daily_update.py`) los procesa. Un evento del día D tiene cifras desde D+1 |
 | `event_impact` | event_id, portfolio_id, impact_eur, low_eur, high_eur, impact_pct, confidence, polarity, breakdown (json), explanation, explanation_status, calc_id, created_at | |
 | `alert` | id, portfolio_id, event_id, kind, score, message, created_at, delivered, calc_id | `calc_id` solo en los avisos sin evento (`market_move`); los de evento toman el del impacto (D-076) |
 | `calc_trace` | id, kind, formula, inputs (json), outputs (json), sources (json), parent_calc_ids (json), created_at | Trazabilidad de cada cifra. Modelo en `core/trace.py` (D-034) |

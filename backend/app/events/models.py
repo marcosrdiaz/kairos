@@ -6,7 +6,7 @@ Solo `events/repository.py` los consulta.
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
@@ -27,4 +27,22 @@ class Event(Base):
     entities: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
     analysis: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     analyzed_model: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    """`EventIn` completo de un evento real (T4-04); `null` en los del replay, que viven en
+    `data/events/replay`."""
+
+
+class PendingEvent(Base):
+    """Evento pendiente de cierre (T4-04, D-089): aún no se puede medir su shock. Guarda el
+    `EventIn` completo y las empresas que hay que medir (`clave → asset_id`) para procesarlo
+    tras el cierre. Su fila de `event` (con la cadena causal) ya existe; sus impactos, no."""
+
+    __tablename__ = "pending_event"
+
+    id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("event.id", ondelete="CASCADE"), primary_key=True
+    )
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    companies: Mapped[dict[str, str]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
