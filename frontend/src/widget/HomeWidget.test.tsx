@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { StatusOut } from "../api/generated/schema";
 import atento from "../api/mocks/StatusOut.json";
@@ -7,7 +7,10 @@ import revisaPlan from "../api/mocks/StatusOut.revisa_plan.json";
 import tranquilo from "../api/mocks/StatusOut.tranquilo.json";
 import { HomeWidget } from "./HomeWidget";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 const CASES: [string, StatusOut, string][] = [
   ["tranquilo", tranquilo as StatusOut, "Tranquilo"],
@@ -27,6 +30,27 @@ describe("HomeWidget", () => {
     // En el widget la frase va completa, con su "Toca para ver…".
     expect(screen.getByText(status.sentence)).toBeTruthy();
     expect(screen.getByText(/34\.311,68\s€/)).toBeTruthy();
+  });
+
+  it("al cambiar el estado, la frase nueva está una sola vez y la antigua solo oculta al lector", () => {
+    vi.useFakeTimers();
+    const view = render(
+      <MemoryRouter>
+        <HomeWidget status={tranquilo as StatusOut} href="/inicio?p=laura" />
+      </MemoryRouter>,
+    );
+    view.rerender(
+      <MemoryRouter>
+        <HomeWidget status={atento as StatusOut} href="/inicio?p=laura" />
+      </MemoryRouter>,
+    );
+    expect(screen.getAllByText(atento.sentence)).toHaveLength(1);
+    expect(screen.getByText(tranquilo.sentence).closest("[aria-hidden='true']")).not.toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(screen.queryByText(tranquilo.sentence)).toBeNull();
+    expect(screen.getAllByText(atento.sentence)).toHaveLength(1);
   });
 
   it("es un único enlace a Inicio con nombre accesible y traza", () => {

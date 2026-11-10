@@ -16,7 +16,7 @@ export function TextMorphSection() {
       verdict={{
         fits: true,
         reason:
-          "Solo cambia cuando cambia el texto (no rota solo) y dura 0,3 s con un desenfoque ligero: apto para la frase de estado de Inicio. Con prefers-reduced-motion el cambio es instantáneo.",
+          "Solo cambia cuando cambia el texto (no rota solo) y dura 0,24 s con un desenfoque ligero: apto para la frase de estado de Inicio. Con prefers-reduced-motion el cambio es instantáneo.",
       }}
       changes="se quita la rotación automática y el filtro SVG de umbral; el texto nuevo se anuncia al lector de pantalla."
     >
