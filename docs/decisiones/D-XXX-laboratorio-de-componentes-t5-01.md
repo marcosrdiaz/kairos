@@ -27,6 +27,6 @@
 - Motivo: poder compararlos en la web, con los tokens de KAIROS en claro y oscuro y `prefers-reduced-motion`, sin comprometer ninguna pantalla ni el peso del build.
 - Alternativas descartadas: inicializar shadcn (obliga a tocar `tsconfig.json` y `vite.config.ts`, ficheros compartidos); aplicar los componentes directamente en las pantallas (choca con T4-13 y T3-02 y no deja comparar); copiar React Bits (licencia con cláusula Commons Clause).
 - Consecuencias:
-  - Tailwind escanea `src/ui` y `src/lab`, así que las clases que solo usa el lab entran en el CSS del build (+3,5 kB, +0,5 kB gzip). Si molesta, basta `@source not "./lab";` en `src/index.css`.
+  - Tailwind escanea `src/ui` y `src/lab`. `@source not "./lab";` en `src/index.css` deja fuera las clases del lab, pero las de `src/ui` siguen entrando en el CSS del build: +3,2 kB (+0,45 kB gzip) sobre el CSS de partida. Es el coste de tener los componentes en el repo sin usar; desaparece al borrar los descartados y se vuelve uso real al aplicar los elegidos.
   - Quien aplique un componente en una pantalla real (T5-02 en adelante) lo envuelve con `Traced` y formatea con `lib/format.ts`: los componentes no calculan cifras.
   - Si el equipo descarta un componente, se borra su fichero de `src/ui/` y su sección de `src/lab/`.
