@@ -33,7 +33,9 @@ class Portfolio(Base):
 
     id: Mapped[str] = mapped_column(String(40), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
-    profile: Mapped[str] = mapped_column(String(16))  # Profile
+    profile: Mapped[str] = mapped_column(String(16))  # Profile (obsoleto, sale de risk_profile)
+    kind: Mapped[str | None] = mapped_column(String(16))  # PortfolioKind (T4-10)
+    risk_profile: Mapped[str | None] = mapped_column(String(16))  # RiskProfile (T4-10)
     base_currency: Mapped[str] = mapped_column(String(3), default="EUR")
     created_at: Mapped[datetime] = mapped_column(TZ)
 

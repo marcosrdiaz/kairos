@@ -1,7 +1,7 @@
 """Crear, editar, borrar e importar carteras, y preguntar sin cartera elegida (T4-09).
 
-Contrato: estas rutas responden con los ejemplos de `schemas/examples/` y **no guardan nada**
-hasta que lleguen T4-10 (crear, editar, borrar), T4-11 (importar) y T4-14 (`/ask`).
+Crear, editar y borrar son reales desde T4-10. Importar y `/ask` responden todavía con los
+ejemplos de `schemas/examples/` y **no guardan nada** hasta T4-11 (importar) y T4-14 (`/ask`).
 """
 
 from collections.abc import Iterator
@@ -11,6 +11,7 @@ from fastapi import APIRouter, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import TypeAdapter
 
+from app.portfolio import service as portfolio_service
 from app.schemas import examples
 from app.schemas.agents import (
     AskDoneEvent,
@@ -36,10 +37,6 @@ _INVALID: dict[int | str, dict[str, Any]] = {422: {"model": ErrorOut}}
 _EVENT = TypeAdapter(AskEvent)
 
 
-def _summary_example() -> PortfolioSummaryOut:
-    return PortfolioSummaryOut.model_validate(examples.load("PortfolioSummaryOut"))
-
-
 @router.post(
     "/portfolios",
     response_model=PortfolioSummaryOut,
@@ -48,13 +45,7 @@ def _summary_example() -> PortfolioSummaryOut:
 )
 def create_portfolio(body: PortfolioCreateRequest) -> PortfolioSummaryOut:
     """Crea una cartera vacía con id generado (`pf_` + hex). 422 si el nombre está vacío."""
-    return PortfolioSummaryOut(
-        id="pf_3f9a2c1e7b04",
-        name=body.name,
-        profile=LEGACY_PROFILE[body.risk_profile],
-        kind=body.kind,
-        risk_profile=body.risk_profile,
-    )
+    return portfolio_service.create_portfolio(body)
 
 
 @router.patch(
@@ -64,11 +55,7 @@ def create_portfolio(body: PortfolioCreateRequest) -> PortfolioSummaryOut:
 )
 def update_portfolio(portfolio_id: str, body: PortfolioUpdateRequest) -> PortfolioSummaryOut:
     """Renombra la cartera o cambia su tipo o su perfil de riesgo. 404 si no existe."""
-    current = _summary_example()
-    changes = body.model_dump(exclude_none=True)
-    if body.risk_profile is not None:
-        changes["profile"] = LEGACY_PROFILE[body.risk_profile]
-    return current.model_copy(update={"id": portfolio_id, **changes})
+    return portfolio_service.update_portfolio(portfolio_id, body)
 
 
 @router.delete(
@@ -80,6 +67,7 @@ def update_portfolio(portfolio_id: str, body: PortfolioUpdateRequest) -> Portfol
 def delete_portfolio(portfolio_id: str) -> Response:
     """Borra la cartera y todo lo suyo: operaciones, plan, DCA, avisos, impactos y ajustes.
     No afecta a las demás carteras. 404 si no existe."""
+    portfolio_service.delete_portfolio(portfolio_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
