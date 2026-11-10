@@ -427,7 +427,7 @@ export interface paths {
         };
         /**
          * List News
-         * @description Noticias de la más reciente a la más antigua, con su impacto estimado en esta cartera.
+         * @description Noticias de la más reciente a la más antigua, con su impacto en esta cartera.
          *
          *     `affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.
          *     404 si la cartera no existe.
@@ -450,8 +450,7 @@ export interface paths {
         };
         /**
          * Get News
-         * @description Una noticia con su impacto estimado en esta cartera. 404 si no existe la cartera o la
-         *     noticia.
+         * @description Una noticia con su impacto en esta cartera. 404 si no existe la cartera o la noticia.
          */
         get: operations["get_news_api_v1_portfolios__portfolio_id__news__news_id__get"];
         put?: never;

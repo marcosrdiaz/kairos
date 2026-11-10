@@ -2,14 +2,14 @@
   "illustrative": true,
   "id": "news_3f9a1c7e2b4d",
   "category": "earnings",
-  "title": "NVIDIA presenta resultados trimestrales por debajo de lo que esperaba el mercado",
-  "summary": "La compañía publica sus resultados del trimestre y rebaja la previsión de ventas de centros de datos.",
-  "published_at": "2026-11-19T21:15:00Z",
+  "title": "NVIDIA publica sus resultados del cuarto trimestre fiscal",
+  "summary": "La compañía presenta sus cuentas trimestrales tras el cierre de Wall Street.",
+  "published_at": "2025-02-26T21:20:00Z",
   "source": {
     "kind": "event",
     "label": "Nota de resultados de NVIDIA",
     "ref": "news_3f9a1c7e2b4d",
-    "as_of": "2026-11-19T21:15:00Z",
+    "as_of": "2025-02-26T21:20:00Z",
     "url": "https://nvidianews.nvidia.com/"
   },
   "companies": [{ "key": "NVDA", "name": "NVIDIA" }],
@@ -31,7 +31,7 @@
     }
   ],
   "causal_chain": [
-    "NVIDIA publica resultados por debajo de lo esperado.",
+    "Tras sus resultados, la acción de NVIDIA cae con fuerza.",
     "Su acción y las tecnológicas de EE. UU. tienden a bajar.",
     "Tu cartera tiene NVIDIA en directo y dentro de tu fondo global."
   ],
@@ -57,7 +57,7 @@
         "low_eur": "-210.00",
         "high_eur": "-90.00",
         "timing": "same_session",
-        "effective_from": "2026-11-20T14:30:00Z"
+        "effective_from": "2025-02-27T00:00:00Z"
       },
       {
         "asset_id": "IE00B03HD191",
@@ -66,11 +66,11 @@
         "low_eur": "-60.00",
         "high_eur": "-20.00",
         "timing": "next_nav",
-        "effective_from": "2026-11-21T00:00:00Z"
+        "effective_from": "2025-02-28T00:00:00Z"
       }
     ],
     "calc_id": "calc_7e2b4d1a9c3f4e8b8a6d2c1b0f9e8d7c",
     "event_id": null,
-    "as_of": "2026-11-19T22:00:00Z"
+    "as_of": "2025-02-26T22:00:00Z"
   }
 }

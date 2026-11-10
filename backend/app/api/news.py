@@ -1,8 +1,8 @@
 """Noticias de una cartera (T4-27): `GET /portfolios/{id}/news` y `.../news/{news_id}`.
 
-Rutas provisionales: responden con los ejemplos de `schemas/examples/NewsItemOut*.json` (marcados
-`illustrative`) hasta que la ingesta (T4-28) y la estimación (T4-30) las sirvan con datos reales.
-La cartera sí se comprueba: 404 si no existe.
+Rutas provisionales del contrato: **no sirven datos de ejemplo**. Hasta que la ingesta (T4-28) y
+la estimación (T4-30) estén, la lista sale vacía y el detalle da 404. Los ejemplos de
+`schemas/examples/NewsItemOut*.json` son solo mocks del frontend y de los tests.
 """
 
 from typing import Any
@@ -11,23 +11,12 @@ from fastapi import APIRouter, Query
 
 from app.core.errors import AppError, ErrorCode
 from app.portfolio import service as portfolio_service
-from app.schemas import examples
 from app.schemas.common import ErrorOut
-from app.schemas.news import NewsCategory, NewsEstimateStatus, NewsItemOut
+from app.schemas.news import NewsCategory, NewsItemOut
 
 router = APIRouter(tags=["news"])
 
 _NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorOut}}
-_EXAMPLES = ("NewsItemOut", "NewsItemOut.pending", "NewsItemOut.not_relevant")
-
-
-def _example_items() -> list[NewsItemOut]:
-    items = [NewsItemOut.model_validate(examples.load(name)) for name in _EXAMPLES]
-    return sorted(items, key=lambda item: item.published_at, reverse=True)
-
-
-def _affects(item: NewsItemOut) -> bool:
-    return item.estimate is None or item.estimate.status != NewsEstimateStatus.NOT_RELEVANT
 
 
 @router.get(
@@ -39,17 +28,12 @@ def list_news(
     affecting: bool = True,
     limit: int = Query(default=50, ge=1, le=200),
 ) -> list[NewsItemOut]:
-    """Noticias de la más reciente a la más antigua, con su impacto estimado en esta cartera.
+    """Noticias de la más reciente a la más antigua, con su impacto en esta cartera.
 
     `affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.
     404 si la cartera no existe."""
     portfolio_service.ensure_exists(portfolio_id)
-    items = [
-        item
-        for item in _example_items()
-        if (category is None or item.category == category) and (not affecting or _affects(item))
-    ]
-    return items[:limit]
+    return []
 
 
 @router.get(
@@ -58,10 +42,6 @@ def list_news(
     responses=_NOT_FOUND,
 )
 def get_news(portfolio_id: str, news_id: str) -> NewsItemOut:
-    """Una noticia con su impacto estimado en esta cartera. 404 si no existe la cartera o la
-    noticia."""
+    """Una noticia con su impacto en esta cartera. 404 si no existe la cartera o la noticia."""
     portfolio_service.ensure_exists(portfolio_id)
-    for item in _example_items():
-        if item.id == news_id:
-            return item
     raise AppError(ErrorCode.NOT_FOUND, "No encontramos esa noticia.", {"news_id": news_id})
