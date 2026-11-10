@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { BrandBanner } from "../components/BrandBanner";
+import { AppNotice } from "../components/notices/Notices";
 import { Scrollbar } from "../components/Scrollbar";
 import { HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
@@ -56,6 +57,13 @@ export function AppShell() {
           : "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_0rem]"
       }`}
     >
+      {/* Primer elemento con foco: salta la cabecera y la navegación (WCAG 2.4.1). */}
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-30 focus:rounded-full focus:bg-accent focus:px-5 focus:py-3 focus:text-base focus:font-semibold focus:text-on-accent"
+      >
+        Saltar al contenido
+      </a>
       <header inert={modal} className="sticky top-0 z-20 flex h-(--kairos-header-height) items-center gap-3 border-b border-line bg-surface px-4 lg:h-dvh lg:flex-col lg:items-stretch lg:gap-6 lg:border-b-0 lg:border-r lg:bg-surface-muted lg:px-4 lg:pb-6 lg:pt-0">
         {/* Móvil: logo compacto. Escritorio: banner de marca a sangre en la cabecera de la barra. */}
         <Link
@@ -136,10 +144,12 @@ export function AppShell() {
         <main
           ref={mainRef}
           id="contenido"
+          tabIndex={-1}
           inert={modal}
-          className="mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
+          className="outline-none mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
         >
           <Outlet />
+          <AppNotice />
         </main>
         <Scrollbar target={mainRef} className="hidden lg:flex" />
       </div>

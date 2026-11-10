@@ -31,6 +31,18 @@ describe("App", () => {
     expect(launcher.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByRole("heading", { name: "Pregunta a Kairos" })).toBeTruthy();
   });
+  it("todas las pantallas llevan el aviso de IA y un enlace para saltar al contenido", () => {
+    for (const path of ["/inicio", "/cartera"]) {
+      renderAt(path);
+      expect(screen.getByText(/usa inteligencia artificial.*No es asesoramiento financiero/)).toBeTruthy();
+      const skip = screen.getByRole("link", { name: "Saltar al contenido" });
+      expect(skip.getAttribute("href")).toBe("#contenido");
+      expect(document.getElementById("contenido")?.tabIndex).toBe(-1);
+      cleanup();
+    }
+    renderAt("/panel");
+    expect(screen.getByRole("region", { name: "Información, no asesoramiento" })).toBeTruthy();
+  });
   it("redirige / a /inicio", () => {
     renderAt("/");
     expect(screen.getByRole("heading", { name: "Inicio" })).toBeTruthy();

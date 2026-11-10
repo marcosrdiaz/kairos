@@ -28,14 +28,19 @@ interface TileProps {
   children: ReactNode;
 }
 
-/** Una pareja término/valor de la <dl>: el lector la anuncia como "Valor total: 34.311,68 €". */
+/**
+ * Una pareja término/valor de la <dl>: el lector la anuncia como "Valor total: 34.311,68 €".
+ * El icono (decorativo) va dentro del <dt>: un grupo de la <dl> solo admite <dt> y <dd>.
+ */
 function Tile({ label, tone, Icon, children }: TileProps) {
   return (
     <div className="flex flex-col gap-1 rounded-card border border-line bg-surface p-5">
-      <span className={`mb-2 flex size-11 items-center justify-center rounded-control ${TONE[tone]}`}>
-        <Icon className="size-6" />
-      </span>
-      <dt className="text-sm font-medium text-ink-muted">{label}</dt>
+      <dt className="flex flex-col gap-3 text-sm font-medium text-ink-muted">
+        <span className={`flex size-11 items-center justify-center rounded-control ${TONE[tone]}`}>
+          <Icon className="size-6" />
+        </span>
+        {label}
+      </dt>
       <dd className="m-0 text-xl font-semibold leading-snug text-ink">{children}</dd>
     </div>
   );
