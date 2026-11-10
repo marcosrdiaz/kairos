@@ -1,4 +1,4 @@
-### D-XXX · Gestión de carteras: Laura y Javier siguen por defecto mientras Q10 esté abierta, y SQLite con claves foráneas (T4-10)
+### D-092 · Gestión de carteras: Laura y Javier siguen por defecto mientras Q10 esté abierta, y SQLite con claves foráneas (T4-10)
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: T4-10 pide crear, renombrar y borrar carteras de verdad y que la app deje de cargar a Laura y Javier. Q10 (qué entra de la fase 4 antes de la entrega) sigue abierta, y hoy dependen de Laura y Javier el frontend (`"laura"` es la cartera por defecto en `usePortfolioId.ts`, `InicioPage.tsx` y `PhoneHomePage.tsx`), el guion, el E2E de T3-02 y las cifras de T3-07. Sin T4-12 (asistente de primer uso) y T4-13 (selector), quitarlos del seed rompe la app a un día de la entrega. Además, la tabla `portfolio` no tenía `kind` ni `risk_profile`, y SQLite (la BD de los tests) no aplica `ON DELETE CASCADE` sin `PRAGMA foreign_keys=ON`.
 - Decisión:
