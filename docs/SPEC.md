@@ -162,6 +162,7 @@ Los esquemas son la frontera entre tareas y entre backend y frontend. **Los cont
 | --- | --- | --- |
 | `common.py` | `Money`, `SourceRef`, enums compartidos, `ErrorOut` (códigos de `core/errors.py`) | §3 |
 | `portfolio.py` | `PortfolioOut`, `PlanOut`, operaciones, traspaso, DCA, `ValueChangeOut`, `TraceOut`, `AssetOut` | §4.1 |
+| `portfolio_manage.py` | Varias carteras sin login (T4-09, D-XXX): `PortfolioCreateRequest`, `PortfolioUpdateRequest`, `PortfolioImportRequest` / `PortfolioImportOut` / `ImportRowError` y `LEGACY_PROFILE`. `RiskProfile` y `PortfolioKind` están en `common.py` | D-XXX |
 | `prices.py` | `PriceOut` (lo devuelven `prices.latest()` y `history()`; sin endpoint) y `TickerOut` / `TickerItemOut` (ticker de Inicio, T2-17) | §4.1 |
 | `demo.py` | `DemoResetRequest`, `DemoResetOut` (`ReplayOut` está en `events.py`) | §4.6 |
 | `events.py` · `agents.py` · `alerts.py` | `EventAnalysis`, `ShockSet`, `AskRequest` + SSE, `ExplainerContext`, `GuardianRequest/Verdict`, `AlertOut` | §4.2, §4.4 |
@@ -388,7 +389,10 @@ sequenceDiagram
 | --- | --- | --- |
 | GET | `/health` | Comprobación de Docker |
 | GET | `/assets/lookup?q=` | Autocompletar por ISIN, ticker o nombre (`list[AssetOut]`) |
-| GET | `/portfolios` · `/portfolios/{id}` | Lista (Laura, Javier) y detalle valorado |
+| GET | `/portfolios` · `/portfolios/{id}` | Lista de carteras y detalle valorado |
+| POST | `/portfolios` | Crear cartera vacía: nombre, tipo (`kind`) y perfil de riesgo (`risk_profile`) → 201 (T4-09, D-XXX) |
+| PATCH · DELETE | `/portfolios/{id}` | Renombrar o cambiar tipo o perfil · borrar la cartera y todo lo suyo (204) |
+| POST | `/portfolios/import` | Crear cartera desde CSV (texto en JSON); `dry_run` valida sin crear; 422 con `details.rows` si falla alguna fila |
 | POST | `/portfolios/{id}/positions` | Alta de posiciones |
 | POST | `/portfolios/{id}/transactions` | Compra / venta |
 | POST | `/portfolios/{id}/transfers` | Traspaso fondo → fondo |
@@ -407,6 +411,7 @@ sequenceDiagram
 | GET | `/portfolios/{id}/move?period=` | Atribución de "¿por qué ha bajado?" (`explain_move`) |
 | GET | `/portfolios/{id}/status` | Widget |
 | POST | `/portfolios/{id}/ask` (SSE) | Pregunta en texto |
+| POST | `/ask` (SSE) | Pregunta sin cartera elegida: el asistente deduce la cartera de la pregunta y responde por separado para cada una, sin sumarlas (`AskSentenceEvent.portfolio_ids`) |
 | GET | `/portfolios/{id}/alerts` | Avisos |
 | WS | `/voice/stt` | Voz a texto |
 | POST | `/voice/tts` | Texto a voz, solo frases aprobadas |
