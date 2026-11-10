@@ -578,7 +578,7 @@ export interface components {
          * AlertKind
          * @enum {string}
          */
-        AlertKind: "event_impact" | "dca_pending" | "drift";
+        AlertKind: "event_impact" | "dca_pending" | "drift" | "market_move";
         /** AlertOut */
         AlertOut: {
             /** Calc Id */

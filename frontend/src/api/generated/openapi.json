@@ -90,7 +90,8 @@
         "enum": [
           "event_impact",
           "dca_pending",
-          "drift"
+          "drift",
+          "market_move"
         ],
         "title": "AlertKind",
         "type": "string"

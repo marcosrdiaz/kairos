@@ -9,6 +9,7 @@ class AlertKind(StrEnum):
     EVENT_IMPACT = "event_impact"
     DCA_PENDING = "dca_pending"
     DRIFT = "drift"
+    MARKET_MOVE = "market_move"  # movimiento del día sin evento que lo explique (T2-21)
 
 
 class AlertOut(ContractModel):
