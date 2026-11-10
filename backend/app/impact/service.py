@@ -110,6 +110,8 @@ def _breakdown(result: engine.ImpactResult) -> list[AssetImpact]:
             market_eur=a.market_eur,
             fx_eur=a.fx_eur,
             channel=a.channel,
+            low_eur=a.low_eur,
+            high_eur=a.high_eur,
         )
         for a in result.assets
     ]
