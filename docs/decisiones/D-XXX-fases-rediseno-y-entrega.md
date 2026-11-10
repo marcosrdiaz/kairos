@@ -1,4 +1,4 @@
-### D-XXX · Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento
+### D-XXX · Fase 5 de rediseño visual y fase 6 de entrega; la fase 3 queda para el endurecimiento y la fase 4 se valida
 - Fecha: 2026-11-10 · Autor: Javi · Estado: Aceptada (acuerdo del equipo)
 - Contexto: la fase 3 («Endurecer y entregar») mezclaba el endurecimiento del código con las tareas de entrega (máquina limpia, PDF y PPT, vídeo y formulario, ensayos). Además, el equipo quiere una fase de rediseño de la interfaz y ajuste visual de componentes, y la fase 4 (producción) ya existe como propuesta.
 - Decisión:
@@ -6,6 +6,7 @@
   - **Fase 5 · Rediseño visual: interfaz y componentes**: nueva, con las tareas por definir (`T5-<nn>`).
   - **Fase 6 · Entrega**: nueva, con las tareas de entrega de la fase 3 renumeradas: T3-05 → T6-01 (máquina limpia), T3-07 → T6-02 (PDF, PPT y arquitectura), T3-08 → T6-03 (vídeo, ZIP y formulario; depende de T6-01 y T6-02) y T3-09 → T6-04 (ensayos).
   - **Excepción al orden de fases:** las tareas de la fase 6 se cogen en cuanto sus dependencias estén hechas, aunque las fases 4 y 5 sigan abiertas. La entrega del mié 11 a las 21:00 no se mueve.
+  - **Fase 4 · Producción validada:** todo el equipo da por buenas las tareas de la fase 4 (T4-01 a T4-24), que eran propuestas de Alons. Qué entra antes de la congelación sigue en Q10.
   - El tablero lleva al principio del pool una tabla con el estado de cada fase. Las fases 0 y 1 están cerradas.
 - Motivo: con la regla de «adelantar» tal cual, poner la entrega detrás de las fases 4 y 5 la bloquearía. Separar entrega y endurecimiento deja la fase 3 cerrable por sí misma y da a la entrega un sitio propio que no depende de cuánto crezcan las fases 4 y 5.
 - Alternativas descartadas: dejar las tareas de entrega en la fase 3 (el rediseño visual tendría que ir antes de cerrarla, y no encaja); numerar la entrega como fase 4 (habría que renumerar las 24 tareas de producción, que ya se citan en commits, ramas y decisiones).
