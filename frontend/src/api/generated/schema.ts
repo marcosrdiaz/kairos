@@ -429,8 +429,8 @@ export interface paths {
          * List News
          * @description Noticias de la más reciente a la más antigua, con su impacto en esta cartera.
          *
-         *     `affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.
-         *     404 si la cartera no existe.
+         *     `affecting=true` (por defecto): solo las que mueven alguna posición; `category` filtra por
+         *     tipo. 404 si la cartera no existe.
          */
         get: operations["list_news_api_v1_portfolios__portfolio_id__news_get"];
         put?: never;
