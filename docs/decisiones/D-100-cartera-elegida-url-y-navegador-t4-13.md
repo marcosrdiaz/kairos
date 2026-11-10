@@ -1,4 +1,4 @@
-### D-XXX · Cartera elegida: `?p=` manda y el navegador la recuerda (T4-13)
+### D-100 · Cartera elegida: `?p=` manda y el navegador la recuerda (T4-13)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: T4-13 pide que la cartera elegida se recuerde en el navegador y que todas las pantallas cambien de datos al cambiarla. Hasta ahora la cartera salía solo de `?p=`, con `"laura"` por defecto (`usePortfolioId.ts`, `InicioPage.tsx`, `AssetPage.tsx`, `PhoneHomePage.tsx`). Con carteras creadas por el usuario, `laura` puede no existir, y al borrar la elegida `?p=` apunta a una cartera que ya no está.
 - Decisión:
