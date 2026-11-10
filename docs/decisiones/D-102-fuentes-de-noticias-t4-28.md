@@ -1,4 +1,4 @@
-### D-XXX-a · Fuentes de noticias: Google Noticias (RSS de búsqueda), RSS de Yahoo Finance y de la Fed; GDELT opcional (T4-28)
+### D-102 · Fuentes de noticias: Google Noticias (RSS de búsqueda), RSS de Yahoo Finance y de la Fed; GDELT opcional (T4-28)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: el hito E necesita noticias reales que afecten a las carteras: las del día y, para tener base, las de noviembre (del 1 al 10). El equipo pidió que funcione con datos reales, sin ejemplos. Las candidatas de `kairos-spec.md` (Finnhub, Marketaux, Alpha Vantage) necesitan clave o tienen pocas peticiones gratis. Se probaron el 10 nov desde la red del equipo: **GDELT** (índice abierto, sin clave, con búsqueda por fechas) respondía 429 incluso respetando una petición cada 5 s; **Google Noticias** (RSS de búsqueda con `after:`/`before:`, edición España) responde con 100 titulares por búsqueda, fecha y medio; el **RSS de Yahoo Finance** por símbolo y el **RSS de política monetaria de la Fed** responden, pero solo traen lo último.
 - Decisión:

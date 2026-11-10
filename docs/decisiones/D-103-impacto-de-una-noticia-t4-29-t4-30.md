@@ -1,4 +1,4 @@
-### D-XXX-b · Impacto de una noticia: Claude elige canales y dirección; el motor pone el tamaño con datos (medido o estimado por días de noticia fuerte) (T4-29, T4-30)
+### D-103 · Impacto de una noticia: Claude elige canales y dirección; el motor pone el tamaño con datos (medido o estimado por días de noticia fuerte) (T4-29, T4-30)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: el hito E quiere que cada noticia diga cuánto puede mover la cartera del usuario («se estima que baje de tanto a tanto en tal plazo»). La regla 1 de `CLAUDE.md` prohíbe que el LLM calcule cifras, y T2-26 ya vio que dejar al modelo elegir factores puede cambiar los números sin control. Hacía falta un método que diera un rango en €, un plazo y desde cuándo se nota, sin que ningún número salga del modelo.
 - Decisión:
