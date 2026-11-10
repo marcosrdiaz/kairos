@@ -1,4 +1,4 @@
-### D-XXX · Aviso por movimiento de mercado (T2-21): parte sin explicar, comprobación al leer y apagado en demo
+### D-086 · Aviso por movimiento de mercado (T2-21): parte sin explicar, comprobación al leer y apagado en demo
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: T2-21 añade un aviso `market_move` para cuando la cartera varía en un día por encima del umbral de aviso y ningún evento lo explica. Comparte la puntuación, el umbral y el límite de 2 por semana ISO con `event_impact` (D-032). El criterio no dice cuándo se hace la comprobación, qué significa que «no hay evento que lo explique», ni cómo convive con el guion, cuyo paso 3 necesita una plaza libre en la semana para el aviso del evento.
 - Decisión:
