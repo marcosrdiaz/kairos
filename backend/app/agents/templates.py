@@ -215,6 +215,12 @@ def alert_message(impact: EventImpactStub) -> str:
     return f"{impact.title}: tu cartera, unos {format_eur(value)} {_more_less(value)}."
 
 
+def market_move_message(move: MoveAttributionOut) -> str:
+    """Aviso `market_move` (T2-21): describe sin alarmar, sin evento al que culpar."""
+    change = _change(move.change_eur)
+    return f"Movimiento de mercado: hoy tu cartera {change}, sin un evento concreto detrás."
+
+
 def status_sentence(facts: StatusFacts) -> str:
     if facts.state is StatusState.ATENTO:
         if facts.event_title and facts.event_impact_eur is not None:

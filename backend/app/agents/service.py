@@ -1,8 +1,9 @@
 """Interfaz pública de los agentes (diseño del MVP §4.4).
 
 Otros módulos importan `analyze_event`, `write_event_explanation`, `write_status_sentence`,
-`write_alert_message` e `invalidate_context`. Todo texto sale validado por el guardián
-(regla 3 de producto); si el modelo no está o se bloquea dos veces, sale de plantilla.
+`write_alert_message`, `write_market_move_message` e `invalidate_context`. Todo texto sale
+validado por el guardián (regla 3 de producto); si el modelo no está o se bloquea dos veces, sale
+de plantilla.
 """
 
 from collections import OrderedDict
@@ -11,7 +12,7 @@ from threading import Lock
 
 from app.agents import analyzer, context, explainer, templates, writer
 from app.agents.fact_format import text_evidence
-from app.agents.facts import status_facts, stub_facts
+from app.agents.facts import move_facts, status_facts, stub_facts
 from app.portfolio import service as portfolio_service
 from app.schemas.agents import (
     AskChannel,
@@ -26,6 +27,7 @@ from app.schemas.agents import (
     StatusFacts,
 )
 from app.schemas.events import EventAnalysis, EventIn
+from app.schemas.impact import MoveAttributionOut
 
 # Una tarea por canal; el redactor comprueba la longitud con `writer.LIMITS`.
 _EVENT_TASK = (
@@ -41,6 +43,11 @@ _STATUS_TASK = (
 _ALERT_TASK = (
     "Texto: aviso al móvil. Una sola frase de 20 palabras como mucho con el evento y cuánto "
     "afecta a la cartera en euros. Evento: «{title}»."
+)
+_MARKET_MOVE_TASK = (
+    "Texto: aviso al móvil. Una sola frase de 20 palabras como mucho que diga cuánto ha variado "
+    "hoy la cartera en euros con el mercado, sin un evento concreto que lo explique. Tono "
+    "tranquilo: describe, no alarma."
 )
 
 MAX_SESSIONS = 10_000
@@ -95,6 +102,18 @@ def write_alert_message(impact: EventImpactStub) -> str:
         templates.alert_message(impact),
         kind=QuestionKind.IMPACT,
         extra_evidence=text_evidence([impact.title], f"event:{impact.event_id}"),
+    )
+    return text
+
+
+def write_market_move_message(move: MoveAttributionOut) -> str:
+    """Aviso `market_move` (T2-21): la variación del día sin evento que la explique."""
+    text, _ = writer.write(
+        GuardianChannel.ALERT,
+        _MARKET_MOVE_TASK,
+        move_facts(move),
+        templates.market_move_message(move),
+        kind=QuestionKind.IMPACT,
     )
     return text
 
