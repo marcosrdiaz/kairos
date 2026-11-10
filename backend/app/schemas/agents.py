@@ -72,6 +72,9 @@ class AskSentenceEvent(ContractModel):
     index: int
     text: str
     calc_ids: list[str]
+    portfolio_ids: list[str] = Field(default_factory=list)
+    """Carteras a las que se refiere la frase (T4-09). Vacía si no habla de ninguna en concreto.
+    Las cifras de carteras distintas nunca se suman."""
 
 
 class AskDoneEvent(ContractModel):

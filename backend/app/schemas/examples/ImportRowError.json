@@ -1,0 +1,7 @@
+{
+  "illustrative": true,
+  "line": 3,
+  "field": "asset",
+  "code": "unknown_asset",
+  "message": "No encontramos el activo «XX0000000000» en el catálogo. Revisa el ISIN o el ticker."
+}

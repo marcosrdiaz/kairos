@@ -1,0 +1,8 @@
+{
+  "illustrative": true,
+  "name": "Hijos",
+  "kind": "family",
+  "risk_profile": "conservador",
+  "csv": "asset,units,avg_cost_eur,acquired_at\nIE00BK5BQT80,25,98.40,2024-09-02\nIE00B18GC888,40.5,91.10,\n",
+  "dry_run": false
+}

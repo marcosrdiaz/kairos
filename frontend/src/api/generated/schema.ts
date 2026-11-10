@@ -4,6 +4,28 @@
  */
 
 export interface paths {
+    "/api/v1/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask Any Portfolio
+         * @description Como `POST /portfolios/{id}/ask`, sin cartera elegida: el asistente deduce de la pregunta
+         *     a qué cartera o carteras se refiere y responde por separado para cada una, sin sumarlas
+         *     (`AskSentenceEvent.portfolio_ids`). Si la pregunta es ambigua, pregunta a cuál se refiere.
+         */
+        post: operations["ask_any_portfolio_api_v1_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assets/lookup": {
         parameters: {
             query?: never;
@@ -152,7 +174,11 @@ export interface paths {
         /** List Portfolios */
         get: operations["list_portfolios_api_v1_portfolios_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create Portfolio
+         * @description Crea una cartera vacía con id generado (`pf_` + hex). 422 si el nombre está vacío.
+         */
+        post: operations["create_portfolio_api_v1_portfolios_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -170,10 +196,19 @@ export interface paths {
         get: operations["get_portfolio_api_v1_portfolios__portfolio_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Portfolio
+         * @description Borra la cartera y todo lo suyo: operaciones, plan, DCA, avisos, impactos y ajustes.
+         *     No afecta a las demás carteras. 404 si no existe.
+         */
+        delete: operations["delete_portfolio_api_v1_portfolios__portfolio_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update Portfolio
+         * @description Renombra la cartera o cambia su tipo o su perfil de riesgo. 404 si no existe.
+         */
+        patch: operations["update_portfolio_api_v1_portfolios__portfolio_id__patch"];
         trace?: never;
     };
     "/api/v1/portfolios/{portfolio_id}/agenda": {
@@ -512,6 +547,27 @@ export interface paths {
         put?: never;
         /** Register Transfer */
         post: operations["register_transfer_api_v1_portfolios__portfolio_id__transfers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Portfolio
+         * @description Crea una cartera desde un CSV (formato en `PortfolioImportRequest`). Con `dry_run`, 200
+         *     sin crear nada. Si alguna fila falla, 422 con `details.rows` (lista de `ImportRowError`).
+         */
+        post: operations["import_portfolio_api_v1_portfolios_import_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1277,6 +1333,18 @@ export interface components {
          */
         Polarity: "riesgo" | "oportunidad" | "neutral";
         /**
+         * PortfolioCreateRequest
+         * @description `POST /portfolios` → 201 `PortfolioSummaryOut`. La cartera nace vacía: las posiciones se
+         *     dan de alta con `POST /portfolios/{id}/positions` o se importan con `/portfolios/import`.
+         */
+        PortfolioCreateRequest: {
+            /** @default personal */
+            kind: components["schemas"]["PortfolioKind"];
+            /** Name */
+            name: string;
+            risk_profile: components["schemas"]["RiskProfile"];
+        };
+        /**
          * PortfolioHistoryOut
          * @description Serie de valor de la cartera en el periodo pedido.
          *
@@ -1344,8 +1412,59 @@ export interface components {
             value_eur: string;
         };
         /**
+         * PortfolioImportOut
+         * @description Respuesta de `POST /portfolios/import`. `positions` son las filas ya resueltas contra el
+         *     catálogo (`asset_id` del activo), en el orden del fichero.
+         */
+        PortfolioImportOut: {
+            /** Dry Run */
+            dry_run: boolean;
+            portfolio: components["schemas"]["PortfolioSummaryOut"] | null;
+            /** Positions */
+            positions: components["schemas"]["PositionInitLine"][];
+        };
+        /**
+         * PortfolioImportRequest
+         * @description `POST /portfolios/import`: crea una cartera a partir de un CSV.
+         *
+         *     `csv` es el texto del fichero (el navegador lo lee y lo envía). Cabecera obligatoria y una
+         *     fila por posición:
+         *
+         *     - `asset`: ISIN o ticker de un activo del catálogo (`GET /assets/lookup`).
+         *     - `units`: participaciones, > 0.
+         *     - `avg_cost_eur`: precio medio de compra en euros, ≥ 0.
+         *     - `acquired_at` (opcional): fecha de compra `AAAA-MM-DD`; si falta, la de hoy.
+         *
+         *     Decimales con punto o con coma; separador de columnas `,` o `;`. Si alguna fila falla no se
+         *     crea nada: 422 `VALIDATION_ERROR` con `details.rows` = lista de `ImportRowError`. Con
+         *     `dry_run` solo se valida (200 y `portfolio` = `null`); sin él, 201.
+         */
+        PortfolioImportRequest: {
+            /** Csv */
+            csv: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+            /** @default personal */
+            kind: components["schemas"]["PortfolioKind"];
+            /** Name */
+            name: string;
+            risk_profile: components["schemas"]["RiskProfile"];
+        };
+        /**
+         * PortfolioKind
+         * @description Tipo de cartera (T4-09). Cada cartera es independiente: nunca se suman entre sí.
+         * @enum {string}
+         */
+        PortfolioKind: "personal" | "business" | "family" | "other";
+        /**
          * PortfolioOut
          * @description `GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.
+         *
+         *     `profile` está obsoleto: usa `risk_profile` (T4-09). `kind` y `risk_profile` son `null` en
+         *     las carteras creadas antes de T4-10.
          */
         PortfolioOut: {
             allocation: components["schemas"]["AllocationOut"];
@@ -1365,11 +1484,13 @@ export interface components {
             demo_adjustments?: components["schemas"]["DemoAdjustmentOut"][];
             /** Id */
             id: string;
+            kind?: components["schemas"]["PortfolioKind"] | null;
             /** Name */
             name: string;
             /** Positions */
             positions: components["schemas"]["PositionOut"][];
             profile: components["schemas"]["Profile"];
+            risk_profile?: components["schemas"]["RiskProfile"] | null;
             /**
              * Total Eur
              * @description Importe en euros con 2 decimales
@@ -1383,14 +1504,27 @@ export interface components {
         };
         /**
          * PortfolioSummaryOut
-         * @description Elemento de `GET /portfolios` (selector Laura/Javier).
+         * @description Elemento de `GET /portfolios` (selector de carteras). `profile` está obsoleto: usa
+         *     `risk_profile` (T4-09).
          */
         PortfolioSummaryOut: {
             /** Id */
             id: string;
+            kind?: components["schemas"]["PortfolioKind"] | null;
             /** Name */
             name: string;
             profile: components["schemas"]["Profile"];
+            risk_profile?: components["schemas"]["RiskProfile"] | null;
+        };
+        /**
+         * PortfolioUpdateRequest
+         * @description `PATCH /portfolios/{id}` → 200 `PortfolioSummaryOut`. Solo cambia lo que se envía.
+         */
+        PortfolioUpdateRequest: {
+            kind?: components["schemas"]["PortfolioKind"] | null;
+            /** Name */
+            name?: string | null;
+            risk_profile?: components["schemas"]["RiskProfile"] | null;
         };
         /** PositionInitLine */
         PositionInitLine: {
@@ -1487,6 +1621,7 @@ export interface components {
         PriceKind: "intraday" | "nav_daily";
         /**
          * Profile
+         * @description Obsoleto (T4-09): las peticiones usan `RiskProfile`. Se mantiene en las respuestas.
          * @enum {string}
          */
         Profile: "conservador" | "moderado" | "dinamico";
@@ -1624,6 +1759,12 @@ export interface components {
              */
             silent: boolean;
         };
+        /**
+         * RiskProfile
+         * @description Perfil de riesgo de una cartera (T4-09). Sustituye a `Profile` en las peticiones.
+         * @enum {string}
+         */
+        RiskProfile: "conservador" | "moderado" | "agresivo";
         /** ScenarioOut */
         ScenarioOut: {
             /** Breakdown */
@@ -2072,10 +2213,15 @@ export type OverlapItem = components['schemas']['OverlapItem'];
 export type PlanOut = components['schemas']['PlanOut'];
 export type PlanUpdateRequest = components['schemas']['PlanUpdateRequest'];
 export type Polarity = components['schemas']['Polarity'];
+export type PortfolioCreateRequest = components['schemas']['PortfolioCreateRequest'];
 export type PortfolioHistoryOut = components['schemas']['PortfolioHistoryOut'];
 export type PortfolioHistoryPoint = components['schemas']['PortfolioHistoryPoint'];
+export type PortfolioImportOut = components['schemas']['PortfolioImportOut'];
+export type PortfolioImportRequest = components['schemas']['PortfolioImportRequest'];
+export type PortfolioKind = components['schemas']['PortfolioKind'];
 export type PortfolioOut = components['schemas']['PortfolioOut'];
 export type PortfolioSummaryOut = components['schemas']['PortfolioSummaryOut'];
+export type PortfolioUpdateRequest = components['schemas']['PortfolioUpdateRequest'];
 export type PositionInitLine = components['schemas']['PositionInitLine'];
 export type PositionOut = components['schemas']['PositionOut'];
 export type PositionsInitRequest = components['schemas']['PositionsInitRequest'];
@@ -2090,6 +2236,7 @@ export type RadarRule = components['schemas']['RadarRule'];
 export type Radiography = components['schemas']['Radiography'];
 export type ReplayOut = components['schemas']['ReplayOut'];
 export type ReplayRequest = components['schemas']['ReplayRequest'];
+export type RiskProfile = components['schemas']['RiskProfile'];
 export type ScenarioOut = components['schemas']['ScenarioOut'];
 export type ScenarioRequest = components['schemas']['ScenarioRequest'];
 export type SentenceStatus = components['schemas']['SentenceStatus'];
@@ -2117,6 +2264,37 @@ export type UserRule = components['schemas']['UserRule'];
 export type ValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
 export interface operations {
+    ask_any_portfolio_api_v1_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lookup_assets_api_v1_assets_lookup_get: {
         parameters: {
             query: {
@@ -2400,6 +2578,39 @@ export interface operations {
             };
         };
     };
+    create_portfolio_api_v1_portfolios_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortfolioCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioSummaryOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     get_portfolio_api_v1_portfolios__portfolio_id__get: {
         parameters: {
             query?: never;
@@ -2436,6 +2647,88 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_portfolio_api_v1_portfolios__portfolio_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_portfolio_api_v1_portfolios__portfolio_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortfolioUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioSummaryOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3315,6 +3608,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    import_portfolio_api_v1_portfolios_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortfolioImportRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioImportOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioImportOut"];
                 };
             };
             /** @description Unprocessable Entity */

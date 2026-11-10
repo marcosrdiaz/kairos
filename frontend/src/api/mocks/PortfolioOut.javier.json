@@ -3,6 +3,8 @@
   "id": "javier",
   "name": "Javier",
   "profile": "conservador",
+  "kind": "personal",
+  "risk_profile": "conservador",
   "total_eur": "186595.24",
   "change_week_eur": "-38.00",
   "change_week_pct": "-0.000",
