@@ -6,6 +6,7 @@ import type { AlertOut } from "../../api/generated/schema";
  */
 const KIND_LABEL: Record<AlertOut["kind"] | "market_move", string> = {
   event_impact: "Noticia que afecta a tu cartera",
+  news_estimate: "Impacto estimado de una noticia",
   market_move: "Movimiento de tu cartera",
   dca_pending: "Aportación periódica pendiente",
   drift: "Tu cartera se aleja del plan",

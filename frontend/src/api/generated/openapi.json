@@ -91,13 +91,15 @@
           "event_impact",
           "dca_pending",
           "drift",
-          "market_move"
+          "market_move",
+          "news_estimate"
         ],
         "title": "AlertKind",
         "type": "string"
       },
       "AlertOut": {
         "additionalProperties": false,
+        "description": "`news_id`: la noticia de un aviso `news_estimate` (T4-27); `null` en los demás.",
         "properties": {
           "calc_id": {
             "anyOf": [
@@ -140,6 +142,17 @@
           "message": {
             "title": "Message",
             "type": "string"
+          },
+          "news_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "News Id"
           },
           "score": {
             "description": "Fracción: 0.76 = 76 %",
@@ -578,6 +591,25 @@
         "title": "CompanyHolding",
         "type": "object"
       },
+      "CompanyRef": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "CompanyRef",
+        "type": "object"
+      },
       "Confidence": {
         "enum": [
           "alta",
@@ -1014,6 +1046,16 @@
         },
         "title": "DemoResetRequest",
         "type": "object"
+      },
+      "EffectTiming": {
+        "description": "Cuándo se nota en una posición, según su `price_kind`.",
+        "enum": [
+          "same_session",
+          "next_nav",
+          "no_daily_price"
+        ],
+        "title": "EffectTiming",
+        "type": "string"
       },
       "ErrorOut": {
         "additionalProperties": false,
@@ -1548,6 +1590,416 @@
           "high_eur"
         ],
         "title": "MoveEventImpact",
+        "type": "object"
+      },
+      "NewsCategory": {
+        "description": "Filtros de la pantalla Noticias.",
+        "enum": [
+          "company",
+          "earnings",
+          "central_bank",
+          "politics",
+          "commodities",
+          "fx",
+          "other"
+        ],
+        "title": "NewsCategory",
+        "type": "string"
+      },
+      "NewsChannel": {
+        "additionalProperties": false,
+        "description": "Por dónde llega la noticia a la cartera: un factor o una empresa, con su dirección.\n\nExactamente uno de `factor` y `company_key`.",
+        "properties": {
+          "company_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Key"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/NewsDirection"
+          },
+          "factor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Factor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction",
+          "label",
+          "rationale"
+        ],
+        "title": "NewsChannel",
+        "type": "object"
+      },
+      "NewsDirection": {
+        "enum": [
+          "up",
+          "down",
+          "uncertain"
+        ],
+        "title": "NewsDirection",
+        "type": "string"
+      },
+      "NewsEstimateMethod": {
+        "enum": [
+          "analogs",
+          "volatility",
+          "measured"
+        ],
+        "title": "NewsEstimateMethod",
+        "type": "string"
+      },
+      "NewsEstimateOut": {
+        "additionalProperties": false,
+        "description": "Impacto estimado de la noticia en la cartera de la ruta.\n\n- `estimated` y `measured`: llevan importes, fracciones, confianza, método y `calc_id`;\n  `low_eur ≤ impact_eur ≤ high_eur`.\n- `pending` y `not_relevant`: sin ninguna cifra.\n- `*_pct` son fracciones del valor de la cartera (\"-0.012\" = −1,2 %).\n- `horizon_sessions`: plazo al que se refiere el rango (p. ej. 5 sesiones).\n- `event_id`: el evento medido, cuando lo hay.",
+        "properties": {
+          "analogs_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analogs Count"
+          },
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "calc_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calc Id"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Confidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "high_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High Eur"
+          },
+          "high_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High Pct"
+          },
+          "horizon_sessions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Sessions"
+          },
+          "impact_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact Eur"
+          },
+          "impact_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact Pct"
+          },
+          "low_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Eur"
+          },
+          "low_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Pct"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NewsEstimateMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "polarity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Polarity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/NewsPositionEstimate"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NewsEstimateStatus"
+          }
+        },
+        "required": [
+          "status",
+          "as_of"
+        ],
+        "title": "NewsEstimateOut",
+        "type": "object"
+      },
+      "NewsEstimateStatus": {
+        "enum": [
+          "estimated",
+          "measured",
+          "pending",
+          "not_relevant"
+        ],
+        "title": "NewsEstimateStatus",
+        "type": "string"
+      },
+      "NewsItemOut": {
+        "additionalProperties": false,
+        "description": "Una noticia vista desde una cartera.\n\n- `summary`: resumen de la fuente (puede llevar cifras de la propia noticia).\n- `asset_ids`: posiciones de la cartera afectadas, directamente o dentro de un fondo.\n- `causal_chain` y los textos de `channels`: los redacta el agente, sin números.\n- `estimate`: `null` mientras la noticia no está clasificada.",
+        "properties": {
+          "asset_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Asset Ids",
+            "type": "array"
+          },
+          "category": {
+            "$ref": "#/components/schemas/NewsCategory"
+          },
+          "causal_chain": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Causal Chain",
+            "type": "array"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/NewsChannel"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyRef"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "estimate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NewsEstimateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "relevance": {
+            "$ref": "#/components/schemas/Relevance"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "title",
+          "summary",
+          "published_at",
+          "source",
+          "companies",
+          "asset_ids",
+          "channels",
+          "causal_chain",
+          "relevance",
+          "estimate"
+        ],
+        "title": "NewsItemOut",
+        "type": "object"
+      },
+      "NewsPositionEstimate": {
+        "additionalProperties": false,
+        "description": "Efecto estimado en una posición de la cartera.",
+        "properties": {
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "effective_from": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective From"
+          },
+          "high_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "High Eur",
+            "type": "string"
+          },
+          "impact_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Impact Eur",
+            "type": "string"
+          },
+          "low_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Low Eur",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "timing": {
+            "$ref": "#/components/schemas/EffectTiming"
+          }
+        },
+        "required": [
+          "asset_id",
+          "name",
+          "impact_eur",
+          "low_eur",
+          "high_eur",
+          "timing",
+          "effective_from"
+        ],
+        "title": "NewsPositionEstimate",
         "type": "object"
       },
       "OperationEffect": {
@@ -2674,6 +3126,15 @@
         ],
         "title": "Radiography",
         "type": "object"
+      },
+      "Relevance": {
+        "enum": [
+          "high",
+          "medium",
+          "low"
+        ],
+        "title": "Relevance",
+        "type": "string"
       },
       "ReplayOut": {
         "additionalProperties": false,
@@ -5063,6 +5524,163 @@
         "summary": "Explain Move",
         "tags": [
           "impact"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/news": {
+      "get": {
+        "description": "Noticias de la más reciente a la más antigua, con su impacto estimado en esta cartera.\n\n`affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.\n404 si la cartera no existe.",
+        "operationId": "list_news_api_v1_portfolios__portfolio_id__news_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/NewsCategory"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "affecting",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Affecting",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NewsItemOut"
+                  },
+                  "title": "Response List News Api V1 Portfolios  Portfolio Id  News Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List News",
+        "tags": [
+          "news"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/news/{news_id}": {
+      "get": {
+        "description": "Una noticia con su impacto estimado en esta cartera. 404 si no existe la cartera o la\nnoticia.",
+        "operationId": "get_news_api_v1_portfolios__portfolio_id__news__news_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "news_id",
+            "required": true,
+            "schema": {
+              "title": "News Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsItemOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get News",
+        "tags": [
+          "news"
         ]
       }
     },

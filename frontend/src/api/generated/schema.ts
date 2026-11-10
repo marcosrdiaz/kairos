@@ -418,6 +418,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolios/{portfolio_id}/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List News
+         * @description Noticias de la más reciente a la más antigua, con su impacto estimado en esta cartera.
+         *
+         *     `affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.
+         *     404 si la cartera no existe.
+         */
+        get: operations["list_news_api_v1_portfolios__portfolio_id__news_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolio_id}/news/{news_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get News
+         * @description Una noticia con su impacto estimado en esta cartera. 404 si no existe la cartera o la
+         *     noticia.
+         */
+        get: operations["get_news_api_v1_portfolios__portfolio_id__news__news_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolios/{portfolio_id}/plan": {
         parameters: {
             query?: never;
@@ -699,8 +743,11 @@ export interface components {
          * AlertKind
          * @enum {string}
          */
-        AlertKind: "event_impact" | "dca_pending" | "drift" | "market_move";
-        /** AlertOut */
+        AlertKind: "event_impact" | "dca_pending" | "drift" | "market_move" | "news_estimate";
+        /**
+         * AlertOut
+         * @description `news_id`: la noticia de un aviso `news_estimate` (T4-27); `null` en los demás.
+         */
         AlertOut: {
             /** Calc Id */
             calc_id: string | null;
@@ -718,6 +765,8 @@ export interface components {
             kind: components["schemas"]["AlertKind"];
             /** Message */
             message: string;
+            /** News Id */
+            news_id?: string | null;
             /**
              * Score
              * @description Fracción: 0.76 = 76 %
@@ -934,6 +983,13 @@ export interface components {
              */
             weight_in_asset: string;
         };
+        /** CompanyRef */
+        CompanyRef: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
         /**
          * Confidence
          * @enum {string}
@@ -1124,6 +1180,12 @@ export interface components {
              */
             preload: boolean;
         };
+        /**
+         * EffectTiming
+         * @description Cuándo se nota en una posición, según su `price_kind`.
+         * @enum {string}
+         */
+        EffectTiming: "same_session" | "next_nav" | "no_daily_price";
         /**
          * ErrorOut
          * @description Cuerpo de toda respuesta de error HTTP 4xx/5xx. `code` es uno de `core.errors.ErrorCode`.
@@ -1389,6 +1451,149 @@ export interface components {
             low_eur: string;
             /** Title */
             title: string;
+        };
+        /**
+         * NewsCategory
+         * @description Filtros de la pantalla Noticias.
+         * @enum {string}
+         */
+        NewsCategory: "company" | "earnings" | "central_bank" | "politics" | "commodities" | "fx" | "other";
+        /**
+         * NewsChannel
+         * @description Por dónde llega la noticia a la cartera: un factor o una empresa, con su dirección.
+         *
+         *     Exactamente uno de `factor` y `company_key`.
+         */
+        NewsChannel: {
+            /** Company Key */
+            company_key?: string | null;
+            direction: components["schemas"]["NewsDirection"];
+            factor?: components["schemas"]["Factor"] | null;
+            /** Label */
+            label: string;
+            /** Rationale */
+            rationale: string;
+        };
+        /**
+         * NewsDirection
+         * @enum {string}
+         */
+        NewsDirection: "up" | "down" | "uncertain";
+        /**
+         * NewsEstimateMethod
+         * @enum {string}
+         */
+        NewsEstimateMethod: "analogs" | "volatility" | "measured";
+        /**
+         * NewsEstimateOut
+         * @description Impacto estimado de la noticia en la cartera de la ruta.
+         *
+         *     - `estimated` y `measured`: llevan importes, fracciones, confianza, método y `calc_id`;
+         *       `low_eur ≤ impact_eur ≤ high_eur`.
+         *     - `pending` y `not_relevant`: sin ninguna cifra.
+         *     - `*_pct` son fracciones del valor de la cartera ("-0.012" = −1,2 %).
+         *     - `horizon_sessions`: plazo al que se refiere el rango (p. ej. 5 sesiones).
+         *     - `event_id`: el evento medido, cuando lo hay.
+         */
+        NewsEstimateOut: {
+            /** Analogs Count */
+            analogs_count?: number | null;
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Calc Id */
+            calc_id?: string | null;
+            confidence?: components["schemas"]["Confidence"] | null;
+            /** Event Id */
+            event_id?: string | null;
+            /** High Eur */
+            high_eur?: string | null;
+            /** High Pct */
+            high_pct?: string | null;
+            /** Horizon Sessions */
+            horizon_sessions?: number | null;
+            /** Impact Eur */
+            impact_eur?: string | null;
+            /** Impact Pct */
+            impact_pct?: string | null;
+            /** Low Eur */
+            low_eur?: string | null;
+            /** Low Pct */
+            low_pct?: string | null;
+            method?: components["schemas"]["NewsEstimateMethod"] | null;
+            polarity?: components["schemas"]["Polarity"] | null;
+            /** Positions */
+            positions?: components["schemas"]["NewsPositionEstimate"][];
+            status: components["schemas"]["NewsEstimateStatus"];
+        };
+        /**
+         * NewsEstimateStatus
+         * @enum {string}
+         */
+        NewsEstimateStatus: "estimated" | "measured" | "pending" | "not_relevant";
+        /**
+         * NewsItemOut
+         * @description Una noticia vista desde una cartera.
+         *
+         *     - `summary`: resumen de la fuente (puede llevar cifras de la propia noticia).
+         *     - `asset_ids`: posiciones de la cartera afectadas, directamente o dentro de un fondo.
+         *     - `causal_chain` y los textos de `channels`: los redacta el agente, sin números.
+         *     - `estimate`: `null` mientras la noticia no está clasificada.
+         */
+        NewsItemOut: {
+            /** Asset Ids */
+            asset_ids: string[];
+            category: components["schemas"]["NewsCategory"];
+            /** Causal Chain */
+            causal_chain: string[];
+            /** Channels */
+            channels: components["schemas"]["NewsChannel"][];
+            /** Companies */
+            companies: components["schemas"]["CompanyRef"][];
+            estimate: components["schemas"]["NewsEstimateOut"] | null;
+            /** Id */
+            id: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            relevance: components["schemas"]["Relevance"];
+            source: components["schemas"]["SourceRef"];
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * NewsPositionEstimate
+         * @description Efecto estimado en una posición de la cartera.
+         */
+        NewsPositionEstimate: {
+            /** Asset Id */
+            asset_id: string;
+            /** Effective From */
+            effective_from: string | null;
+            /**
+             * High Eur
+             * @description Importe en euros con 2 decimales
+             */
+            high_eur: string;
+            /**
+             * Impact Eur
+             * @description Importe en euros con 2 decimales
+             */
+            impact_eur: string;
+            /**
+             * Low Eur
+             * @description Importe en euros con 2 decimales
+             */
+            low_eur: string;
+            /** Name */
+            name: string;
+            timing: components["schemas"]["EffectTiming"];
         };
         /**
          * OperationEffect
@@ -1905,6 +2110,11 @@ export interface components {
             top_country: components["schemas"]["TopCountry"];
         };
         /**
+         * Relevance
+         * @enum {string}
+         */
+        Relevance: "high" | "medium" | "low";
+        /**
          * ReplayOut
          * @description Resultado de inyectar un evento: la traza del impacto por cartera y lo que tardó.
          */
@@ -2354,6 +2564,7 @@ export type AssetImpact = components['schemas']['AssetImpact'];
 export type AssetOut = components['schemas']['AssetOut'];
 export type AssetType = components['schemas']['AssetType'];
 export type CompanyHolding = components['schemas']['CompanyHolding'];
+export type CompanyRef = components['schemas']['CompanyRef'];
 export type Confidence = components['schemas']['Confidence'];
 export type DcaAllocation = components['schemas']['DcaAllocation'];
 export type DcaExecutionActionRequest = components['schemas']['DcaExecutionActionRequest'];
@@ -2369,6 +2580,7 @@ export type DemoClockOut = components['schemas']['DemoClockOut'];
 export type DemoClockRequest = components['schemas']['DemoClockRequest'];
 export type DemoResetOut = components['schemas']['DemoResetOut'];
 export type DemoResetRequest = components['schemas']['DemoResetRequest'];
+export type EffectTiming = components['schemas']['EffectTiming'];
 export type ErrorOut = components['schemas']['ErrorOut'];
 export type EventImpactOut = components['schemas']['EventImpactOut'];
 export type EventStatus = components['schemas']['EventStatus'];
@@ -2384,6 +2596,14 @@ export type LotOut = components['schemas']['LotOut'];
 export type MoveAssetChange = components['schemas']['MoveAssetChange'];
 export type MoveAttributionOut = components['schemas']['MoveAttributionOut'];
 export type MoveEventImpact = components['schemas']['MoveEventImpact'];
+export type NewsCategory = components['schemas']['NewsCategory'];
+export type NewsChannel = components['schemas']['NewsChannel'];
+export type NewsDirection = components['schemas']['NewsDirection'];
+export type NewsEstimateMethod = components['schemas']['NewsEstimateMethod'];
+export type NewsEstimateOut = components['schemas']['NewsEstimateOut'];
+export type NewsEstimateStatus = components['schemas']['NewsEstimateStatus'];
+export type NewsItemOut = components['schemas']['NewsItemOut'];
+export type NewsPositionEstimate = components['schemas']['NewsPositionEstimate'];
 export type OperationEffect = components['schemas']['OperationEffect'];
 export type OperationType = components['schemas']['OperationType'];
 export type OverlapItem = components['schemas']['OverlapItem'];
@@ -2412,6 +2632,7 @@ export type RadarKind = components['schemas']['RadarKind'];
 export type RadarOut = components['schemas']['RadarOut'];
 export type RadarRule = components['schemas']['RadarRule'];
 export type Radiography = components['schemas']['Radiography'];
+export type Relevance = components['schemas']['Relevance'];
 export type ReplayOut = components['schemas']['ReplayOut'];
 export type ReplayRequest = components['schemas']['ReplayRequest'];
 export type RiskProfile = components['schemas']['RiskProfile'];
@@ -3386,6 +3607,91 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    list_news_api_v1_portfolios__portfolio_id__news_get: {
+        parameters: {
+            query?: {
+                affecting?: boolean;
+                category?: components["schemas"]["NewsCategory"] | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsItemOut"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_news_api_v1_portfolios__portfolio_id__news__news_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsItemOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -1,0 +1,38 @@
+{
+  "illustrative": true,
+  "id": "news_1a6b9d3e5c2f",
+  "category": "commodities",
+  "title": "El precio del cacao marca máximos",
+  "summary": "Las malas cosechas en África occidental llevan el cacao a su precio más alto del año.",
+  "published_at": "2026-11-18T10:00:00Z",
+  "source": {
+    "kind": "event",
+    "label": "Noticia de materias primas",
+    "ref": "news_1a6b9d3e5c2f",
+    "as_of": "2026-11-18T10:00:00Z",
+    "url": null
+  },
+  "companies": [],
+  "asset_ids": [],
+  "channels": [],
+  "causal_chain": ["El cacao no pesa en ningún activo ni factor de tu cartera."],
+  "relevance": "low",
+  "estimate": {
+    "status": "not_relevant",
+    "polarity": null,
+    "impact_eur": null,
+    "low_eur": null,
+    "high_eur": null,
+    "impact_pct": null,
+    "low_pct": null,
+    "high_pct": null,
+    "horizon_sessions": null,
+    "confidence": null,
+    "method": null,
+    "analogs_count": null,
+    "positions": [],
+    "calc_id": null,
+    "event_id": null,
+    "as_of": "2026-11-18T10:05:00Z"
+  }
+}
