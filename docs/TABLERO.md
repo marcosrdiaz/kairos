@@ -129,7 +129,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | Manu | ✅ hecho |
 | T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts`, `frontend/package.json` y `package-lock.json` (solo `@playwright/test` y los scripts `e2e`) | Manu | 🧪 en PR |
 | T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | ✅ hecho |
-| T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | Javi | 🧪 en PR |
+| T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | Javi | ✅ hecho |
 | T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
 | T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | ✅ hecho |
 | T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | — | ⬜ |
@@ -231,13 +231,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Dónde está:** `frontend/src/app/market/chart/` (Recharts, D-085) y `GET /portfolios/{id}/history` (`schemas/history.py`, cálculo en `backend/app/portfolio/history.py`). Cada punto trae `change_eur`, `change_pct` y `flows_eur`. Los marcadores de noticias están en `markers/` (`placeMarkers` los coloca en la fecha real; `MarkedChart` envuelve la gráfica).
 **Rendimiento:** el punto activo y el marcador activo van en almacenes fuera de React (`activePoint.ts`, `markers/markerStore.ts`): no metas estado del ratón en `ChartBody` o la gráfica vuelve a ir a saltos.
 **Colores:** las pérdidas usan granate (`trend-loss`, `trend-loss-bg`), una excepción a «sin rojo en el mercado» solo en esta gráfica (D-085, `DESIGN.md`).
-
-### T3-04 · Umbrales de beta de la agenda — Alons (para quien coja la tarea)
-**Qué hay que saber:** `planning/agenda.py` (`BETA_THRESHOLDS`, `MIN_T_STAT`) decide qué posiciones cuentan como expuestas a cada evento de la agenda (D-084, en «Propuesta»: validarla en la llamada diaria). Los umbrales son 0,001 / σ diaria de cada factor en `data/factors`; si cambian esos datos, hay que recalcularlos.
-
-### T3-04 · Umbrales de avisos y de estado: cambiarlos a la vez — Marcos (para quien coja la tarea)
-**Qué hay que saber:** `alerts/config.py` (`MIN_EUR`, `MIN_SHARE`) y `status/config.py` (`ATENTO_MIN_EUR`, `ATENTO_MIN_SHARE`) tienen que valer lo mismo: el paso 3 del guion necesita el widget en «Atento» y el aviso a la vez. Dos tests lo comprueban (`backend/tests/test_alerts_engine.py`); si cambias uno y no el otro, fallan.
-**Siguiente paso exacto:** al calibrar, cambia los dos ficheros en el mismo PR. Ver D-076.
 
 ### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
 **Qué estaba haciendo:** #58 y #59 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador, y el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071).
