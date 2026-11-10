@@ -203,7 +203,7 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6-01 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
-| T6-02 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | Manu | 🔄 en curso |
+| T6-02 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | Manu | 🧪 en PR |
 | T6-03 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T6-01, T6-02 | `docs/entrega/` | — | ⬜ |
 | T6-04 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
 
@@ -274,8 +274,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Empezar con #78 y T2-09 en `main`.** #78 (T2-03, ya en `main`) toca `agents/analyzer.py` solo en `_check_no_orders`: quita la regex provisional `_ORDER` y `_normalized`, e importa `guardian`; ahora rechaza el borrador si `guardian.find_forbidden(texto)` encuentra algo en `causal_chain`, `label` o `rationale` de los canales (solo patrones prohibidos: no comprueba cifras, porque el borrador no lleva ninguna). **No toca** `_TIMEOUT_S` (sigue en 4,0), `_user_message`, `_attempt` ni `analyze`. T2-26 parte de ahí: dejar `_check_no_orders` tal cual (no volver a una regex propia), y añadir la validación de dirección como función aparte, llamada desde `_attempt` junto a `_check_no_orders`, para que el reintento con feedback cubra las dos.
 **Siguiente paso exacto:** coger la tarea con `/coger T2-26` cuando T2-09 esté en `main` (#78 ya lo está); empezar por el PR de contrato (`prompt_version`, ver *Peticiones de contrato*) y luego el código. Antes del PR de contrato, `git pull` y `make gen-api`: #76 también regeneró `frontend/src/api/generated/`.
 
-### T6-02 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
-**Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
+### T6-02 · PDF de una cara y presentación — Manu
+
+- **PR #115** (rama `t6-02/pitch-pdf-ppt`): `docs/entrega/KAIROS-una-cara.pdf`, `docs/entrega/KAIROS-presentacion.pptx` (10 diapositivas con notas; la 6 es la de arquitectura) y `docs/entrega/README.md` con cada cifra, su origen y cómo regenerarlo. Todas las cifras salen del backend (`fuentes/pitch_figures.py`).
+- **Falta:** la revisión del equipo (criterio de hecho). Cambiar textos, libre; cambiar cifras, solo recalculando (README). T6-03 (vídeo, ZIP y formulario) depende de esta y de T6-01.
+
+**Nota de Marcos (usada en el PR):** **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
 
 
 ### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
