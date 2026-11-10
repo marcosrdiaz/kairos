@@ -1,4 +1,4 @@
-### D-XXX · Betas recalculadas solas: función de `impact` sobre las series de `prices`, cada semana y al dar de alta un activo (T4-03)
+### D-099 · Betas recalculadas solas: función de `impact` sobre las series de `prices`, cada semana y al dar de alta un activo (T4-03)
 - Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
 - Contexto: T4-03 pide que `compute_betas.py` deje de leer los CSV por su cuenta y pase a ser una función de `impact` sobre la serie guardada, que `factor_beta` lleve fecha de cálculo, que se recalcule cada semana y al dar de alta un activo, y que `make betas` siga funcionando en modo demo. Desde T2-24 y T4-01 los precios y los factores en directo están en BD (`price`, `factor_close`), pero las betas solo salían de `data/prices` y `data/factors`.
 - Decisión:

@@ -128,4 +128,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-096](decisiones/D-096-shock-medido-automatico-t4-04.md) | 2026-11-10 | Shock medido automático: lógica de `fetch_prices.py` en `events`, eventos pendientes de cierre y cifras desde el día siguiente (T4-04) | Propuesta |
 | [D-097](decisiones/D-097-limite-avisos-por-cartera.md) | 2026-11-10 | El límite de 2 avisos por semana es por cartera; la bandeja junta todas | Aceptada |
 | [D-098](decisiones/D-098-ingesta-noticias-bce-t4-05.md) | 2026-11-10 | Ingesta de noticias: solo las decisiones de política monetaria del BCE; resultados y OPEP, sin fuente usable todavía (T4-05) | Propuesta |
+| [D-099](decisiones/D-099-betas-recalculadas-solas-t4-03.md) | 2026-11-10 | Betas recalculadas solas: función de `impact` sobre las series de `prices`, cada semana y al dar de alta un activo (T4-03) | Propuesta |
 <!-- INDICE:FIN -->
