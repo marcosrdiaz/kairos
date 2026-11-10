@@ -7,6 +7,7 @@ import { HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { ChatLauncher, ChatPanel } from "../voice/ChatDock";
 import { ChatDockContext } from "../voice/chatDockContext";
+import { AlertsBell } from "./alerts/AlertsBell";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
@@ -132,7 +133,13 @@ export function AppShell() {
           <PortfolioPicker compact />
         </div>
 
-        <div className="ml-auto lg:hidden">
+        {/* Bandeja de avisos (T2-20): en móvil, junto al modo oscuro; en escritorio, en la barra. */}
+        <div className="hidden lg:block">
+          <AlertsBell showLabel />
+        </div>
+
+        <div className="ml-auto flex items-center gap-2 lg:hidden">
+          <AlertsBell />
           <ThemeToggle />
         </div>
         <div className="hidden lg:mt-auto lg:block">
