@@ -14,17 +14,13 @@ export const RISK_OPTIONS: { value: RiskProfile; label: string; hint: string }[]
   { value: "agresivo", label: "Agresivo", hint: "Aceptas caídas fuertes a largo plazo" },
 ];
 
-export type Method = "manual" | "csv";
-
 export interface DetailsDraft {
   name: string;
   kind: PortfolioKind;
   risk: RiskProfile | null;
-  method: Method;
-  file: File | null;
 }
 
-export type DetailsErrors = Partial<Record<"name" | "risk" | "file", string>>;
+export type DetailsErrors = Partial<Record<"name" | "risk", string>>;
 
 /** Límites del contrato (`PortfolioName` y `IMPORT_CSV_MAX_CHARS` en `schemas/portfolio_manage.py`). */
 export const NAME_MAX = 60;
@@ -37,8 +33,20 @@ export function validateDetails(d: DetailsDraft): DetailsErrors {
   if (!name) errors.name = "Ponle un nombre a la cartera.";
   else if (name.length > NAME_MAX) errors.name = `El nombre no puede pasar de ${NAME_MAX} caracteres.`;
   if (!d.risk) errors.risk = "Elige un perfil de riesgo.";
-  if (d.method === "csv" && !d.file) errors.file = "Elige el fichero CSV con tus posiciones.";
   return errors;
+}
+
+export type CsvRead = { ok: true; csv: string } | { ok: false; error: string };
+
+/** Lee y comprueba el fichero del panel «Importar un CSV» antes de enviarlo. */
+export async function readCsvFile(file: File | null): Promise<CsvRead> {
+  if (!file) return { ok: false, error: "Elige el fichero CSV con tus posiciones." };
+  const csv = await file.text();
+  if (!csv.trim()) return { ok: false, error: "El fichero está vacío." };
+  if (csv.length > CSV_MAX_CHARS) {
+    return { ok: false, error: "El fichero es demasiado grande. Divide las posiciones en varios ficheros." };
+  }
+  return { ok: true, csv };
 }
 
 /** Un error de una fila del CSV (`ImportRowError` del backend, en `details.rows`). */
@@ -65,7 +73,7 @@ export function importRowErrors(error: unknown): ImportRowError[] {
 /** Mensaje general cuando falla crear o importar (los errores por fila se listan aparte). */
 export function createErrorText(error: unknown): string {
   if (importRowErrors(error).length > 0) {
-    return "El fichero tiene filas por revisar. No se ha creado la cartera.";
+    return "El fichero tiene filas por revisar. No se ha importado ninguna posición.";
   }
   if (error instanceof ApiError && error.status === 422) {
     return "Algún dato no es válido. Revísalo y vuelve a intentarlo.";

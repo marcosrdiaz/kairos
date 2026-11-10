@@ -37,6 +37,12 @@ function stubApi(list: Summary[]) {
       list.push(created);
       return json(created, 201);
     }
+    if (url === "/api/v1/portfolios/import" && method === "POST") {
+      const body = JSON.parse(String(init?.body)) as { name: string; kind: string };
+      const created = p("importada", body.name, body.kind);
+      list.push(created);
+      return json({ dry_run: false, portfolio: created, positions: [] }, 201);
+    }
     const one = /^\/api\/v1\/portfolios\/([^/]+)$/.exec(url);
     if (one) {
       const idx = list.findIndex((x) => x.id === one[1]);
@@ -159,7 +165,12 @@ describe("PortfolioManager", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Nombre de la cartera" }), { target: { value: "Ahorro casa" } });
     fireEvent.click(screen.getByRole("radio", { name: /^Otra/ }));
     fireEvent.click(screen.getByRole("radio", { name: /Moderado/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Crear la cartera" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+
+    const step2 = await screen.findByRole("heading", { name: "Añade los activos de «Ahorro casa»" });
+    await waitFor(() => expect(document.activeElement).toBe(step2));
+    expect(screen.queryByRole("button", { name: "Cancelar" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Terminar" }));
 
     expect(await screen.findByText(/Cartera «Ahorro casa» creada/)).toBeTruthy();
     await waitFor(() => expect(param()).toBe("nueva"));
@@ -168,6 +179,30 @@ describe("PortfolioManager", () => {
     await waitFor(() => expect(screen.getByTestId("data").textContent).toBe("nueva"));
     const call = fetchMock.mock.calls.find(([u, i]) => u === "/api/v1/portfolios" && i?.method === "POST");
     expect(JSON.parse(String(call?.[1]?.body))).toEqual({ name: "Ahorro casa", kind: "other", risk_profile: "moderado" });
+  });
+
+  it("«Nueva cartera» con CSV en el paso 2: sustituye la vacía por la importada y la deja elegida", async () => {
+    const list = THREE();
+    const fetchMock = stubApi(list);
+    renderApp("/cartera?p=personal");
+    fireEvent.click(await screen.findByRole("button", { name: "Nueva cartera" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Nombre de la cartera" }), { target: { value: "Ahorro casa" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Moderado/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    await screen.findByRole("heading", { name: "Añade los activos de «Ahorro casa»" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Importar un CSV" }));
+    const file = new File(["asset,units,avg_cost_eur\nIWDA,3,90\n"], "cartera.csv", { type: "text/csv" });
+    fireEvent.change(screen.getByLabelText("Fichero CSV"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "Importar" }));
+
+    expect(await screen.findByText("Hemos importado 0 posiciones en «Ahorro casa».")).toBeTruthy();
+    expect(fetchMock.mock.calls.find(([, i]) => i?.method === "DELETE")?.[0]).toBe("/api/v1/portfolios/nueva");
+    expect(list.map((x) => x.id)).not.toContain("nueva");
+    fireEvent.click(screen.getByRole("button", { name: "Terminar" }));
+
+    expect(await screen.findByText(/Cartera «Ahorro casa» importada/)).toBeTruthy();
+    await waitFor(() => expect(param()).toBe("importada"));
   });
 
   it("renombra una cartera con PATCH y lo anuncia", async () => {

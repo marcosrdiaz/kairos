@@ -31,7 +31,7 @@ export function PortfolioManager() {
     setMessage(
       imported
         ? `Cartera «${p.name}» importada. Ahora estás viendo esta.`
-        : `Cartera «${p.name}» creada. Ahora estás viendo esta: añade sus posiciones más abajo.`,
+        : `Cartera «${p.name}» creada. Ahora estás viendo esta.`,
     );
     requestAnimationFrame(() => newButtonRef.current?.focus());
   }
