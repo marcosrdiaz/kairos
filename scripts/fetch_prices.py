@@ -28,6 +28,7 @@ from typing import Any
 import httpx
 
 from app.core.clock import now
+from app.events import observed
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS_PATH = ROOT / "data" / "seed" / "assets.json"
@@ -53,8 +54,6 @@ RATES_FACTOR = "RATES_EUR"
 FACTORS = (*YAHOO_FACTORS, RATES_FACTOR)
 EVENT_COMPANIES = {"nvda-2025-02": {"NVDA": "US67066G1040"}}
 
-US_CLOSE_UTC_HOUR = 21
-OBSERVED_STEP = Decimal("0.00001")
 OBSERVED_SOURCE = "data/prices + data/factors, cierre del día frente al cierre anterior"
 
 Series = list[tuple[date, Decimal]]
@@ -162,22 +161,17 @@ def download(today: date) -> None:
 # --- `observed` ---
 
 
-def reaction_date(occurred_at: datetime) -> date:
-    """Sesión que recoge el evento: tras el cierre de EE. UU., la del día siguiente."""
-    utc = occurred_at.astimezone(UTC)
-    return utc.date() + timedelta(days=1) if utc.hour >= US_CLOSE_UTC_HOUR else utc.date()
+reaction_date = observed.reaction_date
+"""La lógica de `observed` vive en `app/events/observed.py` (T4-04): la comparte el backend."""
 
 
 def series_change(series: Series, day: date, absolute: bool = False) -> Decimal:
-    """Variación de la primera sesión desde `day` frente a la anterior (absoluta o relativa)."""
-    for index, (session, value) in enumerate(series):
-        if session >= day:
-            if index == 0:
-                raise ValueError(f"No hay sesión anterior a {session}")
-            previous = series[index - 1][1]
-            change = value - previous if absolute else value / previous - 1
-            return change.quantize(OBSERVED_STEP, rounding=ROUND_HALF_EVEN)
-    raise ValueError(f"No hay sesiones desde {day}")
+    """Variación de la primera sesión desde `day` frente a la anterior (absoluta o relativa).
+    Aquí falla si falta esa sesión o la anterior: el replay no admite eventos pendientes."""
+    change = observed.series_change(series, day, absolute)
+    if change is None:
+        raise ValueError(f"No hay sesión desde {day} con una sesión anterior")
+    return change
 
 
 def load_series(path: Path, column: str) -> Series:

@@ -33,6 +33,7 @@ EXPECTED_TABLES = {
     "composition",
     "factor_beta",
     "event",
+    "pending_event",
     "event_impact",
     "alert",
     "calc_trace",

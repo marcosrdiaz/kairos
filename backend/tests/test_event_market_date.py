@@ -53,7 +53,8 @@ def test_events_carry_market_date_and_observed_factor_moves(client: TestClient) 
     }
 
 
-def test_unknown_event_has_no_market_date() -> None:
+def test_unknown_event_has_no_market_date(db: None) -> None:
+    # Con BD: un id que no es del replay se busca entre los eventos reales (T4-04).
     with pytest.raises(AppError) as error:
         service.get_market_date("no-existe")
     assert error.value.code == ErrorCode.NOT_FOUND
