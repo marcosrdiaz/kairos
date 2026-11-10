@@ -45,6 +45,7 @@ services:
         if [ -f alembic.ini ]; then alembic upgrade head; else echo "seed: sin alembic todavía (T1-01)"; fi
         if [ -f /scripts/seed_db.py ]; then python /scripts/seed_db.py; else echo "seed: sin scripts/seed_db.py todavía (T1-03)"; fi
         if [ -f /scripts/compute_betas.py ]; then python /scripts/compute_betas.py; else echo "seed: sin scripts/compute_betas.py todavía (T1-12)"; fi
+        if [ -f /scripts/news_backfill.py ]; then python /scripts/news_backfill.py --load; fi
     restart: "no"
 
   backend:

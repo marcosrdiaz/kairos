@@ -23,6 +23,7 @@ EXPECTED_TABLES = {
     "price",
     "fx_rate",
     "factor_close",
+    "news_item",
     "transaction",
     "tax_lot",
     "dca_plan",

@@ -1,0 +1,17 @@
+### D-XXX · Fuentes de noticias: Google Noticias (RSS de búsqueda), RSS de Yahoo Finance y de la Fed; GDELT opcional (T4-28)
+- Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
+- Contexto: el hito E necesita noticias reales que afecten a las carteras: las del día y, para tener base, las de noviembre (del 1 al 10). El equipo pidió que funcione con datos reales, sin ejemplos. Las candidatas de `kairos-spec.md` (Finnhub, Marketaux, Alpha Vantage) necesitan clave o tienen pocas peticiones gratis. Se probaron el 10 nov desde la red del equipo: **GDELT** (índice abierto, sin clave, con búsqueda por fechas) respondía 429 incluso respetando una petición cada 5 s; **Google Noticias** (RSS de búsqueda con `after:`/`before:`, edición España) responde con 100 titulares por búsqueda, fecha y medio; el **RSS de Yahoo Finance** por símbolo y el **RSS de política monetaria de la Fed** responden, pero solo traen lo último.
+- Decisión:
+  - **Google Noticias es la fuente principal** del histórico y del día: una búsqueda por empresa del catálogo y de las grandes dentro de los fondos (`news/ingest/topics.py`) y una por tema que mueve los factores (BCE, Fed, petróleo/OPEP, euro/dólar, aranceles, bolsa). Una petición cada 1,5 s.
+  - **RSS de Yahoo Finance** (un símbolo por petición) y **de la Fed**: solo si el periodo acaba hoy o ayer.
+  - **GDELT, opcional** (`--gdelt`), por si se libera su límite: aporta medios en inglés.
+  - **Solo medios de confianza** (`sources.TRUSTED_DOMAINS`: prensa económica española e internacional, agencias y fuentes oficiales). El resto de lo que traen los índices se descarta.
+  - **Solo se guarda lo que la fuente publica para enlazar**: titular, resumen corto (si lo da), medio, fecha y URL. **No se descarga el artículo** ni se esquiva ningún bloqueo (D-098).
+  - **Sin duplicados**: misma URL normalizada (sin parámetros de seguimiento) o mismo titular normalizado en menos de 3 días.
+  - **Base de noviembre** en `data/news/2026-11.jsonl`, con su clasificación: el servicio `seed` la carga en cada `make up` (`news_backfill.py --load`), así que la app arranca con noticias sin red ni claves. `make news NEWS_START=… NEWS_END=…` trae más.
+- Motivo: son las únicas fuentes que dan histórico real sin clave y responden hoy. Google Noticias da prensa en español, que es la que lee el usuario.
+- Alternativas descartadas:
+  - Finnhub, Marketaux, Alpha Vantage: clave y límite de peticiones; quedan para producción con licencia.
+  - Leer el artículo completo de cada medio: muchos lo prohíben en sus condiciones y no hace falta para clasificar.
+  - Solo GDELT: hoy no responde.
+- Consecuencias: el RSS de Google Noticias es para uso personal y puede cambiar sin aviso; para un producto comercial habría que pasar a una fuente con licencia (queda anotado). Yahoo trae mucho relleno («3 ETF para comprar siempre»): lo filtra el clasificador (relevancia baja, no se muestra).
