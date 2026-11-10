@@ -187,6 +187,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T4-09 · Contrato de varias carteras — Alons
+**Qué estaba haciendo:** PR #102 (rama `t4-09/multi-portfolio-contract`), solo contrato, CI en verde. Rutas `POST /portfolios`, `PATCH`/`DELETE /portfolios/{id}`, `POST /portfolios/import` y `POST /ask`; `RiskProfile` (`conservador`, `moderado`, `agresivo`) y `PortfolioKind`; `kind`, `risk_profile` y `AskSentenceEvent.portfolio_ids` opcionales. Las rutas son provisionales: sirven los ejemplos y no guardan nada. Decisión «Contrato de varias carteras sin login: perfil de riesgo, tipo, importación CSV y `/ask` sin cartera (T4-09)» y `SPEC.md` §5 y §11 en el mismo PR.
+**Siguiente paso exacto:** que alguien del equipo revise el PR #102 y mergearlo; después `docs: done T4-09` y avisar de que quedan libres T4-10 y T4-14. Ojo: `make gen-api` con Python 3.12 (como el CI); con 3.13 cambia la descripción del 422 y falla el check del cliente TS. Usar un entorno aparte (`UV_PROJECT_ENVIRONMENT=<dir> UV_PYTHON=3.12 make gen-api`), nunca recrear `backend/.venv` con VS Code abierto.
+**Ficheros tocados:** `backend/app/schemas/{common,portfolio,agents,portfolio_manage}.py`, `backend/app/schemas/examples/` (5 nuevos y 8 actualizados), `backend/app/api/portfolio_manage.py`, `backend/tests/test_portfolio_manage_contract.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/`, `docs/SPEC.md`, `docs/decisiones/D-XXX-contrato-varias-carteras.md`.
+
 ### T3-02 · Playwright del guion de demo — Manu
 **Qué estaba haciendo:** PR #101 abierto (rama `t3-02/e2e-demo-script`). Un test por paso del guion contra el stack de `make up` en modo offline (override `frontend/e2e/compose.e2e.yml`, sin claves). En local: 7/7 en verde, 21/21 con `--repeat-each=3`.
 **Siguiente paso exacto:** revisión y merge de #101, y `docs: done T3-02`.
