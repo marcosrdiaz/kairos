@@ -50,6 +50,7 @@ def test_rejects_a_date_without_timezone(client: TestClient) -> None:
 
 def test_forbidden_outside_demo_mode(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.setenv("MARKET_DATA_PROVIDER", "yahoo")  # producción exige precios en directo
     get_settings.cache_clear()
 
     response = client.put(URL, json={"now": FIXED})

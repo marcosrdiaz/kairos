@@ -2,8 +2,9 @@
 
 from datetime import datetime
 from functools import lru_cache
+from typing import Literal
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,7 +20,8 @@ class Settings(BaseSettings):
     elevenlabs_tts_model: str = ""
     elevenlabs_voice_id: str = ""
 
-    market_data_provider: str = "offline"
+    market_data_provider: Literal["offline", "yahoo"] = "offline"
+    """`offline`: CSV de `data/prices` (demo). `yahoo`: precios en directo (D-065)."""
     market_data_api_key: str = ""
 
     database_url: str = "postgresql+psycopg://kairos:kairos@localhost:5432/kairos"
@@ -40,6 +42,20 @@ class Settings(BaseSettings):
         if value is not None and value.tzinfo is None:
             raise ValueError("DEMO_CLOCK debe llevar zona horaria (p. ej. 2026-11-08T18:00:00Z)")
         return value
+
+    @model_validator(mode="after")
+    def _production_needs_live_prices(self) -> "Settings":
+        """Sin modo demo, los precios del CSV serían viejos presentados como actuales (D-065)."""
+        if not self.demo_mode and self.market_data_provider == "offline":
+            raise ValueError(
+                "DEMO_MODE=false necesita precios en directo: pon MARKET_DATA_PROVIDER=yahoo "
+                "(o vuelve a DEMO_MODE=true para usar los CSV de data/prices)"
+            )
+        return self
+
+    @property
+    def mode(self) -> Literal["demo", "production"]:
+        return "demo" if self.demo_mode else "production"
 
 
 @lru_cache

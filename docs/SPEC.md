@@ -468,7 +468,7 @@ ELEVENLABS_API_KEY=
 ELEVENLABS_STT_MODEL=        # ID exacto de Scribe v2 Realtime
 ELEVENLABS_TTS_MODEL=        # ID exacto de Flash v2.5
 ELEVENLABS_VOICE_ID=
-MARKET_DATA_PROVIDER=offline # offline | twelvedata | alphavantage | finnhub
+MARKET_DATA_PROVIDER=offline # offline | yahoo (D-065)
 MARKET_DATA_API_KEY=
 DATABASE_URL=postgresql+psycopg://kairos:kairos@db:5432/kairos
 DEMO_MODE=true
@@ -478,6 +478,14 @@ DEMO_CLOCK=                  # ISO 8601 opcional para fijar la fecha
 El umbral de desviación del plan no es una variable de entorno: es el campo `plan.drift_threshold` (fracción, por defecto 0,10; D-022).
 
 Con `MARKET_DATA_PROVIDER=offline` todo funciona con `data/prices`: es el modo por defecto para el jurado.
+
+**Modo producción (T2-24, D-065):** `DEMO_MODE=false` y `MARKET_DATA_PROVIDER=yahoo`. `DEMO_MODE=false` con `offline` hace fallar el arranque. `GET /health` devuelve `mode` (`demo` | `production`) y `market_data_provider`.
+
+- **Proveedor `yahoo`** (`prices/live.py`, cliente HTTP en `prices/yahoo.py` con `httpx`, sin clave). Usa el endpoint `v8/finance/chart` con el símbolo `yahoo:` de `assets.json` y `EURUSD=X`.
+- **Caché en BD** (`prices/repository.py`, tablas `price` y `fx_rate`). La primera petición de un activo trae 3 años de cierres; las siguientes, 5 días. Los cierres diarios se guardan a las 00:00 UTC de su sesión y el último precio con el instante del proveedor, `source = "yahoo"`. Se redondean como `fetch_prices.py` (4 decimales en activos, 6 en EUR/USD).
+- **Refresco bajo demanda:** se vuelve a pedir si el precio guardado tiene 60 s o más (acciones, ETF, EUR/USD), o 6 h en fondos `nav_daily`. Con el mercado cerrado, no antes de la apertura (o de 1 h si no se sabe).
+- **Si el proveedor falla:** se sirve el último precio guardado con su `price_at` real y la fuente lo dice («último precio guardado: el proveedor no respondió»). Se reintenta pasado el mismo plazo. Sin nada guardado, 503 `PRICE_UNAVAILABLE`. Nunca se usa el CSV en producción.
+- **Lo que sigue saliendo de los CSV:** los factores de las betas (`make betas`). Los factores en directo son T4-01.
 
 ## 14. Cómo trabaja Claude Code en este repo
 

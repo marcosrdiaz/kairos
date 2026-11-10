@@ -153,7 +153,8 @@ export interface paths {
         };
         /**
          * Health
-         * @description Comprobación de Docker. No toca la base de datos.
+         * @description Comprobación de Docker, con el modo (`demo` o `production`) y el proveedor de precios
+         *     (D-065). No toca la base de datos.
          */
         get: operations["health_api_v1_health_get"];
         put?: never;

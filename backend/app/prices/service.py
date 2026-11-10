@@ -8,19 +8,24 @@
 - `fx_rate(pair, at)`: tipo `EURUSD` (dólares por euro), el inverso `USDEUR` o `1` si la divisa es
   la misma. `fx_quote` devuelve además el instante y la fuente para la traza.
 
-Los precios offline son cierres diarios: `price_at` es la fecha del cierre a las 00:00 UTC.
+El proveedor sale de `MARKET_DATA_PROVIDER` (D-065): `offline` (CSV de `data/prices`, modo demo)
+o `yahoo` (`prices/live.py`: en directo, con caché en BD).
+
+Los cierres diarios tienen `price_at` a las 00:00 UTC de su fecha; un precio en directo, el
+instante que da el proveedor. Si el proveedor en directo no responde, se sirve el último precio
+guardado con su fecha real y la fuente lo dice.
 Un precio `fixed:<valor>` vale lo mismo cualquier día; su `price_at` es el día de `clock.now()`.
-Con `MARKET_DATA_PROVIDER` distinto de `offline` se usa también el offline mientras no haya
-proveedor en directo (D-026).
 """
 
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
+from app.config import get_settings
 from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.prices.catalog import AssetPriceSpec, load_catalog
+from app.prices.live import LiveProvider
 from app.prices.provider import OfflineCsvProvider, PricePoint, PriceProvider
 from app.prices.ticker import FORMULA as CHANGE_FORMULA
 from app.prices.ticker import change_pct
@@ -35,12 +40,15 @@ _provider: PriceProvider | None = None
 def get_provider() -> PriceProvider:
     global _provider
     if _provider is None:
-        _provider = OfflineCsvProvider()
+        if get_settings().market_data_provider == "yahoo":
+            _provider = LiveProvider()
+        else:
+            _provider = OfflineCsvProvider()
     return _provider
 
 
 def set_provider(provider: PriceProvider | None) -> PriceProvider | None:
-    """Cambia el proveedor (tests, proveedor en directo). `None` vuelve al offline por defecto.
+    """Cambia el proveedor (tests). `None` vuelve al que diga `MARKET_DATA_PROVIDER`.
     Devuelve el anterior para poder restaurarlo."""
     global _provider
     previous, _provider = _provider, provider
@@ -65,14 +73,25 @@ def _midnight(day: date) -> datetime:
     return datetime.combine(day, time(), tzinfo=UTC)
 
 
+_STALE = " (último precio guardado: el proveedor no respondió)"
+
+
+def _point_at(point: PricePoint) -> datetime:
+    return point.at or _midnight(point.day)
+
+
 def _to_out(spec: AssetPriceSpec, point: PricePoint) -> PriceOut:
-    at = _midnight(point.day)
+    at = _point_at(point)
     if spec.fixed_price is not None:
         label = f"Valor fijo de {spec.name}"
     elif spec.price_kind is PriceKind.NAV_DAILY:
         label = f"VL de {spec.name}"
+    elif point.at is not None:
+        label = f"Precio de {spec.name}"
     else:
         label = f"Cierre de {spec.name}"
+    if point.stale:
+        label += _STALE
     return PriceOut(
         asset_id=spec.asset_id,
         price=point.value,
@@ -216,10 +235,10 @@ def fx_quote(pair: str, at: datetime | None = None) -> FxQuote:
             )
         stored, rate = quote + base, (Decimal(1) / inverse.value).quantize(_FX_STEP)
         point = inverse
-    as_of = _midnight(point.day)
+    as_of = _point_at(point)
     source = SourceRef(
         kind=SourceKind.FX,
-        label=f"Tipo de cambio {stored[:3]}/{stored[3:]}",
+        label=f"Tipo de cambio {stored[:3]}/{stored[3:]}" + (_STALE if point.stale else ""),
         ref=stored,
         as_of=as_of,
     )
