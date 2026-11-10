@@ -1,4 +1,5 @@
-"""Umbrales de los avisos (D-032). T3-04 los calibra con datos reales.
+"""Umbrales de los avisos (D-032). Calibrados con datos reales en T3-04: se mantienen (ver la
+decisión de calibración de umbrales de T3-04).
 
 `MIN_EUR` y `MIN_SHARE` son los mismos que el estado «atento» del widget (`status.config`): un test
 (`test_alerts_engine.py`) comprueba que no se desincronizan. Si cambias uno, cambia el otro.

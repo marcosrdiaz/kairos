@@ -300,6 +300,8 @@ Precedencia: `atento` > `revisa_plan` > `tranquilo`.
 
 La ventana de 72 h se mide con la fecha del evento (`occurred_at`), no con la del cálculo.
 
+Calibración (T3-04): con los datos reales, el impacto de NVIDIA en Laura (−325 € en el extremo del rango) queda un 55 % por encima de su umbral (≈ 210 €). Javier no llega a la mitad del suyo (≈ 896 €), y los eventos precargados quedan 24 h fuera de la ventana. Si cambian los datos de la demo o el reloj, hay que volver a medir con `scripts/demo_smoke.py`.
+
 La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validada por el guardián) para responder en < 1 s. El estado se guarda en memoria por cartera: `recompute`, tras cada evento, redacta con el modelo; `GET /status` nunca llama al modelo y cada 10 s comprueba si han cambiado los datos (si es así, usa la plantilla validada). El `calc_id` solo cambia si cambian los datos.
 
 ## 9. Agentes

@@ -129,7 +129,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | Manu | ✅ hecho |
 | T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts`, `frontend/package.json` y `package-lock.json` (solo `@playwright/test` y los scripts `e2e`) | Manu | 🧪 en PR |
 | T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | ✅ hecho |
-| T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | Javi | 🔄 en curso |
+| T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | Javi | 🧪 en PR |
 | T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
 | T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | ✅ hecho |
 | T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | — | ⬜ |
@@ -154,7 +154,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4-01 | Series de los 5 factores en directo (`EQ_GLOBAL`, `EQ_US_TECH`, `OIL`, `RATES_EUR`, `EURUSD`): el adaptador de Yahoo de T2-24 también da sus cierres, con los mismos símbolos que usa `scripts/fetch_prices.py`, y se guardan en BD con fecha y fuente (tabla nueva, migración) | Con `DEMO_MODE=false`, los 5 factores tienen el cierre del último día hábil; si el proveedor falla, el último guardado con su fecha, nunca uno inventado. Tests con proveedor falso, sin red | T2-24 | `backend/app/prices/`, `backend/app/models.py`, `backend/alembic/versions/` (nueva), `backend/tests/test_prices_factors.py` (nuevo), `backend/tests/test_migrations.py` (solo la tabla nueva), `docs/SPEC.md` §6 (solo `factor_close`) | Manu | ✅ hecho |
-| T4-02 | Actualización diaria tras el cierre: un proceso programado guarda los cierres de los activos en cartera y de los factores. Sin dependencias nuevas (servicio `updater` en Compose que lanza un script, o tarea periódica en el arranque de FastAPI) | Tras el cierre de mercado, la BD tiene el cierre del día sin que nadie abra la app; repetirlo no duplica filas; registra fallos sin parar el backend | T2-24, T4-01 | `scripts/daily_update.py` (nuevo), `docker-compose.yml` (solo el servicio nuevo), `backend/tests/test_daily_update.py` (nuevo) | Manu | 🔄 en curso |
+| T4-02 | Actualización diaria tras el cierre: un proceso programado guarda los cierres de los activos en cartera y de los factores. Sin dependencias nuevas (servicio `updater` en Compose que lanza un script, o tarea periódica en el arranque de FastAPI) | Tras el cierre de mercado, la BD tiene el cierre del día sin que nadie abra la app; repetirlo no duplica filas; registra fallos sin parar el backend | T2-24, T4-01 | `scripts/daily_update.py` (nuevo), `docker-compose.yml` (solo el servicio nuevo), `backend/tests/test_daily_update.py` (nuevo), `backend/app/portfolio/{manage,service}.py` (solo `held_asset_ids`) | Manu | 🧪 en PR |
 | T4-03 | Betas recalculadas solas: `compute_betas.py` pasa a ser una función de `impact` sobre la serie guardada en BD; se recalcula cada semana y al dar de alta un activo | `factor_beta` lleva fecha de cálculo; un activo nuevo tiene betas o sale como «sin betas» (D-050); `make betas` sigue funcionando en modo demo | T4-01, T4-02 | `backend/app/impact/{betas,service,repository}.py`, `scripts/compute_betas.py` | — | ⬜ |
 | T4-04 | Shock medido de forma automática (D-089): tras el cierre se calcula `observed` de los eventos del día con la lógica de `fetch_prices.py`, extraída a `events`; antes del cierre el evento sale «pendiente de cierre», sin cifra. El estado nuevo es un campo opcional del contrato de eventos: PR propio y fila en *Peticiones de contrato* | Un evento de hoy se ve con su cadena causal y sin cifra; tras el cierre, con impacto, rango y `calc_id`. Mismo resultado que `fetch_prices.py --observed-only` para los 3 eventos del replay | T4-01, T4-02 | `backend/app/events/`, `scripts/fetch_prices.py` (solo extraer la lógica), `backend/tests/test_events_observed.py` (nuevo) | — | ⬜ |
 | T4-05 | Ingesta de noticias: notas de prensa del BCE (RSS oficial), fechas de resultados de las acciones en cartera y reuniones de la OPEP crean eventos (`EventIn` con `text` y `source_urls`) sin pasar por el replay; los procesa el analizador que ya existe | Una nota nueva del BCE aparece en la app sin tocar ficheros; no se duplica (clave: URL); funciona con `DEMO_MODE=false`; tests con fuentes leídas de fichero, sin red | T4-04 | `backend/app/events/ingest/` (nuevo), `backend/tests/test_events_ingest.py` (nuevo) | — | ⬜ |
@@ -190,7 +190,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 
-### T4-02 · T4-03 · T4-04 · Lo que deja T4-01 — Manu (para quien coja la tarea)
+### T4-02 · Actualización diaria tras el cierre — Manu
+
+- **PR #109** (rama `t4-02/daily-update`; backend en verde: 1812 tests, ruff y mypy). Falta: revisión y merge. No probado en Docker (Docker Desktop apagado); `docker compose config` valida.
+- `scripts/daily_update.py` (`--once` / `--loop --at 22:30`, laborables, UTC) + servicio `updater` en Compose; en demo termina sin hacer nada. `portfolio.service.held_asset_ids()`.
+
+### T4-03 · T4-04 · Lo que deja T4-01 — Manu (para quien coja la tarea)
 
 - En `main` (#107): `prices/factors.py` (`OfflineFactors` y `LiveFactors`: Yahoo + BCE para `RATES_EUR`), tabla `factor_close` (migración `0004`) e interfaz `prices.service.factor_closes` / `factor_latest` (último cierre con fecha, fuente y `stale`). Solo sesiones cerradas; refresco bajo demanda como mucho cada hora.
 
