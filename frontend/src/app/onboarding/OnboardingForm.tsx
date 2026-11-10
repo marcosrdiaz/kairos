@@ -18,8 +18,15 @@ import {
  * Alta de posiciones (RF-01) en la cartera elegida: una o varias filas con activo,
  * participaciones, precio medio y fecha. El sistema completa tipo, divisa, clase, TER y
  * traspasable desde el catálogo. Errores: resumen con el foco y mensaje en cada campo.
+ * `onSaved` avisa a quien lo usa (el asistente de primer uso) de que ya hay posiciones.
  */
-export function OnboardingForm({ portfolioId }: { portfolioId: string }) {
+export function OnboardingForm({
+  portfolioId,
+  onSaved,
+}: {
+  portfolioId: string;
+  onSaved?: (portfolio: PortfolioOut) => void;
+}) {
   const queryClient = useQueryClient();
   const [lines, setLines] = useState<DraftLine[]>(() => [emptyLine()]);
   const [errors, setErrors] = useState<LineErrors[]>([]);
@@ -34,10 +41,11 @@ export function OnboardingForm({ portfolioId }: { portfolioId: string }) {
       apiPost<PortfolioOut>(`/portfolios/${encodeURIComponent(portfolioId)}/positions`, body, {
         mock: "PortfolioOut",
       }),
-    onSuccess: () => {
+    onSuccess: (saved) => {
       setLines([emptyLine()]);
       setErrors([]);
       void queryClient.invalidateQueries();
+      onSaved?.(saved);
     },
   });
 

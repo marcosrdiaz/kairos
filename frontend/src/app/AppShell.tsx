@@ -8,6 +8,7 @@ import { ThemeToggle } from "../theme/ThemeToggle";
 import { ChatLauncher, ChatPanel } from "../voice/ChatDock";
 import { ChatDockContext } from "../voice/chatDockContext";
 import { AlertsBell } from "./alerts/AlertsBell";
+import { FirstRunGate } from "./onboarding/FirstRunGate";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
@@ -50,6 +51,7 @@ export function AppShell() {
   const modal = chatOpen && !desktop;
   const mainRef = useRef<HTMLElement>(null);
   return (
+    <FirstRunGate>
     <ChatDockContext value={dock}>
     <div
       className={`min-h-dvh bg-paper lg:grid lg:h-dvh lg:overflow-hidden lg:transition-[grid-template-columns] lg:duration-300 lg:ease-out motion-reduce:transition-none ${
@@ -165,5 +167,6 @@ export function AppShell() {
       <ChatLauncher />
     </div>
     </ChatDockContext>
+    </FirstRunGate>
   );
 }
