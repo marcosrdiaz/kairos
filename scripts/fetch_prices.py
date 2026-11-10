@@ -136,6 +136,21 @@ def _write_csv(path: Path, header: tuple[str, ...], rows: list[Any]) -> None:
         writer.writerows(rows)
 
 
+def download_assets(ids: set[str], today: date) -> None:
+    """Solo los precios de `ids` (activos nuevos del catálogo, T4-26), sin tocar factores ni el
+    resto de CSV: así las cifras de la demo no cambian. `today` excluido, como en `download`."""
+    assets = json.loads(ASSETS_PATH.read_text(encoding="utf-8"))["assets"]
+    unknown = ids - {a["id"] for a in assets}
+    if unknown:
+        raise SystemExit(f"no están en assets.json: {sorted(unknown)}")
+    for asset in assets:
+        source = asset["price_source"]
+        if asset["id"] in ids and source.startswith("yahoo:"):
+            rows = fetch_yahoo(source.removeprefix("yahoo:"), 4, today)
+            _write_csv(PRICES_DIR / f"{asset['id']}.csv", ("date", "close", "adj_close"), rows)
+            print(f"precios: {asset['id']} {len(rows)} sesiones hasta {rows[-1][0]}")
+
+
 def download(today: date) -> None:
     assets = json.loads(ASSETS_PATH.read_text(encoding="utf-8"))["assets"]
     for asset in assets:
@@ -224,7 +239,21 @@ def update_events() -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--observed-only", action="store_true", help="no descargar, sin red")
+    parser.add_argument(
+        "--assets",
+        help="solo estos activos (ids separados por comas), sin factores ni eventos (T4-26)",
+    )
+    parser.add_argument(
+        "--until",
+        type=date.fromisoformat,
+        help="último día que se descarga (AAAA-MM-DD); por defecto, la víspera de hoy",
+    )
     args = parser.parse_args(argv)
+    if args.assets:
+        ids = {a.strip() for a in args.assets.split(",") if a.strip()}
+        until = args.until or now().date() - timedelta(days=1)
+        download_assets(ids, until + timedelta(days=1))
+        return 0
     if not args.observed_only:
         download(now().date())
     update_events()

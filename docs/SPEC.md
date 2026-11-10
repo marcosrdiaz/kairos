@@ -426,7 +426,7 @@ Errores: `{"code": "TRANSFER_NOT_ALLOWED", "message": "...", "details": {...}}` 
 
 | Fichero | Contenido | Estado |
 | --- | --- | --- |
-| `data/seed/assets.json` | ~10 fondos/ETFs + ~5 acciones + 1 depósito + 1 plan de pensiones | pendiente |
+| `data/seed/assets.json` | Catálogo fijo (T4-26): 6 fondos, 7 ETF, 10 acciones, 1 depósito y 1 plan de pensiones. Todos los de Yahoo se comprueban con `scripts/check_catalog.py` (divisa EUR o USD, ≥ 2 años de cierres, cotización reciente) y tienen su CSV en `data/prices` y su composición | hecho |
 | `data/seed/compositions/*.csv` | Composición de los fondos/ETFs (iShares y factsheets de Vanguard), fecha `as_of`; formato en la decisión «Composición de fondos y ETF (T1-08)» | hecho (T1-08) |
 | `data/seed/portfolios/laura.json` | ~40.000 €, RV ~76%, DCA 300 €/mes 70/30 | pendiente |
 | `data/seed/portfolios/javier.json` | ~180.000 €, RF ~65%, depósito y plan de pensiones | pendiente |

@@ -170,6 +170,8 @@ def test_api_demo_reset_restores_seed(client: TestClient) -> None:
                 "IE00B18GC888",
                 "IE0007472115",
                 "IE00BK5BQT80",
+                "IE00B3XXRP09",  # VUSA (T4-26)
+                "IE00B3RBWM25",  # VWRL (T4-26)
             ],
         ),
         ("zzz", []),
