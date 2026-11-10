@@ -1,41 +1,10 @@
 import { useState } from "react";
 import { buttonSecondary } from "../components/button";
-import { GrainGradient } from "../ui/GrainGradient";
 import { PipelineSteps } from "../ui/PipelineSteps";
-import { RollingNumber } from "../ui/RollingNumber";
 import { SwipeTabs } from "../ui/SwipeTabs";
 import { TextMorph } from "../ui/TextMorph";
 import { LabSection } from "./LabSection";
-import { HEADLINES, PIPELINE, formatUnits } from "./mock";
-
-const VALUES = [1234, 5678, 2468];
-
-export function RollingSection() {
-  const [step, setStep] = useState(0);
-  return (
-    <LabSection
-      id="rolling"
-      title="Número que rueda"
-      origin="Cult UI · Rolling Number · MIT"
-      originUrl="https://www.cult-ui.com/docs/components/rolling-number"
-      verdict={{
-        fits: false,
-        reason:
-          "«Calma, nunca alarma»: las cifras que ruedan recuerdan a una cotización en directo y empujan a mirar el dinero minuto a minuto. Solo lo aceptaría una vez al cargar o cambiar de cartera, y la cifra seguiría envuelta en Traced. Aquí rueda solo cuando pulsas el botón.",
-      }}
-      changes="muelle sobreamortiguado (sin rebote), salto directo con prefers-reduced-motion y valor final siempre disponible para lectores de pantalla."
-    >
-      <div className="flex flex-wrap items-center gap-6">
-        <p className="m-0 text-hero leading-tight font-semibold text-ink">
-          <RollingNumber value={VALUES[step % VALUES.length] ?? 0} format={formatUnits} />
-        </p>
-        <button type="button" className={buttonSecondary} onClick={() => setStep((s) => s + 1)}>
-          Cambiar el valor
-        </button>
-      </div>
-    </LabSection>
-  );
-}
+import { HEADLINES, PIPELINE } from "./mock";
 
 export function TextMorphSection() {
   const [step, setStep] = useState(0);
@@ -120,25 +89,6 @@ export function StepsSection() {
           Reiniciar
         </button>
       </div>
-    </LabSection>
-  );
-}
-
-export function GrainSection() {
-  return (
-    <LabSection
-      id="grain"
-      title="Fondo con grano"
-      origin="Componentry · Grain Gradient · MIT"
-      originUrl="https://componentry.dev/docs/components/grain-gradient"
-      verdict={{
-        fits: false,
-        reason:
-          "DESIGN.md pide capas tonales planas y bordes finos. El grano y el borde difuso son ruido visual sobre una cabecera que ya tiene degradado de tinte y la ilustración HeroArt, y añaden un contexto WebGL por cabecera. Mejor no aplicarlo.",
-      }}
-      changes="se dibuja una sola vez (sin animación ni bucle), con los colores de los tokens y redibujo al cambiar de tema; sin WebGL queda el degradado CSS."
-    >
-      <GrainGradient className="h-44 rounded-card border border-line" />
     </LabSection>
   );
 }

@@ -3,11 +3,11 @@
  * Adaptada de «Metric Card» (`metric-card.tsx`) de Kokonut UI
  * (https://github.com/KokonutUI/kokonutui, MIT). Cambios: colores de los tokens (el original
  * usa grises zinc), sin marcadores de eventos ni desglose por segmento, y la variación llega
- * ya formateada (`changeText`): la tarjeta no calcula ninguna cifra.
+ * ya formateada (`changeText`): la tarjeta no calcula ninguna cifra. La cifra se pinta tal cual
+ * (sin animación de número) para poder envolverla con `Traced` en la app.
  */
 import { useId, useState } from "react";
 import { cn } from "../lib/cn";
-import { RollingNumber } from "./RollingNumber";
 import { areaPath, computeDomain, computeLayout, linePath, uniformPadding } from "./sparkline-geometry";
 import { useElementWidth } from "./useElementWidth";
 
@@ -83,7 +83,7 @@ export function MetricCard({ label, periods, formatValue, className }: MetricCar
       </div>
 
       <p className="m-0 mt-2 text-hero leading-tight font-semibold text-ink">
-        <RollingNumber value={period.value} format={formatValue} />
+        {formatValue(period.value)}
       </p>
       <p className="m-0 mt-1 text-base text-ink-muted">
         <span className={cn("font-medium", period.direction === "up" ? "text-trend-up" : "text-trend-down")}>

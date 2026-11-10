@@ -1,6 +1,5 @@
 import { MetricCard } from "../ui/MetricCard";
 import { ProgressBar } from "../ui/ProgressBar";
-import { SpotlightCard } from "../ui/SpotlightCard";
 import { UptimeCard } from "../ui/UptimeCard";
 import { LabSection } from "./LabSection";
 import { METRIC_PERIODS, SOURCES, formatUnits } from "./mock";
@@ -15,9 +14,9 @@ export function MetricSection() {
       verdict={{
         fits: true,
         reason:
-          "Usa los tokens de KAIROS; la variación lleva flecha, signo y palabra, y la bajada va en gris (trend-down), no en rojo. La cifra que rueda tiene su propio veredicto más abajo.",
+          "Usa los tokens de KAIROS; la variación lleva flecha, signo y palabra, y la bajada va en gris (trend-down), no en rojo.",
       }}
-      changes="colores de los tokens (el original es zinc), sin marcadores de eventos ni desglose, y la variación llega ya formateada: la tarjeta no calcula nada."
+      changes="colores de los tokens (el original es zinc), cifra sin animación (envolvible con Traced), sin marcadores de eventos ni desglose, y la variación llega ya formateada: la tarjeta no calcula nada."
     >
       <MetricCard label="Cifra de ejemplo" periods={METRIC_PERIODS} formatValue={formatUnits} className="max-w-xl" />
     </LabSection>
@@ -67,34 +66,6 @@ export function ProgressSection() {
           targetLabel="La marca señala lo que prevé el plan."
         />
         <ProgressBar label="Objetivo de ejemplo" value={38} valueText="38 %" />
-      </div>
-    </LabSection>
-  );
-}
-
-export function SpotlightSection() {
-  return (
-    <LabSection
-      id="spotlight"
-      title="Tarjeta con foco de luz"
-      origin="Idea de React Bits · Spotlight Card (código propio)"
-      originUrl="https://reactbits.dev/components/spotlight-card"
-      verdict={{
-        fits: false,
-        reason:
-          "El foco que sigue al ratón es decoración sin información. DESIGN.md pide capas tonales planas, sin destellos, y «nunca grita»; además solo existe con ratón, y la superficie principal es el móvil. Mejor no aplicarlo.",
-      }}
-      changes="no se copia código de React Bits (licencia MIT + Commons Clause): es una implementación propia de la misma idea. Solo con ratón y sin efecto con prefers-reduced-motion."
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SpotlightCard>
-          <p className="m-0 text-base font-medium text-ink">Tarjeta de ejemplo</p>
-          <p className="m-0 mt-1 text-sm text-ink-muted">Pasa el ratón por encima para ver el foco.</p>
-        </SpotlightCard>
-        <SpotlightCard>
-          <p className="m-0 text-base font-medium text-ink">Otra tarjeta</p>
-          <p className="m-0 mt-1 text-sm text-ink-muted">En el móvil no se ve ningún efecto.</p>
-        </SpotlightCard>
       </div>
     </LabSection>
   );

@@ -1,17 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import LabPage from "./LabPage";
 
-// jsdom no implementa WebGL: el fondo con grano cae a su degradado CSS, sin ruido en la consola.
-beforeEach(() => {
-  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-});
-
-afterEach(() => {
-  cleanup();
-  vi.restoreAllMocks();
-});
+afterEach(cleanup);
 
 function renderLab() {
   return render(
@@ -25,7 +17,7 @@ describe("LabPage", () => {
   it("cada componente lleva su veredicto frente a DESIGN.md y un motivo", () => {
     renderLab();
     const headings = screen.getAllByRole("heading", { level: 2 });
-    expect(headings).toHaveLength(11);
+    expect(headings).toHaveLength(8);
     for (const heading of headings) {
       const section = heading.closest("section");
       expect(section, heading.textContent ?? "").not.toBeNull();
@@ -34,13 +26,19 @@ describe("LabPage", () => {
     }
   });
 
-  it("marca como choques Spotlight, el fondo con grano y el número que rueda", () => {
+  it("solo quedan los componentes que ha aceptado el equipo", () => {
     renderLab();
-    const clashing = ["Tarjeta con foco de luz", "Fondo con grano", "Número que rueda"];
-    for (const title of clashing) {
-      const section = screen.getByRole("region", { name: title });
-      expect(within(section).getByText("Choca con DESIGN.md")).not.toBeNull();
-    }
+    const titles = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(titles).toEqual([
+      "Línea con banda de rango",
+      "Sparklines",
+      "Tarjeta de cifra con periodos",
+      "Estado de las fuentes",
+      "Barra de progreso frente a una regla",
+      "Pestañas con indicador deslizante",
+      "Pasos de un proceso",
+      "Cambio suave de frase",
+    ]);
   });
 
   it("pone primero la banda de rango y los sparklines", () => {

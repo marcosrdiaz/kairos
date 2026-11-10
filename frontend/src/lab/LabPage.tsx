@@ -6,8 +6,8 @@
 import { Link } from "react-router";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { BandSection, SparklineSection } from "./ChartSections";
-import { MetricSection, ProgressSection, SpotlightSection, UptimeSection } from "./CardSections";
-import { GrainSection, RollingSection, StepsSection, TabsSection, TextMorphSection } from "./MotionSections";
+import { MetricSection, ProgressSection, UptimeSection } from "./CardSections";
+import { StepsSection, TabsSection, TextMorphSection } from "./MotionSections";
 
 export default function LabPage() {
   return (
@@ -35,9 +35,6 @@ export default function LabPage() {
       <TabsSection />
       <StepsSection />
       <TextMorphSection />
-      <RollingSection />
-      <SpotlightSection />
-      <GrainSection />
     </main>
   );
 }
