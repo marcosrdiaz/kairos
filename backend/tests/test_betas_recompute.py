@@ -156,6 +156,35 @@ def test_asset_without_enough_data_loses_old_betas_and_is_reported(market: np.nd
     assert repository.get_betas([ETF]) == []  # «sin betas» (D-050), no las antiguas
 
 
+def test_a_missing_factor_keeps_the_stored_betas(market: np.ndarray) -> None:
+    """Si un factor no tiene cierres (p. ej. el BCE no responde), no se borra nada."""
+    with use_price_provider(FakePriceProvider(closes={ETF: _closes(market)})):
+        impact_service.recompute_betas([ETF])
+        before = repository.get_betas([ETF])
+        series, _, _ = _market()
+        series[Factor.RATES_EUR] = []
+        prices_service.set_factor_source(_Factors(series))
+        clock.set_now(NOW + timedelta(days=7))
+        run = impact_service.recompute_betas()
+
+    assert run.estimated == []
+    assert "RATES_EUR" in run.missing[ETF]
+    assert repository.get_betas([ETF]) == before
+    assert repository.last_computed_at() == NOW  # la semana siguiente vuelve a intentarlo
+
+
+def test_an_asset_without_prices_now_keeps_its_betas(market: np.ndarray) -> None:
+    """Sin precios ahora (el proveedor no responde), el activo conserva sus betas."""
+    with use_price_provider(FakePriceProvider(closes={ETF: _closes(market)})):
+        impact_service.recompute_betas([ETF])
+    before = repository.get_betas([ETF])
+    with use_price_provider(FakePriceProvider()):
+        run = impact_service.recompute_betas([ETF])
+
+    assert ETF in run.missing
+    assert repository.get_betas([ETF]) == before
+
+
 def test_fixed_price_assets_are_skipped(market: np.ndarray) -> None:
     with use_price_provider(FakePriceProvider()):
         run = impact_service.recompute_betas([DEPOSIT])

@@ -73,10 +73,9 @@ def recompute_betas(
     factors = _factor_series()
     empty = [f.value for f, s in factors.items() if not s]
     if empty:
+        # Fallo del proveedor (p. ej. el BCE no responde): no se toca nada de lo guardado.
         reason = f"sin cierres de los factores {', '.join(empty)}"
         missing = {a: reason for a in ids if _has_market_prices(a)}
-        if save:
-            repository.replace_betas([], clear=ids, computed_at=now)
         return BetaRun(computed_at=now, missing=missing)
 
     window_end = min(max(s) for s in factors.values())
@@ -84,25 +83,30 @@ def recompute_betas(
     estimates: list[BetaEstimate] = []
     estimated: list[str] = []
     missing = {}
+    # Se borran las betas antiguas de los de precio fijo y de los que, con datos, no se pueden
+    # estimar. Uno sin precios ahora (el proveedor no responde) conserva las suyas.
+    clear: list[str] = []
     for asset_id in ids:
         market = _has_market_prices(asset_id)
         if market is None:
             missing[asset_id] = f"{asset_id}: activo desconocido"
             continue
         if not market:
+            clear.append(asset_id)
             continue
         prices = {p.day: p.value for p in prices_service.beta_closes(asset_id)}
         if not prices:
-            missing[asset_id] = f"{asset_id}: sin precios"
+            missing[asset_id] = f"{asset_id}: sin precios (se conservan las betas anteriores)"
             continue
         try:
             estimates += estimate_betas(asset_id, prices, factors, window_start, window_end)
         except InsufficientData as exc:
             missing[asset_id] = str(exc)
+            clear.append(asset_id)
             continue
         estimated.append(asset_id)
 
-    rows = repository.replace_betas(estimates, clear=ids, computed_at=now) if save else 0
+    rows = repository.replace_betas(estimates, clear=clear, computed_at=now) if save else 0
     return BetaRun(now, estimated, missing, rows, window_start, window_end, estimates)
 
 
