@@ -22,6 +22,9 @@ frontend/dist/
 test-results/
 playwright-report/
 
+# Capturas y logs de playwright-cli (en cualquier carpeta)
+.playwright-cli/
+
 # Sistema y editores
 .DS_Store
 Thumbs.db
