@@ -65,6 +65,8 @@ const TEXT_PAIRS: [string, string][] = [
   ["chip-nodata-fg", "chip-nodata-bg"],
   ["trend-up", "surface"],
   ["trend-down", "surface"],
+  ["trend-loss", "surface"],
+  ["trend-loss", "trend-loss-bg"],
 ];
 
 const UI_PAIRS: [string, string][] = [

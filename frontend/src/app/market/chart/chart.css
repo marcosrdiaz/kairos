@@ -1,0 +1,263 @@
+/*
+ * Estilos de la gráfica de evolución (T2-18). La atención va a la línea: la tarjeta, la escala de
+ * tiempo y la tabla son sobrias. Colores semánticos de DESIGN.md: `trend-up` (subida, verde),
+ * `trend-down` (bajada, cálido neutro: sin rojo en el mercado) e `info` (aportaciones y valor de
+ * referencia). Todo con tokens --kairos-*, así que cambia con el tema.
+ *
+ * Fluidez: nada de `backdrop-filter`, desenfoques animados ni filtros sobre el SVG; solo se animan
+ * `transform` y `opacity`, y nada se mueve con `prefers-reduced-motion`.
+ *
+ * - .kchart-card: la tarjeta (.kchart-glow: un halo dorado estático en la esquina).
+ * - .kchart-period: selector de periodo con la píldora que se desliza (.kchart-period-pill).
+ * - .kchart-range: escala de tiempo (minigráfica, ventana, tiradores con fecha).
+ * - .kchart-tip: tooltip de la gráfica. .kchart-hint: pista de «de dónde sale» sobre una cifra.
+ * - .kchart-table: tabla alternativa agrupada por meses.
+ */
+
+.kchart-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.kchart-glow {
+  position: absolute;
+  z-index: -1;
+  top: -9rem;
+  right: -7rem;
+  width: 22rem;
+  height: 22rem;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--kairos-color-gold) 16%, transparent), transparent 70%);
+}
+
+/* --- Selector de periodo --- */
+.kchart-period {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  padding: 4px;
+  border-radius: 9999px;
+  border: 1px solid var(--kairos-color-border);
+  background: var(--kairos-color-surface-muted);
+}
+.kchart-period-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--count));
+  transform: translateX(calc(var(--index) * 100%));
+  border-radius: 9999px;
+  background: var(--kairos-color-primary);
+}
+.kchart-period label:has(:checked) {
+  color: var(--kairos-color-on-primary);
+}
+.kchart-period label:has(:focus-visible) {
+  outline: 3px solid var(--kairos-color-focus);
+  outline-offset: 2px;
+}
+
+/* --- Escala de tiempo: discreta, sin brillo --- */
+.kchart-range-track {
+  position: relative;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--kairos-color-surface-muted);
+  border: 1px solid var(--kairos-color-border);
+  touch-action: none;
+  user-select: none;
+}
+.kchart-range-shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--kairos-color-bg) 65%, transparent);
+}
+.kchart-range-window {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  cursor: grab;
+  border-radius: 10px;
+  border: 2px solid var(--kairos-color-primary);
+  background: color-mix(in srgb, var(--kairos-color-primary) 6%, transparent);
+}
+.kchart-range-window:active {
+  cursor: grabbing;
+}
+.kchart-range-handle {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  touch-action: none;
+}
+.kchart-range-handle::before {
+  content: "";
+  width: 14px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 2px solid var(--kairos-color-surface);
+  background:
+    linear-gradient(90deg, var(--kairos-color-on-primary) 0 2px, transparent 2px 4px, var(--kairos-color-on-primary) 4px 6px)
+      center / 6px 12px no-repeat,
+    var(--kairos-color-primary);
+  box-shadow: 0 0 0 1px var(--kairos-color-primary);
+  transition: transform 140ms ease-out;
+}
+.kchart-range-handle:hover::before,
+.kchart-range-handle[data-dragging]::before {
+  transform: scaleY(1.1);
+}
+.kchart-range-handle:focus-visible {
+  outline: none;
+}
+.kchart-range-handle:focus-visible::before {
+  outline: 3px solid var(--kairos-color-focus);
+  outline-offset: 2px;
+}
+.kchart-range-chip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  white-space: nowrap;
+  border-radius: 9999px;
+  padding: 1px 9px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--kairos-color-primary);
+  background: var(--kairos-color-primary-tint);
+  border: 1px solid color-mix(in srgb, var(--kairos-color-primary) 40%, transparent);
+  pointer-events: none;
+}
+
+/* --- Tooltip de la gráfica --- */
+.kchart-tip {
+  border-radius: 12px;
+  border: 1px solid var(--kairos-color-border);
+  background: var(--kairos-color-surface);
+  box-shadow: 0 12px 28px -16px rgb(40 28 0 / 0.45);
+}
+
+/* --- Pista «de dónde sale» (hover y foco, sin modal) --- */
+.kchart-hint {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+  text-decoration: underline dotted var(--kairos-color-border-strong);
+  text-underline-offset: 4px;
+  border-radius: 4px;
+}
+.kchart-hint:focus-visible {
+  outline: 3px solid var(--kairos-color-focus);
+  outline-offset: 2px;
+}
+.kchart-hint-pop {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  top: calc(100% + 8px);
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--kairos-color-border);
+  background: var(--kairos-color-surface);
+  box-shadow: 0 12px 28px -16px rgb(40 28 0 / 0.45);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: normal;
+  color: var(--kairos-color-text);
+  -webkit-text-fill-color: currentColor;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  pointer-events: none;
+}
+.kchart-hint:hover .kchart-hint-pop,
+.kchart-hint:focus-visible .kchart-hint-pop {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* --- Tabla --- */
+.kchart-table summary::-webkit-details-marker {
+  display: none;
+}
+.kchart-table[open] .kchart-chevron {
+  transform: rotate(180deg);
+}
+.kchart-table thead th {
+  background: var(--kairos-color-surface-muted);
+}
+.kchart-table tbody tr.kchart-month th {
+  background: var(--kairos-color-surface);
+}
+/* Fondo muy suave del color de la variación de cada fila (ganancia verde, pérdida granate). */
+.kchart-table tbody tr.kchart-row[data-trend="up"] {
+  background: color-mix(in srgb, var(--kairos-color-trend-up) 6%, transparent);
+}
+.kchart-table tbody tr.kchart-row[data-trend="down"] {
+  background: color-mix(in srgb, var(--kairos-color-trend-loss-bg) 45%, transparent);
+}
+.kchart-table tbody tr.kchart-row[data-trend="up"]:hover {
+  background: color-mix(in srgb, var(--kairos-color-trend-up) 12%, transparent);
+}
+.kchart-table tbody tr.kchart-row[data-trend="down"]:hover {
+  background: color-mix(in srgb, var(--kairos-color-trend-loss-bg) 80%, transparent);
+}
+.kchart-table tbody tr.kchart-row[data-trend="flat"]:hover {
+  background: var(--kairos-color-surface-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kchart-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: kchart-pulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+  .kchart-period-pill {
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .kchart-hint-pop {
+    transition:
+      opacity 140ms ease-out,
+      transform 140ms ease-out,
+      visibility 0s linear 140ms;
+  }
+  .kchart-hint:hover .kchart-hint-pop,
+  .kchart-hint:focus-visible .kchart-hint-pop {
+    transition-delay: 0s;
+  }
+}
+@keyframes kchart-pulse {
+  from {
+    opacity: 0.5;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@media (forced-colors: active) {
+  .kchart-range-window,
+  .kchart-period-pill,
+  .kchart-range-handle::before {
+    border: 2px solid Highlight;
+    forced-color-adjust: none;
+  }
+}

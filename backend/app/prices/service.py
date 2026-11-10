@@ -91,6 +91,12 @@ def _unavailable(asset_id: str, at: datetime) -> AppError:
     )
 
 
+def has_market_prices(asset_id: str) -> bool:
+    """`False` para los activos de valor fijo (depósitos, planes): su `history` tiene un punto
+    por día natural, no días de cotización."""
+    return _spec(asset_id).fixed_price is None
+
+
 def latest(asset_id: str) -> PriceOut:
     spec = _spec(asset_id)
     now = clock.now()

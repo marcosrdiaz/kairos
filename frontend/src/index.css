@@ -58,6 +58,7 @@
 
   --color-trend-up: var(--kairos-color-trend-up);
   --color-trend-down: var(--kairos-color-trend-down);
+  --color-trend-loss: var(--kairos-color-trend-loss);
 
   --color-icon-gold: var(--kairos-color-icon-gold-fg);
   --color-icon-gold-bg: var(--kairos-color-icon-gold-bg);

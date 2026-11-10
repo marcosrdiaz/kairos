@@ -236,6 +236,8 @@ Traspaso (T1-05, decisión «Traspaso fondo → fondo (T1-05)»): el origen se d
 
 Plan y variación de valor (T1-07, D-057): `current` es el peso de cada clase a 4 decimales, y `mixed` cuenta mitad renta variable y mitad renta fija. `drift_equity = current.equity − target.equity`; `drift_exceeded = |drift_equity| > drift_threshold`. `PUT /plan` exige un objetivo que sume exactamente 1 y un umbral en (0, 1], y conserva los campos opcionales que no se envían. `get_value_change(start, end)` reconstruye las participaciones desde el libro (`ts ≤ t`). Los flujos son las operaciones en `(start, end]`, con signo (entran compras, DCA, altas y traspasos de entrada; salen ventas y traspasos de salida). Se valora con el último cierre no posterior a `t` y el fx en `t`, y deja una traza `move`. Código: `plan.py` y `value_change.py` (puros), `plan_flow.py`, `plan_store.py`.
 
+Evolución del valor (T2-18): `history.get_history(id, period)` aplica las mismas reglas a una serie de días. Días hábiles desde el mismo día de hace 1 semana o 1, 6 o 12 meses (con `max`, uno por semana desde la primera operación) hasta el último día con algún cierre de mercado. Solo se dibujan los días con algún cierre de mercado; los activos de valor fijo no cuentan. Si falta el precio de algún activo, el día se omite: nunca se rellena. `net_flows_eur` son las operaciones entre el primer y el último punto. Sin ajustes de demo (D-031). Deja una traza `valuation`. La ruta llama a `history.py` directamente: `service.py` ya pasa de 300 líneas.
+
 ## 8. Motor de impacto y exposición
 
 ### 8.1 Factores
@@ -394,6 +396,7 @@ sequenceDiagram
 | GET | `/portfolios/{id}/dca-executions?status=` | Aportaciones de la cartera (`list[DcaExecutionOut]`); `status=pending` para las que esperan respuesta |
 | POST | `/dca-executions/{id}` | Confirmar o saltar aportación |
 | GET/PUT | `/portfolios/{id}/plan` | Asignación objetivo y meta |
+| GET | `/portfolios/{id}/history?period=1w\|1m\|6m\|1y\|max` | Evolución del valor con precios de cierre (`PortfolioHistoryOut`, T2-18) |
 | GET | `/portfolios/{id}/exposure` | Look-through y radiografía |
 | GET | `/portfolios/{id}/radar` | Riesgos y oportunidades |
 | GET | `/portfolios/{id}/ticker` | Último precio de cada posición y variación frente al cierre anterior, con `calc_id` (ticker de Inicio, T2-17) |

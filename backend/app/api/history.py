@@ -1,13 +1,10 @@
-"""Evolución del valor de la cartera (T2-18): `GET /portfolios/{id}/history?period=`.
-
-Contrato: sirve el ejemplo de `schemas/examples/` hasta que llegue el cálculo real (T2-18).
-"""
+"""Evolución del valor de la cartera (T2-18): `GET /portfolios/{id}/history?period=`."""
 
 from typing import Any
 
 from fastapi import APIRouter
 
-from app.schemas import examples
+from app.portfolio import history
 from app.schemas.common import ErrorOut
 from app.schemas.history import HistoryPeriod, PortfolioHistoryOut
 
@@ -24,5 +21,4 @@ def get_history(
 ) -> PortfolioHistoryOut:
     """Valor de la cartera con precios de cierre, sin ajustes de demo. 404 si no existe la
     cartera; 503 (`PRICE_UNAVAILABLE`) si no hay ningún precio en el periodo."""
-    example = PortfolioHistoryOut.model_validate(examples.load("PortfolioHistoryOut"))
-    return example.model_copy(update={"portfolio_id": portfolio_id, "period": period})
+    return history.get_history(portfolio_id, period)

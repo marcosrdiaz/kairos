@@ -132,6 +132,7 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 ### Resto
 - Superficies: `bg`, `surface`, `surface-muted`; texto: `text`, `text-muted`; bordes: `border` (decorativo) y `border-strong` (controles).
 - Variación: `trend-up` y `trend-down`, siempre con flecha y signo.
+- Pérdida en la gráfica de evolución (T2-18): `trend-loss` (línea y texto) y `trend-loss-bg` (zonas y fondos de fila), los dos granates del icono «Valor total», siempre con flecha y signo. Excepción acordada a «sin rojo en el mercado», solo en esa gráfica y su tabla; el resto de la app sigue con `trend-down`.
 - Iconos de tarjeta: `icon-{gold,green,purple,blue,red}-{bg,fg}`. El rojo de icono es decorativo (tarjeta "Valor total"); no comunica estado.
 - Gráficos: `chart-1` a `chart-4` (oro, verde azulado, violeta, azul).
 

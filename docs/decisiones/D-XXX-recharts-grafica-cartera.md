@@ -1,0 +1,22 @@
+### D-XXX · Recharts para la gráfica de evolución de la cartera (T2-18)
+- Fecha: 2026-11-10 · Autor: Javi · Estado: Propuesta
+- Contexto: T2-18 pide una gráfica interactiva del valor de la cartera en Inicio, con selector de periodo, punto activo con ratón y teclado y tabla alternativa. El tablero pide una decisión antes de añadir una librería de gráficos. El equipo quiere poder personalizar los estilos y tener muchas opciones de interacción y de accesibilidad. T2-22 añadirá marcadores de noticias sobre la misma gráfica.
+- Decisión:
+  - **Recharts 3.10.1** (MIT, versión fija en `frontend/package.json`) para la gráfica.
+  - Pinta en SVG con componentes de React: los colores salen de los tokens `--kairos-color-*`, así que la gráfica cambia sola con el modo claro u oscuro.
+  - Accesibilidad: `accessibilityLayer` (Tab entra en la gráfica y las flechas recorren los puntos), punto activo anunciado en una región `aria-live`, selector de periodo con radios nativos y tabla alternativa plegable con los mismos puntos.
+  - Interacción: tooltip con línea vertical, cifra destacada que sigue al punto activo y escala de fechas propia (minigráfica con una ventana que se arrastra; tiradores `slider` con su fecha y manejo con teclado) cuando hay 10 puntos o más. Los marcadores de T2-22 podrán usar `ReferenceDot`.
+  - Colores semánticos: línea verde (`trend-up`) por encima del valor inicial y granate (`trend-loss`, token nuevo) por debajo; áreas rellenas hasta la referencia dorada (el valor inicial); puntos azules (`info`) donde entró o salió dinero. Leyenda plegable («Mostrar leyenda») que explica cómo leer la gráfica.
+  - Las cifras que se muestran (valor, variación respecto al cierre anterior, valor al empezar el periodo, aportaciones) son las del backend con su `calc_id`. El frontend solo convierte a `number` para dibujar; las marcas del eje Y son divisiones de la escala, no cifras del cálculo. «¿De dónde sale?» en esta gráfica es una pista breve al pasar el ratón o con el foco (qué es la cifra y de qué datos sale), sin modal.
+  - Nuevo endpoint `GET /portfolios/{id}/history?period=1w|1m|6m|1y|max` (`PortfolioHistoryOut`, en `schemas/history.py`): valor con precios de cierre reales y las participaciones de cada fecha según el libro de operaciones, sin los ajustes de demo del replay (D-031). Un punto por día hábil hasta un año; con `max`, uno por semana. Se omiten los días sin precio de algún activo. Cada punto lleva `change_eur`/`change_pct` respecto al anterior y `flows_eur` (dinero que entró o salió entre los dos cierres). `net_flows_eur` separa las aportaciones de la rentabilidad.
+- Motivo: cubre lo que pide la tarea sin escribir a mano el manejo de escalas, tooltip y teclado; es la librería de gráficos para React más usada, con licencia MIT y compatible con React 19.
+- Alternativas descartadas:
+  - SVG a mano: sin dependencia, pero hay que programar escalas, tooltip, zoom y navegación con teclado.
+  - Highcharts: el mejor módulo de accesibilidad, pero su licencia es comercial.
+  - visx: muy flexible, pero de bajo nivel (más código para lo mismo).
+  - Chart.js / ECharts: pintan en canvas, peor para el lector de pantalla y para estilos con tokens CSS.
+- Impacto:
+  - `frontend/package.json` y `package-lock.json`: `recharts` y sus dependencias.
+  - Tokens nuevos `--kairos-color-trend-loss` y `--kairos-color-trend-loss-bg`: los dos granates del icono «Valor total» (contraste AA comprobado en `contrast.test.ts`), con su línea en `DESIGN.md`. Es una excepción a «sin rojo en el mercado» pedida para esta gráfica (las pérdidas se distinguen mejor); siempre va con flecha y signo. El resto de la app sigue usando `trend-down` para las bajadas.
+  - Tras un replay, el último punto de la gráfica no coincide con el valor de la cabecera, que sí lleva el ajuste de demo. La gráfica lo dice: «Valor con precios de cierre. No incluye el impacto estimado de los eventos».
+  - La ruta llama a `portfolio/history.py` directamente y no a `portfolio/service.py`, que ya pasa de las 300 líneas. La API es del propio módulo `portfolio`, así que no rompe la regla de hablar entre módulos solo por `service.py`.
