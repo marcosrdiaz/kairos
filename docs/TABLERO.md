@@ -238,11 +238,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 ### T4-27 · T4-28 · T4-29 · T4-30 · T4-32 · Noticias (hito E) — Alons
 
-- **#128 (T4-27) y #129 (T4-32) ya están en `main`.** Quedan tres PR apilados, en este orden (#131 y #132 se cerraron: los sustituyen #134 y #135):
-  1. **#133 (T4-27, arreglo):** la ruta deja de servir los ejemplos (hoy `main` los enseña como si fueran noticias) y los ejemplos pasan a fechas pasadas.
-  2. **#134 (T4-28):** ingesta (Google Noticias, Yahoo y Fed por RSS; GDELT opcional) y tabla `news_item` (migración `0008`).
-  3. **#135 (T4-29 y T4-30):** clasificador con Claude, impacto con datos (medido o estimado), la ruta real y `data/news/2026-11.jsonl` (622 noticias reales del 1 al 10 nov, 615 clasificadas).
-- **Siguiente paso exacto:** merge en orden #133 → #134 → #135. Tras cada merge, `gh pr edit <siguiente> --base main` (GitHub lo hace solo si se borra la rama al hacer merge). Después, `docs: done` de T4-27, T4-28, T4-29, T4-30 y T4-32.
+- **En `main`:** #128, #129 y #133 (T4-27 y T4-32). #134 y #135 se integraron en sus ramas base y no en `main`: **#136** lleva esos mismos commits (T4-28, T4-29 y T4-30) de `t4-28/news-ingest-v2` a `main`.
+- **Siguiente paso exacto:** merge de #136 hacia `main`. Después, `docs: done` de T4-27, T4-28, T4-29, T4-30 y T4-32, y borrar las ramas `t4-27/news-*`, `t4-28/news-ingest*` y `t4-29/news-classifier*`.
 - **Tras el merge:** `make up` aplica la migración `0008` y el `seed` carga `data/news/`. Para traer más: `make news NEWS_START=AAAA-MM-DD NEWS_END=AAAA-MM-DD` (necesita `ANTHROPIC_API_KEY` para clasificar).
 - **Pendiente:**
   - Llamar a la ingesta y a la clasificación desde `scripts/daily_update.py`.
