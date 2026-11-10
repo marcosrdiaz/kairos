@@ -127,7 +127,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | --- | --- | --- | --- | --- | --- | --- |
 | T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | — | ⬜ |
 | T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts` | — | ⬜ |
-| T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | 🔄 en curso |
+| T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | 🧪 en PR |
 | T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | — | ⬜ |
 | T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
 | T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | — | ⬜ |
@@ -145,6 +145,20 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T3-03 · Escenarios ¿Y si…? en el panel — Jaime
+**Qué estaba haciendo:** PR #89 abierto, falta revisor. Contiene:
+- el bloque «¿Y si…?» con 5 supuestos, rango, confianza y tabla por activo con «¿De dónde sale?»;
+- el hook `useScenario.ts`;
+- los tests de backend, con latencia < 500 ms.
+
+El backend ya venía de T1-13. Lint y tests en verde: backend 1613, frontend 314.
+**Siguiente paso exacto:** revisión y merge de #89; después, `docs: done T3-03`. Falta mirarlo a mano en el navegador.
+**Ficheros tocados:**
+- `backend/tests/test_scenario.py`
+- `frontend/src/api/hooks/useScenario.ts` (nuevo)
+- `frontend/src/panel/scenarios/`
+- `frontend/src/panel/{PanelPage.tsx,sections.ts}`: solo montar el bloque
 
 ### T2-21 · Aviso por movimiento de mercado — Alons
 **Estado:** dos PR. #87, solo contrato (`AlertKind.market_move`, tipos TS regenerados), y #88, la implementación, apilado sobre #87. Backend completo en verde (1609 tests), ruff y mypy también. Aún pendiente del checkpoint (Q9).
