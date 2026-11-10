@@ -443,6 +443,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolios/{portfolio_id}/ticker": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ticker
+         * @description Último precio de cada posición y su variación frente al cierre anterior.
+         */
+        get: operations["get_ticker_api_v1_portfolios__portfolio_id__ticker_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolios/{portfolio_id}/transactions": {
         parameters: {
             query?: never;
@@ -1654,6 +1674,60 @@ export interface components {
              */
             fixed_income: string;
         };
+        /**
+         * TickerItemOut
+         * @description Un activo de la cartera en el ticker: último precio y variación frente al cierre anterior.
+         *
+         *     `change_pct` es una fracción (`"-0.0123"` = −1,23 %) y la calcula el backend:
+         *     `(price - previous_price) / previous_price`. Es `null` si no hay cierre anterior o si el precio
+         *     es fijo (depósito, plan de pensiones). `calc_id` apunta a la traza con los dos precios y sus fuentes.
+         */
+        TickerItemOut: {
+            /** Asset Id */
+            asset_id: string;
+            /** Calc Id */
+            calc_id: string;
+            /** Change Pct */
+            change_pct: string | null;
+            /** Currency */
+            currency: string;
+            /** Name */
+            name: string;
+            /** Previous Price */
+            previous_price: string | null;
+            /** Previous Price At */
+            previous_price_at: string | null;
+            /**
+             * Price
+             * @description Precio con 8 decimales
+             */
+            price: string;
+            /**
+             * Price At
+             * Format: date-time
+             */
+            price_at: string;
+            price_kind: components["schemas"]["PriceKind"];
+            source: components["schemas"]["SourceRef"];
+            /** Ticker */
+            ticker: string | null;
+        };
+        /**
+         * TickerOut
+         * @description Respuesta de `GET /portfolios/{id}/ticker`: un elemento por posición, en el orden de la
+         *     cartera. `as_of` es el instante de la consulta (`clock.now()`).
+         */
+        TickerOut: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Items */
+            items: components["schemas"]["TickerItemOut"][];
+            /** Portfolio Id */
+            portfolio_id: string;
+        };
         /** TopCompaniesGroup */
         TopCompaniesGroup: {
             /** N */
@@ -1918,6 +1992,8 @@ export type StatusState = components['schemas']['StatusState'];
 export type Surprise = components['schemas']['Surprise'];
 export type SurpriseLabel = components['schemas']['SurpriseLabel'];
 export type TargetAllocation = components['schemas']['TargetAllocation'];
+export type TickerItemOut = components['schemas']['TickerItemOut'];
+export type TickerOut = components['schemas']['TickerOut'];
 export type TopCompaniesGroup = components['schemas']['TopCompaniesGroup'];
 export type TopCompany = components['schemas']['TopCompany'];
 export type TopCountry = components['schemas']['TopCountry'];
@@ -2950,6 +3026,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ticker_api_v1_portfolios__portfolio_id__ticker_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TickerOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
