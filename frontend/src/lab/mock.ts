@@ -6,7 +6,6 @@
 import type { BandDatum } from "../ui/band-geometry";
 import type { MetricPeriod } from "../ui/MetricCard";
 import type { DayState, SourceStatus } from "../ui/UptimeCard";
-import type { PipelineStep } from "../ui/PipelineSteps";
 
 export const ILLUSTRATIVE = true;
 
@@ -77,13 +76,6 @@ export const SOURCES: SourceStatus[] = [
   { name: "Fuente de ejemplo 1", days: day("oooooooooooooooolooooooooooooo") },
   { name: "Fuente de ejemplo 2", days: day("oooooooooooooloollooooooooooooo".slice(0, 30)) },
   { name: "Fuente de ejemplo 3", days: day("nnnnnnnnnnoooooooooooooooooooo") },
-];
-
-export const PIPELINE: PipelineStep[] = [
-  { id: "event", title: "Evento recibido", detail: "Paso de ejemplo" },
-  { id: "exposure", title: "Exposición de la cartera", detail: "Paso de ejemplo" },
-  { id: "impact", title: "Impacto estimado", detail: "Paso de ejemplo" },
-  { id: "guardian", title: "Revisión del guardián", detail: "Paso de ejemplo" },
 ];
 
 export const HEADLINES = ["Todo en calma", "Conviene mirar un par de cosas", "Revisa tu plan"];

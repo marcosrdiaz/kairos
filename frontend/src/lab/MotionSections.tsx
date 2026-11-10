@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { buttonSecondary } from "../components/button";
-import { PipelineSteps } from "../ui/PipelineSteps";
 import { SwipeTabs } from "../ui/SwipeTabs";
 import { TextMorph } from "../ui/TextMorph";
 import { LabSection } from "./LabSection";
-import { HEADLINES, PIPELINE } from "./mock";
+import { HEADLINES } from "./mock";
 
 export function TextMorphSection() {
   const [step, setStep] = useState(0);
@@ -56,39 +55,6 @@ export function TabsSection() {
         ]}
       />
       <p className="m-0 mt-3 text-sm text-ink-muted">En el móvil también se cambia deslizando el panel.</p>
-    </LabSection>
-  );
-}
-
-export function StepsSection() {
-  const [current, setCurrent] = useState(1);
-  return (
-    <LabSection
-      id="steps"
-      title="Pasos de un proceso"
-      origin="Kokonut UI · Currency Transfer · MIT"
-      originUrl="https://kokonutui.com/docs/cards/currency-transfer"
-      verdict={{
-        fits: true,
-        reason:
-          "Cada paso lleva marcador y palabra («Hecho», «En curso», «Pendiente»): nunca solo color. No avanza solo; lo controla quien lo usa.",
-      }}
-      changes="solo la línea de pasos (sin importes, bancos ni referencia copiable), controlada y sin autoplay."
-    >
-      <PipelineSteps steps={PIPELINE} current={current} label="Pasos de ejemplo" />
-      <div className="mt-4 flex gap-3">
-        <button
-          type="button"
-          className={buttonSecondary}
-          disabled={current >= PIPELINE.length}
-          onClick={() => setCurrent((c) => Math.min(PIPELINE.length, c + 1))}
-        >
-          Siguiente paso
-        </button>
-        <button type="button" className={buttonSecondary} onClick={() => setCurrent(0)}>
-          Reiniciar
-        </button>
-      </div>
     </LabSection>
   );
 }

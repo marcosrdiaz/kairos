@@ -17,7 +17,7 @@ describe("LabPage", () => {
   it("cada componente lleva su veredicto frente a DESIGN.md y un motivo", () => {
     renderLab();
     const headings = screen.getAllByRole("heading", { level: 2 });
-    expect(headings).toHaveLength(8);
+    expect(headings).toHaveLength(7);
     for (const heading of headings) {
       const section = heading.closest("section");
       expect(section, heading.textContent ?? "").not.toBeNull();
@@ -36,7 +36,6 @@ describe("LabPage", () => {
       "Estado de las fuentes",
       "Barra de progreso frente a una regla",
       "Pestañas con indicador deslizante",
-      "Pasos de un proceso",
       "Cambio suave de frase",
     ]);
   });
@@ -62,13 +61,5 @@ describe("LabPage", () => {
     fireEvent.keyDown(list, { key: "ArrowRight" });
     expect(second?.getAttribute("aria-selected")).toBe("true");
     expect(first?.getAttribute("aria-selected")).toBe("false");
-  });
-
-  it("los pasos no avanzan solos: solo al pulsar el botón", () => {
-    renderLab();
-    const steps = screen.getByRole("list", { name: "Pasos de ejemplo" });
-    expect(within(steps).getAllByText(/En curso/)).toHaveLength(1);
-    fireEvent.click(screen.getByRole("button", { name: "Siguiente paso" }));
-    expect(within(steps).getAllByText(/Hecho/)).toHaveLength(2);
   });
 });

@@ -7,7 +7,7 @@ import { Link } from "react-router";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { BandSection, SparklineSection } from "./ChartSections";
 import { MetricSection, ProgressSection, UptimeSection } from "./CardSections";
-import { StepsSection, TabsSection, TextMorphSection } from "./MotionSections";
+import { TabsSection, TextMorphSection } from "./MotionSections";
 
 export default function LabPage() {
   return (
@@ -33,7 +33,6 @@ export default function LabPage() {
       <UptimeSection />
       <ProgressSection />
       <TabsSection />
-      <StepsSection />
       <TextMorphSection />
     </main>
   );
