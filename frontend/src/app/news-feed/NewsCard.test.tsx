@@ -5,7 +5,7 @@ import estimated from "../../api/mocks/NewsItemOut.json";
 import notRelevant from "../../api/mocks/NewsItemOut.not_relevant.json";
 import pending from "../../api/mocks/NewsItemOut.pending.json";
 import { NewsCard } from "./NewsCard";
-import { horizonText, methodText } from "./labels";
+import { eurRangeText, horizonText, methodText } from "./labels";
 
 afterEach(cleanup);
 
@@ -73,6 +73,11 @@ describe("textos de la estimación", () => {
     expect(methodText({ ...base, analogs_count: null })).toBe(
       "Según casos parecidos del histórico",
     );
+  });
+
+  it("un rango sin anchura se lee como una sola cifra", () => {
+    expect(eurRangeText("-121.40", "-121.20")).toMatch(/^-121\s€$/);
+    expect(eurRangeText("-199.00", "-193.00")).toMatch(/^entre -199\s€ y -193\s€$/);
   });
 
   it("una cifra medida habla en pasado", () => {

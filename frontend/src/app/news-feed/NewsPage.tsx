@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNews, type NewsFilter } from "../../api/hooks/useNews";
+import { NEWS_MAX, NEWS_PAGE, useNews, type NewsFilter } from "../../api/hooks/useNews";
 import { EmptyNote, PageTitle } from "../../components/PageTitle";
 import { PanelNotice } from "../../components/notices/Notices";
 import { usePortfolioId } from "../portfolio-picker/usePortfolioId";
@@ -22,8 +22,14 @@ function emptyText(filter: NewsFilter): string {
  */
 export function NewsPage() {
   const [portfolioId] = usePortfolioId();
-  const [filter, setFilter] = useState<NewsFilter>(DEFAULT_FILTER);
-  const { data, isPending, isError } = useNews(portfolioId, filter);
+  const [filter, setFilterState] = useState<NewsFilter>(DEFAULT_FILTER);
+  const [limit, setLimit] = useState(NEWS_PAGE);
+  const { data, isPending, isError, isFetching } = useNews(portfolioId, filter, limit);
+  const setFilter = (next: NewsFilter) => {
+    setFilterState(next);
+    setLimit(NEWS_PAGE);
+  };
+  const canLoadMore = data !== undefined && data.length >= limit && limit < NEWS_MAX;
 
   return (
     <>
@@ -50,6 +56,16 @@ export function NewsPage() {
           )}
           {data?.length === 0 && <EmptyNote>{emptyText(filter)}</EmptyNote>}
           {data?.map((item) => <NewsCard key={item.id} item={item} />)}
+          {canLoadMore && (
+            <button
+              type="button"
+              onClick={() => setLimit((n) => Math.min(n + NEWS_PAGE, NEWS_MAX))}
+              disabled={isFetching}
+              className="min-h-touch self-center rounded-full border border-line bg-surface px-5 py-2 text-base font-semibold text-ink transition-colors hover:border-accent disabled:opacity-60 motion-reduce:transition-none"
+            >
+              {isFetching ? "Cargando…" : "Ver más noticias"}
+            </button>
+          )}
         </section>
         <PanelNotice />
       </div>
