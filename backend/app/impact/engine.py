@@ -72,6 +72,9 @@ class ShocksIn:
 
 @dataclass(frozen=True)
 class AssetResult:
+    """`low_eur`/`high_eur`: rango del activo, `I_i ± 1,28 · término_i` (T2-23). El motor
+    siempre los rellena; `None` solo en resultados construidos a mano."""
+
     asset_id: str
     name: str
     asset_class: AssetClass
@@ -80,6 +83,8 @@ class AssetResult:
     market_eur: Decimal
     fx_eur: Decimal
     channel: str
+    low_eur: Decimal | None = None
+    high_eur: Decimal | None = None
 
 
 @dataclass(frozen=True)
@@ -136,6 +141,8 @@ def _position_impact(position: PositionIn, shocks: ShocksIn) -> tuple[AssetResul
     contributions.append(
         (shocks.labels.get(Factor.EURUSD, DEFAULT_LABELS[Factor.EURUSD]), beta_fx + r_fx)
     )
+    term = position.value_eur * rest * uncertainty
+    half_width = _Z_80 * term
     result = AssetResult(
         asset_id=position.asset_id,
         name=position.name,
@@ -145,8 +152,10 @@ def _position_impact(position: PositionIn, shocks: ShocksIn) -> tuple[AssetResul
         market_eur=market,
         fx_eur=impact - market,
         channel=_channel(contributions),
+        low_eur=_cents(impact - half_width),
+        high_eur=_cents(impact + half_width),
     )
-    return result, position.value_eur * rest * uncertainty
+    return result, term
 
 
 def _confidence(r2: Decimal, coverage: Decimal) -> Confidence:
