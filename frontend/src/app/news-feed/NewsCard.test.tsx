@@ -29,9 +29,9 @@ describe("NewsCard", () => {
 
   it("dice desde cuándo se nota en cada posición", () => {
     render(<NewsCard item={NVDA} />);
-    expect(screen.getByText(/Se nota en la sesión · desde el 20 de noviembre de 2026/)).toBeTruthy();
+    expect(screen.getByText(/Se nota en la sesión · desde el 27 de febrero de 2025/)).toBeTruthy();
     expect(
-      screen.getByText(/Se nota con el siguiente valor liquidativo · desde el 21 de noviembre/),
+      screen.getByText(/Se nota con el siguiente valor liquidativo · desde el 28 de febrero/),
     ).toBeTruthy();
   });
 

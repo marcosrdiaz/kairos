@@ -5529,7 +5529,7 @@
     },
     "/api/v1/portfolios/{portfolio_id}/news": {
       "get": {
-        "description": "Noticias de la más reciente a la más antigua, con su impacto estimado en esta cartera.\n\n`affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.\n404 si la cartera no existe.",
+        "description": "Noticias de la más reciente a la más antigua, con su impacto en esta cartera.\n\n`affecting=true` (por defecto) deja fuera las `not_relevant`; `category` filtra por tipo.\n404 si la cartera no existe.",
         "operationId": "list_news_api_v1_portfolios__portfolio_id__news_get",
         "parameters": [
           {
@@ -5624,7 +5624,7 @@
     },
     "/api/v1/portfolios/{portfolio_id}/news/{news_id}": {
       "get": {
-        "description": "Una noticia con su impacto estimado en esta cartera. 404 si no existe la cartera o la\nnoticia.",
+        "description": "Una noticia con su impacto en esta cartera. 404 si no existe la cartera o la noticia.",
         "operationId": "get_news_api_v1_portfolios__portfolio_id__news__news_id__get",
         "parameters": [
           {

@@ -2,14 +2,14 @@
   "illustrative": true,
   "id": "news_8c2d5e1f0a7b",
   "category": "central_bank",
-  "title": "El BCE mantiene los tipos de interés",
-  "summary": "El Consejo de Gobierno del BCE deja sin cambios los tipos de interés oficiales.",
-  "published_at": "2026-11-20T13:15:00Z",
+  "title": "El BCE baja los tipos de interés",
+  "summary": "El Consejo de Gobierno del BCE baja los tres tipos de interés oficiales.",
+  "published_at": "2025-06-05T12:15:00Z",
   "source": {
     "kind": "event",
     "label": "Nota de prensa del BCE",
     "ref": "news_8c2d5e1f0a7b",
-    "as_of": "2026-11-20T13:15:00Z",
+    "as_of": "2025-06-05T12:15:00Z",
     "url": "https://www.ecb.europa.eu/press/pr/html/index.es.html"
   },
   "companies": [],
@@ -24,7 +24,7 @@
     }
   ],
   "causal_chain": [
-    "El BCE deja los tipos sin cambios.",
+    "El BCE baja los tipos, como esperaba el mercado.",
     "La rentabilidad de los bonos en euros puede moverse según el mensaje sobre el futuro.",
     "Tu fondo de bonos en euros es la parte de la cartera más sensible a los tipos."
   ],
@@ -45,6 +45,6 @@
     "positions": [],
     "calc_id": null,
     "event_id": null,
-    "as_of": "2026-11-20T13:20:00Z"
+    "as_of": "2025-06-05T12:20:00Z"
   }
 }
