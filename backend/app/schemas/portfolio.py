@@ -164,6 +164,14 @@ class AssetOut(ContractModel):
     price_kind: PriceKind
 
 
+class AssetCreateRequest(ContractModel):
+    """Alta de un activo que no está en el catálogo (`POST /assets`, T4-07): se busca en el
+    proveedor de precios en directo por ISIN, ticker o nombre y se da de alta el primero que tenga
+    precios. Si ya está en el catálogo, se devuelve ese."""
+
+    query: str = Field(min_length=1, max_length=80)
+
+
 class PositionInitLine(ContractModel):
     asset_id: str
     units: Units = Field(gt=0)

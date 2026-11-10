@@ -239,6 +239,23 @@
         "title": "AssetClass",
         "type": "string"
       },
+      "AssetCreateRequest": {
+        "additionalProperties": false,
+        "description": "Alta de un activo que no está en el catálogo (`POST /assets`, T4-07): se busca en el\nproveedor de precios en directo por ISIN, ticker o nombre y se da de alta el primero que tenga\nprecios. Si ya está en el catálogo, se devuelve ese.",
+        "properties": {
+          "query": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "AssetCreateRequest",
+        "type": "object"
+      },
       "AssetHistoryOut": {
         "additionalProperties": false,
         "description": "`GET /portfolios/{id}/positions/{asset_id}/history?period=` (T2-23).\n\nEvolución de una posición con las mismas reglas que `PortfolioHistoryOut`: precios de cierre\nreales (`prices.history`), participaciones según el libro de operaciones, sin ajustes de demo\ny sin rellenar días sin precio. Los flujos son solo los de este activo.\n\n- `currency`: divisa de `price`; `value_eur` y los importes, siempre en euros.\n- `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.\n- 404 si la cartera no existe o nunca tuvo el activo; 503 (`PRICE_UNAVAILABLE`) si no hay\n  ningún precio en el periodo.",
@@ -3715,6 +3732,68 @@
         "summary": "Ask Any Portfolio",
         "tags": [
           "portfolio"
+        ]
+      }
+    },
+    "/api/v1/assets": {
+      "post": {
+        "description": "Da de alta un activo que no está en el catálogo buscándolo en el proveedor en directo\n(ISIN, ticker o nombre), con su histórico y sus betas. Si ya está, devuelve el del catálogo.\n404 `NOT_FOUND` si el proveedor no lo conoce; 503 `UPSTREAM_UNAVAILABLE` si no responde o si\nno hay precios en directo (modo demo).\n\nContrato (T4-07): sirve el ejemplo hasta la implementación.",
+        "operationId": "create_asset_api_v1_assets_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Asset",
+        "tags": [
+          "assets"
         ]
       }
     },
