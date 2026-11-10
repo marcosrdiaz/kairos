@@ -20,13 +20,21 @@ function Swatch({ kind, color }: { kind: "line" | "dash" | "dot" | "area" | "new
   );
 }
 
-const ITEMS = [
-  { kind: "line", color: UP, label: "Por encima del valor inicial", text: "la cartera vale más que al empezar el periodo." },
+/** De qué es la gráfica: la cartera (Inicio) o una posición (T2-23). */
+export type ChartSubject = "portfolio" | "position";
+
+const SUBJECT = {
+  portfolio: { line: "la cartera", news: "tu cartera" },
+  position: { line: "la posición", news: "esta posición" },
+} as const;
+
+const items = (subject: ChartSubject) => [
+  { kind: "line", color: UP, label: "Por encima del valor inicial", text: `${SUBJECT[subject].line} vale más que al empezar el periodo.` },
   { kind: "line", color: DOWN, label: "Por debajo del valor inicial", text: "vale menos que al empezar." },
   { kind: "dash", color: REFERENCE, label: "Línea dorada", text: "el valor al empezar el periodo: la referencia para ganar o perder." },
   { kind: "area", color: UP, label: "Zonas sombreadas", text: "la distancia a esa referencia: verde si se gana, granate si se pierde." },
   { kind: "dot", color: INFO, label: "Punto azul", text: "ese día entró o salió dinero (compra, aportación o venta): un salto ahí no es rentabilidad." },
-  { kind: "news", color: REFERENCE, label: "Círculo con icono", text: "una noticia que afectó a tu cartera, en su fecha real. Pasa el ratón o llega con Tab para ver qué pasó, cómo se movió el mercado y su impacto estimado." },
+  { kind: "news", color: REFERENCE, label: "Círculo con icono", text: `una noticia que afectó a ${SUBJECT[subject].news}, en su fecha real. Pasa el ratón o llega con Tab para ver qué pasó, cómo se movió el mercado y su impacto estimado.` },
 ] as const;
 
 /** Icono de información con el aro que gira a «cerrar» al abrir la leyenda (decorativo). */
@@ -44,7 +52,7 @@ function LegendIcon({ open }: { open: boolean }) {
  * Plegada por defecto tras un botón «Mostrar leyenda» (`aria-expanded`), para que la atención
  * vaya a la gráfica. Lista de texto: no depende del color y el lector la lee como lista.
  */
-export function ChartLegend() {
+export function ChartLegend({ subject = "portfolio" }: { subject?: ChartSubject }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   return (
@@ -61,16 +69,16 @@ export function ChartLegend() {
       </button>
       <div id={id} hidden={!open} className="pb-1 pt-2">
         <h3 className="m-0 mb-2 text-sm font-semibold text-ink">Cómo leer la gráfica</h3>
-        <LegendList />
+        <LegendList subject={subject} />
       </div>
     </div>
   );
 }
 
-function LegendList() {
+function LegendList({ subject }: { subject: ChartSubject }) {
   return (
       <ul className="m-0 grid list-none gap-x-6 gap-y-2 p-0 text-sm text-ink-muted md:grid-cols-2">
-        {ITEMS.map((item) => (
+        {items(subject).map((item) => (
           <li key={item.label} className="flex items-start gap-2.5">
             <span className="mt-1">
               <Swatch kind={item.kind} color={item.color} />

@@ -14,6 +14,9 @@ export interface EventMarker {
   date: string;
   /** Valor de la serie en ese cierre (solo para colocarlo en el eje Y). */
   value: number;
+  /** Solo en la gráfica de una posición (T2-23): el impacto del evento en esa posición, con su
+   *  rango (`breakdown[]` del evento). Sin él, el marcador habla de la cartera entera. */
+  position?: { name: string; low_eur: string; high_eur: string };
 }
 
 const dayOf = (iso: string) => Math.floor(Date.parse(iso) / DAY_MS);

@@ -1,4 +1,6 @@
 import { useState, type CSSProperties, type FocusEvent } from "react";
+import { Link } from "react-router";
+import { assetHref } from "../asset-chart/assetHref";
 import type { TickerItemOut } from "../../../api/generated/schema";
 import { useTicker } from "../../../api/hooks/useTicker";
 import { PauseIcon, PlayIcon } from "../../../components/icons";
@@ -49,14 +51,24 @@ const TREND = {
 } as const;
 
 /** Un activo: nombre corto, precio con su fecha y variación (con flecha y palabra, no solo color). */
-function TickerEntry({ item }: { item: TickerItemOut & { change_pct: string } }) {
+function TickerEntry({ item, href }: { item: TickerItemOut & { change_pct: string }; href?: string }) {
   const trend = TREND[trendOf(item.change_pct)];
   const label = item.ticker ?? item.name;
   return (
     <li className="flex shrink-0 items-baseline gap-2 px-5 text-sm whitespace-nowrap">
-      <span className="font-semibold text-ink" title={item.name}>
-        {label}
-      </span>
+      {href ? (
+        <Link
+          to={href}
+          className="font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:text-accent hover:decoration-current"
+          title={`${item.name}: ver su evolución`}
+        >
+          {label}
+        </Link>
+      ) : (
+        <span className="font-semibold text-ink" title={item.name}>
+          {label}
+        </span>
+      )}
       <span className="tabular-nums text-ink">{formatPrice(item.price, item.currency)}</span>
       <span className={`inline-flex items-baseline gap-1 tabular-nums ${trend.className}`}>
         <span aria-hidden="true" className="text-xs">
@@ -78,6 +90,8 @@ const hasChange = (item: TickerItemOut): item is TickerItemOut & { change_pct: s
 
 interface TickerStripProps {
   items: TickerItemOut[];
+  /** Enlace de cada activo a su evolución (T2-23). Sin él, el nombre no enlaza. */
+  hrefFor?: (assetId: string) => string;
 }
 
 /**
@@ -87,7 +101,7 @@ interface TickerStripProps {
  * - Solo salen los activos con variación (los de precio fijo, como un depósito, no cotizan).
  * - Solo la primera lista se anuncia; las copias que llenan el bucle son `inert` y `aria-hidden`.
  */
-export function TickerStrip({ items }: TickerStripProps) {
+export function TickerStrip({ items, hrefFor }: TickerStripProps) {
   const [reducedMotion] = useState(prefersReducedMotion);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -115,7 +129,7 @@ export function TickerStrip({ items }: TickerStripProps) {
       inert={copy || undefined}
     >
       {quoted.map((item) => (
-        <TickerEntry key={item.asset_id} item={item} />
+        <TickerEntry key={item.asset_id} item={item} href={hrefFor?.(item.asset_id)} />
       ))}
     </ul>
   );
@@ -169,5 +183,5 @@ export function TickerStrip({ items }: TickerStripProps) {
 export function MarketTicker({ portfolioId }: { portfolioId: string }) {
   const { data } = useTicker(portfolioId);
   if (!data || !Array.isArray(data.items)) return null;
-  return <TickerStrip items={data.items} />;
+  return <TickerStrip items={data.items} hrefFor={(assetId) => assetHref(assetId, portfolioId)} />;
 }

@@ -1,11 +1,10 @@
 import type { Factor } from "../../../../api/generated/schema";
 import { ArrowDownIcon, ArrowUpIcon } from "../../../../components/icons";
 import { FIELD_LABEL } from "../../../../components/trace/labels";
-import { formatEurRange } from "../../../../lib/format";
 import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL } from "../../../news/labels";
 import { pointDate, signedPct, trendOf } from "../chartFormat";
 import { useActiveMarker, type MarkerStore } from "./markerStore";
-import { markerSummary } from "./markerText";
+import { markerImpact, markerSummary } from "./markerText";
 
 const CARD_WIDTH = 320;
 /** Desde qué altura (px dentro de la gráfica) la tarjeta se abre hacia arriba. */
@@ -49,6 +48,7 @@ export function MarkerCard({ store, id, width }: MarkerCardProps) {
   const above = (active?.y ?? 0) > ABOVE_FROM_Y;
   const top = active ? (above ? active.y - 24 : active.y + 24) : 0;
   const moves = Object.entries(e?.factor_moves ?? {}) as [Factor, string][];
+  const impact = active ? markerImpact(active.marker) : null;
   return (
     <div
       id={id}
@@ -75,9 +75,9 @@ export function MarkerCard({ store, id, width }: MarkerCardProps) {
             </div>
           )}
           <div className="border-t border-line pt-2">
-            <p className="m-0 font-semibold text-ink">Impacto estimado en tu cartera</p>
+            <p className="m-0 font-semibold text-ink">Impacto estimado {impact?.scope}</p>
             <p className="m-0 tabular-nums text-ink" data-calc-id={e.calc_id}>
-              {formatEurRange(e.low_eur, e.high_eur)}
+              {impact?.range}
               <span className="text-ink-muted"> · {CONFIDENCE_LABEL[e.confidence]}</span>
             </p>
             <p className="m-0 mt-1 text-xs text-ink-muted">

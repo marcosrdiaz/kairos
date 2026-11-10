@@ -4,8 +4,8 @@ import { Scrollbar } from "../../../components/Scrollbar";
 import { formatEur } from "../../../lib/format";
 import { Change, FlowTag } from "./Change";
 import { monthOf, pointDate, toRows, trendOf, weekdayOf, type ChartRow } from "./chartFormat";
-import { formatEurRange } from "../../../lib/format";
 import { EVENT_TYPE_LABEL } from "../../news/labels";
+import { markerImpact } from "./markers/markerText";
 import { markersByDate, type EventMarker } from "./markers/placeMarkers";
 
 interface HistoryTableProps {
@@ -13,17 +13,20 @@ interface HistoryTableProps {
   periodName: string;
   /** Noticias colocadas en la serie (T2-22): salen en la fila de su cierre. */
   markers?: EventMarker[];
+  /** De qué es la serie, para el lector de pantalla: «la cartera» o el nombre de una posición. */
+  subject?: string;
 }
 
 /** Noticia en la tabla: tipo, título e impacto como rango (cifras del backend). */
 function EventTag({ marker }: { marker: EventMarker }) {
   const e = marker.event;
+  const { range } = markerImpact(marker);
   return (
     <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={e.calc_id}>
       <span className="font-semibold text-accent">{EVENT_TYPE_LABEL[e.event_type]}</span>
       <span>{e.title}</span>
       <span className="text-ink-muted">
-        · impacto {formatEurRange(e.low_eur, e.high_eur)} ({pointDate(marker.marketDate)})
+        · impacto {range} ({pointDate(marker.marketDate)})
       </span>
     </span>
   );
@@ -41,7 +44,7 @@ function byMonth(rows: ChartRow[]) {
   return groups;
 }
 
-function Rows({ history, periodName, markers = [] }: HistoryTableProps) {
+function Rows({ history, periodName, markers = [], subject = "la cartera" }: HistoryTableProps) {
   const groups = useMemo(() => byMonth(toRows(history)), [history]);
   const byDate = useMemo(() => markersByDate(markers), [markers]);
   const scroller = useRef<HTMLDivElement>(null);
@@ -50,7 +53,7 @@ function Rows({ history, periodName, markers = [] }: HistoryTableProps) {
       <div ref={scroller} className="kairos-scroll max-h-96 overflow-y-auto">
         <table className="w-full border-collapse text-base">
           <caption className="sr-only">
-            Valor de la cartera por día y variación respecto al cierre anterior. {periodName}.
+            Valor de {subject} por día y variación respecto al cierre anterior. {periodName}.
           </caption>
           <thead className="sticky top-0 z-10">
             <tr>
@@ -116,7 +119,7 @@ function Rows({ history, periodName, markers = [] }: HistoryTableProps) {
  * las aportaciones en azul; las noticias de la gráfica (T2-22) salen en la fila de su cierre.
  * Plegada por defecto; las filas solo se pintan al abrirla. Barra de scroll propia.
  */
-export const HistoryTable = memo(function HistoryTable({ history, periodName, markers }: HistoryTableProps) {
+export const HistoryTable = memo(function HistoryTable({ history, periodName, markers, subject }: HistoryTableProps) {
   const [open, setOpen] = useState(false);
   return (
     <details
@@ -132,7 +135,7 @@ export const HistoryTable = memo(function HistoryTable({ history, periodName, ma
           <path d="m6 9 6 6 6-6" />
         </svg>
       </summary>
-      {open && <Rows history={history} periodName={periodName} markers={markers} />}
+      {open && <Rows history={history} periodName={periodName} markers={markers} subject={subject} />}
     </details>
   );
 });
