@@ -1,7 +1,7 @@
 """Crear, editar, borrar e importar carteras, y preguntar sin cartera elegida (T4-09).
 
-Crear, editar y borrar son reales desde T4-10. Importar y `/ask` responden todavía con los
-ejemplos de `schemas/examples/` y **no guardan nada** hasta T4-11 (importar) y T4-14 (`/ask`).
+Crear, editar y borrar son reales desde T4-10; importar, desde T4-11 (`portfolio/importer.py`).
+`/ask` responde todavía con los ejemplos de `schemas/examples/` hasta T4-14.
 """
 
 from collections.abc import Iterator
@@ -23,7 +23,6 @@ from app.schemas.agents import (
 from app.schemas.common import ErrorOut
 from app.schemas.portfolio import PortfolioSummaryOut
 from app.schemas.portfolio_manage import (
-    LEGACY_PROFILE,
     PortfolioCreateRequest,
     PortfolioImportOut,
     PortfolioImportRequest,
@@ -80,18 +79,10 @@ def delete_portfolio(portfolio_id: str) -> Response:
 def import_portfolio(body: PortfolioImportRequest, response: Response) -> PortfolioImportOut:
     """Crea una cartera desde un CSV (formato en `PortfolioImportRequest`). Con `dry_run`, 200
     sin crear nada. Si alguna fila falla, 422 con `details.rows` (lista de `ImportRowError`)."""
-    result = PortfolioImportOut.model_validate(examples.load("PortfolioImportOut"))
-    if body.dry_run:
+    result = portfolio_service.import_portfolio(body)
+    if result.dry_run:
         response.status_code = status.HTTP_200_OK
-        return result.model_copy(update={"dry_run": True, "portfolio": None})
-    portfolio = PortfolioSummaryOut(
-        id="pf_3f9a2c1e7b04",
-        name=body.name,
-        profile=LEGACY_PROFILE[body.risk_profile],
-        kind=body.kind,
-        risk_profile=body.risk_profile,
-    )
-    return result.model_copy(update={"portfolio": portfolio})
+    return result
 
 
 def _example_turn() -> Iterator[str]:

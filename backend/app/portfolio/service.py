@@ -16,6 +16,7 @@ from app.portfolio import (
     demo_adjustment,
     engine,
     errors,
+    importer,
     ledger,
     manage,
     operations,
@@ -207,6 +208,7 @@ def list_portfolios() -> list[PortfolioSummaryOut]:
 create_portfolio = manage.create
 update_portfolio = manage.update
 delete_portfolio = manage.delete
+import_portfolio = importer.import_portfolio
 
 
 def lookup_assets(query: str) -> list[AssetOut]:
