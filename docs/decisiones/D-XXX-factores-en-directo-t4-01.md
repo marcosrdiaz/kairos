@@ -1,0 +1,17 @@
+### D-XXX · Cierres de los 5 factores en directo: Yahoo y BCE, tabla `factor_close` y fuente aparte del `PriceProvider` (T4-01)
+- Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
+- Contexto: T4-01 pide los cierres de `EQ_GLOBAL`, `EQ_US_TECH`, `OIL`, `RATES_EUR` y `EURUSD` en producción, con los mismos símbolos que `scripts/fetch_prices.py`, guardados en BD con fecha y fuente y sin inventar nada si el proveedor falla. `fetch_prices.py` saca cuatro de Yahoo, pero `RATES_EUR` del BCE (curva AAA a 10 años), no de Yahoo. Hasta ahora los factores solo existían como CSV en `data/factors` (T1-09).
+- Decisión:
+  - **Fuentes:** Yahoo (`YahooClient` de T2-24) para `IWDA.AS`, `^NDX`, `BZ=F` y `EURUSD=X`, redondeados a 4, 4, 4 y 6 decimales; **BCE** (`prices/ecb.py`, sin clave, misma serie que `fetch_prices.py`) para `RATES_EUR`, en fracción con 12 decimales. Sin dependencias nuevas (`httpx` ya estaba).
+  - **Tabla nueva `factor_close`** (factor, day, value `NUMERIC(24,12)`, source, fetched_at; migración `0004`). 12 decimales porque `RATES_EUR` es una rentabilidad en fracción y puede ser negativa.
+  - **Solo sesiones cerradas:** ni la de hoy ni fines de semana, como `fetch_prices.py`. Refresco bajo demanda como mucho cada hora; la primera vez 3 años y después los últimos días; guardar es idempotente.
+  - **Si el proveedor falla:** el último cierre guardado con su fecha real y `stale=True` (la fuente lo dice); sin nada guardado, `PRICE_UNAVAILABLE`. Nunca se rellena con el CSV.
+  - **`FactorSource` es una interfaz aparte de `PriceProvider`** (`OfflineFactors` lee `data/factors`; `LiveFactors`, en directo), elegida por `MARKET_DATA_PROVIDER`. Interfaz pública en `prices/service.py`: `factor_closes(factor)` y `factor_latest(factor)` (con fecha, valor, `stale` y `SourceRef`).
+- Motivo: cumple el criterio sin tocar el `PriceProvider` ni su `FakePriceProvider`, que usan muchos tests de otros módulos. El modo demo no cambia.
+- Alternativas descartadas:
+  - Añadir `factor_closes` a `PriceProvider`: obliga a cambiar `tests/fakes/price_provider.py` y todo lo que lo usa.
+  - Reusar `fx_rate` para `EURUSD`: guardaría el factor en otra tabla con otra granularidad (precio intradía); `factor_close` tiene los 5 iguales.
+  - Yahoo para los tipos (`^TNX` u otro): no es la serie del euro que usan las betas.
+- Impacto:
+  - Nadie consume todavía `factor_latest`: lo usarán T4-02 (actualización diaria), T4-03 (betas) y T4-04 (shock medido).
+  - Quien tenga la BD levantada necesita `alembic upgrade head` (lo hace el servicio `seed` en cada `up`).

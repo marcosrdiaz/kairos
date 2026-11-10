@@ -200,6 +200,7 @@ erDiagram
 | `asset` | id, isin, ticker, name, asset_type, asset_class, currency, ter, transferable, price_kind, price_source | `transferable` = fondo de inversión (traspaso sin tributar) |
 | `price` | asset_id, ts, value, currency, source | PK (asset_id, ts) |
 | `fx_rate` | pair (`EURUSD`…), ts, rate, source | |
+| `factor_close` | factor (`Factor`), day, value `NUMERIC(24,12)`, source (`yahoo:^NDX`, `ecb:…`), fetched_at | PK (factor, day). Cierres de los 5 factores en directo (T4-01, `prices/factors.py`): Yahoo con los símbolos de `fetch_prices.py` y el BCE para `RATES_EUR` (fracción, puede ser negativa). Solo sesiones cerradas. En modo demo no se usa: los factores salen de `data/factors/*.csv` |
 | `transaction` | id, portfolio_id, type, asset_id, ts, units, price, price_currency, fx_rate, amount_eur, realized_gain_eur, linked_tx_id, dca_plan_id, calc_id | type: `buy`, `sell`, `transfer_out`, `transfer_in`, `dca_buy`, `initial` |
 | `tax_lot` | id, portfolio_id, asset_id, acquired_at, units_initial, units_remaining, cost_eur_per_unit, origin_tx_id | Base de FIFO y traspasos |
 | `dca_plan` / `dca_allocation` | amount_eur, frequency, day, status, last_execution_at, next_execution_at / asset_id, weight | Σ weight = 1 |
