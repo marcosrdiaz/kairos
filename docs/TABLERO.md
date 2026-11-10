@@ -147,8 +147,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 ### T2-17 · Ticker de mercado en Inicio — Jaime
-**Qué estaba haciendo:** dos PR abiertos. #84 (solo contrato: `TickerOut`, ruta `GET /portfolios/{id}/ticker` que responde `UPSTREAM_UNAVAILABLE`) y #85 (implementación, con base en la rama de #84). Lint y tests en verde en los dos.
-**Siguiente paso exacto:** revisión y merge de #84; después, comprobar que #85 apunta a `main` (si GitHub no lo reapunta solo, `gh pr edit 85 --base main`), revisión y merge. Al entrar, `docs: done T2-17`.
+**Qué estaba haciendo:** el contrato (#84) está en `main`. La implementación (#85) se mergeó en la rama de #84 y no en `main`, así que **`GET /portfolios/{id}/ticker` en `main` aún responde `UPSTREAM_UNAVAILABLE`** y no hay ticker en Inicio. El mismo código va en #86 (`t2-17/market-ticker` → `main`).
+**Siguiente paso exacto:** esperar el CI de #86, aprobación y merge. Después, `docs: done T2-17` y borrar esta nota.
 **Ficheros tocados:** `backend/app/schemas/prices.py`, `backend/app/schemas/examples/TickerOut.json`, `backend/app/api/prices.py`, `backend/app/prices/{ticker,service}.py`, `backend/tests/test_ticker*.py`, `frontend/src/api/generated/`, `frontend/src/api/mocks/TickerOut.json`, `frontend/src/api/hooks/useTicker.ts`, `frontend/src/app/market/ticker/`, `frontend/src/app/InicioPage.tsx`, `docs/SPEC.md`.
 
 ### T3-04 · Umbrales de beta de la agenda — Alons (para quien coja la tarea)
