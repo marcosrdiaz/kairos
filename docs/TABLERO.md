@@ -157,9 +157,9 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Sin hacer (D-071):** Claude a veces suma cifras en «¿Por qué ha bajado?». El guardián lo bloquea y acaba en plantilla; ajustar el prompt requiere medir con la clave.
 
 ### T2-03 · Integración sin mocks y smoke del guion — Jaime
-**Qué estaba haciendo:** dos PR abiertos a la espera de revisión: #76 (contrato de `PUT /demo/clock`) y #78 (mocks, `scripts/demo_smoke.py`, `_ORDER` → `guardian.find_forbidden`, fuera `GUARDIAN_LLM_CHECK`). Son independientes. Smoke en verde por HTTP con SQLite: los 8 pasos.
-**Siguiente paso exacto:** mergear los dos tras la revisión y marcar `docs: done T2-03`. Falta probar el smoke con `make up` (Postgres), en una máquina con Docker: `cd backend && uv run python ../scripts/demo_smoke.py`.
-**Sin hacer:** «¿De dónde sale?» en la UI contra el backend real (nota de T2-11, más abajo). `agent_log` sigue sin rellenarse (limitación aceptada en la decisión del PR #78).
+**Qué estaba haciendo:** #76 y #78 ya en `main` (smoke en verde por HTTP con SQLite, los 8 pasos). «¿De dónde sale?» probado contra el backend real (SQLite local, replay de los 3 eventos, Edge): las cadenas de `parent_calc_ids` y el formato de € y % están bien; salían ~50 claves en inglés y valores sin traducir. Arreglado en **#82** (pendiente de revisión), que también quita `frontend/.playwright-cli/` y lo ignora.
+**Siguiente paso exacto:** mergear #82 tras la revisión y marcar `docs: done T2-03`. Opcional, quien tenga Docker: smoke contra Postgres con `make up` y `cd backend && uv run python ../scripts/demo_smoke.py`.
+**Visto y no tocado (de otros módulos, detalle en #82):** la `formula` de la traza de estado lleva identificadores en inglés (`status/`); en la traza de estado con evento, «Renta variable actual/objetivo» van a `null`; la traza `event_impact` guarda `explanation_status: pending`. `agent_log` sigue sin rellenarse (limitación aceptada en D-082).
 **Para T2-26:** #78 cambia `_check_no_orders` de `analyzer.py`; conviene empezar T2-26 con #78 ya en `main`. **Para T2-06:** al sustituir `get_agenda`, borrar `planning/mock.py`.
 **Ficheros tocados:** los de la fila, más `backend/app/agents/{analyzer,guardian}.py`, `backend/app/config.py`, `.env.example`, `docs/SPEC.md`, `backend/app/schemas/demo.py`, `frontend/src/api/{generated,mocks}/`.
 
@@ -175,12 +175,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Empezar con #78 y T2-09 en `main`.** #78 (T2-03, ya en `main`) toca `agents/analyzer.py` solo en `_check_no_orders`: quita la regex provisional `_ORDER` y `_normalized`, e importa `guardian`; ahora rechaza el borrador si `guardian.find_forbidden(texto)` encuentra algo en `causal_chain`, `label` o `rationale` de los canales (solo patrones prohibidos: no comprueba cifras, porque el borrador no lleva ninguna). **No toca** `_TIMEOUT_S` (sigue en 4,0), `_user_message`, `_attempt` ni `analyze`. T2-26 parte de ahí: dejar `_check_no_orders` tal cual (no volver a una regex propia), y añadir la validación de dirección como función aparte, llamada desde `_attempt` junto a `_check_no_orders`, para que el reintento con feedback cubra las dos.
 **Siguiente paso exacto:** coger la tarea con `/coger T2-26` cuando T2-09 esté en `main` (#78 ya lo está); empezar por el PR de contrato (`prompt_version`, ver *Peticiones de contrato*) y luego el código. Antes del PR de contrato, `git pull` y `make gen-api`: #76 también regeneró `frontend/src/api/generated/`.
 
-### T2-03 · Integración: pendientes de agentes que deja T1-17 — Manu (para quien coja la tarea)
-- `analyzer.py` sigue filtrando las órdenes con su regex provisional `_ORDER`. Hay que sustituirla por `guardian.check` (regla 3 de producto).
-- La tabla `agent_log` (`SPEC.md` §6, modelo `AgentLog`) existe pero no se rellena: ni el explicador ni el redactor guardan sus turnos. Hoy solo van al log de la aplicación (uso de tokens, frases bloqueadas, plantilla).
-- `GUARDIAN_LLM_CHECK` (`settings.guardian_llm_check`) se carga en `config.py`, pero nada lo usa: el chequeo con modelo tras un `ok` del guardián no está hecho. O se implementa o se quita.
-- Detalle en la decisión D-066 (explicador de T1-17).
-
 ### T3-06 · README: limitación conocida «sin login» — Manu (para quien coja la tarea)
 - Añade al README un apartado de **limitaciones conocidas** que diga que no hay login ni usuarios: cualquiera que abra la app puede ver y modificar cualquier cartera (Laura, Javier o las que se den de alta), también registrar operaciones y planes DCA. Es una decisión del MVP (D-013, fuera del alcance en `docs/kairos-spec.md` e `INGENIERIA.md` §1): las carteras son ilustrativas, la app corre en local y no mueve dinero real.
 - Trabajo futuro: cuentas de usuario con autenticación, y que cada ruta del backend compruebe que la cartera es de quien la pide.
@@ -188,9 +182,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
 
-### T2-03 · Trazas de la UI sin probar contra el backend real (T2-11) — Jaime (para quien coja la tarea)
-**Qué falta:** T2-11 solo se ha probado con tests y en Edge con mocks. Con `make up && make seed` y tras un replay, abre «¿De dónde sale?» en el panel y comprueba las cadenas de `parent_calc_ids`, que no salga ninguna clave en inglés (se les da nombre en `frontend/src/components/trace/labels.ts`) y que los porcentajes y euros salgan bien (`traceFields.ts`).
-**Limpieza menor:** `frontend/.playwright-cli/` tiene capturas subidas a `main` por error; conviene quitarlas y añadir la carpeta a `.gitignore`.
 
 ### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
 **T2-06:** el formato de `data/events/agenda.json` está en D-080. `company` es la clave del look-through (`NVDA`).
