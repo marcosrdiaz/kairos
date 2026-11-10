@@ -3,8 +3,10 @@
 Reglas (las de `value_change.py`, D-057, aplicadas a una serie de días):
 
 - Días: hábiles (lunes a viernes) desde el mismo día de hace 1, 3, 6 o 12 meses hasta el último
-  día hábil no posterior a hoy. Con `max`, uno por semana hacia atrás desde ese último día. Nunca
-  antes de la primera operación de la cartera.
+  día con algún cierre de mercado no posterior a hoy. Con `max`, uno por semana hacia atrás desde
+  ese último día. Nunca antes de la primera operación de la cartera. Solo se dibujan los días con
+  algún cierre de mercado (festivos y días aún sin cierre fuera); los activos de valor fijo no
+  cuentan, porque tienen un punto por día natural.
 - Participaciones del día `d` = operaciones con `ts` hasta el final de `d` (23:59:59 UTC).
 - Valor de un activo en `d` = participaciones × último cierre no posterior a `d` (como mucho 10
   días antes) × fx de `d`, a céntimos. Si falta el precio de algún activo, el día se omite.
@@ -118,12 +120,24 @@ class _Prices:
         self._currency: dict[str, str] = {}
         self._fx: dict[tuple[str, date], Decimal | None] = {}
         self.sources: dict[tuple[str, str], SourceRef] = {}
+        self._market_days: set[date] = set()
         for asset_id in sorted(asset_ids):
             rows = prices.history(asset_id, start - MAX_PRICE_AGE, end)
             self._closes[asset_id] = [(r.price_at.date(), r.price) for r in rows]
             if rows:
                 self._currency[asset_id] = rows[-1].currency
                 self.sources.setdefault((rows[-1].source.kind, asset_id), rows[-1].source)
+            if prices.has_market_prices(asset_id):
+                self._market_days.update(r.price_at.date() for r in rows)
+
+    def last_market_day(self, today: date) -> date:
+        """Último día con algún cierre de mercado; `today` si solo hay activos de valor fijo."""
+        known = [d for d in self._market_days if d <= today]
+        return max(known) if known else today
+
+    def is_market_day(self, day: date) -> bool:
+        """Días con algún cierre de mercado: los demás no se dibujan (nada de rellenar)."""
+        return not self._market_days or day in self._market_days
 
     def unit_eur(self, asset_id: str, day: date) -> Decimal | None:
         close = last_close(self._closes.get(asset_id, []), day)
@@ -170,10 +184,10 @@ def get_history(portfolio_id: str, period: HistoryPeriod) -> PortfolioHistoryOut
     txs = _load_transactions(portfolio_id, end_of(today))
     if not txs:
         raise _no_prices(portfolio_id, period)
-    days = sample_days(today, period, min(tx.ts for tx in txs).date())
-    if not days:
-        raise _no_prices(portfolio_id, period)
-    quotes = _Prices({tx.asset_id for tx in txs}, days[0], days[-1])
+    first_day = min(tx.ts for tx in txs).date()
+    quotes = _Prices({tx.asset_id for tx in txs}, first_day, today)
+    sampled = sample_days(quotes.last_market_day(today), period, first_day)
+    days = [d for d in sampled if quotes.is_market_day(d)]
     points: list[PortfolioHistoryPoint] = []
     for day in days:
         units = value_change.units_at(txs, end_of(day))

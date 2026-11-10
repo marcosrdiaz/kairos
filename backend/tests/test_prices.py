@@ -111,6 +111,12 @@ def test_history_fixed_price_has_one_point_per_day() -> None:
     assert [p.price for p in out] == [Decimal("1")] * 3
 
 
+def test_has_market_prices_is_false_only_for_fixed_value_assets() -> None:
+    assert service.has_market_prices(IWDA)
+    assert not service.has_market_prices(DEPOSIT)
+    assert not service.has_market_prices(PENSION)
+
+
 def test_history_empty_range() -> None:
     assert service.history(IWDA, date(2026, 11, 7), date(2026, 11, 8)) == []
 

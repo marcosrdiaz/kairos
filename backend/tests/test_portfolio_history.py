@@ -105,13 +105,20 @@ def test_day_value_is_none_without_holdings() -> None:
 def test_series_skips_days_without_price_and_ends_at_the_current_value(seeded: None) -> None:
     out = history.get_history("laura", HistoryPeriod.ONE_MONTH)
     days = [p.date.date() for p in out.points]
-    assert days[0] == date(2026, 10, 30)  # antes no hay cierres en el proveedor falso
-    assert days[-1] == date(2026, 11, 6)
+    # El proveedor falso solo tiene cierres esos dos días: el resto no son puntos de la serie.
+    assert days == [date(2026, 10, 30), date(2026, 11, 6)]
     valued = service.get_valued("laura")
     assert out.end_value_eur == out.points[-1].value_eur == valued.total_eur
     assert out.start_value_eur == valued.total_eur - valued.change_week_eur
     assert out.net_flows_eur == D("0.00")
     assert all(p.date.tzinfo == UTC for p in out.points)
+
+
+def test_days_after_the_last_close_are_not_drawn(seeded: None) -> None:
+    clock.set_now(datetime(2026, 11, 10, 18, tzinfo=UTC))  # martes; último cierre, el viernes 6
+    out = history.get_history("laura", HistoryPeriod.ONE_MONTH)
+    assert out.points[-1].date.date() == date(2026, 11, 6)
+    assert out.end_value_eur == service.get_valued("laura").total_eur
 
 
 def test_a_buy_inside_the_period_is_a_flow(seeded: None) -> None:
