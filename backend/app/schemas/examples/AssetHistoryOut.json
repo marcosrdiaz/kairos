@@ -1,0 +1,36 @@
+{
+  "illustrative": true,
+  "portfolio_id": "laura",
+  "asset_id": "US67066G1040",
+  "name": "NVIDIA Corp.",
+  "currency": "USD",
+  "period": "1m",
+  "points": [
+    {"date": "2026-10-07T00:00:00Z", "value_eur": "1180.40", "change_eur": null, "change_pct": null, "flows_eur": "0.00", "price": "185.20000000", "units": "7.40000000"},
+    {"date": "2026-10-14T00:00:00Z", "value_eur": "1212.65", "change_eur": "32.25", "change_pct": "0.0273", "flows_eur": "0.00", "price": "190.10000000", "units": "7.40000000"},
+    {"date": "2026-10-21T00:00:00Z", "value_eur": "1251.30", "change_eur": "38.65", "change_pct": "0.0319", "flows_eur": "0.00", "price": "196.30000000", "units": "7.40000000"},
+    {"date": "2026-10-28T00:00:00Z", "value_eur": "1290.18", "change_eur": "38.88", "change_pct": "0.0311", "flows_eur": "0.00", "price": "202.40000000", "units": "7.40000000"},
+    {"date": "2026-11-04T00:00:00Z", "value_eur": "1236.02", "change_eur": "-54.16", "change_pct": "-0.0420", "flows_eur": "0.00", "price": "193.90000000", "units": "7.40000000"},
+    {"date": "2026-11-06T00:00:00Z", "value_eur": "1258.67", "change_eur": "22.65", "change_pct": "0.0183", "flows_eur": "0.00", "price": "197.45000000", "units": "7.40000000"}
+  ],
+  "start_value_eur": "1180.40",
+  "end_value_eur": "1258.67",
+  "net_flows_eur": "0.00",
+  "calc_id": "calc_8c1e0b5a2f6d4c3e9b7a1d0f2e4c6a81",
+  "sources": [
+    {
+      "kind": "price",
+      "label": "Cierres de NVIDIA Corp.",
+      "ref": "US67066G1040",
+      "as_of": "2026-11-06T00:00:00Z",
+      "url": null
+    },
+    {
+      "kind": "fx",
+      "label": "Tipo de cambio USD/EUR",
+      "ref": "USDEUR",
+      "as_of": "2026-11-06T00:00:00Z",
+      "url": null
+    }
+  ]
+}

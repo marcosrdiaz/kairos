@@ -30,7 +30,12 @@ class SurpriseLabel(StrEnum):
 
 
 class AssetImpact(ContractModel):
-    """`channel` es el `label` del canal con mayor contribución: "tipos", "resultados NVDA"..."""
+    """`channel` es el `label` del canal con mayor contribución: "tipos", "resultados NVDA"...
+
+    - `low_eur` / `high_eur`: rango del impacto en esta posición (T2-23), con la misma
+      incertidumbre que el rango del evento (error de las betas y betas no significativas), solo
+      la de este activo. `null` en los impactos guardados antes de existir el campo.
+    """
 
     asset_id: str
     name: str
@@ -39,6 +44,8 @@ class AssetImpact(ContractModel):
     market_eur: Money
     fx_eur: Money
     channel: str
+    low_eur: Money | None = None
+    high_eur: Money | None = None
 
 
 class Surprise(ContractModel):

@@ -235,6 +235,9 @@ class AssetImpactStub(ContractModel):
     market_eur: Money
     fx_eur: Money
     channel: str
+    low_eur: Money | None = None
+    """Rango por posición, como en `schemas.impact.AssetImpact` (T2-23)."""
+    high_eur: Money | None = None
 
 
 class EventImpactStub(ContractModel):

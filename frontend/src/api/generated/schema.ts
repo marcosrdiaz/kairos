@@ -432,6 +432,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolios/{portfolio_id}/positions/{asset_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Asset History
+         * @description Valor de una posición con precios de cierre, sin ajustes de demo. 404 si no existe la
+         *     cartera o nunca tuvo el activo; 503 (`PRICE_UNAVAILABLE`) si no hay ningún precio en el
+         *     periodo.
+         */
+        get: operations["get_asset_history_api_v1_portfolios__portfolio_id__positions__asset_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolios/{portfolio_id}/projection": {
         parameters: {
             query?: never;
@@ -723,8 +745,97 @@ export interface components {
          */
         AssetClass: "equity" | "fixed_income" | "cash" | "mixed";
         /**
+         * AssetHistoryOut
+         * @description `GET /portfolios/{id}/positions/{asset_id}/history?period=` (T2-23).
+         *
+         *     Evolución de una posición con las mismas reglas que `PortfolioHistoryOut`: precios de cierre
+         *     reales (`prices.history`), participaciones según el libro de operaciones, sin ajustes de demo
+         *     y sin rellenar días sin precio. Los flujos son solo los de este activo.
+         *
+         *     - `currency`: divisa de `price`; `value_eur` y los importes, siempre en euros.
+         *     - `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.
+         *     - 404 si la cartera no existe o nunca tuvo el activo; 503 (`PRICE_UNAVAILABLE`) si no hay
+         *       ningún precio en el periodo.
+         */
+        AssetHistoryOut: {
+            /** Asset Id */
+            asset_id: string;
+            /** Calc Id */
+            calc_id: string;
+            /** Currency */
+            currency: string;
+            /**
+             * End Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            end_value_eur: string;
+            /** Name */
+            name: string;
+            /**
+             * Net Flows Eur
+             * @description Importe en euros con 2 decimales
+             */
+            net_flows_eur: string;
+            period: components["schemas"]["HistoryPeriod"];
+            /** Points */
+            points: components["schemas"]["AssetHistoryPoint"][];
+            /** Portfolio Id */
+            portfolio_id: string;
+            /** Sources */
+            sources: components["schemas"]["SourceRef"][];
+            /**
+             * Start Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            start_value_eur: string;
+        };
+        /**
+         * AssetHistoryPoint
+         * @description Un cierre de la serie de una posición (T2-23). Como `PortfolioHistoryPoint`, más:
+         *
+         *     - `price`: cierre del activo ese día (VL en los fondos) en su divisa (`currency` de la serie),
+         *       el último no posterior a la fecha.
+         *     - `units`: participaciones que había al final del día. Con 0 (posición ya vendida), `value_eur`
+         *       es 0 y el precio sigue saliendo.
+         */
+        AssetHistoryPoint: {
+            /** Change Eur */
+            change_eur?: string | null;
+            /** Change Pct */
+            change_pct?: string | null;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /**
+             * Flows Eur
+             * @description Importe en euros con 2 decimales
+             */
+            flows_eur: string;
+            /**
+             * Price
+             * @description Precio con 8 decimales
+             */
+            price: string;
+            /**
+             * Units
+             * @description Participaciones con 8 decimales
+             */
+            units: string;
+            /**
+             * Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            value_eur: string;
+        };
+        /**
          * AssetImpact
          * @description `channel` es el `label` del canal con mayor contribución: "tipos", "resultados NVDA"...
+         *
+         *     - `low_eur` / `high_eur`: rango del impacto en esta posición (T2-23), con la misma
+         *       incertidumbre que el rango del evento (error de las betas y betas no significativas), solo
+         *       la de este activo. `null` en los impactos guardados antes de existir el campo.
          */
         AssetImpact: {
             /** Asset Id */
@@ -736,11 +847,15 @@ export interface components {
              * @description Importe en euros con 2 decimales
              */
             fx_eur: string;
+            /** High Eur */
+            high_eur?: string | null;
             /**
              * Impact Eur
              * @description Importe en euros con 2 decimales
              */
             impact_eur: string;
+            /** Low Eur */
+            low_eur?: string | null;
             /**
              * Market Eur
              * @description Importe en euros con 2 decimales
@@ -2176,6 +2291,8 @@ export type AllocationOut = components['schemas']['AllocationOut'];
 export type AskChannel = components['schemas']['AskChannel'];
 export type AskRequest = components['schemas']['AskRequest'];
 export type AssetClass = components['schemas']['AssetClass'];
+export type AssetHistoryOut = components['schemas']['AssetHistoryOut'];
+export type AssetHistoryPoint = components['schemas']['AssetHistoryPoint'];
 export type AssetImpact = components['schemas']['AssetImpact'];
 export type AssetOut = components['schemas']['AssetOut'];
 export type AssetType = components['schemas']['AssetType'];
@@ -3312,6 +3429,58 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    get_asset_history_api_v1_portfolios__portfolio_id__positions__asset_id__history_get: {
+        parameters: {
+            query?: {
+                period?: components["schemas"]["HistoryPeriod"];
+            };
+            header?: never;
+            path: {
+                asset_id: string;
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetHistoryOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
