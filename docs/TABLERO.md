@@ -98,7 +98,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-03 | Integración: quitar mocks del backend módulo a módulo; `/demo/clock`; smoke del guion por API | Smoke en verde (`scripts/demo_smoke.py`) | Todas las de la fase 1 | `backend/app/*/mock.py` (borrar), `backend/app/api/demo.py`, `scripts/demo_smoke.py` | Jaime | 🧪 en PR |
 | T2-04 | `status` precalculado + `recompute` + frase vía `agents.write_status_sentence` | RF-13; `/status` < 200 ms | T1-13, T1-17 | `backend/app/status/`, `backend/app/api/status.py` | Jaime | ✅ hecho |
 | T2-05 | Radar (6 reglas, plantillas, invariante de oportunidad) | RF-18 | T1-11, T1-06 | `backend/app/exposure/{radar,templates}.py`, `backend/app/api/radar.py`, `backend/tests/test_radar*.py`, `backend/app/api/exposure.py`, `backend/app/exposure/{service,mock}.py` (solo la parte del radar) | Marcos | ✅ hecho |
-| T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/agenda.py`, `backend/app/api/agenda.py`, `backend/tests/test_agenda.py` | Alons | 🔄 en curso |
+| T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/{agenda,service,mock}.py`, `backend/app/impact/service.py` (solo `get_factor_betas`), `backend/tests/{test_agenda,test_analysis_mocks}.py`, `scripts/demo_smoke.py` (paso 5) | Alons | 🧪 en PR |
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | Alons | ✅ hecho |
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | ✅ hecho |
 | T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
@@ -145,6 +145,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T2-06 · Agenda real — Alons
+**Qué estaba haciendo:** agenda real en el PR #83 (rama `t2-06/agenda`): eventos de `agenda.json` con la fecha relativa al reloj, exposición por factor con umbral propio de cada factor y beta significativa, look-through en NVIDIA, citas de los DCA activos y traza `agenda`. Borra `planning/mock.py` y endurece el paso 5 del smoke. Lint, test y smoke (8/8) en verde.
+**Siguiente paso exacto:** revisión y merge del #83; después, `docs: done T2-06`. La decisión nueva («Exposición de la agenda: umbral de beta por factor y beta significativa (T2-06)») cambia la fórmula de `exposed_eur` de §4.3 sin tocar el contrato: validarla en la llamada diaria.
+**Ficheros tocados:** `backend/app/planning/{agenda,service}.py`, `backend/app/planning/mock.py` (borrado), `backend/app/impact/service.py` (`get_factor_betas`), `backend/tests/{test_agenda,test_analysis_mocks}.py`, `scripts/demo_smoke.py`, `docs/decisiones/D-XXX-umbral-exposicion-agenda.md`.
+**Para T3-04:** los umbrales de beta de la agenda (`BETA_THRESHOLDS`) salen de la σ diaria de `data/factors`; si cambian esos datos, hay que recalcularlos.
 
 ### T3-04 · Umbrales de avisos y de estado: cambiarlos a la vez — Marcos (para quien coja la tarea)
 **Qué hay que saber:** `alerts/config.py` (`MIN_EUR`, `MIN_SHARE`) y `status/config.py` (`ATENTO_MIN_EUR`, `ATENTO_MIN_SHARE`) tienen que valer lo mismo: el paso 3 del guion necesita el widget en «Atento» y el aviso a la vez. Dos tests lo comprueban (`backend/tests/test_alerts_engine.py`); si cambias uno y no el otro, fallan.
