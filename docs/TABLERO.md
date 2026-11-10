@@ -101,7 +101,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T2-06 | Agenda (`agenda.json` + DCA + exposición por factor) | Bloque del panel con datos | T1-12, T2-15 | `backend/app/planning/{agenda,service,mock}.py`, `backend/app/impact/service.py` (solo `get_factor_betas`), `backend/tests/{test_agenda,test_analysis_mocks}.py`, `scripts/demo_smoke.py` (paso 5) | Alons | ✅ hecho |
 | T2-07 | `explain_move` | "¿Por qué ha bajado?" con dato real | T1-07, T1-13 | `backend/app/impact/move.py`, `backend/app/api/move.py`, `backend/tests/test_move.py` | Alons | ✅ hecho |
 | T2-08 | Avisos: score, umbral, límite semanal, mensaje validado | RF-23 (`kind=event_impact` es MVP porque lo usa el paso 3) | T1-13 | `backend/app/alerts/`, `backend/app/api/alerts.py` | Marcos | ✅ hecho |
-| T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | 🧪 en PR |
+| T2-09 | Explicaciones de evento por cartera + invalidación del contexto precargado | `explanation_status: ok` en los 3 eventos × 2 carteras | T1-15, T1-13 | `backend/app/events/pipeline.py`, `backend/app/agents/context.py` | Jaime | ✅ hecho |
 | T2-10 | Panel: resumen, eventos (cadena, €, rango, confianza, filtro), exposición, radar, agenda | RF-17 | T0-04, T0-07 | `frontend/src/panel/`, `frontend/src/api/hooks/{useEvents,useLivePortfolio,useExposure,useRadar,useAgenda}.ts` (nuevos) | Marcos | ✅ hecho |
 | T2-11 | "¿De dónde sale?" → traza desde cualquier cifra | RF-19 | T2-01 | `frontend/src/components/trace/` | Jaime | ✅ hecho |
 | T2-12 | Avisos de IA y "no es asesoramiento"; accesibilidad | RF-20, RNF-11 | T0-07 | `frontend/src/components/notices/`, `frontend/src/index.css` | Javi | ✅ hecho |
@@ -228,12 +228,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Dónde está:** `frontend/src/app/market/chart/` (Recharts, D-085) y `GET /portfolios/{id}/history` (`schemas/history.py`, cálculo en `backend/app/portfolio/history.py`). Cada punto trae `change_eur`, `change_pct` y `flows_eur`. Los marcadores de noticias están en `markers/` (`placeMarkers` los coloca en la fecha real; `MarkedChart` envuelve la gráfica).
 **Rendimiento:** el punto activo y el marcador activo van en almacenes fuera de React (`activePoint.ts`, `markers/markerStore.ts`): no metas estado del ratón en `ChartBody` o la gráfica vuelve a ir a saltos.
 **Colores:** las pérdidas usan granate (`trend-loss`, `trend-loss-bg`), una excepción a «sin rojo en el mercado» solo en esta gráfica (D-085, `DESIGN.md`).
-
-### T2-09 · Explicaciones de evento e invalidación del contexto — Jaime
-**Qué estaba haciendo:** #58 y #59 ya en `main`: el pipeline y `/demo/reset` invalidan el contexto del explicador, y el contexto se conserva si al pasar el TTL los datos son los mismos (pendiente de D-071).
-**Siguiente paso exacto:** con `ANTHROPIC_API_KEY` en `.env`, desde `backend/`, `pytest -m live tests/test_event_explanations_live.py -s` (criterio con Claude real, aún sin ejecutar). Si pasa, `docs: done T2-09`.
-**Ficheros tocados:** `backend/app/events/{pipeline,service}.py`, `backend/app/agents/context.py`, `backend/tests/test_event_explanations{,_live}.py`, `backend/tests/test_explainer_context.py`.
-**Sin hacer (D-071):** Claude a veces suma cifras en «¿Por qué ha bajado?». El guardián lo bloquea y acaba en plantilla; ajustar el prompt requiere medir con la clave.
 
 ### T2-26 · Analizador: cifras con todos los factores, dirección validada y caché — Marcos (para quien coja la tarea)
 **Por qué:** con Claude real, la dirección de `channels` contradice `observed` (BCE: tipos y euro; NVIDIA: bolsa global) y, como `pipeline.py` usa `channels` para elegir qué factores entran en el `ShockSet`, el modelo puede cambiar una cifra. Detalle y mediciones en *Bloqueos* (analizador). Cambia el criterio de «el LLM elige canales» (decisión 11 del diseño, §8, y D-025): ver la decisión «Las cifras usan todos los factores observados; el analizador solo redacta».
