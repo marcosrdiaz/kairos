@@ -4,12 +4,12 @@ from fastapi.testclient import TestClient
 
 
 def test_route_answers_with_the_contract(client: TestClient) -> None:
-    response = client.get("/api/v1/portfolios/laura/history", params={"period": "3m"})
+    response = client.get("/api/v1/portfolios/laura/history", params={"period": "1w"})
 
     assert response.status_code == 200
     body = response.json()
     assert body["portfolio_id"] == "laura"
-    assert body["period"] == "3m"
+    assert body["period"] == "1w"
     assert body["points"] and body["calc_id"].startswith("calc_")
 
 

@@ -1069,7 +1069,7 @@ export interface components {
          * HistoryPeriod
          * @enum {string}
          */
-        HistoryPeriod: "1m" | "3m" | "6m" | "1y" | "max";
+        HistoryPeriod: "1w" | "1m" | "6m" | "1y" | "max";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */

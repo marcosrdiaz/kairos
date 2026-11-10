@@ -11,8 +11,8 @@ from app.schemas.portfolio import CalcId
 
 
 class HistoryPeriod(StrEnum):
+    ONE_WEEK = "1w"
     ONE_MONTH = "1m"
-    THREE_MONTHS = "3m"
     SIX_MONTHS = "6m"
     ONE_YEAR = "1y"
     MAX = "max"
