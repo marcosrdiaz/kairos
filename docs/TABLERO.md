@@ -130,7 +130,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | ✅ hecho |
 | T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | — | ⬜ |
 | T3-05 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
-| T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | 🔄 en curso |
+| T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | 🧪 en PR |
 | T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | — | ⬜ |
 | T3-08 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T3-05, T3-07 | `docs/entrega/` | — | ⬜ |
 | T3-09 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
@@ -177,9 +177,10 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Empezar con #78 y T2-09 en `main`.** #78 (T2-03, ya en `main`) toca `agents/analyzer.py` solo en `_check_no_orders`: quita la regex provisional `_ORDER` y `_normalized`, e importa `guardian`; ahora rechaza el borrador si `guardian.find_forbidden(texto)` encuentra algo en `causal_chain`, `label` o `rationale` de los canales (solo patrones prohibidos: no comprueba cifras, porque el borrador no lleva ninguna). **No toca** `_TIMEOUT_S` (sigue en 4,0), `_user_message`, `_attempt` ni `analyze`. T2-26 parte de ahí: dejar `_check_no_orders` tal cual (no volver a una regex propia), y añadir la validación de dirección como función aparte, llamada desde `_attempt` junto a `_check_no_orders`, para que el reintento con feedback cubra las dos.
 **Siguiente paso exacto:** coger la tarea con `/coger T2-26` cuando T2-09 esté en `main` (#78 ya lo está); empezar por el PR de contrato (`prompt_version`, ver *Peticiones de contrato*) y luego el código. Antes del PR de contrato, `git pull` y `make gen-api`: #76 también regeneró `frontend/src/api/generated/`.
 
-### T3-06 · README: limitación conocida «sin login» — Manu (para quien coja la tarea)
-- Añade al README un apartado de **limitaciones conocidas** que diga que no hay login ni usuarios: cualquiera que abra la app puede ver y modificar cualquier cartera (Laura, Javier o las que se den de alta), también registrar operaciones y planes DCA. Es una decisión del MVP (D-013, fuera del alcance en `docs/kairos-spec.md` e `INGENIERIA.md` §1): las carteras son ilustrativas, la app corre en local y no mueve dinero real.
-- Trabajo futuro: cuentas de usuario con autenticación, y que cada ruta del backend compruebe que la cartera es de quien la pide.
+### T3-06 · README — Alons
+**Estado:** README en #94 (https://github.com/marcosrdiaz/kairos/pull/94). Incluye la limitación «sin login» que pidió Manu (D-013). Comprobado en local: `docker compose up --build`, app/panel/widget en 200, los comandos de reset y replay, y el smoke del guion dentro del contenedor (8/8 OK).
+**Siguiente paso:** revisión y merge de #94 contra `main` (no contra otra rama). Después, `docs: done T3-06`. El criterio «otra persona lo ejecuta sin ayuda» se prueba de verdad en T3-05 (máquina limpia con el ZIP). Si ahí falla algo, se arregla el README.
+**Ficheros tocados:** `README.md`.
 
 ### T3-07 · Cifras reales del paso 2 para el PDF y la presentación — Marcos (para quien coja la tarea)
 **Usad estas cifras, no el ≈ 61 % ni el ≈ 19 % de la fila 2 de §5.** Look-through de Laura con las posiciones de `laura.json` y los precios de cierre del 6-nov-2026: **63,7 %** en EE. UU., **25,9 %** en las 7 mayores empresas, **76,0 %** en renta variable. Siguen marcadas como ejemplo ilustrativo. Si cambian los datos o los precios, se recalculan con el motor real (T1-11) antes de la entrega. Origen y contexto: decisión «Composición de fondos y ETF (T1-08): formato del CSV, residuos por país, divisa de los fondos cubiertos y claves de empresa».
