@@ -3,7 +3,8 @@
 1. Búsqueda de Yahoo por ISIN, ticker o nombre; solo acciones, ETF y fondos.
 2. De los primeros resultados, el primero con precios y en una divisa que sabemos convertir
    (EUR o USD: el único tipo de cambio en directo es EUR/USD). Una cotización en peniques
-   (`GBp`) u otra divisa se salta: valorarla daría una cifra errónea.
+   (`GBp`) u otra divisa se salta: valorarla daría una cifra errónea. Si la consulta es un ISIN
+   (el mismo producto en varias bolsas), se prefiere la cotización en euros.
 3. Clase de activo: acciones, renta variable; ETF y fondos, renta fija si el nombre lo dice
    («bond», «treasury», «aggregate»…), si no, renta variable. Es una aproximación a partir del
    nombre (no hay otra fuente sin clave) y queda documentada en la decisión de T4-07.
@@ -91,8 +92,10 @@ def discover(query: str, source: SearchSource) -> DiscoveredAsset | None:
     Lanza `ProviderError` si la búsqueda falla o si ningún candidato ha podido comprobarse
     porque el proveedor no respondía.
     """
+    isin = normalize_isin(query)
     quotes = [q for q in source.search(query.strip()) if q.quote_type in SUPPORTED_TYPES]
     errors: list[str] = []
+    fallback: DiscoveredAsset | None = None
     for quote in quotes[:MAX_CANDIDATES]:
         try:
             chart = source.chart(quote.symbol, "5d")
@@ -102,15 +105,23 @@ def discover(query: str, source: SearchSource) -> DiscoveredAsset | None:
         if not _usable(chart):
             continue
         asset_type = SUPPORTED_TYPES[quote.quote_type]
-        return DiscoveredAsset(
+        found = DiscoveredAsset(
             symbol=quote.symbol,
             name=quote.name,
             currency=str(chart.currency),
             asset_type=asset_type,
             asset_class=asset_class_for(asset_type, quote.name),
             price_kind=PriceKind.NAV_DAILY if asset_type is AssetType.FUND else PriceKind.INTRADAY,
-            isin=normalize_isin(query),
+            isin=isin,
         )
+        # Con un ISIN todos los resultados son el mismo producto en distintas bolsas: se prefiere
+        # el que cotiza en euros (sin riesgo de cambio en la valoración). Con un nombre o un
+        # ticker pueden ser productos distintos: vale el primero.
+        if isin is None or found.currency == "EUR":
+            return found
+        fallback = fallback or found
+    if fallback is not None:
+        return fallback
     if errors and len(errors) == len(quotes[:MAX_CANDIDATES]):
         raise ProviderError("; ".join(errors))
     return None

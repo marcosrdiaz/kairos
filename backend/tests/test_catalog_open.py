@@ -218,6 +218,45 @@ def test_quotes_in_pence_are_skipped() -> None:
     assert found.symbol == "VWRL.AS"  # VWRL.L cotiza en peniques: se salta
 
 
+def test_an_isin_prefers_the_euro_listing() -> None:
+    yahoo = FakeYahoo()
+    yahoo.quotes["IE00B3XXRP09"] = [
+        Quote("VUSD.L", "Vanguard S&P 500 UCITS ETF", "ETF"),
+        Quote("VUSA.AS", "Vanguard S&P 500 UCITS ETF", "ETF"),
+    ]
+    yahoo.currency.update({"VUSD.L": "USD", "VUSA.AS": "EUR"})
+
+    found = discover("IE00B3XXRP09", yahoo)
+
+    assert found is not None
+    assert (found.symbol, found.currency) == ("VUSA.AS", "EUR")
+
+
+def test_an_isin_without_euro_listing_takes_the_dollar_one() -> None:
+    yahoo = FakeYahoo()
+    yahoo.quotes["US0231351067"] = [Quote("AMZN", "Amazon.com, Inc.", "EQUITY")]
+    yahoo.currency["AMZN"] = "USD"
+
+    found = discover("US0231351067", yahoo)
+
+    assert found is not None
+    assert (found.symbol, found.currency) == ("AMZN", "USD")
+
+
+def test_a_name_keeps_the_first_usable_result() -> None:
+    yahoo = FakeYahoo()
+    yahoo.quotes["APPLE"] = [
+        Quote("AAPL", "Apple Inc.", "EQUITY"),
+        Quote("APC.DE", "Apple Inc.", "EQUITY"),
+    ]
+    yahoo.currency.update({"AAPL": "USD", "APC.DE": "EUR"})
+
+    found = discover("Apple", yahoo)
+
+    assert found is not None
+    assert found.symbol == "AAPL"
+
+
 def test_bond_etfs_are_fixed_income() -> None:
     found = discover("BONDS", FakeYahoo())
 
