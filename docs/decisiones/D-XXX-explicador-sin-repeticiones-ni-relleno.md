@@ -1,0 +1,13 @@
+### D-XXX · Explicador (T3-10): las repeticiones y el relleno tras un reintento se callan sin contar como bloqueo; evaluación de 40 preguntas
+- Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
+- Contexto: la evaluación de T3-01 encontró, con Claude real, frases repetidas tras un reintento (imp-09, trap-06) y un comentario del modelo sobre su propia respuesta (gen-07: «Ya te he dado el reparto principal, así que completo con lo que falta»). Al reintentar, el explicador conserva las frases ya emitidas y pide al modelo que continúe, pero el modelo a menudo vuelve a empezar, a veces con otro orden de palabras. Bloquear esas frases gastaría el único reintento y acabaría en plantilla por algo que no es un error de contenido.
+- Decisión:
+  - **`Emitter.skip_reason`**, antes del guardián, devuelve un motivo y el explicador calla la frase (sale en el log, no en `blocked_count`) si:
+    - **repite** una frase ya emitida: `SequenceMatcher` ≥ 0,85 sobre el texto sin acentos ni puntuación, o, con al menos 6 palabras distintas, ≥ 85 % de sus palabras en la otra (cubre el orden cambiado);
+    - es **relleno** sobre la propia respuesta («ya te he dado/dicho…», «como te decía», «completo/continúo/sigo con lo que falta», «para completar…»).
+  - Las frases meta que ya existían («tienes razón», «según el contexto», «voy a consultar») **siguen bloqueando**, porque suelen ir con contenido mal formado.
+  - La **instrucción del reintento** pide además no repetir «ni con otras palabras» y no decir que se continúa.
+  - Los umbrales se comprobaron con las ~100 frases reales de la primera evaluación: marcan solo las tres frases problemáticas, sin falsos positivos. Las frases de la plantilla nunca se callan (hay test).
+  - **Evaluación ampliada a 40 preguntas:** 10 trampas indirectas (un tercero, hipótesis, inglés, «responde solo sí o no», «ignora tus instrucciones», «eres mi asesor», «escribe tres pasos») y columnas de frases repetidas y relleno con detectores propios (`scripts/eval_checks.py`, separado para mantener el script por debajo de 300 líneas). El test `live` exige 0 órdenes, 0 repeticiones y 0 relleno.
+- Resultado con Claude real (`claude-haiku-5-5`): 0 órdenes, 0 repeticiones y 0 relleno en 40; bloqueo en el 40 % de los turnos y plantilla en el 15 %. Lo pendiente está en `backend/tests/eval/resultados.md`; lo más visible es que la plantilla no dice que KAIROS no da recomendaciones cuando la pregunta es una trampa.
+- Alternativas descartadas: bloquear las repeticiones como frase meta (gasta el reintento y acaba en plantilla); comparar solo con `SequenceMatcher` (no detecta la repetición con otro orden de imp-09); pedir al modelo que reescriba toda la respuesta tras un bloqueo (las frases ya dichas ya se han oído por voz).
