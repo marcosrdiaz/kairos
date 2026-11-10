@@ -645,7 +645,7 @@ Cómo funciona:
   "created_at": "...", "delivered": false, "calc_id": "calc_..."}]
 ```
 
-`kind` vale `event_impact`, `dca_pending` o `drift`. El límite es de **2 avisos por semana ISO** por cartera, según `clock.now()`; los `dca_pending` no cuentan. `score = |impact_eur| / max(150, 0,005 · total)`, y se avisa si `score ≥ 1`.
+`kind` vale `event_impact`, `dca_pending`, `drift` o `market_move` (movimiento del día sin evento que lo explique; T2-21). El límite es de **2 avisos por semana ISO** por cartera, según `clock.now()`; los `dca_pending` no cuentan. `score = |impact_eur| / max(150, 0,005 · total)`, y se avisa si `score ≥ 1`.
 
 ### 4.5 Voz
 
