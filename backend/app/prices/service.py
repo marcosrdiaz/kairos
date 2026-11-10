@@ -7,6 +7,8 @@
   con traza (ticker de Inicio, T2-17).
 - `fx_rate(pair, at)`: tipo `EURUSD` (dólares por euro), el inverso `USDEUR` o `1` si la divisa es
   la misma. `fx_quote` devuelve además el instante y la fuente para la traza.
+- `factor_closes(factor)` y `factor_latest(factor)`: cierres de los 5 factores (T4-01), de los CSV
+  de `data/factors` en modo demo o en directo (`prices/factors.py`, tabla `factor_close`).
 
 El proveedor sale de `MARKET_DATA_PROVIDER` (D-065): `offline` (CSV de `data/prices`, modo demo)
 o `yahoo` (`prices/live.py`: en directo, con caché en BD).
@@ -25,11 +27,18 @@ from app.config import get_settings
 from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.prices.catalog import AssetPriceSpec, load_catalog
+from app.prices.factors import (
+    FactorCloseOut,
+    FactorSource,
+    LiveFactors,
+    OfflineFactors,
+    last_close,
+)
 from app.prices.live import LiveProvider
 from app.prices.provider import OfflineCsvProvider, PricePoint, PriceProvider
 from app.prices.ticker import FORMULA as CHANGE_FORMULA
 from app.prices.ticker import change_pct
-from app.schemas.common import PriceKind, SourceKind, SourceRef, TraceKind
+from app.schemas.common import Factor, PriceKind, SourceKind, SourceRef, TraceKind
 from app.schemas.prices import PriceOut, TickerItemOut
 
 _FX_STEP = Decimal("0.00000001")
@@ -247,3 +256,42 @@ def fx_quote(pair: str, at: datetime | None = None) -> FxQuote:
 
 def fx_rate(pair: str, at: datetime | None = None) -> Decimal:
     return fx_quote(pair, at).rate
+
+
+# --- Factores (T4-01) ---
+
+_factors: FactorSource | None = None
+
+
+def get_factor_source() -> FactorSource:
+    global _factors
+    if _factors is None:
+        live = get_settings().market_data_provider == "yahoo"
+        _factors = LiveFactors() if live else OfflineFactors()
+    return _factors
+
+
+def set_factor_source(source: FactorSource | None) -> FactorSource | None:
+    """Como `set_provider`, para los factores (tests)."""
+    global _factors
+    previous, _factors = _factors, source
+    return previous
+
+
+def factor_closes(factor: Factor) -> list[PricePoint]:
+    """Cierres del factor hasta hoy (según `clock`), en orden de fecha."""
+    today = clock.now().date()
+    return [p for p in get_factor_source().factor_closes(factor) if p.day <= today]
+
+
+def factor_latest(factor: Factor) -> FactorCloseOut:
+    """Último cierre del factor con su fecha y su fuente. Si el proveedor en directo no responde,
+    el último guardado (`stale`); sin ninguno, `PRICE_UNAVAILABLE`."""
+    latest = last_close(get_factor_source(), factor, factor_closes(factor))
+    if latest is None:
+        raise AppError(
+            ErrorCode.PRICE_UNAVAILABLE,
+            "No hay cierre disponible para este factor.",
+            details={"factor": factor.value},
+        )
+    return latest

@@ -7,13 +7,13 @@ actualiza, no se duplica.
 """
 
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 from sqlalchemy import select
 
 from app.core.db import session_scope
-from app.prices.models import FxRate, Price
+from app.prices.models import FactorClose, FxRate, Price
 
 Row = tuple[datetime, Decimal]
 
@@ -71,3 +71,42 @@ def save_fx(pair: str, rows: Sequence[Row], source: str) -> None:
                 session.add(FxRate(pair=pair, ts=ts, rate=rate, source=source))
             elif item.rate != rate:
                 item.rate, item.source = rate, source
+
+
+# --- Factores (T4-01) ---
+
+FactorRow = tuple[date, Decimal, str]
+"""`(día, cierre, fuente)`."""
+
+
+def load_factor(factor: str) -> list[FactorRow]:
+    with session_scope() as session:
+        rows = session.execute(
+            select(FactorClose.day, FactorClose.value, FactorClose.source)
+            .where(FactorClose.factor == factor)
+            .order_by(FactorClose.day)
+        ).all()
+    return [(day, value, source) for day, value, source in rows]
+
+
+def save_factor(
+    factor: str, rows: Sequence[tuple[date, Decimal]], source: str, fetched_at: datetime
+) -> None:
+    """Idempotente: un día que ya está se actualiza si cambia el valor; nunca se duplica."""
+    if not rows:
+        return
+    with session_scope() as session:
+        existing = {
+            item.day: item
+            for item in session.scalars(select(FactorClose).where(FactorClose.factor == factor))
+        }
+        for day, value in rows:
+            item = existing.get(day)
+            if item is None:
+                session.add(
+                    FactorClose(
+                        factor=factor, day=day, value=value, source=source, fetched_at=fetched_at
+                    )
+                )
+            elif item.value != value:
+                item.value, item.source, item.fetched_at = value, source, fetched_at
