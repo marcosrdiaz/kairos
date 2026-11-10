@@ -9,7 +9,6 @@ from typing import Any
 from fastapi import APIRouter
 
 from app.events import service
-from app.schemas import examples
 from app.schemas.common import ErrorOut
 from app.schemas.events import PendingEventOut, ReplayOut, ReplayRequest
 
@@ -27,5 +26,4 @@ def replay_event(event_id: str, body: ReplayRequest | None = None) -> ReplayOut:
 def list_pending_events() -> list[PendingEventOut]:
     """Eventos reales pendientes de cierre (T4-04, D-089): noticia y cadena causal, sin cifras.
     Iguales para todas las carteras; el más antiguo primero. Lista vacía si no hay ninguno."""
-    # Contrato: sirve el ejemplo hasta la implementación (T4-04, parte 2).
-    return [PendingEventOut.model_validate(examples.load("PendingEventOut"))]
+    return service.list_pending_out()

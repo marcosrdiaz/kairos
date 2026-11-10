@@ -21,11 +21,13 @@ from fastapi.testclient import TestClient
 from app.core import clock
 from app.events import observed, service
 from app.impact import service as impact_service
+from app.main import API_PREFIX
 from app.prices import service as prices_service
 from app.prices.provider import PricePoint
 from app.schemas.common import Factor
 from app.schemas.events import EventIn, EventObserved
 
+PENDING_URL = f"{API_PREFIX}/events/pending"
 ROOT = Path(__file__).resolve().parents[2]
 REPLAY = ROOT / "data" / "events" / "replay"
 NVDA = {"NVDA": "US67066G1040"}
@@ -197,6 +199,35 @@ def test_event_with_its_session_already_closed_is_processed_at_once(
     assert result is not None
     assert "laura" in result.portfolios
     assert service.list_pending() == []
+
+
+def test_route_shows_the_pending_event_with_its_chain_and_no_figures(
+    growing: GrowingFactors, client: TestClient
+) -> None:
+    assert client.get(PENDING_URL).json() == []
+    service.ingest(_today_event())
+
+    [event] = client.get(PENDING_URL).json()
+
+    assert event["event_id"] == "opec-2026-11-10"
+    assert event["status"] == "pending_close"
+    assert event["causal_chain"] == _today_event().fallback_chain  # respaldo: sin clave de Claude
+    assert event["occurred_at"] == "2026-11-10T13:00:00Z"
+    assert [s["url"] for s in event["sources"]] == ["https://example.org/opep"]
+    assert not {"impact_eur", "low_eur", "high_eur", "calc_id"} & set(event)
+
+
+def test_route_drops_the_event_once_it_has_figures(
+    growing: GrowingFactors, client: TestClient
+) -> None:
+    service.ingest(_today_event())
+    growing.close_tuesday()
+    clock.set_now(datetime(2026, 11, 11, 22, 30, tzinfo=UTC))
+    service.process_pending()
+
+    assert client.get(PENDING_URL).json() == []
+    events = client.get(f"{API_PREFIX}/portfolios/laura/events").json()
+    assert "opec-2026-11-10" in [e["event_id"] for e in events]
 
 
 def test_reset_also_forgets_pending_events(growing: GrowingFactors) -> None:
