@@ -26,6 +26,7 @@ def test_demo_dca_run_disabled_outside_demo_mode(
     from app.config import get_settings
 
     monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.setenv("MARKET_DATA_PROVIDER", "yahoo")  # producción exige precios en directo
     get_settings.cache_clear()
     response = client.post(f"{API_PREFIX}/demo/dca/run")
     assert response.status_code == 403

@@ -12,7 +12,7 @@ ignoran. Un fichero que no existe equivale a una serie vacía.
 
 import csv
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Protocol
@@ -27,6 +27,10 @@ DEFAULT_FACTORS_DIR = DATA_DIR / "factors"
 class PricePoint:
     day: date
     value: Decimal
+    at: datetime | None = None
+    """Instante del precio si no es un cierre diario (precio en directo); si no, las 00:00 UTC."""
+    stale: bool = False
+    """Último precio guardado porque el proveedor en directo no respondió (D-065)."""
 
 
 class PriceProvider(Protocol):

@@ -10,6 +10,7 @@ import pkgutil
 from fastapi import APIRouter, FastAPI
 
 from app import api as api_package
+from app.config import get_settings
 from app.core.errors import install_handlers
 
 API_PREFIX = "/api/v1"
@@ -28,6 +29,7 @@ def discover_routers() -> list[tuple[str, APIRouter]]:
 
 
 def create_app() -> FastAPI:
+    get_settings()  # una configuración inválida (DEMO_MODE=false con offline) para el arranque
     application = FastAPI(
         title="KAIROS API",
         version="0.1.0",

@@ -177,6 +177,7 @@ def test_apply_does_nothing_outside_demo_mode(
     impact = _event_impact(client, EVENT)
     portfolio_service.clear_demo_adjustment("laura", EVENT)
     monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.setenv("MARKET_DATA_PROVIDER", "yahoo")  # producción exige precios en directo
     get_settings.cache_clear()
     portfolio_service.apply_demo_adjustment("laura", EventImpactOut.model_validate(impact))
     monkeypatch.setenv("DEMO_MODE", "true")

@@ -21,6 +21,7 @@ def _isolated_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Itera
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{(tmp_path / 'test.db').as_posix()}")
     monkeypatch.setenv("DEMO_CLOCK", "")
     monkeypatch.setenv("DEMO_MODE", "true")
+    monkeypatch.setenv("MARKET_DATA_PROVIDER", "offline")  # sin red aunque el .env diga yahoo
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")
     monkeypatch.setenv("ELEVENLABS_API_KEY", "")
     get_settings.cache_clear()
