@@ -1,0 +1,33 @@
+{
+  "illustrative": true,
+  "portfolio_id": "laura",
+  "period": "1m",
+  "points": [
+    {"date": "2026-10-07T00:00:00Z", "value_eur": "33410.25"},
+    {"date": "2026-10-14T00:00:00Z", "value_eur": "33702.80"},
+    {"date": "2026-10-21T00:00:00Z", "value_eur": "34150.12"},
+    {"date": "2026-10-28T00:00:00Z", "value_eur": "34825.40"},
+    {"date": "2026-11-04T00:00:00Z", "value_eur": "34540.07"},
+    {"date": "2026-11-06T00:00:00Z", "value_eur": "34311.68"}
+  ],
+  "start_value_eur": "33410.25",
+  "end_value_eur": "34311.68",
+  "net_flows_eur": "0.00",
+  "calc_id": "calc_3f9a1c27b84e4d0e9a6b2d51c7e8f402",
+  "sources": [
+    {
+      "kind": "price",
+      "label": "Cierres de iShares Core MSCI World",
+      "ref": "IE00B4L5Y983",
+      "as_of": "2026-11-06T00:00:00Z",
+      "url": null
+    },
+    {
+      "kind": "fx",
+      "label": "Tipo de cambio USD/EUR",
+      "ref": "USDEUR",
+      "as_of": "2026-11-06T00:00:00Z",
+      "url": null
+    }
+  ]
+}
