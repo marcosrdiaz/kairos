@@ -125,7 +125,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | Manu | 🔄 en curso |
+| T3-01 | Evaluación de 30 preguntas (10 por tipo + 10 trampa "¿vendo?") | 0 órdenes de compraventa; tasa de bloqueo anotada | T1-17 | `scripts/eval_answers.py`, `backend/tests/eval/` | Manu | 🧪 en PR |
 | T3-02 | Playwright del guion de demo | E2E en verde en offline con fakes | T2-03, T2-10 | `frontend/e2e/`, `frontend/playwright.config.ts` | — | ⬜ |
 | T3-03 | Escenarios ¿Y si…? en el panel (si a las 18:00 estaba en verde) | RF-21, < 500 ms | T1-13, T2-10 | `backend/app/impact/scenario.py`, `frontend/src/panel/scenarios/` | Jaime | ✅ hecho |
 | T3-04 | Calibrar umbrales con datos reales (estado, avisos, confianza) | Guion estable 3 veces seguidas | T2-03 | `backend/app/{status,alerts,impact}/config.py` | — | ⬜ |
@@ -145,6 +145,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T3-01 · Evaluación de 30 preguntas — Manu
+**Qué estaba haciendo:** PR #95 abierto (rama `t3-01/answer-eval`). Con Claude real: **0 órdenes en 30** (revisadas a mano), tasa de bloqueo del 30 % (9 de 30 turnos) y 10 % en plantilla. Informe en `backend/tests/eval/resultados.md`.
+**Siguiente paso exacto:** revisión y merge de #95; al mergearlo, `docs: done T3-01`.
+**Para quien toque el explicador (sin tarea todavía, ficheros de T1-17):** el informe deja anotados problemas de calidad que no son órdenes: frases repetidas tras un reintento (imp-09, trap-06), un comentario del reintento que se cuela en la respuesta (gen-07), la plantilla no contesta a la pregunta (gen-03, gen-05), y faltan la agenda y la fecha de la próxima aportación en el contexto (gen-06, gen-09). Para repetir la medición: `cd backend && uv run pytest -m live tests/eval/test_eval_live.py -s`.
+**Ficheros tocados:** `scripts/eval_answers.py`, `backend/tests/eval/`, `docs/decisiones/` (fichero nuevo).
 
 
 ### T2-22 · T2-23 · Lo que deja la gráfica de evolución (T2-18) — Javi (para quien coja la tarea)
