@@ -64,10 +64,24 @@ describe("textos de la estimación", () => {
 
   it("de dónde sale el rango", () => {
     const base = NVDA.estimate as NewsEstimateOut;
-    expect(methodText({ ...base, method: "volatility" })).toMatch(/volatilidad histórica/);
-    expect(methodText({ ...base, method: "measured" })).toBe("Medido con los precios de cierre");
+    expect(methodText({ ...base, method: "volatility", analogs_count: 41 })).toBe(
+      "Según cómo se movió en 41 días de noticias fuertes de los últimos tres años",
+    );
+    expect(methodText({ ...base, method: "measured" })).toMatch(
+      /^Medido con los precios de cierre de esa sesión/,
+    );
     expect(methodText({ ...base, analogs_count: null })).toBe(
       "Según casos parecidos del histórico",
     );
+  });
+
+  it("una cifra medida habla en pasado", () => {
+    const measured: NewsItemOut = {
+      ...NVDA,
+      estimate: { ...(NVDA.estimate as NewsEstimateOut), status: "measured", method: "measured" },
+    };
+    render(<NewsCard item={measured} />);
+    expect(screen.getByText(/Ese día tu cartera se movió/)).toBeTruthy();
+    expect(screen.getByText("Medido")).toBeTruthy();
   });
 });

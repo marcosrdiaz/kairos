@@ -59,10 +59,14 @@ export function methodText(estimate: NewsEstimateOut): string {
       const n = estimate.analogs_count;
       return n ? `Según ${n} casos parecidos del histórico` : "Según casos parecidos del histórico";
     }
-    case "volatility":
-      return "Según la volatilidad histórica (pocos casos parecidos)";
+    case "volatility": {
+      const n = estimate.analogs_count;
+      return n
+        ? `Según cómo se movió en ${n} días de noticias fuertes de los últimos tres años`
+        : "Según cómo se movió en días de noticias fuertes de los últimos tres años";
+    }
     case "measured":
-      return "Medido con los precios de cierre";
+      return "Medido con los precios de cierre de esa sesión, que recogen todo lo que movió el mercado ese día";
     default:
       return "";
   }

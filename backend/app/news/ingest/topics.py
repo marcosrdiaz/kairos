@@ -17,6 +17,8 @@ class Company:
     """Búsqueda (vale para Google Noticias y para GDELT)."""
     yahoo: str | None
     """Símbolo en Yahoo Finance para su RSS; `None` si no está en el catálogo."""
+    asset_id: str | None = None
+    """ISIN en el catálogo (con precios para medir su movimiento); `None` si no está."""
 
 
 @dataclass(frozen=True)
@@ -27,16 +29,16 @@ class Topic:
 
 
 COMPANIES: tuple[Company, ...] = (
-    Company("AAPL", "Apple", "Apple", "AAPL"),
-    Company("NVDA", "NVIDIA", "Nvidia", "NVDA"),
-    Company("MSFT", "Microsoft", "Microsoft", "MSFT"),
-    Company("AMZN", "Amazon", "Amazon", "AMZN"),
-    Company("GOOGL", "Alphabet", "(Alphabet OR Google)", "GOOGL"),
-    Company("META", "Meta Platforms", '("Meta Platforms" OR Zuckerberg)', "META"),
-    Company("TSLA", "Tesla", "Tesla", "TSLA"),
-    Company("ASML", "ASML", "ASML", "ASML.AS"),
-    Company("ITX", "Inditex", "Inditex", "ITX.MC"),
-    Company("IBE", "Iberdrola", "Iberdrola", "IBE.MC"),
+    Company("AAPL", "Apple", "Apple", "AAPL", "US0378331005"),
+    Company("NVDA", "NVIDIA", "Nvidia", "NVDA", "US67066G1040"),
+    Company("MSFT", "Microsoft", "Microsoft", "MSFT", "US5949181045"),
+    Company("AMZN", "Amazon", "Amazon", "AMZN", "US0231351067"),
+    Company("GOOGL", "Alphabet", "(Alphabet OR Google)", "GOOGL", "US02079K3059"),
+    Company("META", "Meta Platforms", '("Meta Platforms" OR Zuckerberg)', "META", "US30303M1027"),
+    Company("TSLA", "Tesla", "Tesla", "TSLA", "US88160R1014"),
+    Company("ASML", "ASML", "ASML", "ASML.AS", "NL0010273215"),
+    Company("ITX", "Inditex", "Inditex", "ITX.MC", "ES0148396007"),
+    Company("IBE", "Iberdrola", "Iberdrola", "IBE.MC", "ES0144580Y14"),
     Company("AVGO", "Broadcom", "Broadcom", None),
 )
 

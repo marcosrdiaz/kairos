@@ -11,7 +11,7 @@ from app.core import clock, trace
 from app.core.errors import AppError, ErrorCode
 from app.events import service as events_service
 from app.exposure import service as exposure_service
-from app.impact import engine, move_flow, repository, scenario
+from app.impact import engine, move_flow, news_batch, news_flow, repository, scenario
 from app.impact.betas import BetaEstimate
 from app.impact.betas_flow import BetaRun as BetaRun
 from app.impact.betas_flow import betas_due as betas_due
@@ -288,6 +288,36 @@ def get_factor_betas(
 def reset() -> None:
     """Borra los impactos guardados (`/demo/reset`)."""
     repository.delete_event_impacts()
+    news_batch.clear_cache()
+
+
+NewsImpactRequest = news_flow.NewsImpactRequest
+
+
+def estimate_news_impacts(
+    portfolio_id: str, requests: Sequence[NewsImpactRequest]
+) -> dict[str, news_batch.NewsImpact]:
+    """Impacto de cada noticia en la cartera (T4-30): `news_id → (estimación, posiciones
+    afectadas)`. Cifras del motor con datos de mercado; la clasificación solo elige canales y
+    dirección. Ver `news_flow.py` y `news_batch.py`. 404 si la cartera no existe."""
+    if not requests:
+        portfolio_service.ensure_exists(portfolio_id)
+        return {}
+    context = _load_context(
+        portfolio_id, {c.company_key for r in requests for c in r.channels if c.company_key}
+    )
+    return news_batch.estimate_all(
+        portfolio_id,
+        requests,
+        valued_positions=context.valued.positions,
+        positions=context.positions,
+        coverage=context.coverage,
+        total_eur=context.valued.total_eur,
+        trace_inputs=_trace_inputs(context),
+        sources=context.sources,
+        parent_calc_ids=context.parent_calc_ids,
+        now=clock.now(),
+    )
 
 
 def explain_move(portfolio_id: str, period: MovePeriod) -> MoveAttributionOut:
