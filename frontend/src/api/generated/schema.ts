@@ -320,6 +320,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portfolios/{portfolio_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get History
+         * @description Valor de la cartera con precios de cierre, sin ajustes de demo. 404 si no existe la
+         *     cartera; 503 (`PRICE_UNAVAILABLE`) si no hay ningún precio en el periodo.
+         */
+        get: operations["get_history_api_v1_portfolios__portfolio_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolios/{portfolio_id}/move": {
         parameters: {
             query?: never;
@@ -1044,6 +1065,11 @@ export interface components {
          * @enum {string}
          */
         Frequency: "monthly" | "weekly";
+        /**
+         * HistoryPeriod
+         * @enum {string}
+         */
+        HistoryPeriod: "1w" | "1m" | "6m" | "1y" | "max";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1237,6 +1263,73 @@ export interface components {
          * @enum {string}
          */
         Polarity: "riesgo" | "oportunidad" | "neutral";
+        /**
+         * PortfolioHistoryOut
+         * @description Serie de valor de la cartera en el periodo pedido.
+         *
+         *     - `points`: en orden de fecha. Un punto por día hábil hasta un año; con `max`, uno por semana
+         *       (y siempre el último día). Se omiten las fechas sin precio de algún activo: nunca se rellenan.
+         *     - `start_value_eur` / `end_value_eur`: valor del primer y del último punto.
+         *     - `net_flows_eur`: dinero aportado (+) o retirado (−) entre el primer y el último punto
+         *       (compras, DCA, ventas), para no confundir aportaciones con rentabilidad.
+         *     - `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.
+         */
+        PortfolioHistoryOut: {
+            /** Calc Id */
+            calc_id: string;
+            /**
+             * End Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            end_value_eur: string;
+            /**
+             * Net Flows Eur
+             * @description Importe en euros con 2 decimales
+             */
+            net_flows_eur: string;
+            period: components["schemas"]["HistoryPeriod"];
+            /** Points */
+            points: components["schemas"]["PortfolioHistoryPoint"][];
+            /** Portfolio Id */
+            portfolio_id: string;
+            /** Sources */
+            sources: components["schemas"]["SourceRef"][];
+            /**
+             * Start Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            start_value_eur: string;
+        };
+        /**
+         * PortfolioHistoryPoint
+         * @description Un cierre de la serie.
+         *
+         *     - `change_eur` / `change_pct`: variación respecto al punto anterior (`null` en el primero).
+         *       Incluye las aportaciones o retiradas de entre medias: `flows_eur` dice cuánto fue dinero
+         *       que entró o salió, para no confundirlo con una subida o una bajada.
+         *     - `change_pct` es una fracción a 4 decimales (0.0123 = 1,23 %) sobre el valor anterior.
+         */
+        PortfolioHistoryPoint: {
+            /** Change Eur */
+            change_eur?: string | null;
+            /** Change Pct */
+            change_pct?: string | null;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /**
+             * Flows Eur
+             * @description Importe en euros con 2 decimales
+             */
+            flows_eur: string;
+            /**
+             * Value Eur
+             * @description Importe en euros con 2 decimales
+             */
+            value_eur: string;
+        };
         /**
          * PortfolioOut
          * @description `GET /portfolios/{id}`. `total_eur`, `change_week_*` y `value_eur` incluyen los ajustes.
@@ -1954,6 +2047,7 @@ export type ExposureBucket = components['schemas']['ExposureBucket'];
 export type ExposureOut = components['schemas']['ExposureOut'];
 export type Factor = components['schemas']['Factor'];
 export type Frequency = components['schemas']['Frequency'];
+export type HistoryPeriod = components['schemas']['HistoryPeriod'];
 export type HttpValidationError = components['schemas']['HTTPValidationError'];
 export type LotOut = components['schemas']['LotOut'];
 export type MoveAssetChange = components['schemas']['MoveAssetChange'];
@@ -1965,6 +2059,8 @@ export type OverlapItem = components['schemas']['OverlapItem'];
 export type PlanOut = components['schemas']['PlanOut'];
 export type PlanUpdateRequest = components['schemas']['PlanUpdateRequest'];
 export type Polarity = components['schemas']['Polarity'];
+export type PortfolioHistoryOut = components['schemas']['PortfolioHistoryOut'];
+export type PortfolioHistoryPoint = components['schemas']['PortfolioHistoryPoint'];
 export type PortfolioOut = components['schemas']['PortfolioOut'];
 export type PortfolioSummaryOut = components['schemas']['PortfolioSummaryOut'];
 export type PositionInitLine = components['schemas']['PositionInitLine'];
@@ -2693,6 +2789,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_history_api_v1_portfolios__portfolio_id__history_get: {
+        parameters: {
+            query?: {
+                period?: components["schemas"]["HistoryPeriod"];
+            };
+            header?: never;
+            path: {
+                portfolio_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioHistoryOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };

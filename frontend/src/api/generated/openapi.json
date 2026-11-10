@@ -1141,6 +1141,17 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HistoryPeriod": {
+        "enum": [
+          "1w",
+          "1m",
+          "6m",
+          "1y",
+          "max"
+        ],
+        "title": "HistoryPeriod",
+        "type": "string"
+      },
       "LotOut": {
         "additionalProperties": false,
         "properties": {
@@ -1538,6 +1549,124 @@
         ],
         "title": "Polarity",
         "type": "string"
+      },
+      "PortfolioHistoryOut": {
+        "additionalProperties": false,
+        "description": "Serie de valor de la cartera en el periodo pedido.\n\n- `points`: en orden de fecha. Un punto por día hábil hasta un año; con `max`, uno por semana\n  (y siempre el último día). Se omiten las fechas sin precio de algún activo: nunca se rellenan.\n- `start_value_eur` / `end_value_eur`: valor del primer y del último punto.\n- `net_flows_eur`: dinero aportado (+) o retirado (−) entre el primer y el último punto\n  (compras, DCA, ventas), para no confundir aportaciones con rentabilidad.\n- `calc_id`: traza `valuation` con la serie, las participaciones y las fuentes.",
+        "properties": {
+          "calc_id": {
+            "pattern": "^calc_",
+            "title": "Calc Id",
+            "type": "string"
+          },
+          "end_value_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "End Value Eur",
+            "type": "string"
+          },
+          "net_flows_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Net Flows Eur",
+            "type": "string"
+          },
+          "period": {
+            "$ref": "#/components/schemas/HistoryPeriod"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioHistoryPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "start_value_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Start Value Eur",
+            "type": "string"
+          }
+        },
+        "required": [
+          "portfolio_id",
+          "period",
+          "points",
+          "start_value_eur",
+          "end_value_eur",
+          "net_flows_eur",
+          "calc_id",
+          "sources"
+        ],
+        "title": "PortfolioHistoryOut",
+        "type": "object"
+      },
+      "PortfolioHistoryPoint": {
+        "additionalProperties": false,
+        "description": "Un cierre de la serie.\n\n- `change_eur` / `change_pct`: variación respecto al punto anterior (`null` en el primero).\n  Incluye las aportaciones o retiradas de entre medias: `flows_eur` dice cuánto fue dinero\n  que entró o salió, para no confundirlo con una subida o una bajada.\n- `change_pct` es una fracción a 4 decimales (0.0123 = 1,23 %) sobre el valor anterior.",
+        "properties": {
+          "change_eur": {
+            "anyOf": [
+              {
+                "description": "Importe en euros con 2 decimales",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Eur"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "description": "Fracción: 0.76 = 76 %",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "date": {
+            "format": "date-time",
+            "title": "Date",
+            "type": "string"
+          },
+          "flows_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Flows Eur",
+            "type": "string"
+          },
+          "value_eur": {
+            "description": "Importe en euros con 2 decimales",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "title": "Value Eur",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "value_eur",
+          "flows_eur"
+        ],
+        "title": "PortfolioHistoryPoint",
+        "type": "object"
       },
       "PortfolioOut": {
         "additionalProperties": false,
@@ -4064,6 +4193,78 @@
         "summary": "Get Exposure",
         "tags": [
           "exposure"
+        ]
+      }
+    },
+    "/api/v1/portfolios/{portfolio_id}/history": {
+      "get": {
+        "description": "Valor de la cartera con precios de cierre, sin ajustes de demo. 404 si no existe la\ncartera; 503 (`PRICE_UNAVAILABLE`) si no hay ningún precio en el periodo.",
+        "operationId": "get_history_api_v1_portfolios__portfolio_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/HistoryPeriod",
+              "default": "1y"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioHistoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get History",
+        "tags": [
+          "portfolio"
         ]
       }
     },
