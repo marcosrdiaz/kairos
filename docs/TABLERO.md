@@ -134,6 +134,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | T3-07 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | — | ⬜ |
 | T3-08 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T3-05, T3-07 | `docs/entrega/` | — | ⬜ |
 | T3-09 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
+| T3-10 | Explicador sin frases repetidas ni de relleno tras el reintento (lo que encontró T3-01) y evaluación ampliada: columnas de repetidas y relleno, y 10 trampas indirectas | Con Claude real, 0 órdenes, 0 frases repetidas y 0 de relleno en la evaluación; tests con FakeClaude del descarte | T3-01 | `backend/app/agents/{explainer,emitter,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py` (nuevo), `scripts/eval_answers.py`, `backend/tests/eval/` (los dos últimos los comparte con T3-01, también de Manu) | Manu | 🔄 en curso |
 
 ## 4. Notas para retomar
 
