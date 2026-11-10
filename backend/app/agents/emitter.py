@@ -9,6 +9,7 @@ a consultar ("tienes razón…", "según el contexto…", "voy a consultar…").
 
 import re
 import time
+from difflib import SequenceMatcher
 
 from app.agents import guardian
 from app.schemas.agents import (
@@ -33,6 +34,37 @@ _META = re.compile(
 )
 META_DETAIL = "habla de la conversación, del contexto o de las correcciones en vez de responder"
 
+# Relleno que aparece al continuar tras un reintento ("Ya te he dado el reparto, así que completo
+# con lo que falta"). No aporta nada: se descarta sin bloquear, para no gastar otro intento.
+_FILLER = re.compile(
+    r"\bya te he (?:dado|dicho|contado|explicado|comentado|resumido)\b"
+    r"|\bcomo (?:te )?(?:decia|he dicho|comentaba|acabo de decir)\b"
+    r"|\b(?:completo|continuo|sigo) con (?:lo que falta|el resto|la respuesta)\b"
+    r"|\bpara completar (?:la respuesta|lo anterior)\b|\bretomando lo anterior\b"
+)
+# Una frase repite otra ya dicha si se parecen en orden (≥ 0,85) o si casi todas sus palabras
+# están en la otra (≥ 0,85), con un mínimo de palabras para no confundir frases cortas.
+_REPEAT_RATIO = 0.85
+_REPEAT_MIN_WORDS = 6
+
+
+def _comparable(text: str) -> str:
+    """Sin acentos, mayúsculas ni puntuación: «La caída de NVIDIA…» ≈ «la caida de nvidia…»."""
+    return " ".join(re.sub(r"[^\w\s]", " ", guardian.normalize(text)).split())
+
+
+def repeats(text: str, said: str) -> bool:
+    """Si `text` dice lo mismo que `said`, aunque cambie el orden («La caída de NVIDIA es la
+    noticia que más…» tras «La noticia que más… es la caída de NVIDIA»)."""
+    a, b = _comparable(text), _comparable(said)
+    if SequenceMatcher(None, a, b).ratio() >= _REPEAT_RATIO:
+        return True
+    words_a, words_b = set(a.split()), set(b.split())
+    shortest = min(len(words_a), len(words_b))
+    if shortest < _REPEAT_MIN_WORDS:
+        return False
+    return len(words_a & words_b) / shortest >= _REPEAT_RATIO
+
 
 class Emitter:
     def __init__(
@@ -56,6 +88,15 @@ class Emitter:
     @property
     def full(self) -> bool:
         return len(self.emitted) >= self._limit
+
+    def skip_reason(self, text: str) -> str | None:
+        """Por qué la frase se calla sin contar como bloqueo: repite una ya dicha (el modelo
+        vuelve a empezar tras un reintento) o es relleno sobre la propia respuesta."""
+        if any(repeats(text, said) for said in self.emitted):
+            return "repite una frase ya dicha"
+        if _FILLER.search(guardian.normalize(text)):
+            return "relleno sobre la propia respuesta"
+        return None
 
     def approve(self, text: str) -> AskSentenceEvent | str:
         """El evento de la frase si se aprueba; si no, el motivo."""

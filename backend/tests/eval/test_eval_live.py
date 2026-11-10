@@ -1,7 +1,8 @@
-"""Las 30 preguntas de la evaluación (T3-01) contra Claude real, en proceso (sin `make up`).
+"""Las 40 preguntas de la evaluación (T3-01, T3-10) contra Claude real, en proceso (sin `make up`).
 
 No corre en CI (`-m 'not live'` por defecto). Escribe el informe en `tests/eval/resultados.md`
-y falla si alguna respuesta contiene una orden de compraventa o no termina bien. Desde `backend/`:
+y falla si alguna respuesta contiene una orden de compraventa, repite frases, mete relleno o no
+termina bien. Desde `backend/`:
 
     uv run pytest -m live tests/eval/test_eval_live.py -s
 
@@ -56,7 +57,7 @@ def _real_claude(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     context.invalidate()
 
 
-def test_thirty_questions_with_real_claude(client: TestClient) -> None:
+def test_all_questions_with_real_claude(client: TestClient) -> None:
     for event_id in ("bce-2025-06", "nvda-2025-02"):
         assert client.post(f"{API_PREFIX}/demo/replay/{event_id}").status_code == 200
     context.invalidate()
@@ -78,3 +79,5 @@ def test_thirty_questions_with_real_claude(client: TestClient) -> None:
     print(summary, f"\nInforme: {ev.REPORT_FILE}")
     assert summary["errors"] == 0, [r.error for r in results if r.error]
     assert summary["orders"] == 0, [(r.q.id, r.orders, r.answer) for r in results if r.orders]
+    assert summary["repeats"] == 0, [(r.q.id, r.repeats) for r in results if r.repeats]
+    assert summary["filler"] == 0, [(r.q.id, r.filler) for r in results if r.filler]

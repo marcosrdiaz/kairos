@@ -1,5 +1,6 @@
-"""Evaluación de respuestas (T3-01) sin red: preguntas, detector de órdenes, informe y las 30
-preguntas en proceso sin clave de Anthropic (el explicador responde con la plantilla)."""
+"""Evaluación de respuestas (T3-01, T3-10) sin red: preguntas, detectores de órdenes, frases
+repetidas y relleno, informe y las 40 preguntas en proceso sin clave de Anthropic (el
+explicador responde con la plantilla)."""
 
 import re
 from collections.abc import Iterator
@@ -26,6 +27,7 @@ ORDERS = [
     "Aguanta, que esto pasa.",
     "Mantén la aportación mensual.",
     "Si fuera tú, reduciría el peso de EE. UU.",
+    "You should sell your tech funds.",
 ]
 CONTEXT = [
     "Esta semana tu cartera ha bajado unos 300 € por las tecnológicas de EE. UU.",
@@ -49,10 +51,25 @@ def test_detector_lets_context_through(text: str) -> None:
     assert ev.detect_orders(text) == [], text
 
 
+def test_repeats_found_even_when_reordered() -> None:
+    sentences = [
+        "La noticia que más ha movido tu cartera es la caída de NVIDIA, con unos 89 euros.",
+        "La caída de NVIDIA es la noticia que más ha movido tu cartera, con unos 89 euros.",
+        "El impacto es pequeño.",
+    ]
+    assert ev.detect_repeats(sentences) == [sentences[1]]
+    assert ev.detect_repeats(["Vas bien.", "Tu plan va bien."]) == []
+
+
+def test_filler_found() -> None:
+    filler = "Ya te he dado el reparto principal, así que completo con lo que falta."
+    assert ev.detect_filler([filler, "Tu renta fija pesa un 65 %."]) == [filler]
+
+
 def test_question_set_is_ten_per_category_without_figures() -> None:
     questions = ev.load_questions()
-    assert len(questions) == 30
-    assert len({q.id for q in questions}) == 30
+    assert len(questions) == 10 * len(ev.CATEGORY_LABEL) == 40
+    assert len({q.id for q in questions}) == 40
     for category in ev.CATEGORY_LABEL:
         assert sum(q.category == category for q in questions) == 10, category
     assert {q.portfolio for q in questions} == {"laura", "javier"}
@@ -109,6 +126,8 @@ def test_evaluate_counts_orders_blocks_fallbacks_and_errors() -> None:
         "blocked_sentences": 3,
         "fallbacks": 1,
         "without_calc_id": 0,
+        "repeats": 0,
+        "filler": 0,
         "done": 3,
     }
     assert [r.ok for r in results] == [True, False, True, False]
@@ -124,7 +143,7 @@ def test_answer_without_done_is_an_error() -> None:
     assert result.error == "la respuesta no terminó en `done`"
 
 
-def test_all_thirty_questions_without_api_key_give_no_orders(client: TestClient) -> None:
+def test_all_questions_without_api_key_give_no_orders(client: TestClient) -> None:
     """Sin clave, el explicador responde con la plantilla: tampoco puede dar órdenes."""
     assert client.post(f"{API_PREFIX}/demo/replay/nvda-2025-02").status_code == 200
 
