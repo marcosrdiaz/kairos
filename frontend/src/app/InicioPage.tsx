@@ -9,8 +9,7 @@ import { NewsSection } from "./news/NewsSection";
 import { AlertNotice } from "../widget/AlertNotice";
 import { StatusCard } from "../widget/StatusCard";
 import { StatusTiles } from "../widget/StatusTiles";
-
-const DEFAULT_PORTFOLIO = "laura";
+import { usePortfolioId } from "./portfolio-picker/usePortfolioId";
 
 /** Esqueleto de carga: misma forma que la cabecera y las tarjetas, sin cifras. */
 function StatusSkeleton() {
@@ -88,7 +87,7 @@ function Shortcuts({ query }: { query: string }) {
 
 export function InicioPage() {
   const [params] = useSearchParams();
-  const portfolioId = params.get("p") || DEFAULT_PORTFOLIO;
+  const [portfolioId] = usePortfolioId();
   const { data, isPending, isError } = useStatus(portfolioId);
   const query = params.toString() ? `?${params.toString()}` : "";
 

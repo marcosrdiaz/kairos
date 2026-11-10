@@ -1,0 +1,16 @@
+### D-XXX · Cartera elegida: `?p=` manda y el navegador la recuerda (T4-13)
+- Fecha: 2026-11-10 · Autor: Alons · Estado: Propuesta
+- Contexto: T4-13 pide que la cartera elegida se recuerde en el navegador y que todas las pantallas cambien de datos al cambiarla. Hasta ahora la cartera salía solo de `?p=`, con `"laura"` por defecto (`usePortfolioId.ts`, `InicioPage.tsx`, `AssetPage.tsx`, `PhoneHomePage.tsx`). Con carteras creadas por el usuario, `laura` puede no existir, y al borrar la elegida `?p=` apunta a una cartera que ya no está.
+- Decisión:
+  - **`?p=` sigue siendo la fuente de verdad** de la cartera que se ve (enlaces, recargas y pestañas siguen funcionando igual).
+  - **Se recuerda en `localStorage`** (`kairos-portfolio`, con `try/catch`: sin almacenamiento, vale lo de la URL). Se escribe al elegir una cartera y cada vez que `?p=` apunta a una cartera válida.
+  - **`useSyncPortfolioId`** (lo llama el selector, que está montado en toda la app: barra lateral y cabecera del panel) corrige `?p=` en cuanto llega `GET /portfolios`: si falta o apunta a una cartera que no existe, pone la última recordada si sigue existiendo y, si no, la primera de la lista. Con la lista vacía no hace nada: abre el asistente `FirstRunGate`.
+  - `usePortfolioId` usa, sin `?p=`, la recordada y después `"laura"` (solo hasta que llega la lista). `InicioPage` y `AssetPage` pasan a usar `usePortfolioId` en lugar de leer `?p=` a mano.
+  - Borrar una cartera la quita de la caché `["portfolios"]` y olvida sus consultas (`queryKey[1] === id`); la sincronización elige otra o, si era la última, se abre el asistente.
+- Motivo: un único sitio decide qué cartera se ve, sin cambiar contratos ni las pantallas que ya leen `usePortfolioId`.
+- Alternativas descartadas:
+  - Un contexto de React con la cartera elegida: más ficheros de otras pantallas y se pierde el `?p=` en los enlaces.
+  - Solo `localStorage`, sin `?p=`: rompe los enlaces compartidos y el E2E del guion.
+- Impacto:
+  - `PhoneHomePage` (widget de demostración) sigue con `?p=` o `"laura"`: no pasa por el selector.
+  - Quitar a Laura y Javier del seed (Q10) ya no rompe la elección de cartera.

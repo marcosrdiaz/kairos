@@ -1,31 +1,32 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiPost } from "../../api/client";
-import type { PortfolioOut, PositionsInitRequest } from "../../api/generated/schema";
 import { buttonPrimary, buttonSecondary } from "../../components/button";
 import { OnboardingResult } from "./OnboardingResult";
 import { PositionLineFields } from "./PositionLineFields";
+import { SaveStepError, savePlan } from "./savePositions";
 import { submitErrorText } from "./submitError";
 import {
   buildPositions,
   emptyLine,
   todayInMadrid,
   type DraftLine,
+  type DraftPlan,
   type LineErrors,
 } from "./positionsDraft";
 
 /**
- * Alta de posiciones (RF-01) en la cartera elegida: una o varias filas con activo,
- * participaciones, precio medio y fecha. El sistema completa tipo, divisa, clase, TER y
- * traspasable desde el catálogo. Errores: resumen con el foco y mensaje en cada campo.
- * `onSaved` avisa a quien lo usa (el asistente de primer uso) de que ya hay posiciones.
+ * Alta de posiciones (RF-01) en la cartera elegida: una o varias filas con activo y
+ * participaciones. Sin precio, cada fila es una compra al precio de hoy (`POST /transactions`);
+ * con precio medio (y fecha, opcional), va al alta `POST /positions`. El sistema completa tipo,
+ * divisa, clase, TER y traspasable desde el catálogo. Errores: resumen con el foco y mensaje en
+ * cada campo. `onSaved` avisa a quien lo usa (el paso 2 de crear cartera) de que ya hay posiciones.
  */
 export function OnboardingForm({
   portfolioId,
   onSaved,
 }: {
   portfolioId: string;
-  onSaved?: (portfolio: PortfolioOut) => void;
+  onSaved?: () => void;
 }) {
   const queryClient = useQueryClient();
   const [lines, setLines] = useState<DraftLine[]>(() => [emptyLine()]);
@@ -37,15 +38,25 @@ export function OnboardingForm({
   const today = todayInMadrid();
 
   const save = useMutation({
-    mutationFn: (body: PositionsInitRequest) =>
-      apiPost<PortfolioOut>(`/portfolios/${encodeURIComponent(portfolioId)}/positions`, body, {
-        mock: "PortfolioOut",
-      }),
-    onSuccess: (saved) => {
+    mutationFn: (plan: DraftPlan) => savePlan(portfolioId, plan),
+    onSuccess: () => {
       setLines([emptyLine()]);
       setErrors([]);
       void queryClient.invalidateQueries();
-      onSaved?.(saved);
+      onSaved?.();
+    },
+    onError: (error) => {
+      // Lo ya guardado sale del formulario para no repetirlo al reintentar.
+      const savedKeys = error instanceof SaveStepError ? error.savedKeys : [];
+      if (savedKeys.length > 0) {
+        setLines((ls) => {
+          const rest = ls.filter((l) => !savedKeys.includes(l.key));
+          return rest.length > 0 ? rest : [emptyLine()];
+        });
+        setErrors([]);
+        onSaved?.();
+      }
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -72,7 +83,7 @@ export function OnboardingForm({
     }
     setErrors([]);
     setErrorCount(0);
-    save.mutate({ positions: result.positions });
+    save.mutate(result);
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from "react";
+import { useId, useState, type InputHTMLAttributes } from "react";
 import { buttonSecondary } from "../../components/button";
 import { AssetCombobox } from "./AssetCombobox";
 import type { DraftLine, LineErrors } from "./positionsDraft";
@@ -54,7 +54,11 @@ interface PositionLineFieldsProps {
   onRemove?: (() => void) | undefined;
 }
 
-/** Una posición del alta: activo, participaciones, precio medio y fecha de compra. */
+/**
+ * Una posición del alta: activo y participaciones. El precio medio y la fecha de compra van
+ * plegados y son opcionales; sin precio, la posición se registra al precio de hoy. La parte
+ * plegada se abre sola si tiene datos o errores, para que nunca se oculte un error.
+ */
 export function PositionLineFields({
   index,
   line,
@@ -65,6 +69,10 @@ export function PositionLineFields({
   onRemove,
 }: PositionLineFieldsProps) {
   const n = index + 1;
+  const panelId = useId();
+  const [open, setOpen] = useState(() => Boolean(line.cost || line.date));
+  const shown = open || Boolean(errors?.cost || errors?.date);
+  const priced = line.cost.trim() !== "";
   return (
     <fieldset className="m-0 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <legend className="px-1 text-lg font-semibold text-ink">Posición {n}</legend>
@@ -75,34 +83,54 @@ export function PositionLineFields({
         error={errors?.asset}
         autoFocus={autoFocus}
       />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="sm:max-w-xs">
         <Field
           label="Participaciones"
-          hint="Con coma para los decimales."
+          hint={
+            priced
+              ? "Con coma para los decimales."
+              : "Con coma para los decimales. Se registra al precio de hoy."
+          }
           inputMode="decimal"
           autoComplete="off"
           value={line.units}
           onValue={(units) => onChange({ units })}
           error={errors?.units}
         />
-        <Field
-          label="Precio medio (€)"
-          hint="Lo que te costó cada participación."
-          inputMode="decimal"
-          autoComplete="off"
-          value={line.cost}
-          onValue={(cost) => onChange({ cost })}
-          error={errors?.cost}
-        />
-        <Field
-          label="Fecha de compra"
-          hint="Opcional. Si la dejas vacía, hoy."
-          type="date"
-          max={today}
-          value={line.date}
-          onValue={(date) => onChange({ date })}
-          error={errors?.date}
-        />
+      </div>
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          aria-expanded={shown}
+          aria-controls={panelId}
+          onClick={() => setOpen(!shown)}
+          className="inline-flex min-h-touch items-center gap-2 self-start rounded-control px-1 text-base font-semibold text-accent underline underline-offset-4 hover:text-accent-hover"
+        >
+          <span aria-hidden="true">{shown ? "−" : "+"}</span>
+          Indicar precio de compra y fecha (opcional)
+        </button>
+        {shown && (
+          <div id={panelId} className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Precio medio (€)"
+              hint="Lo que te costó cada participación. Vacío: precio de hoy."
+              inputMode="decimal"
+              autoComplete="off"
+              value={line.cost}
+              onValue={(cost) => onChange({ cost })}
+              error={errors?.cost}
+            />
+            <Field
+              label="Fecha de compra"
+              hint="Solo con precio de compra. Si la dejas vacía, hoy."
+              type="date"
+              max={today}
+              value={line.date}
+              onValue={(date) => onChange({ date })}
+              error={errors?.date}
+            />
+          </div>
+        )}
       </div>
       {onRemove && (
         <button type="button" className={`${buttonSecondary} self-start`} onClick={onRemove}>

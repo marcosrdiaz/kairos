@@ -8,43 +8,25 @@ import {
   validateDetails,
   type DetailsDraft,
   type DetailsErrors,
-  type ImportRowError,
-  type Method,
 } from "./portfolioDetails";
-
-const METHOD_OPTIONS: { value: Method; label: string; hint: string }[] = [
-  { value: "manual", label: "Añadirlos uno a uno", hint: "Buscas cada activo por ISIN, ticker o nombre" },
-  { value: "csv", label: "Importar un CSV", hint: "Un fichero con una fila por posición" },
-];
 
 const INPUT =
   "min-h-touch w-full rounded-control border border-line-strong bg-surface px-3 text-base text-ink aria-invalid:border-error";
 
 interface PortfolioDetailsFormProps {
   pending: boolean;
-  /** Mensaje del último fallo al crear o importar ("" si no hay). */
+  /** Mensaje del último fallo al crear ("" si no hay). */
   submitError: string;
-  rowErrors: ImportRowError[];
   onSubmit: (draft: DetailsDraft) => void;
 }
 
 /**
- * Paso 1 del primer uso: nombre, tipo, perfil de riesgo y cómo añadir los activos. Si falta
- * algo, un resumen recibe el foco y cada campo dice qué le pasa (como en `OnboardingForm`).
+ * Paso 1 de crear una cartera: nombre, tipo y perfil de riesgo. Los activos se añaden en el
+ * paso 2 (`AddAssetsStep`). Si falta algo, un resumen recibe el foco y cada campo dice qué le
+ * pasa (como en `OnboardingForm`).
  */
-export function PortfolioDetailsForm({
-  pending,
-  submitError,
-  rowErrors,
-  onSubmit,
-}: PortfolioDetailsFormProps) {
-  const [draft, setDraft] = useState<DetailsDraft>({
-    name: "",
-    kind: "personal",
-    risk: null,
-    method: "manual",
-    file: null,
-  });
+export function PortfolioDetailsForm({ pending, submitError, onSubmit }: PortfolioDetailsFormProps) {
+  const [draft, setDraft] = useState<DetailsDraft>({ name: "", kind: "personal", risk: null });
   const [errors, setErrors] = useState<DetailsErrors>({});
   const summaryRef = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -107,57 +89,14 @@ export function PortfolioDetailsForm({
         onChange={(risk) => set({ risk })}
         error={errors.risk}
       />
-      <ChoiceGroup
-        legend="¿Cómo quieres añadir tus activos?"
-        options={METHOD_OPTIONS}
-        value={draft.method}
-        onChange={(method) => set({ method })}
-      />
 
-      {draft.method === "csv" && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={`${id}-file`} className="text-base font-semibold text-ink">
-            Fichero CSV
-          </label>
-          <input
-            id={`${id}-file`}
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(e) => set({ file: e.target.files?.[0] ?? null })}
-            aria-invalid={errors.file ? true : undefined}
-            aria-describedby={`${id}-file-hint${errors.file ? ` ${id}-file-error` : ""}`}
-            className="text-base text-ink file:mr-3 file:min-h-touch file:cursor-pointer file:rounded-full file:border file:border-line-strong file:bg-surface file:px-5 file:font-semibold file:text-ink"
-          />
-          <span id={`${id}-file-hint`} className="text-sm text-ink-muted">
-            Columnas: <code>asset</code> (ISIN o ticker), <code>units</code>,{" "}
-            <code>avg_cost_eur</code> y, si quieres, <code>acquired_at</code> (AAAA-MM-DD).
-            Decimales con punto o coma; columnas separadas por coma o punto y coma.
-          </span>
-          {errors.file && (
-            <span id={`${id}-file-error`} className="text-sm font-medium text-error">
-              {errors.file}
-            </span>
-          )}
-        </div>
-      )}
-
-      <div role="status" className="flex flex-col gap-2 empty:hidden">
-        {submitError && <p className="m-0 text-base font-medium text-error">{submitError}</p>}
-        {rowErrors.length > 0 && (
-          <ul className="m-0 flex flex-col gap-1 pl-5 text-base text-error">
-            {rowErrors.map((r, i) => (
-              <li key={`${r.line}-${r.field ?? ""}-${i}`}>
-                Línea {r.line}
-                {r.field ? ` (${r.field})` : ""}: {r.message}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <p role="status" className="m-0 text-base font-medium text-error empty:hidden">
+        {submitError}
+      </p>
 
       <div>
         <button type="submit" className={buttonPrimary} disabled={pending} aria-disabled={pending}>
-          {pending ? "Creando…" : draft.method === "csv" ? "Importar y crear la cartera" : "Crear la cartera"}
+          {pending ? "Creando…" : "Continuar"}
         </button>
       </div>
     </form>
