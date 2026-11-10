@@ -149,8 +149,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 ### T3-10 · Explicador sin repeticiones ni relleno; evaluación de 40 preguntas — Manu
-**Qué estaba haciendo:** PR #97 abierto (rama `t3-10/explainer-cleanup`), **apilado sobre #95** (T3-01). Con Claude real, 40 preguntas: 0 órdenes, 0 frases repetidas y 0 de relleno; bloqueo en el 40 % de los turnos y plantilla en el 15 %.
-**Siguiente paso exacto:** mergear #95; luego cambiar la base de #97 a `main` (`gh pr edit 97 --base main`), revisión y merge, y `docs: done T3-10`.
+**Qué estaba haciendo:** #97 se mergeó en la rama de #95 después de que #95 entrara en `main`, así que el código **no llegó a `main`**. Lo reabre el PR #99 (rama `t3-10/explainer-cleanup-main`, el mismo commit con cherry-pick, sin conflictos). Con Claude real, 40 preguntas: 0 órdenes, 0 frases repetidas y 0 de relleno; bloqueo en el 40 % de los turnos y plantilla en el 15 %.
+**Siguiente paso exacto:** revisión y merge de #99, y `docs: done T3-10`.
 **Pendiente para otra tarea (detalle en `backend/tests/eval/resultados.md`):** que la plantilla responda a la pregunta y diga que KAIROS no da recomendaciones cuando es una trampa (`agents/templates.py`; lo más visible ante el jurado); qué patrones o cifras explican el 40 % de bloqueo; agenda y próxima aportación en el contexto; el 10 % frente al 15 % de renta variable de Javier.
 **Ficheros tocados:** `backend/app/agents/{emitter,explainer,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py`, `backend/tests/eval/`, `scripts/eval_{answers,checks}.py`, `docs/SPEC.md`, `docs/decisiones/` (fichero nuevo).
 
