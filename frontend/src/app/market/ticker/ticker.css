@@ -21,10 +21,16 @@
 }
 
 /*
- * Distintivo del emisor (T2-28): pastilla redonda con color fijo por grupo. Los colores salen de
- * los pares fg/bg de los tokens --kairos-* (contraste AA en claro y oscuro); es decorativa.
+ * Distintivo del emisor (T2-28): pastilla redonda con las iniciales del grupo, en color plano y
+ * desaturado. DESIGN.md reserva el color para los estados, así que aquí NO se usan los tonos de
+ * estado ni de chip (verde, ámbar, violeta, rojo, azul de información): son siete tonos grisáceos
+ * propios, de croma bajo, que se distinguen entre sí por matiz pero no se leen como un aviso.
+ * El significado lo dan las iniciales; el color solo ayuda a reconocer el grupo de un vistazo.
+ * Cada par pasa AA (≥ 6,8:1 en claro y ≥ 7,8:1 en oscuro; lo comprueba `issuer.test.ts`).
  */
 .kairos-issuer-badge {
+  --issuer-bg: var(--kairos-color-chip-nodata-bg);
+  --issuer-fg: var(--kairos-color-chip-nodata-fg);
   display: inline-flex;
   align-self: center;
   align-items: center;
@@ -37,38 +43,67 @@
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--kairos-color-chip-nodata-fg);
-  background: var(--kairos-color-chip-nodata-bg);
+  color: var(--issuer-fg);
+  background: var(--issuer-bg);
   border: 1px solid var(--kairos-color-border);
 }
 
 .kairos-issuer-badge[data-issuer="vanguard"] {
-  color: var(--kairos-color-chip-error-fg);
-  background: var(--kairos-color-chip-error-bg);
+  --issuer-bg: #e4e8ee;
+  --issuer-fg: #3a4656;
 }
 .kairos-issuer-badge[data-issuer="ishares"] {
-  color: var(--kairos-color-chip-info-fg);
-  background: var(--kairos-color-chip-info-bg);
+  --issuer-bg: #ebe5dd;
+  --issuer-fg: #5a4a3a;
 }
 .kairos-issuer-badge[data-issuer="apple"] {
-  color: var(--kairos-color-primary);
-  background: var(--kairos-color-primary-tint);
+  --issuer-bg: #e7e7e4;
+  --issuer-fg: #44443f;
 }
 .kairos-issuer-badge[data-issuer="nvidia"] {
-  color: var(--kairos-color-chip-success-fg);
-  background: var(--kairos-color-chip-success-bg);
+  --issuer-bg: #e0eaea;
+  --issuer-fg: #2f4e4e;
 }
 .kairos-issuer-badge[data-issuer="microsoft"] {
-  color: var(--kairos-color-chip-warn-fg);
-  background: var(--kairos-color-chip-warn-bg);
+  --issuer-bg: #e3e6f0;
+  --issuer-fg: #3b4470;
 }
 .kairos-issuer-badge[data-issuer="inditex"] {
-  color: var(--kairos-color-state-atento-fg);
-  background: var(--kairos-color-state-atento-bg);
+  --issuer-bg: #ece4ea;
+  --issuer-fg: #5a3f56;
 }
 .kairos-issuer-badge[data-issuer="iberdrola"] {
-  color: var(--kairos-color-icon-gold-fg);
-  background: var(--kairos-color-icon-gold-bg);
+  --issuer-bg: #e8eadc;
+  --issuer-fg: #4b5230;
+}
+
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="vanguard"] {
+  --issuer-bg: #262c35;
+  --issuer-fg: #b9c4d3;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="ishares"] {
+  --issuer-bg: #302a24;
+  --issuer-fg: #d3c3b1;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="apple"] {
+  --issuer-bg: #2a2a28;
+  --issuer-fg: #cfcfca;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="nvidia"] {
+  --issuer-bg: #1f2e2e;
+  --issuer-fg: #a9cccc;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="microsoft"] {
+  --issuer-bg: #252840;
+  --issuer-fg: #b6bde6;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="inditex"] {
+  --issuer-bg: #33262f;
+  --issuer-fg: #dcb9d5;
+}
+[data-theme="dark"] .kairos-issuer-badge[data-issuer="iberdrola"] {
+  --issuer-bg: #2b2e1c;
+  --issuer-fg: #cbd2a6;
 }
 
 /* Respaldo de `prefers-reduced-motion`: el componente ya pinta la lista quieta en ese caso. */
