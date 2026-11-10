@@ -870,7 +870,7 @@
       },
       "EventImpactOut": {
         "additionalProperties": false,
-        "description": "`GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.",
+        "description": "`GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.\n\n- `occurred_at`: cuándo se muestra en la app (en el replay, la hora de la inyección).\n- `market_date`: cuándo ocurrió de verdad en el mercado (el día de los precios con los que\n  se mide el movimiento). Sirve para situar el evento en la gráfica de evolución (T2-22).\n  `null` en los impactos guardados antes de existir el campo.\n- `factor_moves`: movimiento observado de cada factor ese día (fracción: 0.0074 = +0,74 %),\n  el del `ShockSet` con el que se calculó el impacto. `null` si no se guardó.",
         "properties": {
           "breakdown": {
             "items": {
@@ -922,6 +922,25 @@
           "explanation_status": {
             "$ref": "#/components/schemas/ExplanationStatus"
           },
+          "factor_moves": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "description": "Fracción: 0.76 = 76 %",
+                  "pattern": "^-?\\d+(\\.\\d+)?$",
+                  "type": "string"
+                },
+                "propertyNames": {
+                  "$ref": "#/components/schemas/Factor"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor Moves"
+          },
           "high_eur": {
             "description": "Importe en euros con 2 decimales",
             "pattern": "^-?\\d+\\.\\d{2}$",
@@ -945,6 +964,18 @@
             "pattern": "^-?\\d+\\.\\d{2}$",
             "title": "Low Eur",
             "type": "string"
+          },
+          "market_date": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Date"
           },
           "occurred_at": {
             "format": "date-time",

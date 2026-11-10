@@ -51,7 +51,15 @@ class Surprise(ContractModel):
 
 
 class EventImpactOut(ContractModel):
-    """`GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`."""
+    """`GET /portfolios/{id}/events`. `explanation` es `null` mientras está `pending`.
+
+    - `occurred_at`: cuándo se muestra en la app (en el replay, la hora de la inyección).
+    - `market_date`: cuándo ocurrió de verdad en el mercado (el día de los precios con los que
+      se mide el movimiento). Sirve para situar el evento en la gráfica de evolución (T2-22).
+      `null` en los impactos guardados antes de existir el campo.
+    - `factor_moves`: movimiento observado de cada factor ese día (fracción: 0.0074 = +0,74 %),
+      el del `ShockSet` con el que se calculó el impacto. `null` si no se guardó.
+    """
 
     event_id: str
     portfolio_id: str
@@ -71,6 +79,8 @@ class EventImpactOut(ContractModel):
     explanation_status: ExplanationStatus
     sources: list[SourceRef]
     calc_id: str
+    market_date: UtcDatetime | None = None
+    factor_moves: dict[Factor, Fraction] | None = None
 
 
 class ScenarioRequest(ContractModel):
