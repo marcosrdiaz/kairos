@@ -144,6 +144,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Pending Events
+         * @description Eventos reales pendientes de cierre (T4-04, D-089): noticia y cadena causal, sin cifras.
+         *     Iguales para todas las carteras; el más antiguo primero. Lista vacía si no hay ninguno.
+         */
+        get: operations["list_pending_events_api_v1_events_pending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -1190,6 +1211,16 @@ export interface components {
             title: string;
         };
         /**
+         * EventStatus
+         * @enum {string}
+         */
+        EventStatus: "pending_close";
+        /**
+         * EventType
+         * @enum {string}
+         */
+        EventType: "central_bank" | "commodity" | "earnings" | "fx" | "macro";
+        /**
          * ExplanationStatus
          * @enum {string}
          */
@@ -1400,6 +1431,32 @@ export interface components {
              * @description Fracción: 0.76 = 76 %
              */
             weight: string;
+        };
+        /**
+         * PendingEventOut
+         * @description Elemento de `GET /events/pending`: evento real cuyo impacto aún no se puede calcular.
+         *
+         *     **No lleva ninguna cifra** (ni impacto, ni rango, ni `calc_id`): hasta el cierre solo se
+         *     muestran la noticia y la cadena causal del analizador. Tras el cierre deja de salir aquí y
+         *     aparece, con sus cifras, en `GET /portfolios/{id}/events`. Es igual para todas las carteras.
+         *     `occurred_at` es cuándo ocurrió; `sources`, de dónde sale la noticia.
+         */
+        PendingEventOut: {
+            /** Causal Chain */
+            causal_chain: string[];
+            /** Event Id */
+            event_id: string;
+            event_type: components["schemas"]["EventType"];
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Sources */
+            sources: components["schemas"]["SourceRef"][];
+            status: components["schemas"]["EventStatus"];
+            /** Title */
+            title: string;
         };
         /** PlanOut */
         PlanOut: {
@@ -2314,6 +2371,8 @@ export type DemoResetOut = components['schemas']['DemoResetOut'];
 export type DemoResetRequest = components['schemas']['DemoResetRequest'];
 export type ErrorOut = components['schemas']['ErrorOut'];
 export type EventImpactOut = components['schemas']['EventImpactOut'];
+export type EventStatus = components['schemas']['EventStatus'];
+export type EventType = components['schemas']['EventType'];
 export type ExplanationStatus = components['schemas']['ExplanationStatus'];
 export type ExposureBucket = components['schemas']['ExposureBucket'];
 export type ExposureOut = components['schemas']['ExposureOut'];
@@ -2328,6 +2387,7 @@ export type MoveEventImpact = components['schemas']['MoveEventImpact'];
 export type OperationEffect = components['schemas']['OperationEffect'];
 export type OperationType = components['schemas']['OperationType'];
 export type OverlapItem = components['schemas']['OverlapItem'];
+export type PendingEventOut = components['schemas']['PendingEventOut'];
 export type PlanOut = components['schemas']['PlanOut'];
 export type PlanUpdateRequest = components['schemas']['PlanUpdateRequest'];
 export type Polarity = components['schemas']['Polarity'];
@@ -2477,7 +2537,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2654,6 +2714,26 @@ export interface operations {
             };
         };
     };
+    list_pending_events_api_v1_events_pending_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingEventOut"][];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -2718,7 +2798,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioSummaryOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2840,7 +2920,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3079,7 +3159,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3124,7 +3204,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3166,7 +3246,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3299,7 +3379,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3383,7 +3463,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3427,7 +3507,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3603,7 +3683,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3736,7 +3816,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3780,7 +3860,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3822,7 +3902,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioImportOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3924,7 +4004,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorOut"];
                 };
             };
-            /** @description Unprocessable Entity */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;

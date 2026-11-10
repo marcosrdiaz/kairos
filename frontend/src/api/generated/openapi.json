@@ -1200,6 +1200,24 @@
         "title": "EventImpactOut",
         "type": "object"
       },
+      "EventStatus": {
+        "enum": [
+          "pending_close"
+        ],
+        "title": "EventStatus",
+        "type": "string"
+      },
+      "EventType": {
+        "enum": [
+          "central_bank",
+          "commodity",
+          "earnings",
+          "fx",
+          "macro"
+        ],
+        "title": "EventType",
+        "type": "string"
+      },
       "ExplanationStatus": {
         "enum": [
           "pending",
@@ -1626,6 +1644,56 @@
           "asset_ids"
         ],
         "title": "OverlapItem",
+        "type": "object"
+      },
+      "PendingEventOut": {
+        "additionalProperties": false,
+        "description": "Elemento de `GET /events/pending`: evento real cuyo impacto aún no se puede calcular.\n\n**No lleva ninguna cifra** (ni impacto, ni rango, ni `calc_id`): hasta el cierre solo se\nmuestran la noticia y la cadena causal del analizador. Tras el cierre deja de salir aquí y\naparece, con sus cifras, en `GET /portfolios/{id}/events`. Es igual para todas las carteras.\n`occurred_at` es cuándo ocurrió; `sources`, de dónde sale la noticia.",
+        "properties": {
+          "causal_chain": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Causal Chain",
+            "type": "array"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "title",
+          "event_type",
+          "occurred_at",
+          "causal_chain",
+          "status",
+          "sources"
+        ],
+        "title": "PendingEventOut",
         "type": "object"
       },
       "PlanOut": {
@@ -3753,7 +3821,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Act On Dca Execution",
@@ -3988,6 +4056,32 @@
         ]
       }
     },
+    "/api/v1/events/pending": {
+      "get": {
+        "description": "Eventos reales pendientes de cierre (T4-04, D-089): noticia y cadena causal, sin cifras.\nIguales para todas las carteras; el más antiguo primero. Lista vacía si no hay ninguno.",
+        "operationId": "list_pending_events_api_v1_events_pending_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PendingEventOut"
+                  },
+                  "title": "Response List Pending Events Api V1 Events Pending Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Pending Events",
+        "tags": [
+          "events"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "description": "Comprobación de Docker, con el modo (`demo` o `production`) y el proveedor de precios\n(D-065). No toca la base de datos.",
@@ -4077,7 +4171,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Portfolio",
@@ -4129,7 +4223,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Import Portfolio",
@@ -4286,7 +4380,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Portfolio",
@@ -4633,7 +4727,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Create Dca Plan",
@@ -4704,7 +4798,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Dca Plan",
@@ -4771,7 +4865,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "List Event Impacts",
@@ -4963,7 +5057,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Explain Move",
@@ -5075,7 +5169,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Update Plan",
@@ -5137,7 +5231,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Init Positions",
@@ -5384,7 +5478,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Estimate Scenario",
@@ -5561,7 +5655,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transaction",
@@ -5623,7 +5717,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Register Transfer",
@@ -5739,7 +5833,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           }
         },
         "summary": "Tts",
