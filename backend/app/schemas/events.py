@@ -127,6 +127,10 @@ class EventAnalysis(ContractModel):
     relevance: Relevance
     analyzed_model: str
     fallback: bool
+    prompt_version: str | None = None
+    """Versión del prompt del analizador con la que se hizo (T2-26, D-083): los primeros 12
+    caracteres hexadecimales del SHA-256 del prompt. Si el prompt cambia, el análisis guardado deja
+    de valer como caché y se vuelve a pedir. `null` en el respaldo y en los análisis anteriores."""
 
     @field_validator("causal_chain")
     @classmethod
