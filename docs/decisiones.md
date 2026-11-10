@@ -114,4 +114,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-082](decisiones/D-082-integracion-t2-03.md) | 2026-11-10 | Integración (T2-03): mocks que se quedan, patrones del guardián en el analizador y `GUARDIAN_LLM_CHECK` fuera | Propuesta |
 | [D-083](decisiones/D-083-cifras-todos-factores-observados.md) | 2026-11-10 | Las cifras usan todos los factores observados; el analizador solo redacta (T2-26) | Propuesta |
 | [D-084](decisiones/D-084-umbral-exposicion-agenda.md) | 2026-11-10 | Exposición de la agenda: umbral de beta por factor y beta significativa (T2-06) | Propuesta |
+| [D-085](decisiones/D-085-recharts-grafica-cartera.md) | 2026-11-10 | Recharts para la gráfica de evolución de la cartera (T2-18) | Propuesta |
 <!-- INDICE:FIN -->

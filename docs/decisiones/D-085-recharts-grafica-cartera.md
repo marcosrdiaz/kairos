@@ -1,4 +1,4 @@
-### D-XXX · Recharts para la gráfica de evolución de la cartera (T2-18)
+### D-085 · Recharts para la gráfica de evolución de la cartera (T2-18)
 - Fecha: 2026-11-10 · Autor: Javi · Estado: Propuesta
 - Contexto: T2-18 pide una gráfica interactiva del valor de la cartera en Inicio, con selector de periodo, punto activo con ratón y teclado y tabla alternativa. El tablero pide una decisión antes de añadir una librería de gráficos. El equipo quiere poder personalizar los estilos y tener muchas opciones de interacción y de accesibilidad. T2-22 añadirá marcadores de noticias sobre la misma gráfica.
 - Decisión:
