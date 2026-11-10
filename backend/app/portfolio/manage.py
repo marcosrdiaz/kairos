@@ -7,7 +7,7 @@ genera el backend (`pf_` + hex). `profile` (obsoleto) se guarda siempre a juego 
 
 from app.core import clock
 from app.core.db import session_scope
-from app.portfolio import errors, repository
+from app.portfolio import errors, ledger, repository
 from app.portfolio.models import Portfolio
 from app.schemas.common import PortfolioKind, Profile, RiskProfile
 from app.schemas.portfolio import PortfolioSummaryOut
@@ -77,6 +77,18 @@ def update(portfolio_id: str, request: PortfolioUpdateRequest) -> PortfolioSumma
             risk_profile=risk.value,
         )
         return summary(row)
+
+
+def held_asset_ids() -> list[str]:
+    """Activos con participaciones vivas en alguna cartera, sin repetir y ordenados (T4-02: qué
+    cierres guarda la actualización diaria). Solo dice qué activos son, nunca suma carteras."""
+    with session_scope() as session:
+        held = {
+            lot.asset_id
+            for portfolio_id in repository.list_portfolio_ids(session)
+            for lot in ledger.open_lots(session, portfolio_id)
+        }
+    return sorted(held)
 
 
 def delete(portfolio_id: str) -> None:

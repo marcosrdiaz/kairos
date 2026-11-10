@@ -209,6 +209,7 @@ create_portfolio = manage.create
 update_portfolio = manage.update
 delete_portfolio = manage.delete
 import_portfolio = importer.import_portfolio
+held_asset_ids = manage.held_asset_ids
 
 
 def lookup_assets(query: str) -> list[AssetOut]:
