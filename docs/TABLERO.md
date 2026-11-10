@@ -188,7 +188,7 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 | T4-23 | *Validada por el equipo (propuesta de Alons).* **VL de los fondos más fresco**: Yahoo da el VL de los fondos (`0P…`, vía Morningstar) con una sesión más de retraso de lo necesario. Comprobado el 10 nov con IE00B03HD191: Yahoo, 6 nov (63,03 €); Financial Times, 9 nov (64,16 €). Un adaptador solo para los `nav_daily` que lee el VL de otra fuente por ISIN (web de Vanguard o FT, sin clave; con licencia, EODHD), detrás del mismo `PriceProvider`. Yahoo sigue para acciones, ETF y EUR/USD. Antes, una decisión con la fuente elegida y sus condiciones de uso | Con `MARKET_DATA_PROVIDER=yahoo`, los 6 fondos del catálogo tienen el VL del día hábil anterior en cuanto la gestora lo publica; si la fuente nueva falla, sirve Yahoo o el último guardado con su fecha, nunca uno inventado. Tests sin red y uno `live`. Sin dependencias nuevas | T2-24 | `backend/app/prices/` (adaptador nuevo y su selección en `live.py`), `backend/tests/test_prices_nav.py` (nuevo) | — | ⬜ |
 | T4-24 | *Validada por el equipo (propuesta de Alons; amplía `INGENIERIA.md` §4).* **Valor estimado en directo de los fondos**: un fondo solo tiene un VL al día, pero los indexados siguen el mismo índice que un ETF que cotiza cada minuto (Global Stock → `IWDA`, US 500 → `CSPX`…). Estimación = último VL × variación del ETF de referencia desde la fecha de ese VL, con rango (error de seguimiento y beta frente al ETF) y `calc_id`. Se muestra **aparte** del VL oficial y etiquetada «estimado»; la valoración oficial no cambia. Necesita campos opcionales nuevos en la posición (p. ej. `estimated_value` con `low`/`high`, `calc_id`): petición de contrato en un PR propio | En producción, los fondos de Laura tienen un valor estimado que se mueve con su ETF de referencia, con rango y traza («¿De dónde sale?»); el VL oficial y su fecha siguen visibles; un fondo sin ETF de referencia no tiene estimación (nunca una inventada). Tests con proveedor falso | T2-24, T4-23 (b) | `backend/app/prices/estimate.py` (nuevo), `data/seed/assets.json` (solo el ETF de referencia de cada fondo), `backend/app/schemas/portfolio.py` (PR de contrato), `backend/tests/test_nav_estimate.py` (nuevo), `frontend/src/app/` (solo mostrar el estimado junto al VL) | — | ⬜ |
 | T4-25 | *Propuesta (Alons, pendiente de validar en la llamada diaria).* **Producción sin reloj fijo**: con `DEMO_MODE=false`, `DEMO_CLOCK` sigue fijando el reloj (`core/clock.py` lo lee sin mirar el modo). Quien copia `.env.example` (que trae `DEMO_CLOCK=2026-11-06T18:00:00Z`, D-080) y pasa a producción ve los precios congelados en esa fecha aunque Yahoo funcione: `/health` dice `production` con `now` del 6 nov. Que el backend no arranque con `DEMO_MODE=false` y `DEMO_CLOCK` puesto, con un mensaje que diga qué línea quitar (la misma comprobación al arrancar que añadió T2-24), y que `.env.example` lo explique | Con `DEMO_MODE=false` y `DEMO_CLOCK` puesto, el backend no arranca y el error nombra la variable; sin `DEMO_CLOCK`, `/health` da la hora real; el modo demo no cambia. Tests de configuración sin red | T2-24 | `backend/app/config.py` (solo la validación), `backend/tests/test_config_clock.py` (nuevo), `.env.example` (solo el comentario de `DEMO_CLOCK`), `README.md` (una línea) | — | ⬜ |
-| T4-26 | *Propuesta (Alons, sustituye a T4-07 en el MVP).* **Catálogo fijo ampliado y comprobado en Yahoo**: en lugar de buscar activos en el mercado, `data/seed/assets.json` pasa de 17 a 25 activos que se consultan bien en Yahoo Finance: los ETF VUSA, SPPW y VWRL (mismo índice que CSPX, IWDA y VWCE, de los que toman la composición) y las acciones Amazon, Alphabet, Meta, Tesla y ASML (presentes en la composición del MSCI World). Cada uno tiene sus históricos en `data/prices`. Los que no tienen composición verificable se quedan fuera hasta T4-08. Un script comprueba el catálogo contra Yahoo (divisa, 3 años de historia, cierres recientes) | Los activos nuevos se encuentran en el buscador del alta, se valoran en modo demo (CSV hasta el 6 nov) y en directo, y tienen betas; ningún dato inventado; el script de comprobación pasa contra Yahoo (test `live`) y las cifras de Laura y Javier no cambian | T2-24, T4-03 (b) | `data/seed/assets.json`, `data/prices/` (solo ficheros nuevos), `scripts/fetch_prices.py` (solo descargar activos sueltos), `scripts/check_catalog.py` (nuevo), `backend/tests/test_catalog_fixed.py` (nuevo) y los tests que cuenten activos del catálogo, `data/seed/compositions/` (solo ficheros nuevos), `backend/tests/golden/portfolio_init_ops_test.py` (solo la búsqueda «vanguard»), `docs/SPEC.md` §12 | Alons | 🧪 en PR |
+| T4-26 | *Propuesta (Alons, sustituye a T4-07 en el MVP).* **Catálogo fijo ampliado y comprobado en Yahoo**: en lugar de buscar activos en el mercado, `data/seed/assets.json` pasa de 17 a 25 activos que se consultan bien en Yahoo Finance: los ETF VUSA, SPPW y VWRL (mismo índice que CSPX, IWDA y VWCE, de los que toman la composición) y las acciones Amazon, Alphabet, Meta, Tesla y ASML (presentes en la composición del MSCI World). Cada uno tiene sus históricos en `data/prices`. Los que no tienen composición verificable se quedan fuera hasta T4-08. Un script comprueba el catálogo contra Yahoo (divisa, 3 años de historia, cierres recientes) | Los activos nuevos se encuentran en el buscador del alta, se valoran en modo demo (CSV hasta el 6 nov) y en directo, y tienen betas; ningún dato inventado; el script de comprobación pasa contra Yahoo (test `live`) y las cifras de Laura y Javier no cambian | T2-24, T4-03 (b) | `data/seed/assets.json`, `data/prices/` (solo ficheros nuevos), `scripts/fetch_prices.py` (solo descargar activos sueltos), `scripts/check_catalog.py` (nuevo), `backend/tests/test_catalog_fixed.py` (nuevo) y los tests que cuenten activos del catálogo, `data/seed/compositions/` (solo ficheros nuevos), `backend/tests/golden/portfolio_init_ops_test.py` (solo la búsqueda «vanguard»), `docs/SPEC.md` §12 | Alons | ✅ hecho |
 
 ### Fase 5 · Rediseño visual: interfaz y componentes (por definir)
 
@@ -220,29 +220,15 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 
 
-### T4-03 · T4-13 · T4-26 · Betas solas, selector de carteras y catálogo fijo — Alons
-**Qué estaba haciendo:** las tres en PR, sin merge y sin conflictos con `main`; falta un revisor para cada una. Probadas en local en modo producción (Yahoo en directo).
-- **T4-03: #121.**
-  - `impact.service.recompute_betas` lee las series de `prices`.
-  - `factor_beta.computed_at`, con migración `0007` ya encadenada sobre la `0006` de T2-26.
-  - Recálculo semanal en `daily_update.py`.
-  - Si un factor o un activo no tiene datos, conserva las betas guardadas (la prueba con el BCE caído las borraba).
-- **T4-13: #122.**
-  - Selector y gestión de carteras.
-  - «Nueva cartera» en dos pasos: datos, y después activos a mano, con un botón para importar CSV.
-  - Alta de posiciones solo con participaciones, al precio de hoy (compra); el precio y la fecha son opcionales.
-- **T4-26: #127.** Catálogo de 25 activos comprobados en Yahoo (`scripts/check_catalog.py`); los 8 nuevos tienen precios hasta el 6 nov, composición y betas.
-- **T4-07 aparcada:** #123 y #124 quedan sin merge. Hay que cerrarlos a mano: la sesión no tenía permiso.
-**Siguiente paso exacto:**
-1. Revisión y merge, por orden: #121, #122 y #127. Son independientes; ese orden es el de menos riesgo.
-2. Tras cada merge, `docs: done`.
-3. Quien tenga la BD levantada: `make seed`, para la migración `0007` y el catálogo nuevo.
-**Pendiente para otra tarea:**
-- Composición oficial para ampliar el catálogo: Santander, BBVA, Telefónica, Repsol, LVMH, ETF de Europa, emergentes, bonos y monetarios. Ver T4-08.
-- Color del distintivo del ticker para SPDR, Amazon, Alphabet, Meta, Tesla y ASML.
-- `PhoneHomePage.tsx` sigue con `?p=` o `"laura"`.
-- En el selector solo se puede renombrar; el tipo y el perfil no se cambian.
-**Ficheros tocados:** ver la fila de cada tarea.
+### Lo que dejan T4-03, T4-13 y T4-26 — Alons (para quien coja la tarea)
+- **Todos:** quien tenga la BD levantada, `make seed` (migración `0007` y catálogo de 25 activos).
+- **T4-05 (Jaime):** `scripts/daily_update.py` ya está libre. T4-03 añadió al final de `update_once` el recálculo semanal de betas (`impact.service.recompute_betas_if_due`).
+- **T4-08 y ampliar el catálogo:** Yahoo sirve bien Santander, BBVA, Telefónica, Repsol, LVMH, los ETF de Europa, emergentes, bonos y monetarios, pero falta su composición oficial. Para añadirlos: `scripts/fetch_prices.py --assets <ids> --until 2026-11-06` y `scripts/check_catalog.py` (decisión «Catálogo fijo ampliado…»).
+- **T4-07 (aparcada):** la versión del catálogo abierto está en las ramas `t4-07/open-catalog-contract` y `t4-07/open-catalog` (#123 y #124, cerrados).
+- **Pendiente sin tarea:**
+  - Color del distintivo del ticker (T2-28) para SPDR, Amazon, Alphabet, Meta, Tesla y ASML.
+  - `PhoneHomePage.tsx` sigue con `?p=` o `"laura"`.
+  - En el selector solo se puede renombrar, no cambiar el tipo ni el perfil.
 
 ### T4-05 · Ingesta de noticias — Jaime
 
