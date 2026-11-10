@@ -1,9 +1,9 @@
 import { useId } from "react";
 import type { NewsItemOut, NewsPositionEstimate } from "../../api/generated/schema";
 import { TraceFigure } from "../../components/trace/TraceFigure";
-import { formatDate, formatEurRange } from "../../lib/format";
+import { formatDate } from "../../lib/format";
 import { NewsEffect } from "./NewsEffect";
-import { CATEGORY_LABEL, timingText } from "./labels";
+import { CATEGORY_LABEL, eurRangeText, timingText } from "./labels";
 
 /** Efecto por posición: rango y desde cuándo se nota (acciones en la sesión, fondos con el VL). */
 function PositionEffects({
@@ -25,7 +25,7 @@ function PositionEffects({
           >
             <span className="font-medium text-ink">{p.name}</span>
             <span className="tabular-nums text-ink">
-              <TraceFigure calcId={calcId}>{formatEurRange(p.low_eur, p.high_eur)}</TraceFigure>
+              <TraceFigure calcId={calcId}>{eurRangeText(p.low_eur, p.high_eur)}</TraceFigure>
             </span>
             <span className="w-full text-sm text-ink-muted">
               {timingText(p.timing, p.effective_from)}
