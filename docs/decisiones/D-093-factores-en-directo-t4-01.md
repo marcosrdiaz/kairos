@@ -1,4 +1,4 @@
-### D-XXX · Cierres de los 5 factores en directo: Yahoo y BCE, tabla `factor_close` y fuente aparte del `PriceProvider` (T4-01)
+### D-093 · Cierres de los 5 factores en directo: Yahoo y BCE, tabla `factor_close` y fuente aparte del `PriceProvider` (T4-01)
 - Fecha: 2026-11-10 · Autor: Manu · Estado: Propuesta
 - Contexto: T4-01 pide los cierres de `EQ_GLOBAL`, `EQ_US_TECH`, `OIL`, `RATES_EUR` y `EURUSD` en producción, con los mismos símbolos que `scripts/fetch_prices.py`, guardados en BD con fecha y fuente y sin inventar nada si el proveedor falla. `fetch_prices.py` saca cuatro de Yahoo, pero `RATES_EUR` del BCE (curva AAA a 10 años), no de Yahoo. Hasta ahora los factores solo existían como CSV en `data/factors` (T1-09).
 - Decisión:
