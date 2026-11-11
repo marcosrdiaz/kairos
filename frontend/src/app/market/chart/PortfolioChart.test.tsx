@@ -66,9 +66,25 @@ describe("PortfolioChart", () => {
     expect(screen.getByRole("radio", { name: "Última semana" })).toHaveProperty("checked", true);
   });
 
+  it("pliega la escala de tiempo, la leyenda y la tabla en «Ajustar vista»", async () => {
+    stubApi();
+    renderChart();
+    const adjust = await screen.findByRole("button", { name: "Ajustar vista" });
+    expect(adjust.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("button", { name: "Mostrar leyenda" })).toBeNull();
+    expect(screen.queryByText(/^Ver tabla/)).toBeNull();
+    fireEvent.click(adjust);
+    expect(adjust.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Mostrar leyenda" })).toBeTruthy();
+    expect(screen.getByText(/^Ver tabla/)).toBeTruthy();
+    fireEvent.click(adjust);
+    expect(screen.queryByText(/^Ver tabla/)).toBeNull();
+  });
+
   it("tiene una tabla alternativa con todos los puntos, agrupados por mes y del más reciente", async () => {
     stubApi();
     renderChart();
+    fireEvent.click(await screen.findByRole("button", { name: "Ajustar vista" }));
     const summary = await screen.findByText(/^Ver tabla/);
     expect(screen.queryByRole("table", { hidden: true })).toBeNull(); // plegada: sin filas
     const details = summary.closest("details") as HTMLDetailsElement;
@@ -90,6 +106,7 @@ describe("PortfolioChart", () => {
   it("explica cómo leer la gráfica con una leyenda plegable", async () => {
     stubApi();
     renderChart();
+    fireEvent.click(await screen.findByRole("button", { name: "Ajustar vista" }));
     const toggle = await screen.findByRole("button", { name: "Mostrar leyenda" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByRole("heading", { name: "Cómo leer la gráfica" })).toBeNull(); // oculta

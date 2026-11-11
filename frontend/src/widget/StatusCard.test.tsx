@@ -35,6 +35,23 @@ function definition(term: string): string {
   return dt.nextElementSibling?.textContent ?? "";
 }
 
+/** Tono del icono de «Esta semana» (decorativo): sale del signo de `change_week_pct`. */
+function weekIconTone(container: HTMLElement): string {
+  const dt = within(container).getByText("Esta semana", { selector: "dt" });
+  return dt.querySelector("span")?.className ?? "";
+}
+
+describe("icono de «Esta semana»", () => {
+  it.each([
+    ["sube", "0.0123", "bg-icon-green-bg"],
+    ["baja", "-0.0123", "bg-icon-red-bg"],
+    ["sin variación", "0", "bg-icon-blue-bg"],
+  ])("%s: el icono sigue el signo del dato del backend", (_name, change, tone) => {
+    const { container } = renderStatus({ ...(atento as StatusOut), change_week_pct: change });
+    expect(weekIconTone(container)).toContain(tone);
+  });
+});
+
 describe("StatusCard + StatusTiles", () => {
   it.each(CASES)(
     "estado %s: color + palabra, frase como titular y traza",

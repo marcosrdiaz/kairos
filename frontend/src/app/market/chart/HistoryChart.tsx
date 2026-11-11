@@ -54,6 +54,8 @@ interface HistoryChartProps {
   reducedMotion: boolean;
   /** Pantalla estrecha: gráfica más baja, ejes más pequeños. */
   compact: boolean;
+  /** Ocupa todo el alto del contenedor (Inicio en escritorio) en vez de una altura fija. */
+  fill?: boolean;
   /** Noticias del periodo (T2-22), con su almacén y el id de la tarjeta que las describe. */
   markers?: EventMarker[];
   /** Piso de cada marcador (por `event_id`) para que los cercanos no se pisen. */
@@ -106,6 +108,7 @@ export const HistoryChart = memo(function HistoryChart({
   store,
   reducedMotion,
   compact,
+  fill = false,
   markers = [],
   markerLevels,
   markerStore,
@@ -145,7 +148,7 @@ export const HistoryChart = memo(function HistoryChart({
   };
 
   return (
-    <ResponsiveContainer width="100%" height={compact ? 230 : 300} debounce={50}>
+    <ResponsiveContainer width="100%" height={fill ? "100%" : compact ? 230 : 300} debounce={50}>
       <AreaChart
         data={rows}
         // Con noticias, más margen arriba: el círculo del marcador va por encima del punto.
