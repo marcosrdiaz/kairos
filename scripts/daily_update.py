@@ -1,6 +1,7 @@
 """Actualización diaria tras el cierre: guarda los cierres de los activos en cartera, el EUR/USD y
-los 5 factores sin que nadie abra la app (T4-02). Después procesa los eventos pendientes de cierre
-(T4-04) y, si las últimas betas tienen una semana o más, las recalcula (T4-03).
+los 5 factores sin que nadie abra la app (T4-02). Después da de alta las noticias nuevas (T4-05),
+procesa los eventos pendientes de cierre (T4-04) y, si las últimas betas tienen una semana o más,
+las recalcula (T4-03).
 
 Solo en producción (`MARKET_DATA_PROVIDER=yahoo`); en modo demo no hace nada y termina. Usa los
 proveedores en directo del backend (T2-24 y T4-01): piden a Yahoo y al BCE y guardan en `price`,
@@ -43,6 +44,8 @@ _STALE_MARK = "no respondió"
 class Report:
     updated: list[str] = field(default_factory=list)
     failed: dict[str, str] = field(default_factory=dict)
+    news: list[str] = field(default_factory=list)
+    """Eventos nuevos dados de alta por la ingesta de noticias (T4-05)."""
     events: list[str] = field(default_factory=list)
     """Eventos pendientes de cierre que se han podido medir y procesar (T4-04)."""
     betas: list[str] | None = None
@@ -85,7 +88,15 @@ def update_once() -> Report:
             lambda f=factor: _label(prices_service.factor_latest(f)),
         )
     from app.events import service as events_service
+    from app.events.ingest import runner as ingest_runner
 
+    try:
+        news = ingest_runner.run_once()  # antes de procesar: una nota de hoy queda pendiente
+        report.news = news.created
+        for source, reason in news.failed.items():
+            report.failed[f"news:{source}"] = reason
+    except Exception as error:
+        report.failed["news"] = str(error) or type(error).__name__
     try:
         report.events = events_service.process_pending()  # con los cierres ya guardados
     except Exception as error:
@@ -132,6 +143,8 @@ def _run_and_log() -> None:
     )
     for key, reason in sorted(report.failed.items()):
         log.warning("  %s: %s", key, reason)
+    if report.news:
+        log.info("Noticias nuevas dadas de alta: %s", ", ".join(report.news))
     if report.events:
         log.info("Eventos procesados tras el cierre: %s", ", ".join(report.events))
     if report.betas is not None:
