@@ -268,7 +268,7 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| TX-01 | **Pulido visual libre del frontend**, sobre todo las pantallas del guion (Inicio, widget, `/panel`, Pregunta). Incluye los hallazgos de *Bloqueos* (aviso que empuja la tarjeta en el paso 3, brillo del botón del asistente, tarjetas anidadas). Solo frontend: nada de backend, contrato ni dependencias. Según `PRODUCT.md` y `DESIGN.md` | Cada mejora en su commit, con capturas antes y después (playwright-cli); `npm run e2e` en verde tras cada una (sin romper selectores); cifras con `Traced` y `calc_id` intactos y sin cálculos en el cliente; AA en claro y oscuro, móvil y escritorio; `prefers-reduced-motion` respetado | — | Estilos y componentes visuales de `frontend/src/` (`app/`, `widget/`, `panel/`, `voice/`, `components/`, `index.css`); no `frontend/src/api/` ni `frontend/e2e/` | Marcos | 🔄 en curso |
+| TX-01 | **Pulido visual libre del frontend**, sobre todo las pantallas del guion (Inicio, widget, `/panel`, Pregunta). Incluye los hallazgos de *Bloqueos* (aviso que empuja la tarjeta en el paso 3, brillo del botón del asistente, tarjetas anidadas). Solo frontend: nada de backend, contrato ni dependencias. Según `PRODUCT.md` y `DESIGN.md` | Cada mejora en su commit, con capturas antes y después (playwright-cli); `npm run e2e` en verde tras cada una (sin romper selectores); cifras con `Traced` y `calc_id` intactos y sin cálculos en el cliente; AA en claro y oscuro, móvil y escritorio; `prefers-reduced-motion` respetado | — | Estilos y componentes visuales de `frontend/src/` (`app/`, `widget/`, `panel/`, `voice/`, `components/`, `index.css`); no `frontend/src/api/` ni `frontend/e2e/` | Marcos | 🧪 en PR |
 
 ### Fase EXTRA · Después de la entrega
 
@@ -301,6 +301,10 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plantilla:
 
 ```
+### TX-01 · Pulido visual libre — Marcos
+
+En PR #175 (rama `tx-01/pulido-visual`), pendiente de revisión y merge. Son 20 commits, uno por mejora; la tabla con cómo verlas está en la descripción del PR. Las capturas de antes y después (`docs/capturas/tx-01/`) **no** van en el PR: se quedan en la rama local `extra/pulido-visual` (si se borra, se pierden). **Siguiente paso al mergear:** `docs: done TX-01`, cerrar en *Bloqueos* los tres hallazgos de pulido del 10 nov (aviso que empuja la tarjeta del widget, brillo del botón del asistente y tarjetas anidadas; el ticker se queda como está) y borrar estas notas. Ficheros tocados: `frontend/src/` (`app/`, `widget/`, `panel/`, `voice/`, `components/`) y `frontend/src/index.css`; sin backend, contrato ni dependencias.
+
 ### T<x>-<nn> · <nombre> — <quién>
 **Qué estaba haciendo:** …
 **Siguiente paso exacto:** …
