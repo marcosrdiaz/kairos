@@ -1,5 +1,5 @@
 ### D-098 · Ingesta de noticias: solo las decisiones de política monetaria del BCE; resultados y OPEP, sin fuente usable todavía (T4-05)
-- Fecha: 2026-11-10 · Autor: Jaime (T4-05) · Estado: Propuesta
+- Fecha: 2026-11-10 · Autor: Jaime (T4-05) · Estado: Aceptada
 - Contexto: T4-05 pide que las notas de prensa del BCE, las fechas de resultados de las acciones en cartera y las reuniones de la OPEP creen eventos reales (`EventIn` con `text` y `source_urls`) y los procese el pipeline de T4-04 (`events.service.ingest`, D-096). Al probar las fuentes el 10 nov: el RSS oficial del BCE (`https://www.ecb.europa.eu/rss/press.html`) responde sin clave, pero mezcla discursos, entrevistas y notas de todo tipo, y cada entrada solo trae el título. `opec.org` responde 403 a cualquier petición automática. Las fechas de resultados de Yahoo (`quoteSummary`, módulo `calendarEvents`) piden una cookie y un *crumb*, y el gráfico (`chart`, que ya usa `prices/yahoo.py`) no trae las fechas de resultados.
 - Decisión:
   - **Solo cuentan las decisiones de política monetaria del BCE**: enlaces `/press/pr/date/<año>/html/ecb.mp<aammdd>…`. Un discurso o una nota de estadísticas no mueve los factores, y darlos de alta llenaría la app de eventos sin impacto.
