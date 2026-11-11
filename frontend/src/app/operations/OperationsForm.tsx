@@ -144,62 +144,58 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
           }}
         />
         <div className="grid min-w-0 gap-5 @3xl/app-content:grid-cols-2">
-          <div className="flex min-w-0 flex-col gap-5">
-            {draft.kind === "buy" ? (
-              <AssetCombobox
-                label="Activo"
-                value={draft.asset}
-                onChange={(asset) => update({ asset })}
-                error={errors.asset}
-              />
-            ) : (
-              <SelectField
-                label={draft.kind === "sell" ? "Posición" : "Fondo de origen"}
-                hint={
-                  positionsHint ??
-                  (draft.kind === "transfer" ? "Solo hay traspaso entre fondos de inversión." : undefined)
-                }
-                placeholder="Elige una posición"
-                value={draft.heldAssetId}
-                options={positionOptions}
-                onValue={(heldAssetId) => update({ heldAssetId })}
-                error={errors.heldAssetId}
-              />
-            )}
-            {draft.kind === "transfer" && (
-              <AssetCombobox
-                label="Fondo de destino"
-                value={draft.asset}
-                onChange={(asset) => update({ asset })}
-                error={errors.asset}
-                selectedError={errors.asset}
-              />
-            )}
-          </div>
-          <div className="flex min-w-0 flex-col gap-5">
-            <ChoiceGroup
-              legend="Cantidad"
-              value={draft.mode}
-              options={[
-                { value: "amount", label: "Por importe (€)" },
-                { value: "units", label: "Por participaciones" },
-              ]}
-              onValue={(mode) => update({ mode, quantity: "" })}
+          {draft.kind === "buy" ? (
+            <AssetCombobox
+              label="Activo"
+              value={draft.asset}
+              onChange={(asset) => update({ asset })}
+              error={errors.asset}
             />
-            <TextField
-              label={draft.mode === "amount" ? "Importe (€)" : "Participaciones"}
+          ) : (
+            <SelectField
+              label={draft.kind === "sell" ? "Posición" : "Fondo de origen"}
               hint={
-                draft.mode === "amount"
-                  ? "Con coma para los céntimos. Se usa el precio del momento."
-                  : "Con coma para los decimales. Se usa el precio del momento."
+                positionsHint ??
+                (draft.kind === "transfer" ? "Solo hay traspaso entre fondos de inversión." : undefined)
               }
-              inputMode="decimal"
-              autoComplete="off"
-              value={draft.quantity}
-              onValue={(quantity) => update({ quantity })}
-              error={errors.quantity}
+              placeholder="Elige una posición"
+              value={draft.heldAssetId}
+              options={positionOptions}
+              onValue={(heldAssetId) => update({ heldAssetId })}
+              error={errors.heldAssetId}
             />
-          </div>
+          )}
+          <ChoiceGroup
+            legend="Cantidad"
+            value={draft.mode}
+            options={[
+              { value: "amount", label: "Por importe (€)" },
+              { value: "units", label: "Por participaciones" },
+            ]}
+            onValue={(mode) => update({ mode, quantity: "" })}
+          />
+          {draft.kind === "transfer" && (
+            <AssetCombobox
+              label="Fondo de destino"
+              value={draft.asset}
+              onChange={(asset) => update({ asset })}
+              error={errors.asset}
+              selectedError={errors.asset}
+            />
+          )}
+          <TextField
+            label={draft.mode === "amount" ? "Importe (€)" : "Participaciones"}
+            hint={
+              draft.mode === "amount"
+                ? "Con coma para los céntimos. Se usa el precio del momento."
+                : "Con coma para los decimales. Se usa el precio del momento."
+            }
+            inputMode="decimal"
+            autoComplete="off"
+            value={draft.quantity}
+            onValue={(quantity) => update({ quantity })}
+            error={errors.quantity}
+          />
         </div>
         <button
           ref={submitRef}
