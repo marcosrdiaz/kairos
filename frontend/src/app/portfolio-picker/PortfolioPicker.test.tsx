@@ -4,6 +4,7 @@ import { MemoryRouter, useLocation } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DemoReset } from "./DemoReset";
 import { PortfolioPicker } from "./PortfolioPicker";
+import { initials } from "./initials";
 
 const PORTFOLIOS = [
   { id: "laura", name: "Laura", profile: "dinamico" },
@@ -43,7 +44,10 @@ afterEach(() => {
 
 describe("PortfolioPicker", () => {
   it("lista las carteras como radios y marca la de ?p=", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json(PORTFOLIOS)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json(PORTFOLIOS)),
+    );
     renderWith(<PortfolioPicker />, "/cartera?p=javier");
     const javier = await screen.findByRole("radio", { name: "Javier" });
     expect((javier as HTMLInputElement).checked).toBe(true);
@@ -52,14 +56,20 @@ describe("PortfolioPicker", () => {
   });
 
   it("sin ?p= marca Laura (cartera del guion)", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json(PORTFOLIOS)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json(PORTFOLIOS)),
+    );
     renderWith(<PortfolioPicker />);
     const laura = await screen.findByRole("radio", { name: "Laura" });
     expect((laura as HTMLInputElement).checked).toBe(true);
   });
 
   it("elegir una cartera la guarda en ?p= y conserva el resto de la query", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json(PORTFOLIOS)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json(PORTFOLIOS)),
+    );
     renderWith(<PortfolioPicker />, "/cartera?p=laura&x=1");
     fireEvent.click(await screen.findByRole("radio", { name: "Javier" }));
     const search = new URLSearchParams(screen.getByTestId("search").textContent ?? "");
@@ -67,8 +77,34 @@ describe("PortfolioPicker", () => {
     expect(search.get("x")).toBe("1");
   });
 
+  it("cada cartera es un círculo con sus iniciales y la elegida se nombra sin hover", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        json([
+          ...PORTFOLIOS,
+          { id: "fam", name: "Familia García", profile: "moderado", kind: "business" },
+        ]),
+      ),
+    );
+    renderWith(<PortfolioPicker />, "/cartera?p=fam");
+    const fam = await screen.findByRole("radio", { name: "Familia García, Negocio" });
+    expect((fam as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByText("FG")).toBeTruthy();
+    expect(screen.getByText("L")).toBeTruthy();
+    expect(screen.getByText("Ahora: Familia García · Negocio")).toBeTruthy();
+  });
+
+  it("iniciales: una o dos letras", () => {
+    expect(initials("Laura")).toBe("L");
+    expect(initials("  familia  garcía pérez ")).toBe("FG");
+  });
+
   it("si falla la API lo dice, sin inventar carteras", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json({ code: "INTERNAL" }, 500)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json({ code: "INTERNAL" }, 500)),
+    );
     renderWith(<PortfolioPicker />);
     expect(await screen.findByText(/no podemos cargar las carteras/)).toBeTruthy();
     expect(screen.queryByRole("radio")).toBeNull();
@@ -99,9 +135,7 @@ describe("DemoReset", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Sí, restaurar" }));
     });
-    await waitFor(() =>
-      expect(screen.getByRole("status").textContent).toMatch(/estado inicial/),
-    );
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/estado inicial/));
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe("/api/v1/demo/reset");
     expect(init?.method).toBe("POST");
