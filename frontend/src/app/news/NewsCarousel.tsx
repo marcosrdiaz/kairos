@@ -1,4 +1,5 @@
 import { useEffect, useState, type FocusEvent, type ReactNode } from "react";
+import { Link } from "react-router";
 import type { NewsItemOut } from "../../api/generated/schema";
 import { ArrowLeftIcon, ArrowRightIcon, PauseIcon, PlayIcon } from "../../components/icons";
 import { NewsCover } from "../news-feed/NewsCover";
@@ -76,40 +77,18 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
       onMouseLeave={() => setHovered(false)}
       onFocus={onFocus}
       onBlur={onBlur}
-      className="flex flex-col gap-4"
+      className="grid gap-2 md:grid-cols-[15rem_minmax(0,1fr)] md:grid-rows-[auto_1fr] md:gap-x-4 md:gap-y-2"
     >
-      <div className="flex items-start justify-between gap-4">
+      {/* Título a la izquierda; contador, flechas, pausa y enlace a la derecha. En escritorio va en
+          la columna derecha, a la derecha de la imagen. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 md:col-start-2 md:row-start-1 md:pr-3 md:pt-2.5 lg:flex-nowrap">
         <div className="min-w-0">{header}</div>
-        {total > 1 && (
-          <div className="flex shrink-0 items-center gap-3">
-            <p className="m-0 text-sm text-ink-muted" aria-hidden="true">
-              {index + 1} / {total}
-            </p>
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              className={arrowButton}
-              aria-label={paused ? "Reanudar el pase automático" : "Pausar el pase automático"}
-            >
-              {paused ? <PlayIcon className="size-5" /> : <PauseIcon className="size-5" />}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Portada y controles a la izquierda; texto a la derecha. */}
-      <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
-        <div className="flex min-w-0 flex-col gap-3">
-          <div className="relative min-h-40 flex-1 overflow-hidden rounded-control md:min-h-56">
-            <div
-              key={current.id}
-              className={`absolute inset-0 flex [&>div]:flex-1 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
-            >
-              <NewsCover category={current.category} publishedAt={current.published_at} large />
-            </div>
-          </div>
+        <div className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 lg:shrink-0">
           {total > 1 && (
-            <div className="flex items-center justify-between gap-2">
+            <>
+              <p className="m-0 text-sm text-ink-muted" aria-hidden="true">
+                {index + 1} / {total}
+              </p>
               <button
                 type="button"
                 onClick={() => go(index - 1, "prev")}
@@ -119,23 +98,6 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
               >
                 <ArrowLeftIcon className="size-5" />
               </button>
-              <ul className="m-0 flex list-none items-center gap-0.5 p-0">
-                {items.map((n, i) => (
-                  <li key={n.id} className="flex">
-                    <button
-                      type="button"
-                      onClick={() => go(i, i < index ? "prev" : "next")}
-                      aria-label={`Noticia ${i + 1}: ${n.title}`}
-                      aria-current={i === index ? "true" : undefined}
-                      className="group inline-flex size-6 items-center justify-center rounded-full"
-                    >
-                      <span
-                        className={`block h-2 rounded-full transition-all ${i === index ? "w-4 bg-accent" : "w-2 bg-line-strong group-hover:bg-ink-muted"}`}
-                      />
-                    </button>
-                  </li>
-                ))}
-              </ul>
               <button
                 type="button"
                 onClick={() => go(index + 1, "next")}
@@ -145,20 +107,50 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
               >
                 <ArrowRightIcon className="size-5" />
               </button>
-            </div>
+              <button
+                type="button"
+                onClick={() => setPaused((p) => !p)}
+                className={arrowButton}
+                aria-label={paused ? "Reanudar el pase automático" : "Pausar el pase automático"}
+              >
+                {paused ? <PlayIcon className="size-5" /> : <PauseIcon className="size-5" />}
+              </button>
+            </>
           )}
+          <Link
+            to={newsHref}
+            aria-label="Ver todas las noticias"
+            className="inline-flex min-h-touch items-center gap-1 pl-2 text-sm font-semibold text-accent underline"
+          >
+            Ver todas
+            <ArrowRightIcon className="size-4" />
+          </Link>
         </div>
+      </div>
 
-        <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
-          <NewsSlide
-            key={current.id}
-            news={current}
-            position={index + 1}
-            total={total}
-            direction={direction}
-            newsHref={newsHref}
-          />
+      {/* La imagen, casi a los bordes de la tarjeta y a toda su altura (escritorio); en móvil, entre la
+          cabecera y el texto. */}
+      <div className="relative min-h-28 overflow-hidden rounded-control md:col-start-1 md:row-span-2 md:row-start-1 md:min-h-0">
+        <div
+          key={current.id}
+          className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+        >
+          <NewsCover category={current.category} publishedAt={current.published_at} dense />
         </div>
+      </div>
+
+      <div
+        id="news-slides"
+        aria-live={rotating ? "off" : "polite"}
+        className="min-w-0 md:col-start-2 md:row-start-2 md:pb-2.5 md:pr-3"
+      >
+        <NewsSlide
+          key={current.id}
+          news={current}
+          position={index + 1}
+          total={total}
+          direction={direction}
+        />
       </div>
     </div>
   );

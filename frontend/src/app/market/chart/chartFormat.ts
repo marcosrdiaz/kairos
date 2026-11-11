@@ -98,8 +98,35 @@ export function tickDate(iso: string, period: HistoryPeriod, spanDays?: number):
   if (period === "1w") return weekDay.format(date);
   // Con «1A» o «Todo» pero pocos meses de datos (cartera reciente), mes y año repetirían la
   // misma etiqueta («oct 26», «oct 26»…): se usa el día.
-  const long = (period === "1y" || period === "max") && (spanDays === undefined || spanDays > 180);
-  return long ? monthYear.format(date) : dayMonth.format(date);
+  return usesMonthLabels(period, spanDays) ? monthYear.format(date) : dayMonth.format(date);
+}
+
+/** ¿El eje X rotula por meses («oct 25»)? Con «1A» o «Todo» y más de medio año de datos. */
+function usesMonthLabels(period: HistoryPeriod, spanDays?: number): boolean {
+  return (period === "1y" || period === "max") && (spanDays === undefined || spanDays > 180);
+}
+
+/**
+ * Marcas del eje X cuando se rotula por meses: la primera fecha de cada mes de la serie, así que
+ * ninguna etiqueta se repite («feb 26», «feb 26»). `undefined` si el eje rotula por días: ahí
+ * valen las marcas automáticas.
+ */
+export function monthTicks(
+  rows: { date: string }[],
+  period: HistoryPeriod,
+  spanDays?: number,
+): string[] | undefined {
+  if (!usesMonthLabels(period, spanDays)) return undefined;
+  const ticks: string[] = [];
+  let last = "";
+  for (const row of rows) {
+    const month = row.date.slice(0, 7);
+    if (month !== last) {
+      ticks.push(row.date);
+      last = month;
+    }
+  }
+  return ticks;
 }
 
 /** Días entre el primer y el último punto de la serie. */

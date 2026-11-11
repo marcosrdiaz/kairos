@@ -57,7 +57,7 @@ function TickerEntry({ item, href }: { item: TickerItemOut & { change_pct: strin
   const label = item.ticker ?? item.name;
   const issuer = issuerOf(item.name);
   return (
-    <li className="flex shrink-0 items-baseline gap-2 px-5 text-sm whitespace-nowrap">
+    <li className="flex shrink-0 items-center gap-2 px-5 text-sm whitespace-nowrap">
       <span aria-hidden="true" className="kairos-issuer-badge" data-issuer={issuer.key}>
         {issuer.initials}
       </span>
@@ -76,13 +76,13 @@ function TickerEntry({ item, href }: { item: TickerItemOut & { change_pct: strin
       )}
       <span className="tabular-nums text-ink">{formatPrice(item.price, item.currency)}</span>
       <span className={`inline-flex items-baseline gap-1 tabular-nums ${trend.className}`}>
-        <span aria-hidden="true" className="text-xs">
+        <span aria-hidden="true" className="text-sm">
           {trend.arrow}
         </span>
         <span className="sr-only">{trend.word}</span>
         <TraceFigure calcId={item.calc_id}>{signedPercent(item.change_pct)}</TraceFigure>
       </span>
-      <span className="text-xs text-ink-muted">
+      <span className="text-sm text-ink-muted">
         <span className="sr-only">cierre del </span>
         <time dateTime={item.price_at}>{shortDate.format(new Date(item.price_at))}</time>
       </span>
@@ -155,7 +155,7 @@ export function TickerStrip({ items, hrefFor }: TickerStripProps) {
         Tus activos
       </h2>
       <div
-        className={`min-w-0 flex-1 ${moving ? "overflow-hidden" : "overflow-x-auto"}`}
+        className={`min-w-0 flex-1 ${moving ? "kairos-ticker-viewport overflow-hidden" : "overflow-x-auto"}`}
         aria-live="off"
       >
         <div

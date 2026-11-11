@@ -14,6 +14,8 @@ type MarkedChartProps = Omit<
   /** Marcadores de toda la serie; aquí se dibujan los del tramo visible. */
   markers: EventMarker[];
   newsMarkers?: AlertNewsMarker[];
+  /** Clases del contenedor (alto, cuando la gráfica rellena su hueco). */
+  className?: string;
 };
 
 /** Ancho y alto del contenedor, para que la tarjeta no se salga de él. */
@@ -37,7 +39,7 @@ function useSize() {
  * Gráfica de evolución con las noticias encima (T2-22): marcadores en la fecha real de cada evento
  * y la tarjeta del activo. La tarjeta lee su propio almacén, así que abrirla no repinta la gráfica.
  */
-export function MarkedChart({ markers, newsMarkers = [], rows, ...chart }: MarkedChartProps) {
+export function MarkedChart({ markers, newsMarkers = [], rows, className = "", ...chart }: MarkedChartProps) {
   const [store] = useState(createMarkerStore);
   const [newsStore] = useState(createNewsMarkerStore);
   const cardId = useId();
@@ -62,7 +64,7 @@ export function MarkedChart({ markers, newsMarkers = [], rows, ...chart }: Marke
   return (
     <div
       ref={ref}
-      className="relative"
+      className={`relative ${className}`}
       data-marker-active={active || activeNews ? "" : undefined}
       onMouseLeave={() => newsStore.set(null)}
       onBlur={(event) => {

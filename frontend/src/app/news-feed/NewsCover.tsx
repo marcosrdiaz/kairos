@@ -113,18 +113,64 @@ export function CategoryIcon({
 }
 
 /**
+ * Fila de metadatos de una noticia: chip de categoría y fecha (carrusel de Inicio, encima del
+ * título). Lo mismo que lleva la portada completa, para que la portada compacta sea solo imagen.
+ */
+export function NewsMeta({ category, publishedAt }: { category: NewsCategory; publishedAt: string }) {
+  const tone = COVER_TONE[category];
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-0.5 text-sm font-semibold",
+          tone.foreground,
+        )}
+      >
+        <CategoryIcon category={category} className="size-4" />
+        {CATEGORY_LABEL[category]}
+      </span>
+      <time dateTime={publishedAt} className="inline-flex items-center gap-2 text-sm text-ink-muted">
+        <CalendarIcon className={cn("size-4", tone.foreground)} />
+        {formatDate(publishedAt)}
+      </time>
+    </div>
+  );
+}
+
+/**
  * Portada editorial geométrica por categoría; no representa una noticia o cifra concreta.
  */
 export function NewsCover({
   category,
   publishedAt,
   large = false,
+  dense = false,
 }: {
   category: NewsCategory;
   publishedAt: string;
   large?: boolean;
+  /** Sin alto mínimo: la portada se adapta al hueco que le dan (carrusel de Inicio). */
+  dense?: boolean;
 }) {
   const tone = COVER_TONE[category];
+  // Compacta (carrusel de Inicio): solo la ilustración, a todo el recuadro. La categoría y la fecha
+  // las pinta `NewsMeta` junto al texto.
+  if (dense) {
+    return (
+      <div
+        aria-hidden="true"
+        className={cn(
+          "relative isolate flex size-full items-center justify-center overflow-hidden rounded-control",
+          tone.background,
+          tone.foreground,
+        )}
+      >
+        <div className="flex size-full items-center justify-center p-4 opacity-75 [&>svg]:max-h-full [&>svg]:max-w-full">
+          <CategoryArtwork category={category} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className={cn(

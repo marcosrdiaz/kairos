@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useId, useMemo, useState, useSyncExternalStore } from "react";
 import type { HistoryPeriod, PortfolioHistoryOut } from "../../../api/generated/schema";
 import { usePortfolioHistory } from "../../../api/hooks/usePortfolioHistory";
 import { EmptyNote } from "../../../components/PageTitle";
@@ -58,9 +58,9 @@ function Readout({ history, store }: { history: PortfolioHistoryOut; store: Acti
   const flows = history.net_flows_eur;
   const noFlows = Number(flows) === 0;
   return (
-    <div className="flex flex-col gap-1 px-5 sm:px-6">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="m-0 text-3xl font-semibold tabular-nums text-ink sm:text-4xl">
+    <div className="flex flex-col gap-0.5 px-4 sm:px-5">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <p className="m-0 text-lg font-semibold tabular-nums text-ink">
           <TraceHint calcId={history.calc_id} text="Valor de tu cartera ese día: participaciones × precio de cierre." source={source}>
             {formatEur(row.raw)}
           </TraceHint>
@@ -70,8 +70,9 @@ function Readout({ history, store }: { history: PortfolioHistoryOut; store: Acti
         </span>
       </div>
       <p className="m-0 text-sm text-ink-muted">
-        <span>{active ? pointDate(row.date) : `Último cierre: ${pointDate(row.date)}`}</span>
-        {DOT}
+        Valor al cierre del {pointDate(row.date)}, sin el impacto estimado de los eventos.
+      </p>
+      <p className="m-0 text-sm text-ink-muted">
         <span>
           Al empezar el periodo:{" "}
           <span className="font-semibold tabular-nums text-ink">
@@ -113,10 +114,13 @@ interface ChartBodyProps {
   history: PortfolioHistoryOut;
   period: HistoryPeriod;
   periodName: string;
+  /** «Ajustar vista» abierto: escala de tiempo, leyenda y tabla. */
+  adjustOpen: boolean;
+  adjustId: string;
 }
 
-/** Gráfica, escala de tiempo y tabla. Se monta de nuevo al cambiar de serie (rango completo). */
-function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps) {
+/** Gráfica y, plegado, «Ajustar vista». Se monta de nuevo al cambiar de serie (rango completo). */
+function ChartBody({ portfolioId, history, period, periodName, adjustOpen, adjustId }: ChartBodyProps) {
   const compact = useCompact();
   const rows = useMemo(() => toRows(history), [history]);
   const markers = useEventMarkers(portfolioId, rows);
@@ -131,8 +135,11 @@ function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps)
     <>
       <Readout history={history} store={store} />
       <LiveActive store={store} />
-      <div className="pr-1 sm:pr-2">
+      {/* En escritorio ancho la gráfica rellena el alto que le deja la fila (igual al de las tarjetas). */}
+      <div className="pr-1 sm:pr-2 @min-[58rem]/app-content:min-h-[14.5rem] @min-[58rem]/app-content:flex-1">
         <MarkedChart
+          className="h-[230px] sm:h-[300px] @min-[58rem]/app-content:h-full"
+          fill
           rows={visible}
           markers={markers}
           newsMarkers={newsMarkers}
@@ -146,33 +153,41 @@ function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps)
           compact={compact}
         />
       </div>
-      {rows.length >= RANGE_MIN_POINTS && (
-        <div className="flex flex-col gap-1">
-          <RangeSelector rows={rows} start={range.start} end={range.end} onChange={onRange} />
-          {zoomed && (
-            <div className="flex justify-end px-5 sm:px-6">
-              <button
-                type="button"
-                onClick={() => onRange(0, rows.length - 1)}
-                className="min-h-touch shrink-0 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-accent hover:bg-surface-muted"
-              >
-                Ver todo el periodo
-              </button>
+      {adjustOpen && (
+        <div id={adjustId} className="flex flex-col gap-1 pb-3">
+          <p className="m-0 px-4 text-sm text-ink-muted sm:px-5">
+            Valor con precios de cierre. No incluye el impacto estimado de los eventos.
+          </p>
+          {rows.length >= RANGE_MIN_POINTS && (
+            <div className="flex flex-col gap-1">
+              <RangeSelector rows={rows} start={range.start} end={range.end} onChange={onRange} />
+              {zoomed && (
+                <div className="flex justify-end px-4 sm:px-5">
+                  <button
+                    type="button"
+                    onClick={() => onRange(0, rows.length - 1)}
+                    className="min-h-touch shrink-0 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-accent hover:bg-surface-muted"
+                  >
+                    Ver todo el periodo
+                  </button>
+                </div>
+              )}
             </div>
           )}
+          <ChartLegend />
+          <HistoryTable history={history} periodName={periodName} markers={markers} newsMarkers={newsMarkers} />
         </div>
       )}
-      <ChartLegend />
-      <HistoryTable history={history} periodName={periodName} markers={markers} newsMarkers={newsMarkers} />
     </>
   );
 }
 
 /**
  * Evolución del valor de la cartera en Inicio (T2-18): selector de periodo, gráfica interactiva
- * (ratón y teclado), escala de tiempo para acercar, punto activo anunciado al lector de pantalla
- * y tabla alternativa. Cifras del backend con `calc_id` y una pista breve de dónde salen; la serie
- * usa precios de cierre, sin el impacto de eventos. Estilos en `chart.css`.
+ * (ratón y teclado) y punto activo anunciado al lector de pantalla. La escala de tiempo, la
+ * leyenda y la tabla alternativa van plegadas en «Ajustar vista» (TX-01), para que la tarjeta quepa
+ * junto a las de estado. Cifras del backend con `calc_id` y una pista breve de dónde salen; la
+ * serie usa precios de cierre, sin el impacto de eventos. Estilos en `chart.css`.
  */
 export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
   const [period, setPeriod] = useState<HistoryPeriod>(DEFAULT_PERIOD);
@@ -181,40 +196,54 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
   // Respuesta sin puntos (o inesperada): estado vacío, nunca una gráfica inventada.
   const hasPoints = Array.isArray(data?.points) && data.points.length > 0;
 
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const adjustId = useId();
+
   return (
-    <section aria-labelledby="chart-heading" className="kchart-card flex flex-col gap-4 rounded-card border border-line bg-surface pt-5 sm:pt-6">
+    <section aria-labelledby="chart-heading" className="kchart-card flex flex-col gap-3 rounded-card border border-line bg-surface pt-4 @min-[58rem]/app-content:h-full">
       <ChartBackdrop />
-      <div className="kchart-header flex flex-col gap-4 px-5 sm:px-6">
-        <div>
-          <h2 id="chart-heading" className="m-0 mb-1 text-lg font-semibold text-ink">
-            Evolución de tu cartera
-          </h2>
-          <p className="m-0 text-sm text-ink-muted">
-            Valor con precios de cierre. No incluye el impacto estimado de los eventos.
-          </p>
+      <div className="kchart-header flex flex-col gap-2 px-4 sm:px-5">
+        <h2 id="chart-heading" className="m-0 whitespace-nowrap text-base font-semibold text-ink sm:text-lg">
+          Evolución de tu cartera
+        </h2>
+        <div className="flex flex-wrap items-center gap-2 @min-[58rem]/app-content:flex-nowrap">
+          <PeriodPicker value={period} onChange={setPeriod} />
+          {hasPoints && (
+            <button
+              type="button"
+              aria-expanded={adjustOpen}
+              aria-controls={adjustOpen ? adjustId : undefined}
+              onClick={() => setAdjustOpen((open) => !open)}
+              className="inline-flex min-h-touch shrink-0 items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-accent hover:bg-surface-muted"
+            >
+              Ajustar vista
+              <svg viewBox="0 0 24 24" className={`size-4 transition-transform duration-200 ${adjustOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          )}
         </div>
-        <PeriodPicker value={period} onChange={setPeriod} />
       </div>
 
       {isPending && (
-        <div role="status" aria-label="Cargando la evolución de tu cartera" className="mx-5 mb-5 h-80 rounded-control bg-surface-muted motion-safe:animate-pulse sm:mx-6" />
+        <div role="status" aria-label="Cargando la evolución de tu cartera" className="mx-4 mb-4 h-60 rounded-control bg-surface-muted motion-safe:animate-pulse sm:mx-5 @min-[58rem]/app-content:flex-1" />
       )}
       {isError && !data && (
-        <div className="mx-5 mb-5 sm:mx-6">
+        <div className="mx-4 mb-4 sm:mx-5">
           <EmptyNote>Ahora mismo no podemos mostrar la evolución de tu cartera. Vuelve a intentarlo en un rato.</EmptyNote>
         </div>
       )}
       {data && !hasPoints && (
-        <div className="mx-5 mb-5 sm:mx-6">
+        <div className="mx-4 mb-4 sm:mx-5">
           <EmptyNote>Todavía no hay cierres para este periodo.</EmptyNote>
         </div>
       )}
       {data && hasPoints && (
         <div
           aria-busy={isPlaceholderData}
-          className={`flex flex-col gap-4 transition-opacity duration-200 ${isPlaceholderData ? "opacity-60" : ""}`}
+          className={`flex flex-col gap-2 transition-opacity duration-200 @min-[58rem]/app-content:min-h-0 @min-[58rem]/app-content:flex-1 ${isPlaceholderData ? "opacity-60" : ""}`}
         >
-          <ChartBody key={data.calc_id} portfolioId={portfolioId} history={data} period={period} periodName={periodName} />
+          <ChartBody key={data.calc_id} portfolioId={portfolioId} history={data} period={period} periodName={periodName} adjustOpen={adjustOpen} adjustId={adjustId} />
         </div>
       )}
     </section>

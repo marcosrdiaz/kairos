@@ -9,19 +9,17 @@ import { StatusTiles } from "../widget/StatusTiles";
 import { usePortfolioId } from "./portfolio-picker/usePortfolioId";
 import "./inicio.css";
 
-/** Esqueleto de carga: misma forma que la cabecera y las tarjetas, sin cifras. */
+/** Esqueleto de carga de las tarjetas: misma forma que la columna, sin cifras. */
 function StatusSkeleton() {
   return (
-    <div role="status" aria-label="Cargando el estado de tu cartera" className="flex flex-col gap-6">
-      <div className="h-64 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse" />
-      <div className="home-status-grid">
-        {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-36 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse"
-          />
-        ))}
-      </div>
+    <div role="status" aria-label="Cargando el estado de tu cartera" className="home-tiles">
+      <div className="h-40 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse" />
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="h-12 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse"
+        />
+      ))}
     </div>
   );
 }
@@ -35,22 +33,27 @@ export function InicioPage() {
   return (
     <>
       <PageTitle visuallyHidden>Inicio</PageTitle>
-      <div className="flex flex-col gap-6">
-        <PortfolioChart key={portfolioId} portfolioId={portfolioId} />
-        {isPending && <StatusSkeleton />}
-        {isError && !data && (
-          <EmptyNote>
-            Ahora mismo no podemos mostrar el estado de tu cartera. Vuelve a intentarlo en unos
-            segundos.
-          </EmptyNote>
-        )}
+      {/* Columna que ocupa el alto de la pantalla: arriba el ticker «Tus activos», a todo el ancho; el
+          espacio que sobra va solo a la fila de la gráfica (`.home-top`); noticias y aviso se
+          quedan con su alto natural. */}
+      <div className="flex flex-col gap-4 lg:flex-1">
         <MarketTicker portfolioId={portfolioId} />
-        {data && (
-          <div className="home-status-grid">
-            <StatusCard status={data} detailHref={`/panel${query}`} />
-            <StatusTiles status={data} />
-          </div>
-        )}
+        <div className="home-top">
+          <PortfolioChart key={portfolioId} portfolioId={portfolioId} />
+          {isPending && <StatusSkeleton />}
+          {isError && !data && (
+            <EmptyNote>
+              Ahora mismo no podemos mostrar el estado de tu cartera. Vuelve a intentarlo en unos
+              segundos.
+            </EmptyNote>
+          )}
+          {data && (
+            <div className="home-tiles">
+              <StatusCard status={data} detailHref={`/panel${query}`} />
+              <StatusTiles status={data} />
+            </div>
+          )}
+        </div>
         <NewsSection portfolioId={portfolioId} newsHref={`/noticias${query}`} />
       </div>
     </>

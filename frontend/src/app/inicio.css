@@ -1,29 +1,27 @@
-.home-status-grid {
+/*
+ * Inicio (TX-01): en escritorio ancho, la gráfica a la izquierda y las tarjetas de estado en una
+ * columna a su derecha, en una sola fila; debajo, las noticias y el ticker. En estrecho (móvil, o
+ * escritorio con el asistente abierto), todo apilado en una columna. Se decide por el ancho del
+ * contenido (`app-content`), no de la ventana.
+ */
+.home-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
-@container app-content (min-width: 22rem) {
-  .home-status-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@container app-content (min-width: 22rem) and (max-width: 31rem) {
-  .home-status-grid > :first-child,
-  .home-status-grid > dl > :last-child {
-    grid-column: 1 / -1;
-  }
+.home-tiles {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 @container app-content (min-width: 58rem) {
-  .home-status-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .home-status-grid > :first-child,
-  .home-status-grid > dl > :last-child {
-    grid-column: auto;
+  .home-top {
+    grid-template-columns: minmax(0, 1fr) clamp(18rem, 32%, 22rem);
+    align-items: stretch;
+    /* Toma el alto que sobra en la columna de la página; el mínimo lo pone el trazado de la gráfica. */
+    flex: 1 1 auto;
   }
 }
