@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import history from "../../../api/mocks/PortfolioHistoryOut.json";
 import { PortfolioChart } from "./PortfolioChart";
-import { niceScale, tickDate, tickEur } from "./chartFormat";
+import { monthTicks, niceScale, tickDate, tickEur } from "./chartFormat";
 
 const json = (body: unknown, code = 200) =>
   new Response(JSON.stringify(body), { status: code, headers: { "Content-Type": "application/json" } });
@@ -166,5 +166,27 @@ describe("formato de los ejes", () => {
     const flat = niceScale([100, 100]).domain; // serie plana: dominio no vacío que la contiene
     expect(flat[0]).toBeLessThanOrEqual(100);
     expect(flat[1]).toBeGreaterThan(100);
+  });
+});
+
+describe("monthTicks", () => {
+  const days = (start: string, count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      date: new Date(Date.parse(start) + i * 86_400_000).toISOString(),
+    }));
+
+  it("da una marca por mes, sin etiquetas repetidas", () => {
+    const rows = days("2025-11-03T00:00:00Z", 365);
+    const ticks = monthTicks(rows, "1y", 364) ?? [];
+    const labels = ticks.map((iso) => tickDate(iso, "1y", 364));
+    expect(labels).toHaveLength(new Set(labels).size);
+    expect(ticks).toHaveLength(13); // nov 25 … nov 26
+    expect(ticks[0]).toBe(rows[0]?.date);
+  });
+
+  it("no impone marcas si el eje rotula por días (periodo corto o poco histórico)", () => {
+    const rows = days("2026-10-01T00:00:00Z", 40);
+    expect(monthTicks(rows, "1m", 39)).toBeUndefined();
+    expect(monthTicks(rows, "1y", 39)).toBeUndefined();
   });
 });
