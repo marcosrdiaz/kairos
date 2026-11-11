@@ -3,7 +3,8 @@ import type { EventImpactOut } from "../../api/generated/schema";
 import { ArrowLeftIcon, ArrowRightIcon, PauseIcon, PlayIcon } from "../../components/icons";
 import { EventArt } from "./EventArt";
 import { AUTO_ADVANCE_MS } from "./labels";
-import { NewsSlide } from "./NewsSlide";
+import { NewsSlide, type PageFlip } from "./NewsSlide";
+import "./news.css";
 
 function prefersReducedMotion(): boolean {
   return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,7 +33,8 @@ interface NewsCarouselProps {
 
 /**
  * Carrusel de noticias (patrón "auto-rotating carousel" de WAI-ARIA):
- * - Avanza solo cada 10 s hacia la siguiente noticia (entra por la derecha).
+ * - Avanza solo cada 10 s hacia la siguiente noticia. Cada cambio pasa como una hoja de
+ *   calendario: baja de arriba abajo, o sube al retroceder (news.css). Al cargar no anima.
  * - Se detiene mientras el ratón está encima o el foco de teclado está dentro, y con el botón
  *   de pausa (WCAG 2.2.2). Con prefers-reduced-motion empieza en pausa.
  * - Mientras rota, la región no se anuncia (aria-live="off"); en pausa, sí ("polite").
@@ -40,7 +42,7 @@ interface NewsCarouselProps {
 export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
   const total = events.length;
   const [rawIndex, setIndex] = useState(0);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [flip, setFlip] = useState<PageFlip | undefined>(undefined);
   const [paused, setPaused] = useState(prefersReducedMotion);
   const [hovered, setHovered] = useState(false);
   const [keyboardInside, setKeyboardInside] = useState(false);
@@ -48,15 +50,15 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
   const index = total > 0 ? rawIndex % total : 0;
   const rotating = total > 1 && !paused && !hovered && !keyboardInside;
 
-  const go = (to: number, dir: "next" | "prev") => {
-    setDirection(dir);
+  const go = (to: number, dir: PageFlip) => {
+    setFlip(dir);
     setIndex(((to % total) + total) % total);
   };
 
   useEffect(() => {
     if (!rotating) return;
     const t = setTimeout(() => {
-      setDirection("next");
+      setFlip("down");
       setIndex((i) => (i + 1) % total);
     }, AUTO_ADVANCE_MS);
     return () => clearTimeout(t);
@@ -101,10 +103,11 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
 
       {/* Imagen con los controles encima (galería) a la izquierda; texto a la derecha. */}
       <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
-        <div className="relative aspect-4/3 overflow-hidden rounded-control md:aspect-auto md:min-h-64">
+        <div className="news-stage relative aspect-4/3 overflow-hidden rounded-control md:aspect-auto md:min-h-64">
           <div
             key={current.event_id}
-            className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+            data-flip={flip}
+            className="news-page absolute inset-0"
           >
             <EventArt type={current.event_type} />
           </div>
@@ -112,7 +115,7 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
             <>
               <button
                 type="button"
-                onClick={() => go(index - 1, "prev")}
+                onClick={() => go(index - 1, "up")}
                 className={`${overlayButton} left-3`}
                 aria-label="Noticia anterior"
                 aria-controls="news-slides"
@@ -121,7 +124,7 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
               </button>
               <button
                 type="button"
-                onClick={() => go(index + 1, "next")}
+                onClick={() => go(index + 1, "down")}
                 className={`${overlayButton} right-3`}
                 aria-label="Noticia siguiente"
                 aria-controls="news-slides"
@@ -133,7 +136,7 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
                   <li key={e.event_id} className="flex">
                     <button
                       type="button"
-                      onClick={() => go(i, i < index ? "prev" : "next")}
+                      onClick={() => go(i, i < index ? "up" : "down")}
                       aria-label={`Noticia ${i + 1}: ${e.title}`}
                       aria-current={i === index ? "true" : undefined}
                       className="group inline-flex size-6 items-center justify-center rounded-full"
@@ -149,13 +152,17 @@ export function NewsCarousel({ events, panelHref, header }: NewsCarouselProps) {
           )}
         </div>
 
-        <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
+        <div
+          id="news-slides"
+          aria-live={rotating ? "off" : "polite"}
+          className="news-stage min-w-0"
+        >
           <NewsSlide
             key={current.event_id}
             event={current}
             position={index + 1}
             total={total}
-            direction={direction}
+            flip={flip}
             panelHref={panelHref}
           />
         </div>

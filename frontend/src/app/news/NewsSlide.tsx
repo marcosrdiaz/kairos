@@ -5,11 +5,15 @@ import { TraceFigure } from "../../components/trace/TraceFigure";
 import { formatDate, formatEurRange } from "../../lib/format";
 import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL, POLARITY } from "./labels";
 
+/** Sentido de la hoja al cambiar de noticia: "down" al avanzar, "up" al retroceder. */
+export type PageFlip = "down" | "up";
+
 interface NewsSlideProps {
   event: EventImpactOut;
   position: number;
   total: number;
-  direction: "next" | "prev";
+  /** Sin valor (primera carga), la hoja no se anima. */
+  flip?: PageFlip;
   panelHref: string;
 }
 
@@ -18,7 +22,7 @@ interface NewsSlideProps {
  * Patrón de carrusel de WAI-ARIA: role="group" + aria-roledescription="noticia" + "2 de 3".
  * El impacto va como rango (nunca cifra exacta) y con su confianza; todo viene del backend.
  */
-export function NewsSlide({ event, position, total, direction, panelHref }: NewsSlideProps) {
+export function NewsSlide({ event, position, total, flip, panelHref }: NewsSlideProps) {
   const polarity = POLARITY[event.polarity];
   const summary = event.explanation ?? event.causal_chain.join(" → ");
   const source = event.sources[0];
@@ -28,7 +32,8 @@ export function NewsSlide({ event, position, total, direction, panelHref }: News
       aria-roledescription="noticia"
       aria-label={`${position} de ${total}`}
       data-calc-id={event.calc_id}
-      className={`h-full ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+      data-flip={flip}
+      className="news-page news-page--text h-full"
     >
       <div className="flex h-full min-w-0 flex-col gap-3">
         <p className="m-0 flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">

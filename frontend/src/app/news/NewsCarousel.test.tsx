@@ -87,6 +87,41 @@ describe("NewsCarousel", () => {
     expect(slide().getAttribute("aria-label")).toBe("2 de 2");
   });
 
+  it("al cargar no anima; al avanzar la hoja cae de arriba abajo y al retroceder sube", () => {
+    renderCarousel();
+    expect(slide().getAttribute("data-flip")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Noticia siguiente" }));
+    expect(slide().getAttribute("data-flip")).toBe("down");
+    fireEvent.click(screen.getByRole("button", { name: "Noticia anterior" }));
+    expect(slide().getAttribute("data-flip")).toBe("up");
+    act(() => vi.advanceTimersByTime(AUTO_ADVANCE_MS));
+    expect(slide().getAttribute("data-flip")).toBe("down");
+  });
+
+  it("al cambiar de hoja se anuncia una sola noticia y el foco sigue en la flecha", () => {
+    renderCarousel();
+    const next = screen.getByRole("button", { name: "Noticia siguiente" });
+    next.focus();
+    fireEvent.click(next);
+    expect(screen.getAllByRole("group")).toHaveLength(1);
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(1);
+    expect(document.activeElement).toBe(next);
+    expect(screen.getByRole("link", { name: new RegExp(EVENTS[1]!.title) })).toBeTruthy();
+  });
+
+  it("con movimiento reducido empieza en pausa", () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((q: string) => ({ matches: q.includes("reduce"), media: q })) as never;
+    try {
+      renderCarousel();
+      expect(screen.getByRole("button", { name: "Reanudar el pase automático" })).toBeTruthy();
+      act(() => vi.advanceTimersByTime(AUTO_ADVANCE_MS * 2));
+      expect(slide().getAttribute("aria-label")).toBe("1 de 2");
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
   it("con una sola noticia no hay controles", () => {
     renderCarousel([bce as EventImpactOut]);
     expect(screen.queryByRole("button", { name: "Noticia siguiente" })).toBeNull();

@@ -1,0 +1,57 @@
+/*
+ * T5-13 · Noticias de Inicio como hojas de calendario.
+ * Cada cambio de noticia baja de arriba abajo: la hoja nueva gira sobre su borde superior
+ * hasta quedar plana (data-flip="down"). Al retroceder, sube desde abajo (data-flip="up"),
+ * para que la dirección cuadre con la flecha. Sin data-flip (primera carga) no se anima.
+ *
+ * fill-mode "backwards": al acabar no queda ninguna transformación aplicada, así que la hoja
+ * no crea un bloque contenedor que descoloque la tarjeta de la traza (T5-18).
+ */
+
+.news-stage {
+  perspective: 1200px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .news-page[data-flip="down"] {
+    transform-origin: top center;
+    animation: news-page-down 420ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  }
+
+  .news-page[data-flip="up"] {
+    transform-origin: bottom center;
+    animation: news-page-up 420ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  }
+
+  /* El texto cae un instante después que la ilustración: se lee como una sola hoja. */
+  .news-page--text[data-flip] {
+    animation-delay: 40ms;
+  }
+}
+
+/* Movimiento reducido: sin desplazamiento ni giro, solo un fundido corto. */
+@media (prefers-reduced-motion: reduce) {
+  .news-page[data-flip] {
+    animation: news-page-fade 150ms ease-out backwards;
+  }
+}
+
+@keyframes news-page-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6%) rotateX(60deg);
+  }
+}
+
+@keyframes news-page-up {
+  from {
+    opacity: 0;
+    transform: translateY(6%) rotateX(-60deg);
+  }
+}
+
+@keyframes news-page-fade {
+  from {
+    opacity: 0;
+  }
+}
