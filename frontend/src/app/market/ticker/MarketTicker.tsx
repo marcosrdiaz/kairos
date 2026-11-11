@@ -155,7 +155,7 @@ export function TickerStrip({ items, hrefFor }: TickerStripProps) {
         Tus activos
       </h2>
       <div
-        className={`min-w-0 flex-1 ${moving ? "overflow-hidden" : "overflow-x-auto"}`}
+        className={`min-w-0 flex-1 ${moving ? "kairos-ticker-viewport overflow-hidden" : "overflow-x-auto"}`}
         aria-live="off"
       >
         <div
