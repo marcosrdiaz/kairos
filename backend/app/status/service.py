@@ -16,6 +16,7 @@ from app.core import clock, trace
 from app.core.errors import AppError
 from app.impact import service as impact_service
 from app.portfolio import service as portfolio_service
+from app.prices import service as prices_service
 from app.schemas.agents import (
     SentenceStatus,
     StatusFacts,
@@ -66,7 +67,12 @@ def _optional_plan(portfolio_id: str) -> PlanOut | None:
 
 
 def _price_as_of(portfolio: PortfolioOut) -> datetime:
-    return max((p.price_at for p in portfolio.positions), default=portfolio.valued_at)
+    """Fecha del último precio de mercado de la cartera. Los activos de valor fijo (depósitos,
+    planes) no cuentan: su «precio» lleva la fecha del reloj, no la de una cotización."""
+    market = [
+        p.price_at for p in portfolio.positions if prices_service.has_market_prices(p.asset_id)
+    ]
+    return max(market, default=portfolio.valued_at)
 
 
 def _main_channel(event: EventImpactOut) -> str | None:

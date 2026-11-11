@@ -179,3 +179,16 @@ def test_every_figure_is_traceable_to_its_parents(client: TestClient) -> None:
     event_calc = client.get(f"{API_PREFIX}/portfolios/laura/events").json()[0]["calc_id"]
     assert event_calc in record.parent_calc_ids
     assert len(record.parent_calc_ids) == 3, "valoración, plan e impacto"
+
+
+def test_price_as_of_ignores_fixed_value_assets(client: TestClient) -> None:
+    """Javier tiene un depósito y un plan de pensiones de valor fijo, cuyo precio lleva la fecha del
+    reloj: «Precios a» es la del último precio de mercado, no la de hoy."""
+    portfolio = client.get(f"{API_PREFIX}/portfolios/javier").json()
+    fixed = {"DEP-12M", "PP-MIXTO"}
+    held = {p["asset_id"] for p in portfolio["positions"]}
+    assert fixed <= held  # el caso existe en la cartera de ejemplo
+    market = [p["price_at"] for p in portfolio["positions"] if p["asset_id"] not in fixed]
+    status = _get(client, "javier")
+    assert status["price_as_of"] == max(market)
+    assert datetime.fromisoformat(status["price_as_of"]).date() < NOW.date()
