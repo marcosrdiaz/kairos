@@ -1,8 +1,7 @@
 import { PageTitle } from "../components/PageTitle";
+import { SwipeTabs } from "../ui/SwipeTabs";
 import { DcaSection } from "./dca/DcaSection";
 import { OperationsSection } from "./operations/OperationsSection";
-import { OnboardingSection } from "./onboarding/OnboardingSection";
-import { DemoReset } from "./portfolio-picker/DemoReset";
 import { PortfolioManager } from "./portfolio-picker/PortfolioManager";
 import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
@@ -23,11 +22,15 @@ export function CarteraPage() {
           </div>
           <PortfolioPicker />
           <PortfolioManager />
-          <DemoReset />
         </section>
-        <OperationsSection />
-        <DcaSection />
-        <OnboardingSection />
+        <SwipeTabs
+          label="Secciones de la cartera"
+          swipeable={false}
+          items={[
+            { id: "operations", title: "Operaciones", content: <OperationsSection /> },
+            { id: "dca", title: "Aportaciones periódicas", content: <DcaSection /> },
+          ]}
+        />
       </div>
     </>
   );

@@ -4,6 +4,9 @@
  * Cambios: el indicador usa `layoutId` de motion (sin medir a mano), el gesto se reduce a un
  * deslizamiento horizontal con umbral, se sigue el patrón ARIA de pestañas (flechas, Inicio y
  * Fin) y se quitan los iconos de lucide (DESIGN.md no admite librerías de iconos sin decisión).
+ * Todos los paneles quedan montados y los inactivos se ocultan con `hidden`, para no perder un
+ * formulario a medias al cambiar de pestaña (T5-05). Con `swipeable={false}` el panel no se
+ * cambia arrastrando: solo con las pestañas.
  */
 import { useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
@@ -20,18 +23,26 @@ export interface SwipeTabsProps {
   /** Nombre accesible de la lista de pestañas. */
   label: string;
   className?: string;
+  /** Cambiar de panel deslizándolo en horizontal (por defecto, sí). */
+  swipeable?: boolean;
 }
 
 const SWIPE_PX = 48;
 
-export function SwipeTabs({ items, label, className }: SwipeTabsProps) {
+export function SwipeTabs({ items, label, className, swipeable = true }: SwipeTabsProps) {
   const baseId = useId();
   const reduceMotion = useReducedMotion();
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
   const tabs = useRef(new Map<string, HTMLButtonElement>());
   const start = useRef<{ x: number; y: number } | null>(null);
   const index = Math.max(0, items.findIndex((item) => item.id === activeId));
-  const active = items[index];
+  const swipe = swipeable
+    ? {
+        onPointerDown: (event: PointerEvent<HTMLDivElement>) => (start.current = { x: event.clientX, y: event.clientY }),
+        onPointerUp,
+        onPointerCancel: () => (start.current = null),
+      }
+    : {};
 
   function select(next: number, focus = false) {
     const item = items[(next + items.length) % items.length];
@@ -67,7 +78,7 @@ export function SwipeTabs({ items, label, className }: SwipeTabsProps) {
         className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-line bg-surface-muted p-1"
       >
         {items.map((item) => {
-          const selected = item.id === activeId;
+          const selected = item.id === items[index]?.id;
           return (
             <button
               key={item.id}
@@ -100,20 +111,20 @@ export function SwipeTabs({ items, label, className }: SwipeTabsProps) {
           );
         })}
       </div>
-      {active && (
+      {items.map((item, i) => (
         <div
+          key={item.id}
           role="tabpanel"
-          id={`${baseId}-panel-${active.id}`}
-          aria-labelledby={`${baseId}-tab-${active.id}`}
+          id={`${baseId}-panel-${item.id}`}
+          aria-labelledby={`${baseId}-tab-${item.id}`}
+          hidden={i !== index}
           tabIndex={0}
-          onPointerDown={(event) => (start.current = { x: event.clientX, y: event.clientY })}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => (start.current = null)}
-          className="mt-4 touch-pan-y rounded-card"
+          {...swipe}
+          className={cn("mt-4 rounded-card", swipeable && "touch-pan-y")}
         >
-          {active.content}
+          {item.content}
         </div>
-      )}
+      ))}
     </div>
   );
 }
