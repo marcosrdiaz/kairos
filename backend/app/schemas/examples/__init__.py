@@ -1,8 +1,8 @@
 """Ejemplos de los contratos: `<Modelo>.json` o `<Modelo>.<variante>.json`.
 
-Son los mocks del backend (`*/mock.py` los cargan con `load`) y del frontend (`make gen-api` los
-copia a `frontend/src/api/mocks/`). Todos llevan `"illustrative": true`, que no es parte del
-contrato: `load` la quita (D-034).
+Son los mocks del backend (hoy solo `voice/mock.py` los carga con `load`, y los tests) y del
+frontend (`make gen-api` los copia a `frontend/src/api/mocks/`). Todos llevan
+`"illustrative": true`, que no es parte del contrato: `load` la quita (D-034).
 """
 
 import json

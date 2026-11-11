@@ -5,7 +5,7 @@
 - TTS: devuelve `data/voice/mock.mp3` sea cual sea la frase aprobada.
 - Aviso de IA: `data/voice/disclaimer.mp3` si existe (T1-21); si no, el mismo `mock.mp3`.
 
-Lo sustituye T1-21; se borra en T2-03.
+Es el respaldo de `voice/service.py` sin clave de ElevenLabs (tests y CI): no se borra.
 """
 
 from collections.abc import AsyncIterator, Iterator
