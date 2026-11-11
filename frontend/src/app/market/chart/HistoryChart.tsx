@@ -158,7 +158,7 @@ export const HistoryChart = memo(function HistoryChart({
             ? 44 + 30 * Math.max(0, ...(markerLevels?.values() ?? []))
             : newsMarkers.length > 0 ? 36 : 16,
           right: compact ? 12 : 20,
-          bottom: 0,
+          bottom: compact ? 12 : 20, // aire bajo las fechas del eje X
           left: compact ? 0 : 4,
         }}
         accessibilityLayer
