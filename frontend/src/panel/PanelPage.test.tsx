@@ -213,8 +213,10 @@ describe("PanelPage · Exposición", () => {
     for (const t of ["Por país", "Por sector", "Por divisa"]) {
       expect(screen.getByRole("region", { name: t })).toBeTruthy();
     }
-    const table = await screen.findByRole("table", { name: /Diez mayores empresas/ });
-    expect(within(table).getByText(exposure.top_companies[0]!.name)).toBeTruthy();
+    const list = await screen.findByRole("list", { name: /Diez mayores empresas/ });
+    expect(within(list).getByText(exposure.top_companies[0]!.name)).toBeTruthy();
+    // Barras relativas a la mayor: la primera llena el carril (calc con las fracciones tal cual).
+    expect(list.querySelector("li span[style]")?.getAttribute("style")).toMatch(/width:\s*calc\(100%\)/);
     expect(screen.getByText(/cubierta: 94,0\s%/)).toBeTruthy();
     expect(document.querySelector("#exposicion [data-calc-id]")).not.toBeNull();
   });

@@ -48,7 +48,7 @@ test("paso 2 · radiografía: país y empresas mirando dentro de los fondos", as
   const shares = exposure.getByRole("button", { name: /^\d{1,2},\d % ¿De dónde sale\?$/ });
   await expect(shares.first()).toBeVisible();
   await expect(
-    exposure.getByRole("table", { name: /mayores empresas de la cartera/ }).getByRole("row"),
+    exposure.getByRole("list", { name: /mayores empresas de la cartera/ }).getByRole("listitem"),
   ).not.toHaveCount(0);
 
   await expectTrace(page, shares.first());

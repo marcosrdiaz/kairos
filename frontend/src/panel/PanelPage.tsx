@@ -1,5 +1,4 @@
 import { usePortfolioId } from "../app/portfolio-picker/usePortfolioId";
-import { PageTitle } from "../components/PageTitle";
 import { AgendaSection } from "./agenda/AgendaSection";
 import { EventsSection } from "./events/EventsSection";
 import { ExposureSection } from "./exposure/ExposureSection";
@@ -18,10 +17,8 @@ export function PanelPage() {
   const [portfolioId] = usePortfolioId();
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-      <div className="flex flex-col gap-4">
-        <PageTitle>Panel de contexto</PageTitle>
-        <PanelHeader portfolioId={portfolioId} />
-      </div>
+      {/* Título y barra de bloques: hijos directos para que la barra quede fija en todo el panel. */}
+      <PanelHeader portfolioId={portfolioId} />
       <PanelNoticeSlot />
       <SummarySection key={`resumen-${portfolioId}`} portfolioId={portfolioId} />
       <EventsSection key={`eventos-${portfolioId}`} portfolioId={portfolioId} />
