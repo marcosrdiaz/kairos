@@ -239,6 +239,9 @@ describe("PortfolioManager", () => {
     await deleteFlow("Negocio");
 
     expect(await screen.findByText("Cartera «Negocio» borrada. Ahora estás viendo «Personal».")).toBeTruthy();
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("list", { name: "Tus carteras" })),
+    );
     expect(param()).toBe("personal");
     await waitFor(() => expect(screen.getByTestId("data").textContent).toBe("personal"));
     expect(screen.queryByRole("radio", { name: "Negocio" })).toBeNull();

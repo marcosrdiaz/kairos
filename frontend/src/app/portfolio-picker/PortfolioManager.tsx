@@ -70,7 +70,7 @@ export function PortfolioManager({ pickerLabelledBy }: { pickerLabelledBy?: stri
           ref={portfolioListRef}
           aria-label="Tus carteras"
           tabIndex={-1}
-          className="m-0 flex list-none flex-col border-t border-line p-0 pt-1 outline-none"
+          className="m-0 flex list-none flex-col border-t border-line p-0 pt-1 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {list.map((p) => (
             <PortfolioRow
