@@ -1,4 +1,4 @@
-### D-XXX · Noticias en producción cada 5 minutos: frecuencia por fuente, espera al ser limitados y avisos tras cada pasada (TB-01, TB-02)
+### D-108 · Noticias en producción cada 5 minutos: frecuencia por fuente, espera al ser limitados y avisos tras cada pasada (TB-01, TB-02)
 - Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
 - Contexto: el 11 nov no entró ninguna noticia nueva. La ingesta de T4-28 (`app.news.ingest`) solo se lanzaba a mano (`make news`) y la app enseñaba lo de `data/news/2026-11.jsonl`, que el `seed` vuelve a cargar en cada `make up`. El servicio `updater` (`daily_update.py`, una vez al día) no la llama. Los avisos por noticia (T4-31, D-106) solo se revisan al leer `GET /portfolios/{id}/alerts`. Alons pide buscar cada 5 minutos, clasificar y seguir el flujo de siempre.
 - Decisión:
