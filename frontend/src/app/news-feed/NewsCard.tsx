@@ -1,97 +1,44 @@
 import { useId } from "react";
-import type { NewsItemOut, NewsPositionEstimate } from "../../api/generated/schema";
-import { TraceFigure } from "../../components/trace/TraceFigure";
-import { formatDate } from "../../lib/format";
+import type { NewsItemOut } from "../../api/generated/schema";
+import { NewsCover } from "./NewsCover";
 import { NewsEffect } from "./NewsEffect";
-import { CATEGORY_LABEL, eurRangeText, timingText } from "./labels";
-
-/** Efecto por posición: rango y desde cuándo se nota (acciones en la sesión, fondos con el VL). */
-function PositionEffects({
-  positions,
-  calcId,
-}: {
-  positions: NewsPositionEstimate[];
-  calcId: string | null | undefined;
-}) {
-  if (positions.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-2">
-      <h4 className="m-0 text-sm font-semibold text-ink">En tus posiciones</h4>
-      <ul className="m-0 flex list-none flex-col gap-2 p-0">
-        {positions.map((p) => (
-          <li
-            key={p.asset_id}
-            className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-2"
-          >
-            <span className="font-medium text-ink">{p.name}</span>
-            <span className="tabular-nums text-ink">
-              <TraceFigure calcId={calcId}>{eurRangeText(p.low_eur, p.high_eur)}</TraceFigure>
-            </span>
-            <span className="w-full text-sm text-ink-muted">
-              {timingText(p.timing, p.effective_from)}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 /**
- * Una noticia vista desde la cartera elegida. Empieza por lo que significa para la cartera
- * (`kairos-spec.md`: sin noticias en bruto); debajo, el titular, por qué afecta y la fuente.
+ * Card de la lista de Noticias (T5-17): portada, titular y «Cómo afecta a tu dinero». El titular
+ * es el botón que abre el detalle y su `::after` cubre la card entera, así toda la card se puede
+ * pulsar sin anidar botones; la cifra trazada queda por encima y sigue abriendo su traza.
  */
-export function NewsCard({ item }: { item: NewsItemOut }) {
+export function NewsCard({
+  item,
+  onOpen,
+}: {
+  item: NewsItemOut;
+  onOpen: (id: string, opener: HTMLButtonElement) => void;
+}) {
   const titleId = useId();
-  const estimate = item.estimate;
   return (
     <article
       aria-labelledby={titleId}
-      className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5"
+      className="group relative flex flex-col gap-4 rounded-card border border-line bg-surface p-4 transition-colors hover:border-accent focus-within:border-accent motion-reduce:transition-none"
     >
-      <NewsEffect estimate={estimate} />
-
-      <div className="flex flex-col gap-1 border-t border-line pt-4">
-        <p className="m-0 flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
-          <span className="font-semibold text-accent">{CATEGORY_LABEL[item.category]}</span>
-          <span aria-hidden="true">·</span>
-          <time dateTime={item.published_at}>{formatDate(item.published_at)}</time>
-        </p>
-        <h3 id={titleId} className="m-0 text-xl font-semibold leading-snug text-ink">
+      <NewsCover category={item.category} publishedAt={item.published_at} />
+      <h3 id={titleId} className="m-0 text-lg font-semibold leading-snug text-ink">
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          onClick={(e) => onOpen(item.id, e.currentTarget)}
+          className="cursor-pointer border-0 bg-transparent p-0 text-left [font:inherit] text-inherit outline-none after:absolute after:inset-0 after:rounded-card after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus group-hover:underline group-hover:decoration-line-strong group-hover:underline-offset-4"
+        >
           {item.title}
-        </h3>
-        <p className="m-0 max-w-[65ch] text-base text-ink-muted">{item.summary}</p>
-      </div>
-
-      {item.causal_chain.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h4 className="m-0 text-sm font-semibold text-ink">Por qué te afecta</h4>
-          <ol className="m-0 flex list-decimal flex-col gap-1 pl-5 text-base text-ink-muted">
-            {item.causal_chain.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
+        </button>
+      </h3>
+      <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
+        <h4 className="m-0 text-sm font-semibold text-ink-muted">Cómo afecta a tu dinero</h4>
+        {/* Por encima del botón que cubre la card solo la cifra: abre su traza, no el detalle. */}
+        <div className="pointer-events-none relative z-10 [&_button]:pointer-events-auto">
+          <NewsEffect estimate={item.estimate} compact />
         </div>
-      )}
-
-      {estimate && <PositionEffects positions={estimate.positions ?? []} calcId={estimate.calc_id} />}
-
-      <p className="m-0 text-sm text-ink-muted">
-        Fuente:{" "}
-        {item.source.url ? (
-          <a
-            href={item.source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-accent underline"
-          >
-            {item.source.label}
-            <span className="sr-only"> (se abre en otra pestaña)</span>
-          </a>
-        ) : (
-          item.source.label
-        )}
-      </p>
+      </div>
     </article>
   );
 }

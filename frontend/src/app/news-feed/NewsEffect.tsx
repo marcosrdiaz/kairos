@@ -8,9 +8,19 @@ const PILL = "m-0 rounded-full px-3 py-1 text-sm font-semibold";
 /**
  * Lo primero de cada noticia: qué puede significar para la cartera elegida. Todas las cifras
  * vienen del backend (motor de impacto); aquí solo se formatean. Siempre en rango, con su
- * etiqueta «Estimado» o «Medido», la confianza y de dónde sale.
+ * etiqueta «Estimado» o «Medido», la confianza y de dónde sale. `compact` (cards de la lista):
+ * la misma frase con su rango y sus etiquetas, sin el porcentaje ni el método, que van al detalle.
  */
-export function NewsEffect({ estimate }: { estimate: NewsEstimateOut | null }) {
+export function NewsEffect({
+  estimate,
+  compact = false,
+}: {
+  estimate: NewsEstimateOut | null;
+  compact?: boolean;
+}) {
+  const sentence = compact
+    ? "m-0 text-base font-semibold text-ink"
+    : "m-0 text-lg font-semibold text-ink";
   if (!estimate) {
     return <p className="m-0 text-base text-ink-muted">Todavía estamos analizando esta noticia.</p>;
   }
@@ -48,7 +58,7 @@ export function NewsEffect({ estimate }: { estimate: NewsEstimateOut | null }) {
         )}
       </dl>
       {estimate.status === "measured" ? (
-        <p className="m-0 text-lg font-semibold text-ink">
+        <p className={sentence}>
           Ese día tu cartera se movió{" "}
           <span className="tabular-nums">
             <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
@@ -56,7 +66,7 @@ export function NewsEffect({ estimate }: { estimate: NewsEstimateOut | null }) {
           por esta vía.
         </p>
       ) : (
-        <p className="m-0 text-lg font-semibold text-ink">
+        <p className={sentence}>
           Tu cartera podría moverse{" "}
           <span className="tabular-nums">
             <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
@@ -64,10 +74,12 @@ export function NewsEffect({ estimate }: { estimate: NewsEstimateOut | null }) {
           {horizonText(estimate.horizon_sessions)}.
         </p>
       )}
-      <p className="m-0 text-sm text-ink-muted">
-        Equivale a <span className="tabular-nums">{ranges.pct}</span> del valor de la cartera.
-        {method && ` ${method}.`}
-      </p>
+      {!compact && (
+        <p className="m-0 text-sm text-ink-muted">
+          Equivale a <span className="tabular-nums">{ranges.pct}</span> del valor de la cartera.
+          {method && ` ${method}.`}
+        </p>
+      )}
     </div>
   );
 }

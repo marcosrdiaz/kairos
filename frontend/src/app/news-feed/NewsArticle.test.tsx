@@ -1,19 +1,19 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { NewsEstimateOut, NewsItemOut } from "../../api/generated/schema";
 import estimated from "../../api/mocks/NewsItemOut.json";
 import notRelevant from "../../api/mocks/NewsItemOut.not_relevant.json";
 import pending from "../../api/mocks/NewsItemOut.pending.json";
-import { NewsCard } from "./NewsCard";
+import { NewsArticle } from "./NewsArticle";
 import { eurRangeText, horizonText, methodText } from "./labels";
 
 afterEach(cleanup);
 
 const NVDA = estimated as NewsItemOut;
 
-describe("NewsCard", () => {
+describe("NewsArticle", () => {
   it("empieza por el efecto en la cartera: rango, plazo, tipo de cifra y confianza", () => {
-    render(<NewsCard item={NVDA} />);
+    render(<NewsArticle item={NVDA} />);
     const article = screen.getByRole("article", { name: NVDA.title });
     const effect = article.querySelector("p.text-lg");
     expect(effect?.textContent).toMatch(
@@ -28,7 +28,7 @@ describe("NewsCard", () => {
   });
 
   it("dice desde cuándo se nota en cada posición", () => {
-    render(<NewsCard item={NVDA} />);
+    render(<NewsArticle item={NVDA} />);
     expect(screen.getByText(/Se nota en la sesión · desde el 27 de febrero de 2025/)).toBeTruthy();
     expect(
       screen.getByText(/Se nota con el siguiente valor liquidativo · desde el 28 de febrero/),
@@ -36,7 +36,7 @@ describe("NewsCard", () => {
   });
 
   it("enseña por qué afecta y enlaza la fuente en otra pestaña", () => {
-    render(<NewsCard item={NVDA} />);
+    render(<NewsArticle item={NVDA} />);
     expect(screen.getByRole("heading", { level: 4, name: "Por qué te afecta" })).toBeTruthy();
     expect(screen.getAllByRole("listitem").length).toBeGreaterThanOrEqual(3);
     const link = screen.getByRole("link", { name: /Nota de resultados de NVIDIA/ });
@@ -45,13 +45,13 @@ describe("NewsCard", () => {
   });
 
   it("sin estimación todavía, no enseña ninguna cifra", () => {
-    render(<NewsCard item={pending as NewsItemOut} />);
+    render(<NewsArticle item={pending as NewsItemOut} />);
     expect(screen.getByText(/Estamos calculando cuánto podría moverla/)).toBeTruthy();
     expect(screen.queryByText(/€/)).toBeNull();
   });
 
   it("si no afecta a la cartera, lo dice", () => {
-    render(<NewsCard item={notRelevant as NewsItemOut} />);
+    render(<NewsArticle item={notRelevant as NewsItemOut} />);
     expect(screen.getByText("No afecta a tu cartera.")).toBeTruthy();
   });
 });
@@ -85,8 +85,31 @@ describe("textos de la estimación", () => {
       ...NVDA,
       estimate: { ...(NVDA.estimate as NewsEstimateOut), status: "measured", method: "measured" },
     };
-    render(<NewsCard item={measured} />);
+    render(<NewsArticle item={measured} />);
     expect(screen.getByText(/Ese día tu cartera se movió/)).toBeTruthy();
     expect(screen.getByText("Medido")).toBeTruthy();
+  });
+
+  it("un texto que no cabe sale recortado con «Mostrar más», y se despliega", () => {
+    // jsdom no mide: se simula un texto más alto que su caja.
+    const height = vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(400);
+    try {
+      render(<NewsArticle item={NVDA} />);
+      const more = screen.getByRole("button", { name: "Mostrar más" });
+      expect(more.getAttribute("aria-expanded")).toBe("false");
+      expect(screen.getByText(NVDA.summary).className).toMatch(/line-clamp/);
+      fireEvent.click(more);
+      expect(
+        screen.getByRole("button", { name: "Mostrar menos" }).getAttribute("aria-expanded"),
+      ).toBe("true");
+      expect(screen.getByText(NVDA.summary).className).not.toMatch(/line-clamp/);
+    } finally {
+      height.mockRestore();
+    }
+  });
+
+  it("si el texto cabe, no hay «Mostrar más»", () => {
+    render(<NewsArticle item={NVDA} />);
+    expect(screen.queryByRole("button", { name: "Mostrar más" })).toBeNull();
   });
 });

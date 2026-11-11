@@ -56,7 +56,29 @@ describe("NewsPage", () => {
     expect(screen.getByRole("button", { name: "Te afectan" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
-    expect(screen.getByText("Información, no asesoramiento")).toBeTruthy();
+    // El aviso va al final como párrafo, sin tarjeta.
+    expect(screen.getByText("No es asesoramiento.").closest("p")?.className).not.toMatch(/border/);
+  });
+
+  it("cada card enseña cómo afecta al dinero y abre el detalle; Escape lo cierra y vuelve a la card", async () => {
+    serveNews(ALL);
+    renderPage();
+    const card = await screen.findByRole("article", { name: estimated.title });
+    expect(card.textContent).toMatch(/Cómo afecta a tu dinero/);
+    expect(card.textContent).toMatch(/entre -270\s€ y -110\s€/);
+    // En la card no van el porcentaje ni el método: eso está en el detalle.
+    expect(card.textContent).not.toMatch(/Equivale a/);
+
+    const opener = screen.getByRole("button", { name: estimated.title });
+    fireEvent.click(opener);
+    const dialog = screen.getByRole("dialog", { name: estimated.title });
+    expect(dialog.textContent).toMatch(/Cómo afecta a tu cartera/);
+    expect(dialog.textContent).toMatch(/Equivale a/);
+    expect(document.activeElement?.textContent).toMatch(/Cerrar/);
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
   it("«Todas» incluye las que no afectan, y una categoría filtra", async () => {
