@@ -56,7 +56,7 @@ export function OperationKindPicker({
               aria-describedby={`${name}-${kind}-description`}
               className="peer sr-only"
             />
-            <span className="flex min-h-24 items-start gap-3 rounded-control border border-line bg-surface p-3 transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
+            <span className="flex items-start gap-3 rounded-control border border-line bg-surface p-3 transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
               <span className={`mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-control ${tone}`}>
                 <Icon className="size-5" />
               </span>
