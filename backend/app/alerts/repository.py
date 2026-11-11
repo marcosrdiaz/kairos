@@ -22,6 +22,7 @@ class StoredAlert:
     created_at: datetime
     delivered: bool
     calc_id: str | None = None
+    news_id: str | None = None
 
 
 def _utc(value: datetime) -> datetime:
@@ -39,7 +40,33 @@ def _stored(row: Alert) -> StoredAlert:
         created_at=_utc(row.created_at),
         delivered=row.delivered,
         calc_id=row.calc_id,
+        news_id=row.news_id,
     )
+
+
+def find_news(portfolio_id: str, news_id: str) -> StoredAlert | None:
+    """El aviso `news_estimate` de esa noticia en la cartera, si lo hay."""
+    with session_scope() as session:
+        row = session.scalars(
+            select(Alert)
+            .where(
+                Alert.portfolio_id == portfolio_id,
+                Alert.news_id == news_id,
+                Alert.kind == AlertKind.NEWS_ESTIMATE.value,
+            )
+            .limit(1)
+        ).first()
+        return _stored(row) if row is not None else None
+
+
+def update(alert_id: str, score: Decimal, message: str, calc_id: str | None) -> None:
+    """Rehace un aviso ya enviado (estimado → medido, T4-31): no cuenta como aviso nuevo."""
+    with session_scope() as session:
+        row = session.get(Alert, alert_id)
+        if row is not None:
+            row.score = score
+            row.message = message
+            row.calc_id = calc_id
 
 
 def exists_between(portfolio_id: str, kind: AlertKind, start: datetime, end: datetime) -> bool:
@@ -98,6 +125,7 @@ def save(
     message: str,
     created_at: datetime,
     calc_id: str | None = None,
+    news_id: str | None = None,
 ) -> StoredAlert:
     row = Alert(
         id=f"alr_{uuid.uuid4().hex}",
@@ -109,6 +137,7 @@ def save(
         created_at=created_at.astimezone(UTC),
         delivered=False,
         calc_id=calc_id,
+        news_id=news_id,
     )
     with session_scope() as session:
         session.add(row)

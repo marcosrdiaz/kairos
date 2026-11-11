@@ -8,7 +8,7 @@ SCRIPTS := scripts
 HAS_FRONTEND := $(wildcard $(FRONTEND)/package.json)
 
 .PHONY: up down seed test test-backend test-frontend lint lint-backend lint-frontend \
-        gen-api replay betas news
+        gen-api replay betas news news-alerts
 
 up:  ## db + seed + backend + frontend
 	docker compose up --build
@@ -67,3 +67,9 @@ NEWS_END ?=
 news:  ## make news NEWS_START=2026-11-01 NEWS_END=2026-11-10: noticias reales, clasificadas
 	@test -n "$(NEWS_START)" -a -n "$(NEWS_END)" || (echo "Uso: make news NEWS_START=AAAA-MM-DD NEWS_END=AAAA-MM-DD" && exit 1)
 	docker compose run --rm --build seed python /scripts/news_backfill.py --start $(NEWS_START) --end $(NEWS_END) --classify
+
+# Avisos por noticia (T4-31): en modo demo no salen solos; esto los lanza ya. NEWS_ALERTS_ARGS
+# admite --portfolio <id> y --now <instante> (si se movió el reloj con PUT /demo/clock).
+NEWS_ALERTS_ARGS ?=
+news-alerts:  ## make news-alerts: avisos por noticia de todas las carteras, ahora
+	docker compose run --rm --build seed python /scripts/news_alerts.py $(NEWS_ALERTS_ARGS)

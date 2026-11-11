@@ -10,7 +10,7 @@ from collections import OrderedDict
 from collections.abc import Iterator
 from threading import Lock
 
-from app.agents import analyzer, context, explainer, templates, writer
+from app.agents import analyzer, context, explainer, news_alert, templates, writer
 from app.agents.fact_format import text_evidence
 from app.agents.facts import move_facts, status_facts, stub_facts
 from app.portfolio import service as portfolio_service
@@ -28,6 +28,7 @@ from app.schemas.agents import (
 )
 from app.schemas.events import EventAnalysis, EventIn
 from app.schemas.impact import MoveAttributionOut
+from app.schemas.news import NewsItemOut
 
 # Una tarea por canal; el redactor comprueba la longitud con `writer.LIMITS`.
 _EVENT_TASK = (
@@ -120,6 +121,21 @@ def write_market_move_message(move: MoveAttributionOut) -> str:
         move_facts(move),
         templates.market_move_message(move),
         kind=QuestionKind.IMPACT,
+    )
+    return text
+
+
+def write_news_alert_message(item: NewsItemOut) -> str:
+    """Aviso `news_estimate` (T4-31). Siempre de plantilla (sin modelo): el mismo texto en cada
+    ensayo de la demo y sin esperar al modelo. Validado por el guardián."""
+    text, _ = writer.write(
+        GuardianChannel.ALERT,
+        "",
+        news_alert.news_facts(item),
+        news_alert.news_alert_message(item),
+        kind=QuestionKind.IMPACT,
+        extra_evidence=text_evidence([item.title], f"news:{item.id}"),
+        use_model=False,
     )
     return text
 

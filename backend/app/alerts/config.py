@@ -23,5 +23,23 @@ MARKET_MOVE_CHECK_EVERY = timedelta(minutes=15)
 """Cada cuánto se recalcula el movimiento del día de una cartera al leer sus avisos (el polling es
 cada 5 s y `explain_move` deja una traza en cada llamada)."""
 
+NEWS_PROFILE_FACTOR: dict[str, Decimal] = {
+    "conservador": Decimal("0.6"),
+    "moderado": Decimal("1.0"),
+    "agresivo": Decimal("1.5"),
+}
+"""Avisos `news_estimate` (T4-31): el umbral de aviso se multiplica por el factor del perfil de
+riesgo de la cartera. Conservador avisa antes, agresivo después. Sin perfil, el de moderado."""
+
+NEWS_ESTIMATE_IN_DEMO = False
+"""Avisos `news_estimate` automáticos (al leer los avisos) con `DEMO_MODE=true`. Apagados por el
+cupo semanal, como `market_move`. En la demo se lanzan a mano con `make news-alerts`."""
+
+NEWS_CHECK_EVERY = timedelta(minutes=15)
+"""Cada cuánto se revisan las noticias de una cartera al leer sus avisos."""
+
+NEWS_LOOKBACK = timedelta(days=3)
+"""Solo avisan las noticias publicadas en este periodo hasta el reloj."""
+
 IMPACT_LOOKBACK_DAYS = 3650
 """Ventana para buscar el impacto de un evento: se filtra por fecha de cálculo, no de evento."""
