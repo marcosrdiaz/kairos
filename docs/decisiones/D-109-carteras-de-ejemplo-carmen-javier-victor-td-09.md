@@ -1,4 +1,4 @@
-### D-XXX · Carteras de ejemplo: Carmen (moderada), Javier (conservador) y Víctor (agresivo, familiar) (TD-09)
+### D-109 · Carteras de ejemplo: Carmen (moderada), Javier (conservador) y Víctor (agresivo, familiar) (TD-09)
 - Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
 - Contexto: TD-09 pedía sustituir a Laura y Javier por otras carteras de ejemplo (Javier padre y Marcos hijo, con un fondo monetario nuevo). Eso toca unos 150 ficheros (tests, casos dorados, E2E, mocks y ejemplos de contrato) y llegaba después de la congelación, a pocas horas de la entrega. Alons reformuló la tarea (11 nov) para tener los tres perfiles de riesgo sin cambios grandes.
 - Decisión:
