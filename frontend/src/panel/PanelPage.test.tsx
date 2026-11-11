@@ -90,6 +90,30 @@ afterEach(() => {
 });
 
 describe("PanelPage · Resumen", () => {
+  it("muestra la cabecera con cartera y subtítulo, y estira las tarjetas del resumen", async () => {
+    stubApi();
+    renderPanel();
+    expect(await screen.findByRole("heading", { level: 1, name: "Panel de contexto" })).toBeTruthy();
+    expect(
+      screen.getByText("Datos, eventos y exposiciones que ayudan a entender tu cartera."),
+    ).toBeTruthy();
+    expect(
+      await screen.findByText(
+        (_, element) => element?.tagName === "P" && element.textContent === "Cartera: Laura",
+      ),
+    ).toBeTruthy();
+
+    const wealth = (await screen.findByText("Patrimonio")).closest("section")!;
+    const planCard = (await screen.findByRole("heading", { level: 3, name: "Tu plan" })).closest(
+      "section",
+    )!;
+    expect(wealth.className).toContain("h-full");
+    expect(planCard.className).toContain("h-full");
+    expect(planCard.parentElement?.className).toContain("items-stretch");
+    expect(wealth.querySelector("svg")?.parentElement?.className).toContain("text-chart-1");
+    expect(screen.queryByRole("heading", { name: "¿Y si…?" })).toBeNull();
+  });
+
   it("muestra patrimonio exacto con fecha, estado con palabra y posiciones con la fecha de su precio", async () => {
     stubApi();
     renderPanel();
@@ -105,6 +129,29 @@ describe("PanelPage · Resumen", () => {
     expect(dates.length).toBeGreaterThan(0);
     expect(dates[0]!.getAttribute("title")).toBe("6 de noviembre de 2026");
     expect(table.querySelector("[data-calc-id]")).not.toBeNull();
+
+    const positive = laura.positions.find((position) => !position.unrealized_pnl_eur.startsWith("-"))!;
+    const positiveRow = within(table)
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes(positive.name))!;
+    const positiveCells = within(positiveRow).getAllByRole("cell");
+    const positivePnl = positiveCells[positiveCells.length - 1]!;
+    expect(positivePnl.className).toContain("text-trend-up");
+    expect(positivePnl.textContent).toMatch(/\+/);
+  });
+
+  it("marca la plusvalía negativa con color y conserva el signo", async () => {
+    stubApi();
+    renderPanel("/panel?p=javier");
+    const table = await screen.findByRole("table", { name: /Posiciones de la cartera/ });
+    const negative = javier.positions.find((position) => position.unrealized_pnl_eur.startsWith("-"))!;
+    const row = within(table)
+      .getAllByRole("row")
+      .find((tableRow) => tableRow.textContent?.includes(negative.name))!;
+    const cells = within(row).getAllByRole("cell");
+    const pnl = cells[cells.length - 1]!;
+    expect(pnl.className).toContain("text-trend-down");
+    expect(pnl.textContent).toMatch(/-/);
   });
 
   it("el patrimonio cambia de periodo y muestra el valor inicial y las aportaciones del backend", async () => {
@@ -168,6 +215,18 @@ describe("PanelPage · Eventos", () => {
     expect(screen.getAllByText(/^Confianza (alta|media|baja)$/).length).toBe(2);
     expect(screen.getAllByRole("list", { name: "Cadena causal" }).length).toBe(2);
     expect(screen.queryByText(/90,00\s€/)).toBeNull();
+    const loss = screen.getByRole("heading", { level: 3, name: nvda.title }).closest("article")!;
+    expect(within(loss).getByText(/entre -620\s€ y -320\s€/).closest("dd")?.className).toContain(
+      "text-trend-down",
+    );
+  });
+
+  it("marca los rangos positivos y hace explícito el signo", async () => {
+    const positive = { ...bce, low_eur: "5.00", impact_eur: "61.00", high_eur: "117.00" };
+    stubApi({ laura: [positive], javier: [] });
+    renderPanel();
+    const range = await screen.findByText(/entre \+5\s€ y \+117\s€/);
+    expect(range.closest("dd")?.className).toContain("text-trend-up");
   });
 
   it("sin eventos, lo dice sin inventar cifras", async () => {
@@ -219,7 +278,10 @@ describe("PanelPage · Exposición", () => {
     const list = await screen.findByRole("list", { name: /Diez mayores empresas/ });
     expect(within(list).getByText(exposure.top_companies[0]!.name)).toBeTruthy();
     // Barras relativas a la mayor: la primera llena el carril (calc con las fracciones tal cual).
-    expect(list.querySelector("li span[style]")?.getAttribute("style")).toMatch(/width:\s*calc\(100%\)/);
+    const companyBars = list.querySelectorAll("li span[style]");
+    expect(companyBars[0]?.getAttribute("style")).toMatch(/width:\s*calc\(100%\)/);
+    expect(companyBars[0]?.className).toContain("bg-chart-1");
+    expect(companyBars[1]?.className).toContain("bg-chart-2");
     expect(screen.getByText(/cubierta: 94,0\s%/)).toBeTruthy();
     expect(document.querySelector("#exposicion [data-calc-id]")).not.toBeNull();
   });
@@ -231,6 +293,7 @@ describe("PanelPage · Exposición", () => {
     const bar = country.querySelector<HTMLElement>("li span[style]");
     // jsdom resuelve el calc(); en el navegador es calc(0.61 * 100%).
     expect(bar?.getAttribute("style")).toMatch(/width:\s*calc\(61%\)/);
+    expect(bar?.className).toContain("bg-chart-1");
   });
 
   it("si falla, estado vacío honesto", async () => {
@@ -323,6 +386,44 @@ describe("PanelPage · filtro de eventos", () => {
 });
 
 describe("PanelPage · accesibilidad", () => {
+  it("permite recorrer las chips con flechas en ambas direcciones", async () => {
+    stubApi();
+    renderPanel();
+    const nav = screen.getByRole("navigation", { name: "Bloques del panel" });
+    const rail = nav.querySelector("ul")!;
+    Object.defineProperty(rail, "clientWidth", { configurable: true, value: 250 });
+    Object.defineProperty(rail, "scrollWidth", { configurable: true, value: 900 });
+    const scrollBy = vi.fn();
+    Object.defineProperty(rail, "scrollBy", { configurable: true, value: scrollBy });
+    fireEvent(window, new Event("resize"));
+
+    const next = screen.getByRole<HTMLButtonElement>("button", {
+      name: "Desplazar bloques a la derecha",
+    });
+    const previous = screen.getByRole<HTMLButtonElement>("button", {
+      name: "Desplazar bloques a la izquierda",
+    });
+    await waitFor(() => expect(next.disabled).toBe(false));
+    expect(previous.disabled).toBe(true);
+    expect(next.getAttribute("aria-controls")).toBe(rail.id);
+    fireEvent.click(next);
+    expect(scrollBy).toHaveBeenCalledWith({ left: 180, behavior: "smooth" });
+
+    let scrollLeft = 0;
+    Object.defineProperty(rail, "scrollLeft", {
+      configurable: true,
+      get: () => scrollLeft,
+      set: (value: number) => {
+        scrollLeft = value;
+      },
+    });
+    scrollLeft = 200;
+    fireEvent.scroll(rail);
+    await waitFor(() => expect(previous.disabled).toBe(false));
+    fireEvent.click(previous);
+    expect(scrollBy).toHaveBeenLastCalledWith({ left: -180, behavior: "smooth" });
+  });
+
   it("tiene un único h1; el enlace de salto lo aporta AppShell", async () => {
     stubApi();
     renderPanel();
@@ -339,5 +440,6 @@ describe("PanelPage · accesibilidad", () => {
       expect(nav.querySelector(`a[href="#${id}"]`)).not.toBeNull();
       expect(document.getElementById(id)?.getAttribute("aria-labelledby")).toBe(`${id}-title`);
     }
+    expect(nav.querySelector('a[href="#escenarios"]')).toBeNull();
   });
 });

@@ -9,6 +9,8 @@ interface TopCompaniesProps {
   portfolio: PortfolioOut | undefined;
 }
 
+const BAR_COLORS = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"] as const;
+
 /**
  * Mayores empresas mirando dentro de los fondos y ETF, y en qué activos las tienes (T5-16: de
  * tabla a barras). Cada barra mide el peso frente al de la mayor, con la cifra exacta al lado;
@@ -37,7 +39,7 @@ export function TopCompanies({ exposure, portfolio }: TopCompaniesProps) {
         aria-label="Diez mayores empresas de la cartera, de más a menos peso"
         className="m-0 mt-5 flex list-none flex-col gap-4 p-0"
       >
-        {top.map((c) => (
+        {top.map((c, index) => (
           <li key={c.key} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1">
             <span className="text-base font-medium text-ink">{c.name}</span>
             <span className="text-right text-base tabular-nums text-ink">
@@ -48,7 +50,7 @@ export function TopCompanies({ exposure, portfolio }: TopCompaniesProps) {
             </span>
             <span aria-hidden="true" className="col-span-2 block h-2 rounded-full bg-surface-muted">
               <span
-                className="block h-full rounded-full bg-line-strong"
+                className={`block h-full rounded-full ${BAR_COLORS[index % BAR_COLORS.length]!}`}
                 style={
                   {
                     width: max ? `calc(${c.weight} / ${max} * 100%)` : "0",

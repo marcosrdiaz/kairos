@@ -5,5 +5,4 @@ export const PANEL_SECTIONS = [
   { id: "exposicion", label: "Exposición" },
   { id: "radar", label: "Radar" },
   { id: "agenda", label: "Agenda" },
-  { id: "escenarios", label: "¿Y si…?" },
 ] as const;

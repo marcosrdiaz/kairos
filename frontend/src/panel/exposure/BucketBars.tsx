@@ -6,8 +6,9 @@ import { Traced } from "../Traced";
 /** Cubos que el backend agrupa como "resto": van al final y con la barra más tenue. */
 const REST_KEYS = new Set(["OTHER", "other"]);
 const VISIBLE = 6;
+const BAR_COLORS = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"] as const;
 
-function Row({ bucket, calcId }: { bucket: ExposureBucket; calcId: string }) {
+function Row({ bucket, calcId, color }: { bucket: ExposureBucket; calcId: string; color: string }) {
   const rest = REST_KEYS.has(bucket.key);
   return (
     <li className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1">
@@ -19,7 +20,7 @@ function Row({ bucket, calcId }: { bucket: ExposureBucket; calcId: string }) {
       {/* Barra: el ancho sale de la fracción tal cual (calc), sin pasarla a number. */}
       <span aria-hidden="true" className="col-span-2 block h-2 rounded-full bg-surface-muted">
         <span
-          className={`block h-full rounded-full ${rest ? "bg-line" : "bg-line-strong"}`}
+          className={`block h-full rounded-full ${rest ? "bg-line" : color}`}
           style={{ width: `calc(${bucket.weight} * 100%)` } as CSSProperties}
         />
       </span>
@@ -46,8 +47,8 @@ export function BucketBars({
     <section aria-label={title} className="rounded-card border border-line bg-surface p-6">
       <h3 className="m-0 text-lg font-semibold text-ink">{title}</h3>
       <ul className="m-0 mt-4 flex list-none flex-col gap-3 p-0">
-        {main.map((b) => (
-          <Row key={b.key} bucket={b} calcId={calcId} />
+        {main.map((b, index) => (
+          <Row key={b.key} bucket={b} calcId={calcId} color={BAR_COLORS[index % BAR_COLORS.length]!} />
         ))}
       </ul>
       {more.length > 0 && (
@@ -56,8 +57,13 @@ export function BucketBars({
             Ver {more.length} más
           </summary>
           <ul className="m-0 mt-2 flex list-none flex-col gap-3 p-0">
-            {more.map((b) => (
-              <Row key={b.key} bucket={b} calcId={calcId} />
+            {more.map((b, index) => (
+              <Row
+                key={b.key}
+                bucket={b}
+                calcId={calcId}
+                color={BAR_COLORS[(index + VISIBLE) % BAR_COLORS.length]!}
+              />
             ))}
           </ul>
         </details>

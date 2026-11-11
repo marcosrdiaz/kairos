@@ -57,28 +57,30 @@ export function SummarySection({ portfolioId }: { portfolioId: string }) {
       intro="Cómo está tu cartera hoy, con los precios de cierre más recientes."
       step={0}
     >
-      <div className="flex flex-col items-start gap-4 rounded-card border border-line bg-surface p-6">
-        {status.data ? (
-          <>
-            <div aria-live="polite" aria-atomic="true">
-              <StatusBadge state={status.data.state} label={status.data.state_label} />
-            </div>
-            <p className="m-0 max-w-[40ch] text-2xl font-semibold leading-snug text-ink">
-              <Traced calcId={status.data.calc_id}>
-                <TextMorph text={withoutTapHint(status.data.sentence)} />
-              </Traced>
+      <div className="overflow-hidden rounded-card border border-line bg-surface">
+        <div className="flex flex-col items-start gap-4 p-6">
+          {status.data ? (
+            <>
+              <div aria-live="polite" aria-atomic="true">
+                <StatusBadge state={status.data.state} label={status.data.state_label} />
+              </div>
+              <p className="m-0 max-w-[40ch] text-2xl font-semibold leading-snug text-ink">
+                <Traced calcId={status.data.calc_id}>
+                  <TextMorph text={withoutTapHint(status.data.sentence)} />
+                </Traced>
+              </p>
+            </>
+          ) : (
+            <p className="m-0 text-base text-ink-muted">
+              No podemos mostrar el estado ahora mismo; las cifras de abajo siguen siendo válidas.
             </p>
-          </>
-        ) : (
-          <p className="m-0 text-base text-ink-muted">
-            No podemos mostrar el estado ahora mismo; las cifras de abajo siguen siendo válidas.
-          </p>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <WealthCard portfolioId={portfolioId} portfolio={p} eventTitles={eventTitles} />
-        <PlanCard portfolioId={portfolioId} />
+        <div className="grid grid-cols-1 items-stretch divide-y divide-line border-t border-line lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:divide-x lg:divide-y-0">
+          <WealthCard portfolioId={portfolioId} portfolio={p} eventTitles={eventTitles} />
+          <PlanCard portfolioId={portfolioId} />
+        </div>
       </div>
 
       <PositionsTable portfolio={p} />
