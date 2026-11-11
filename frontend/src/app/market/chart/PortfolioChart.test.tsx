@@ -35,14 +35,15 @@ describe("PortfolioChart", () => {
   it("pide el último año por defecto y muestra el último cierre", async () => {
     const fetchMock = stubApi();
     renderChart();
-    const lastClose = await screen.findByText(/Último cierre: 6 de noviembre de 2026/);
-    // En una sola línea: último cierre, valor al empezar y aportaciones.
-    const line = lastClose.parentElement;
-    expect(line?.textContent).toMatch(
-      /Último cierre: 6 de noviembre de 2026.*Al empezar el periodo: 33\.410,25.*Aportaciones: \+300,00/,
+    // La cifra es secundaria y va rotulada con su fecha y sin el impacto de los eventos.
+    const label = await screen.findByText(
+      /Valor al cierre del 6 de noviembre de 2026, sin el impacto estimado de los eventos/,
     );
+    // Debajo, en una línea: valor al empezar y aportaciones.
+    const line = label.nextElementSibling;
+    expect(line?.textContent).toMatch(/Al empezar el periodo: 33\.410,25.*Aportaciones: \+300,00/);
     // Encima, el valor del último cierre y su variación respecto al anterior, con signo.
-    expect(line?.previousElementSibling?.textContent).toMatch(/34\.311,68.*−228,39/);
+    expect(label.previousElementSibling?.textContent).toMatch(/34\.311,68.*−228,39/);
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/portfolios/laura/history?period=1y");
     expect(screen.getByRole("radio", { name: "Último año" })).toHaveProperty("checked", true);
   });
@@ -50,7 +51,7 @@ describe("PortfolioChart", () => {
   it("ofrece 1 semana, 1 mes, 6 meses, 1 año y todo", async () => {
     stubApi();
     renderChart();
-    await screen.findByText(/Último cierre/);
+    await screen.findByText(/Valor al cierre del/);
     const names = screen.getAllByRole("radio").map((r) => r.getAttribute("aria-label"));
     expect(names).toEqual(["Última semana", "Último mes", "Últimos 6 meses", "Último año", "Todo el historial"]);
   });
@@ -58,7 +59,7 @@ describe("PortfolioChart", () => {
   it("cambiar de periodo pide la serie de ese periodo", async () => {
     const fetchMock = stubApi();
     renderChart();
-    await screen.findByText(/Último cierre/);
+    await screen.findByText(/Valor al cierre del/);
     fireEvent.click(screen.getByRole("radio", { name: "Última semana" }));
     await waitFor(() =>
       expect(fetchMock.mock.calls.some(([url]) => String(url).includes("period=1w"))).toBe(true),
@@ -128,7 +129,7 @@ describe("PortfolioChart", () => {
   it("de dónde sale: una pista breve al pasar por la cifra, sin abrir nada", async () => {
     stubApi();
     renderChart();
-    await screen.findByText(/Último cierre/);
+    await screen.findByText(/Valor al cierre del/);
     const [hint] = screen.getAllByRole("tooltip", { hidden: true });
     expect(hint?.textContent).toMatch(/participaciones × precio de cierre.*Precios de cierre de 1 activo y tipo de cambio/);
     const figure = hint?.parentElement;

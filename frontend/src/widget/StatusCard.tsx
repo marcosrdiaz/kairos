@@ -33,7 +33,7 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="m-0 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
-          <p className="m-0 text-lg font-semibold tabular-nums text-ink">
+          <p className="m-0 text-3xl font-semibold leading-tight tabular-nums text-ink">
             <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
           </p>
         </div>
