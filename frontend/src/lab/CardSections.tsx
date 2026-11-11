@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MetricCard } from "../ui/MetricCard";
 import { ProgressBar } from "../ui/ProgressBar";
 import { UptimeCard } from "../ui/UptimeCard";
@@ -18,8 +19,25 @@ export function MetricSection() {
       }}
       changes="colores de los tokens (el original es zinc), cifra sin animación (envolvible con Traced), sin marcadores de eventos ni desglose, y la variación llega ya formateada: la tarjeta no calcula nada."
     >
-      <MetricCard label="Cifra de ejemplo" periods={METRIC_PERIODS} formatValue={formatUnits} className="max-w-xl" />
+      <MetricDemo />
     </LabSection>
+  );
+}
+
+function MetricDemo() {
+  const [activeId, setActiveId] = useState(METRIC_PERIODS[0]?.id ?? "");
+  const period = METRIC_PERIODS.find((p) => p.id === activeId) ?? METRIC_PERIODS[0];
+  if (!period) return null;
+  return (
+    <MetricCard
+      label="Cifra de ejemplo"
+      periods={METRIC_PERIODS}
+      activeId={period.id}
+      onPeriodChange={setActiveId}
+      value={formatUnits(period.value)}
+      series={period.series}
+      className="max-w-xl"
+    />
   );
 }
 

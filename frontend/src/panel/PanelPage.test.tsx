@@ -9,6 +9,8 @@ import laura from "../api/mocks/PortfolioOut.json";
 import agendaBce from "../api/mocks/AgendaItemOut.json";
 import agendaDca from "../api/mocks/AgendaItemOut.dca.json";
 import exposure from "../api/mocks/ExposureOut.json";
+import history from "../api/mocks/PortfolioHistoryOut.json";
+import plan from "../api/mocks/PlanOut.json";
 import radar from "../api/mocks/RadarOut.json";
 import status from "../api/mocks/StatusOut.json";
 import { PanelPage } from "./PanelPage";
@@ -26,7 +28,13 @@ const json = (body: unknown, code = 200) =>
 /** Backend falso: sirve cada ruta según la cartera pedida. `events` por cartera. */
 function stubApi(
   events: Record<string, unknown[] | "error"> = { laura: [bce, nvda], javier: [nvda] },
-  others: { exposure?: unknown; radar?: Record<string, unknown>; agenda?: unknown[] } = {},
+  others: {
+    exposure?: unknown;
+    radar?: Record<string, unknown>;
+    agenda?: unknown[];
+    plan?: unknown;
+    history?: (period: string) => unknown;
+  } = {},
 ) {
   const radars = others.radar ?? { laura: radar, javier: EMPTY_RADAR };
   vi.stubGlobal(
@@ -36,6 +44,14 @@ function stubApi(
       if (url.endsWith("/portfolios")) return json(PORTFOLIOS);
       const id = /portfolios\/(\w+)/.exec(url)?.[1] ?? "laura";
       if (url.includes("/status")) return json({ ...status, state: "atento" });
+      if (url.includes("/history")) {
+        const period = /period=(\w+)/.exec(url)?.[1] ?? "1m";
+        return json(others.history ? others.history(period) : { ...history, period });
+      }
+      if (/\/plan$/.test(url)) {
+        if (others.plan === "missing") return json({ code: "NOT_FOUND", message: "Sin plan" }, 404);
+        return json(others.plan ?? plan);
+      }
       if (url.includes("/agenda")) return json(others.agenda ?? [agendaDca, agendaBce]);
       if (url.includes("/exposure")) {
         return others.exposure === "error" ? json({ code: "INTERNAL" }, 500) : json(others.exposure ?? exposure);
@@ -86,6 +102,50 @@ describe("PanelPage · Resumen", () => {
     expect(rows.length).toBe(laura.positions.length + 1);
     expect(within(table).getAllByText(/6 de noviembre de 2026/).length).toBeGreaterThan(0);
     expect(table.querySelector("[data-calc-id]")).not.toBeNull();
+  });
+
+  it("el patrimonio cambia de periodo y muestra el valor inicial y las aportaciones del backend", async () => {
+    const seen: string[] = [];
+    stubApi(undefined, {
+      history: (period) => {
+        seen.push(period);
+        return period === "1y"
+          ? { ...history, period, start_value_eur: "28000.00", net_flows_eur: "0.00" }
+          : { ...history, period };
+      },
+    });
+    renderPanel();
+    const card = (await screen.findByText("Patrimonio")).closest("section") as HTMLElement;
+    expect(await within(card).findByText(/33\.410,25\s€/)).toBeTruthy();
+    expect(within(card).getByText(/\+300,00\s€/)).toBeTruthy();
+    expect((within(card).getByRole("radio", { name: "Último mes" }) as HTMLInputElement).checked).toBe(true);
+    expect(within(card).queryByText(/periodo anterior/)).toBeNull();
+
+    fireEvent.click(within(card).getByRole("radio", { name: "Último año" }));
+    expect(await within(card).findByText(/28\.000,00\s€/)).toBeTruthy();
+    expect(within(card).getByText(/sin aportaciones ni retiradas/)).toBeTruthy();
+    expect(seen).toContain("1y");
+    expect(within(card).getByText("Última semana")).toBeTruthy();
+  });
+
+  it("«Tu plan» compara el reparto con el objetivo y el margen, sin órdenes", async () => {
+    stubApi(undefined, { plan: { ...plan, drift_equity: "0.12", drift_exceeded: true } });
+    renderPanel();
+    const card = (await screen.findByRole("heading", { level: 3, name: "Tu plan" })).closest("section") as HTMLElement;
+    const bar = within(card).getByRole("progressbar", { name: "Renta variable" });
+    expect(bar.getAttribute("aria-valuetext")).toMatch(/72,0\s%.*70\s%/);
+    expect(within(card).getByText(/12,0 puntos por encima del objetivo/)).toBeTruthy();
+    expect(within(card).getByText(/Fuera del margen de ±10\s%/)).toBeTruthy();
+    expect(within(card).getByText(/150\.000\s€ en 2040/)).toBeTruthy();
+    expect(card.querySelector("[data-calc-id]")).not.toBeNull();
+    expect(card.textContent).not.toMatch(/compra|vende|deberías|te recomiendo/i);
+  });
+
+  it("sin plan, «Tu plan» lo dice sin inventar un reparto", async () => {
+    stubApi(undefined, { plan: "missing" });
+    renderPanel();
+    expect(await screen.findByText(/aún no tiene un plan de inversión/)).toBeTruthy();
+    expect(screen.queryByRole("progressbar", { name: "Renta variable" })).toBeNull();
   });
 
   it("deja el hueco de los avisos de T2-12", async () => {
