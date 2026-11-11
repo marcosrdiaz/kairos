@@ -22,7 +22,7 @@ export function TraceHint({ calcId, text, source, children }: TraceHintProps) {
       {children}
       <span id={id} role="tooltip" className="kchart-hint-pop">
         <span className="block">{text}</span>
-        <span className="mt-1 block text-xs text-ink-muted">{source}</span>
+        <span className="mt-1 block text-sm text-ink-muted">{source}</span>
       </span>
     </span>
   );

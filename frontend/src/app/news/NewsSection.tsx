@@ -16,7 +16,7 @@ function Header() {
       <h2 id="news-heading" className="m-0 text-base font-semibold leading-snug text-ink">
         Lo que más mueve tu cartera hoy
       </h2>
-      <p className="m-0 line-clamp-2 text-xs leading-snug text-ink-muted">
+      <p className="m-0 line-clamp-2 text-sm leading-snug text-ink-muted">
         Las {TOP_NEWS} noticias de las últimas 24 horas con más impacto en tu cartera. Impacto
         estimado, con rango.
       </p>
