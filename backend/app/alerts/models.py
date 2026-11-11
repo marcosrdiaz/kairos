@@ -10,9 +10,10 @@ from app.core.db import Base
 
 
 class Alert(Base):
-    """`kind`: event_impact, dca_pending, drift, market_move. El límite semanal se cuenta por
-    `created_at`. `calc_id` solo en los avisos sin evento (`market_move`); los de evento toman el
-    del impacto."""
+    """`kind`: event_impact, dca_pending, drift, market_move, news_estimate. El límite semanal se
+    cuenta por `created_at`. `calc_id` solo en los avisos sin evento (`market_move`,
+    `news_estimate`); los de evento toman el del impacto. `news_id`: la noticia de un
+    `news_estimate` (T4-31); sin clave foránea, como las noticias se cargan aparte."""
 
     __tablename__ = "alert"
     __table_args__ = (Index("ix_alert_portfolio_created", "portfolio_id", "created_at"),)
@@ -26,3 +27,4 @@ class Alert(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     delivered: Mapped[bool] = mapped_column(Boolean, default=False)
     calc_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    news_id: Mapped[str | None] = mapped_column(String(32), nullable=True)

@@ -1,0 +1,17 @@
+### D-XXX · Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts` (T4-31)
+- Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
+- Contexto: el hito E (T4-27 a T4-30) ya da a cada noticia un rango en € para cada cartera, estimado o medido (D-103). Faltaba decidir cuándo una noticia merece un aviso (`kind=news_estimate`) y cómo encaja con el límite de 2 avisos por semana y cartera (D-032, D-097), que comparte con `event_impact` y `market_move`.
+- Decisión:
+  - **Umbral:** una noticia avisa si el **extremo de su rango más cercano a cero** supera `max(150 €, 0,5 % del patrimonio)` (D-032) multiplicado por el factor del perfil de riesgo de la cartera: **conservador 0,6, moderado 1,0 y agresivo 1,5** (`alerts/config.py`). Sin `risk_profile` se usa el `profile` obsoleto (`dinamico` = agresivo); sin ninguno, 1. Si el rango cruza el cero, la noticia puede mover la cartera en los dos sentidos y **no avisa**. Puntuación = |extremo cercano a cero| / umbral del perfil.
+  - **Cuándo:** se revisan las noticias de «Te afectan» publicadas en los **últimos 3 días**, al leer los avisos de la cartera (como `market_move`) y como mucho cada 15 minutos. Como mucho **un aviso nuevo por cartera y día**, el de la noticia con más puntuación: varias noticias medidas del mismo día comparten el movimiento del día (D-103) y repetirían la cifra.
+  - **Estimado → medido:** si la noticia ya avisó como estimada, al medirse se **rehace ese aviso** (mensaje, puntuación y `calc_id`), con la misma fecha y sin gastar cupo. Si el evento medido de la noticia ya tiene aviso `event_impact`, no hay aviso de noticia.
+  - **Mensaje:** de plantilla, sin modelo (el mismo texto en cada ensayo), validado por el guardián y con el `calc_id` de la estimación. Estimado: «se estima que tu cartera baje entre X y Y en las próximas N sesiones». Medido: «ya medido, el día de la noticia tu cartera bajó unos X, entre A y B», porque lo medido recoge todo el mercado de ese día y no solo la noticia.
+  - **Modo demo:** no se lanzan solos (`NEWS_ESTIMATE_IN_DEMO = False`), porque gastarían el cupo que necesita el aviso del evento del guion (paso 3). Se lanzan a mano con **`make news-alerts`** (`scripts/news_alerts.py`), con la misma regla que en producción. Tras `/demo/reset` se repite igual. Con el reloj de la demo (6 nov, 18:00) y las noticias de `data/news/`, Laura recibe un aviso y Javier ninguno.
+  - `alert.news_id` (migración `0009`) guarda la noticia, sin clave foránea porque las noticias se cargan aparte. Ya estaba en el contrato (`AlertOut.news_id`, T4-27).
+- Motivo: usar el extremo cercano a cero es «calmar antes que alarmar»: solo avisa si incluso el caso más suave supera el umbral. El factor por perfil es la propuesta de T4-31: quien elige un perfil conservador quiere enterarse antes.
+- Alternativas descartadas:
+  - Usar el impacto central: avisaría de rangos que incluyen el cero.
+  - Un aviso por cada noticia que supere el umbral: el mismo día agotaría el cupo semanal con la misma cifra repetida.
+  - Encenderlos en la demo: el aviso del evento del paso 3 podría quedarse sin cupo.
+  - Una ruta `POST /demo/news-alerts`: habría sido un cambio de contrato (PR propio) el día de la congelación.
+- Consecuencias: `PUT /demo/clock` solo cambia el reloj en la memoria del backend; si se ha movido, `make news-alerts NEWS_ALERTS_ARGS="--now <instante>"`. Lanzar los avisos de noticias antes del replay del guion gasta uno de los dos avisos de la semana de esa cartera.
