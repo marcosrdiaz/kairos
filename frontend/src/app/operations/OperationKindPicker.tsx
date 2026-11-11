@@ -43,7 +43,7 @@ export function OperationKindPicker({
   return (
     <fieldset className="m-0 min-w-0 border-0 p-0">
       <legend className="mb-2 p-0 text-base font-semibold text-ink">Tipo de operación</legend>
-      <div className="grid min-w-0 grid-cols-1 gap-2 @3xl/app-content:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-2 @3xl/app-content:inline-grid @3xl/app-content:w-fit @3xl/app-content:grid-cols-3">
         {KINDS.map(({ value: kind, label, description, Icon, tone }) => (
           <label key={kind} className="relative min-w-0 cursor-pointer">
             <input
