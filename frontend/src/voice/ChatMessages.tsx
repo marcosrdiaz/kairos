@@ -57,7 +57,7 @@ function GeneratedLine({ text, calcIds, scheduler }: { text: string; calcIds: st
 function DraftBubble({ text }: { text: string }) {
   return (
     <li className="flex flex-col">
-      <p className="chat-in-user chat-bubble-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
+      <p className="chat-in-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] bg-accent px-4 py-2.5 text-base text-on-accent">
         <span className="sr-only">Tú, dictando: </span>
         {text ? <span>{text}</span> : <span className="opacity-75">Te escucho</span>}
         <span
@@ -97,14 +97,14 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
   const calcIds = [...new Set(turn.sentences.flatMap((s) => s.calcIds))];
   return (
     <li className="flex flex-col gap-3">
-      <p className="chat-in-user chat-bubble-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
+      <p className="chat-in-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] bg-accent px-4 py-2.5 text-base text-on-accent">
         <span className="sr-only">Tú: </span>
         {turn.question}
       </p>
 
       <div className="chat-in-bot flex max-w-full items-start gap-2.5 sm:max-w-[90%]">
         <LogoTile className="size-8" />
-        <div className="chat-bubble-bot ml-1.5 flex min-w-0 flex-1 flex-col gap-2 rounded-[1.25rem] rounded-tl-none bg-surface px-4 py-3 shadow-[0_2px_10px_-4px_rgb(0_0_0/0.18)]">
+        <div className="ml-1.5 flex min-w-0 flex-1 flex-col gap-2 rounded-[1.25rem] bg-surface px-4 py-3 shadow-[0_2px_10px_-4px_rgb(0_0_0/0.18)]">
           <span className="sr-only">KAIROS: </span>
           {turn.showDisclaimer && (
             <p className="m-0 flex items-start gap-1.5 text-sm text-ink-muted">
