@@ -20,6 +20,7 @@ import { Change, FlowTag } from "./Change";
 import {
   niceScale,
   pointDate,
+  monthTicks,
   seriesSpanDays,
   tickDate,
   tickEur,
@@ -182,6 +183,8 @@ export const HistoryChart = memo(function HistoryChart({
         <CartesianGrid vertical={false} stroke="var(--kairos-color-border)" strokeDasharray="2 6" />
         <XAxis
           dataKey="date"
+          ticks={monthTicks(rows, period, spanDays)}
+          interval="preserveStartEnd"
           tickFormatter={(iso: string) => tickDate(iso, period, spanDays)}
           tick={tick}
           tickLine={false}
