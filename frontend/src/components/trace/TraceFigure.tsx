@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TraceAnchor } from "./TraceAnchor";
 import { useTrace } from "./traceContext";
 
 interface TraceFigureProps {
@@ -8,22 +9,21 @@ interface TraceFigureProps {
 }
 
 /**
- * Una cifra que se puede tocar para ver de dónde sale: hereda el tipo de letra y solo añade un
- * subrayado punteado. Un botón por cifra y no un enlace aparte, para no llenar las tablas.
+ * Una cifra que se explica al pasar el ratón, enfocarla o tocarla (T5-18): hereda el tipo de letra
+ * y solo añade un subrayado punteado. Un botón por cifra y no un enlace aparte, para no llenar las
+ * tablas. La tarjeta repite la cifra arriba y lleva a la traza completa.
  */
 export function TraceFigure({ calcId, children }: TraceFigureProps) {
   const trace = useTrace();
   if (!calcId || !trace) return <span data-calc-id={calcId ?? undefined}>{children}</span>;
   return (
-    <button
-      type="button"
-      data-calc-id={calcId}
-      title="¿De dónde sale?"
-      onClick={() => trace.open(calcId)}
-      className="cursor-pointer rounded-sm border-0 bg-transparent p-0 text-left [font:inherit] text-inherit underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-accent"
+    <TraceAnchor
+      calcId={calcId}
+      value={children}
+      triggerClassName="cursor-pointer rounded-sm border-0 bg-transparent p-0 text-left [font:inherit] text-inherit underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-accent aria-expanded:decoration-accent"
     >
       {children}
       <span className="sr-only"> ¿De dónde sale?</span>
-    </button>
+    </TraceAnchor>
   );
 }

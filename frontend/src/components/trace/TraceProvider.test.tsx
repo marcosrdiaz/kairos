@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { TraceOut } from "../../api/generated/schema";
 import traceMock from "../../api/mocks/TraceOut.json";
+import { TraceDialog } from "./TraceDialog";
 import { TraceFigure } from "./TraceFigure";
 import { TraceLink } from "./TraceLink";
 import { TraceProvider } from "./TraceProvider";
@@ -35,10 +36,17 @@ function renderWithProvider(ui: ReactNode) {
   );
 }
 
+/** La cifra abre su tarjeta (T5-18) y la tarjeta, la hoja con la traza entera. */
+async function openFull(name: RegExp | string) {
+  fireEvent.click(screen.getByRole("button", { name }));
+  const card = await screen.findByRole("group", { name: "De dónde sale esta cifra" });
+  fireEvent.click(await within(card).findByRole("button", { name: "Ver el cálculo completo" }));
+  return screen.findByRole("dialog", { hidden: true });
+}
+
 async function openFigure() {
   renderWithProvider(<TraceFigure calcId="calc_root">100 €</TraceFigure>);
-  fireEvent.click(screen.getByRole("button", { name: /De dónde sale/ }));
-  return screen.findByRole("dialog", { hidden: true });
+  return openFull(/De dónde sale/);
 }
 
 beforeEach(() => {
@@ -75,11 +83,11 @@ describe("TraceFigure y TraceLink", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 
-  it("TraceLink abre la misma hoja", async () => {
+  it("TraceLink lleva a la misma hoja", async () => {
     stubTraces([ROOT]);
     renderWithProvider(<TraceLink calcId="calc_root" />);
-    fireEvent.click(screen.getByRole("button", { name: "¿De dónde sale?" }));
-    expect(await screen.findByText("Fórmula")).toBeTruthy();
+    const dialog = await openFull("¿De dónde sale?");
+    expect(await within(dialog).findByText("Fórmula")).toBeTruthy();
   });
 });
 
@@ -114,8 +122,10 @@ describe("TraceDialog", () => {
   });
 
   it("un 404 de la cifra se explica como traza no disponible", async () => {
+    // La tarjeta no ofrece la hoja sin traza; la hoja se prueba sola por si se abre igualmente.
     stubTraces([]);
-    const dialog = await openFigure();
+    renderWithProvider(<TraceDialog calcId="calc_root" onClose={() => undefined} />);
+    const dialog = await screen.findByRole("dialog", { hidden: true });
     expect(await within(dialog).findByText(/Traza no disponible/)).toBeTruthy();
     expect(within(dialog).queryByRole("alert", { hidden: true })).toBeNull();
   });
