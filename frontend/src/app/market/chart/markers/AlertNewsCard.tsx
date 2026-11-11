@@ -41,8 +41,8 @@ export function AlertNewsCard({ store, id, width }: { store: NewsMarkerStore; id
             aria-hidden="true"
             className="relative -mx-4 -mt-3 mb-1 flex h-24 items-center justify-end overflow-hidden rounded-t-[11px] bg-primary-tint px-6"
           >
-            <span className="absolute -right-5 -top-10 size-32 rounded-full border border-primary/20" />
-            <span className="absolute right-4 top-1/2 size-20 -translate-y-1/2 rounded-full border border-primary/25" />
+            <span className="absolute -right-5 -top-10 size-32 rounded-full border border-gold/10" />
+            <span className="absolute right-4 top-1/2 size-20 -translate-y-1/2 rounded-full border border-gold/15" />
             <span className="relative grid size-14 place-items-center rounded-full bg-primary-tint-strong text-accent">
               <NewsCategoryIcon category={news.category} className="size-7" />
             </span>

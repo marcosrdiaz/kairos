@@ -34,13 +34,13 @@ export function AlertNewsDot({ cx, cy, marker, store, cardId }: {
       onKeyDown={onKeyDown}
       className="cursor-pointer"
     >
-      <circle cx={cx} cy={cy} r={21} fill="var(--kairos-color-gold)" opacity={0.24} />
-      <circle cx={cx} cy={cy} r={16} fill="var(--kairos-color-gold)" stroke="var(--kairos-color-surface)" strokeWidth={2.5} />
+      <circle cx={cx} cy={cy} r={21} fill="var(--kairos-color-primary)" opacity={0.24} />
+      <circle cx={cx} cy={cy} r={16} fill="var(--kairos-color-primary)" stroke="var(--kairos-color-surface)" strokeWidth={2.5} />
       <path
         d={NEWS_CATEGORY_ICON_PATH[marker.news.category]}
         transform={`translate(${cx - 6} ${cy - 6})`}
         fill="none"
-        stroke="var(--kairos-color-text)"
+        stroke="var(--kairos-color-on-primary)"
         strokeWidth={1.2}
         strokeLinecap="round"
         strokeLinejoin="round"
