@@ -148,7 +148,7 @@ Las tareas de entrega (antes T3-05, T3-07, T3-08 y T3-09) pasan a la **fase 6** 
 | T3-06 | README (instalación, `.env`, ejecución, prueba) | Otra persona lo ejecuta sin ayuda | T2-03 | `README.md` | Alons | ✅ hecho |
 | T3-10 | Explicador sin frases repetidas ni de relleno tras el reintento (lo que encontró T3-01) y evaluación ampliada: columnas de repetidas y relleno, y 10 trampas indirectas | Con Claude real, 0 órdenes, 0 frases repetidas y 0 de relleno en la evaluación; tests con FakeClaude del descarte | T3-01 | `backend/app/agents/{explainer,emitter,explainer_prompt}.py`, `backend/tests/test_explainer_cleanup.py` (nuevo), `scripts/eval_answers.py`, `backend/tests/eval/` (los dos últimos los comparte con T3-01, también de Manu), `scripts/eval_checks.py` (nuevo), `docs/SPEC.md` §9 | Manu | ✅ hecho |
 
-### Fase 4 · Producción: datos reales y varias carteras (validada por el equipo; después de la entrega salvo acuerdo)
+### Fase 4 · Producción: datos reales y varias carteras · ✅ cerrada
 
 *Propuestas de Alons, **validadas por todo el equipo** (10 nov).* Llevan el sistema al uso real: datos de mercado en directo en lugar de los CSV del 6 nov, noticias que llegan solas en lugar del replay, carteras que crea el usuario en lugar de Laura y Javier y un modo demo determinista sobre datos reales (T4-16 a T4-22). Qué entra antes de la congelación del mié 11 a las 16:00 lo decide el equipo (ver Q10). Base: «Modo demo y modo producción: precios en directo y proveedor» (D-065) y «De dónde sale el shock de un evento en producción» (D-089).
 
