@@ -24,7 +24,7 @@ function EventTag({ marker }: { marker: EventMarker }) {
   const e = marker.event;
   const { range } = markerImpact(marker);
   return (
-    <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={e.calc_id}>
+    <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 border-l-2 border-line-strong py-0.5 pl-3 text-sm text-ink" data-calc-id={e.calc_id}>
       <span className="font-semibold text-accent">{EVENT_TYPE_LABEL[e.event_type]}</span>
       <span>{e.title}</span>
       <span className="text-ink-muted">
@@ -49,7 +49,7 @@ function NewsTag({ marker }: { marker: AlertNewsMarker }) {
         }
       : null;
   return (
-    <span className="mt-1 flex flex-wrap gap-x-2 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={estimate?.calc_id ?? undefined}>
+    <span className="mt-1 flex flex-wrap gap-x-2 border-l-2 border-line-strong py-0.5 pl-3 text-sm text-ink" data-calc-id={estimate?.calc_id ?? undefined}>
       <span className="font-semibold text-brand-red">Noticia con aviso</span>
       <span>{marker.news.title}</span>
       <span className="text-ink-muted">{pointDate(marker.marketDate)}
@@ -158,10 +158,10 @@ export const HistoryTable = memo(function HistoryTable({ history, periodName, ma
   const [open, setOpen] = useState(false);
   return (
     <details
-      className="kchart-table mx-5 mb-5 overflow-hidden rounded-2xl border border-line bg-surface sm:mx-6 sm:mb-6"
+      className="kchart-table overflow-hidden rounded-b-card border-t border-line"
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
-      <summary className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-base font-semibold text-accent hover:bg-surface-muted">
+      <summary className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-base font-semibold text-accent hover:bg-surface-muted focus-visible:outline-offset-[-3px]">
         <span>
           Ver tabla{" "}
           <span className="font-normal text-ink-muted">({history.points.length} cierres)</span>
