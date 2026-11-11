@@ -17,6 +17,36 @@ export const TRACE_KIND_LABEL: Record<components["schemas"]["TraceKind"], string
   agenda: "Agenda de citas",
 };
 
+/**
+ * Cómo se calcula cada tipo de cifra, en palabras de quien no es experto (T5-19). Sin cifras: los
+ * números están en las entradas y el resultado. La fórmula exacta sigue en la traza.
+ */
+export const TRACE_KIND_HOW: Record<components["schemas"]["TraceKind"], string> = {
+  valuation:
+    "Para cada fondo o acción se multiplican tus participaciones por su último precio y, si cotiza en otra divisa, se pasa a euros. Después se suma todo.",
+  transaction:
+    "El importe se divide entre el precio del día en euros para saber cuántas participaciones son. Al vender, se descuentan primero las participaciones más antiguas.",
+  transfer:
+    "Lo que sale del fondo de origen se convierte en participaciones del de destino al precio de ese día, conservando el coste y la fecha de compra.",
+  dca: "Tu aportación se reparte entre los fondos según los pesos de tu plan y cada parte se convierte en participaciones al precio del día.",
+  plan: "Se mira qué parte de tu dinero está en cada tipo de activo y se compara con el reparto objetivo de tu plan.",
+  exposure:
+    "Se mira dentro de cada fondo qué empresas, países y divisas tiene, y se suma lo que te toca a ti según lo que tienes en cada uno.",
+  event_impact:
+    "Se aplica a cada posición el movimiento que tuvo el mercado con el evento, según cómo ha reaccionado ese activo en el pasado. Por eso sale un rango y no una cifra exacta.",
+  scenario:
+    "Se aplica a tu cartera un movimiento de mercado hipotético, con la misma sensibilidad histórica de cada activo que en los eventos reales.",
+  projection:
+    "Se proyecta tu cartera hasta la fecha de tu objetivo sumando tus aportaciones periódicas y una rentabilidad supuesta por tipo de activo, en un escenario prudente, uno medio y uno favorable.",
+  status:
+    "Se comprueba si un evento reciente ha movido tu cartera lo bastante como para fijarse y si tu reparto se ha alejado de tu plan más de lo que admite.",
+  radar:
+    "Se repasan unas reglas fijas sobre tu cartera y tu plan (concentración, divisa, desvío, aportaciones) y se muestran solo las que se cumplen.",
+  move: "Se compara el valor de cada posición entre dos fechas, se descuentan las compras y ventas de por medio y se reparte el cambio entre los eventos conocidos.",
+  agenda:
+    "Se cruzan las próximas citas del calendario económico y tus aportaciones con lo sensible que es tu cartera a cada una.",
+};
+
 /** Nombres en español de las claves de `inputs` y `outputs`. Una clave sin nombre se muestra tal cual. */
 export const FIELD_LABEL: Record<string, string> = {
   // Factores de mercado (claves de `betas` y `factor_shocks`).
