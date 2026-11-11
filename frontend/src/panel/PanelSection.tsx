@@ -10,14 +10,17 @@ interface PanelSectionProps {
   children: ReactNode;
 }
 
-/** Bloque del panel: encabezado de nivel 2 enlazable y su contenido. */
+/**
+ * Bloque del panel: encabezado de nivel 2 enlazable y su contenido. El margen de desplazamiento
+ * deja sitio a la barra de bloques fija (y en móvil, también a la cabecera de la app).
+ */
 export function PanelSection({ id, title, intro, step = 0, children }: PanelSectionProps) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-title`}
       style={{ "--panel-step": step } as CSSProperties}
-      className="panel-reveal scroll-mt-24"
+      className="panel-reveal scroll-mt-[calc(var(--kairos-header-height)+5rem)] lg:scroll-mt-24"
     >
       <h2 id={`${id}-title`} className="m-0 text-2xl font-semibold leading-tight text-ink">
         {title}

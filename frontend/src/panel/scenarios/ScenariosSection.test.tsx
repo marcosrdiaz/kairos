@@ -38,16 +38,16 @@ describe("ScenariosSection", () => {
     fireEvent.click(button);
     expect(button.getAttribute("aria-pressed")).toBe("true");
 
-    const table = await screen.findByRole("table", { name: "Impacto estimado por activo" });
+    const table = await screen.findByRole("list", { name: "Impacto estimado por activo" });
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("/api/v1/portfolios/laura/scenarios");
     expect(JSON.parse(String(init.body))).toEqual({ factor_shocks: { EQ_GLOBAL: "-0.10" } });
 
     expect(screen.getByText(/entre -2\.?890\s€ y -1\.?930\s€/)).toBeTruthy();
     expect(screen.getByText("Confianza alta")).toBeTruthy();
-    const rows = within(table).getAllByRole("row");
-    expect(rows.length).toBe(scenario.breakdown.length + 1);
-    expect(within(rows[1]!).getByText(/^≈ -1\.?090\s€$/)).toBeTruthy();
+    const rows = within(table).getAllByRole("listitem");
+    expect(rows.length).toBe(scenario.breakdown.length);
+    expect(within(rows[0]!).getByText(/^≈ -1\.?090\s€$/)).toBeTruthy();
     expect(table.querySelector("[data-calc-id]")).not.toBeNull();
   });
 
@@ -55,7 +55,7 @@ describe("ScenariosSection", () => {
     vi.stubGlobal("fetch", vi.fn(async () => json(scenario)));
     const { container } = renderSection();
     fireEvent.click(screen.getByRole("button", { name: "La bolsa mundial cae un 10 %" }));
-    await screen.findByRole("table");
+    await screen.findByRole("list", { name: "Impacto estimado por activo" });
     expect(screen.queryByText(/-2\.?410/)).toBeNull();
     expect(container.textContent).not.toMatch(/\b(compra|vende|te recomiendo|deberías)\b/i);
   });

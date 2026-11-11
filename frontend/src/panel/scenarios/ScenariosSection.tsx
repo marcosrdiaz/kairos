@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import type { ScenarioOut } from "../../api/generated/schema";
 import { useScenario } from "../../api/hooks/useScenario";
 import { CONFIDENCE_LABEL } from "../../app/news/labels";
@@ -16,6 +16,59 @@ const INTRO =
 /** Impacto por activo: el motor da una estimación puntual, así que va con «≈» y sin decimales. */
 function approxEur(value: string): string {
   return Number(value) === 0 ? formatEur(value, 0) : `≈ ${signedEur(value, 0)}`;
+}
+
+type ScenarioAsset = ScenarioOut["breakdown"][number];
+
+/** Valor absoluto de un importe en texto, sin pasarlo a number: solo se usa para dibujar. */
+const absText = (value: string) => value.trim().replace(/^[+-]/, "");
+
+/**
+ * Impacto por activo como barras divergentes desde el cero (T5-16): a la izquierda lo que
+ * restaría y a la derecha lo que sumaría, con la cifra al lado. El largo es solo dibujo (`calc`
+ * frente al mayor impacto); el signo también va en el texto, no solo en el lado ni en el color.
+ */
+function ImpactBars({ assets, calcId }: { assets: ScenarioAsset[]; calcId: string }) {
+  const max = absText(assets[0]?.impact_eur ?? "0");
+  const hasMax = Number(max) !== 0;
+  return (
+    <>
+      <p className="m-0 mt-6 text-sm text-ink-muted">
+        Cada barra sale del cero: hacia la izquierda, lo que restaría a ese activo; hacia la
+        derecha, lo que sumaría. El largo se compara con el mayor impacto.
+      </p>
+      <ul
+        aria-label="Impacto estimado por activo"
+        className="m-0 mt-4 flex list-none flex-col gap-4 p-0"
+      >
+        {assets.map((a) => {
+          const loss = a.impact_eur.trim().startsWith("-");
+          const width = hasMax ? `calc(${absText(a.impact_eur)} / ${max} * 50%)` : "0";
+          return (
+            <li key={a.asset_id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1">
+              <span className="text-base text-ink">
+                {a.name}
+                <span className="ml-2 text-sm text-ink-muted">hoy {formatEur(a.value_eur, 0)}</span>
+              </span>
+              <span className="text-right text-base font-semibold tabular-nums text-ink">
+                <Traced calcId={calcId}>{approxEur(a.impact_eur)}</Traced>
+              </span>
+              <span
+                aria-hidden="true"
+                className="relative col-span-2 block h-2 rounded-full bg-surface-muted"
+              >
+                <span className="absolute inset-y-[-3px] left-1/2 w-px bg-line-strong" />
+                <span
+                  className={`absolute inset-y-0 rounded-full ${loss ? "right-1/2 bg-trend-loss" : "left-1/2 bg-trend-up"}`}
+                  style={{ width } as CSSProperties}
+                />
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
 }
 
 function ScenarioResult({ result }: { result: ScenarioOut }) {
@@ -44,29 +97,7 @@ function ScenarioResult({ result }: { result: ScenarioOut }) {
           Con los datos que tenemos, este supuesto no mueve ninguna de tus posiciones.
         </p>
       ) : (
-        <table className="mt-5 w-full border-collapse text-base">
-          <caption className="sr-only">Impacto estimado por activo</caption>
-          <thead>
-            <tr className="border-b border-line text-left text-sm text-ink-muted">
-              <th scope="col" className="py-2 pr-4 font-medium">Activo</th>
-              <th scope="col" className="py-2 pr-4 text-right font-medium">Valor hoy</th>
-              <th scope="col" className="py-2 text-right font-medium">Impacto estimado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assets.map((a) => (
-              <tr key={a.asset_id} className="border-b border-line last:border-b-0">
-                <th scope="row" className="py-2 pr-4 text-left font-normal text-ink">{a.name}</th>
-                <td className="py-2 pr-4 text-right tabular-nums text-ink-muted">
-                  {formatEur(a.value_eur, 0)}
-                </td>
-                <td className="py-2 text-right font-semibold tabular-nums text-ink">
-                  <Traced calcId={result.calc_id}>{approxEur(a.impact_eur)}</Traced>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ImpactBars assets={assets} calcId={result.calc_id} />
       )}
     </div>
   );
