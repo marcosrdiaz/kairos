@@ -106,6 +106,7 @@ afterEach(() => {
 describe("VoiceAsk", () => {
   it("una pregunta escrita va por texto, muestra el aviso de IA y las frases seguidas, y las lee", async () => {
     render(<VoiceAsk portfolioId="laura" />);
+    expect(screen.queryByText("Respuesta en curso")).toBeNull();
     typeAndSend("¿Por qué ha bajado?");
     await flush();
     expect(askCalls[0]?.portfolioId).toBe("laura");
@@ -117,6 +118,45 @@ describe("VoiceAsk", () => {
     // Las frases van en el mismo párrafo, no en uno cada una.
     expect(sentence("Primera frase.").parentElement).toBe(sentence("Segunda frase.").parentElement);
     expect(tts).toHaveBeenCalledTimes(2);
+  });
+
+  it("mantiene el estado en curso hasta que termina el stream y después lo marca como listo", async () => {
+    let release!: () => void;
+    streamGate = new Promise<void>((resolve) => (release = resolve));
+    render(<VoiceAsk portfolioId="laura" />);
+    typeAndSend("¿Voy bien?");
+    await waitFor(() => expect(screen.getByText("Respuesta en curso")).toBeTruthy());
+    expect(screen.queryByText("Respuesta lista")).toBeNull();
+
+    release();
+    await waitFor(() => expect(screen.getByText("Respuesta lista")).toBeTruthy());
+    expect(screen.queryByText("Respuesta en curso")).toBeNull();
+  });
+
+  it("marca como error una respuesta rechazada por el stream", async () => {
+    answer = [
+      { type: "error", turn_id: TURN, code: "UPSTREAM_UNAVAILABLE", message: "No puedo responder." },
+    ];
+    render(<VoiceAsk portfolioId="laura" />);
+    typeAndSend("¿Voy bien?");
+    await waitFor(() => expect(screen.getByText("No se pudo completar")).toBeTruthy());
+    expect(screen.getByRole("alert").textContent).toContain("No puedo responder.");
+    expect(screen.queryByText("Respuesta lista")).toBeNull();
+  });
+
+  it("una respuesta cancelada no aparece como completada", async () => {
+    let release!: () => void;
+    streamGate = new Promise<void>((resolve) => (release = resolve));
+    render(<VoiceAsk portfolioId="laura" />);
+    typeAndSend("¿Voy bien?");
+    await waitFor(() => expect(screen.getByText("Respuesta en curso")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Parar" }));
+    expect(screen.queryByText("Respuesta en curso")).toBeNull();
+    expect(screen.queryByText("Respuesta lista")).toBeNull();
+
+    release();
+    await flush();
+    expect(screen.queryByText("Respuesta lista")).toBeNull();
   });
 
   it("con «leer en voz alta» apagado no pide audio, y la preferencia se recuerda", async () => {

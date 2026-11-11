@@ -10,7 +10,6 @@
  * - .chat-fade: aparición suave de avisos y del estado de la barra.
  * - .chat-glow / .chat-wave-*: deriva lenta del fondo del asistente (ChatBackdrop).
  * - .chat-launcher: el botón flotante. .voice-dial: el visual del modo voz (VoiceDial).
- * - .chat-bubble-user / .chat-bubble-bot: la cola de cada burbuja.
  */
 
 /* En móvil el asistente es un modal a pantalla completa: la página de debajo no se desplaza. */
@@ -180,36 +179,6 @@
   }
 }
 
-/* Cola de la burbuja de la pregunta (abajo a la derecha), del mismo color que la burbuja. */
-.chat-bubble-user {
-  position: relative;
-}
-.chat-bubble-user::after {
-  content: "";
-  position: absolute;
-  right: -7px;
-  bottom: 0;
-  width: 14px;
-  height: 16px;
-  background: inherit;
-  clip-path: path("M0 0 C0 9 4 14 14 16 L0 16 Z");
-}
-
-/* Cola de la burbuja de KAIROS (arriba a la izquierda, hacia el avatar). */
-.chat-bubble-bot {
-  position: relative;
-}
-.chat-bubble-bot::before {
-  content: "";
-  position: absolute;
-  left: -7px;
-  top: 0;
-  width: 14px;
-  height: 16px;
-  background: inherit;
-  clip-path: path("M14 0 L0 0 C10 2 14 7 14 16 Z");
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .chat-in-user {
     transform-origin: bottom right;
@@ -234,9 +203,6 @@
     animation: chat-fade-in 220ms ease-out both;
   }
 
-  .chat-dot {
-    animation: chat-dot 1.1s ease-in-out infinite;
-  }
 }
 
 @keyframes chat-bubble-in {
@@ -275,18 +241,5 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes chat-dot {
-  0%,
-  80%,
-  100% {
-    opacity: 0.35;
-    transform: translateY(0);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-3px);
   }
 }

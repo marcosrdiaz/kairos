@@ -8,23 +8,10 @@
 import { Fragment, useState, type CSSProperties } from "react";
 import { LogoTile } from "../components/icons";
 import { TraceLink } from "../components/trace/TraceLink";
+import { StatusMark } from "../ui/StatusMark";
 import { InfoIcon, StopIcon } from "./icons";
 import { AI_DISCLAIMER } from "./texts";
 import type { Phase, Turn } from "./useVoiceAsk";
-
-function TypingDots() {
-  return (
-    <span className="flex items-center gap-1.5 py-2.5" aria-hidden="true">
-      {[0, 160, 320].map((delay) => (
-        <span
-          key={delay}
-          className="chat-dot size-2 rounded-full bg-ink-muted"
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
-    </span>
-  );
-}
 
 /** Ritmo de escritura: cada palabra entra este tiempo después de la anterior. */
 const WORD_MS = 45;
@@ -70,7 +57,7 @@ function GeneratedLine({ text, calcIds, scheduler }: { text: string; calcIds: st
 function DraftBubble({ text }: { text: string }) {
   return (
     <li className="flex flex-col">
-      <p className="chat-in-user chat-bubble-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
+      <p className="chat-in-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
         <span className="sr-only">Tú, dictando: </span>
         {text ? <span>{text}</span> : <span className="opacity-75">Te escucho</span>}
         <span
@@ -106,19 +93,18 @@ interface TurnProps {
 function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
   const thinking = activePhase === "thinking";
   const speaking = activePhase === "speaking";
-  const waiting = turn.sentences.length === 0 && !turn.done && !turn.error;
   const [scheduler] = useState(() => new LineScheduler());
   const calcIds = [...new Set(turn.sentences.flatMap((s) => s.calcIds))];
   return (
     <li className="flex flex-col gap-3">
-      <p className="chat-in-user chat-bubble-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
+      <p className="chat-in-user m-0 mr-1.5 max-w-[85%] self-end rounded-[1.25rem] rounded-br-none bg-accent px-4 py-2.5 text-base text-on-accent">
         <span className="sr-only">Tú: </span>
         {turn.question}
       </p>
 
       <div className="chat-in-bot flex max-w-full items-start gap-2.5 sm:max-w-[90%]">
         <LogoTile className="size-8" />
-        <div className="chat-bubble-bot ml-1.5 flex min-w-0 flex-1 flex-col gap-2 rounded-[1.25rem] rounded-tl-none bg-surface px-4 py-3 shadow-[0_2px_10px_-4px_rgb(0_0_0/0.18)]">
+        <div className="ml-1.5 flex min-w-0 flex-1 flex-col gap-2 rounded-[1.25rem] rounded-tl-none bg-surface px-4 py-3 shadow-[0_2px_10px_-4px_rgb(0_0_0/0.18)]">
           <span className="sr-only">KAIROS: </span>
           {turn.showDisclaimer && (
             <p className="m-0 flex items-start gap-1.5 text-sm text-ink-muted">
@@ -126,7 +112,7 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
               {AI_DISCLAIMER}
             </p>
           )}
-          {waiting && <TypingDots />}
+          {turn.status !== "idle" && turn.status !== "error" && <StatusMark state={turn.status} />}
           {turn.sentences.length > 0 && (
             <p className="m-0 text-base leading-relaxed text-ink">
               {turn.sentences.map((s, i) => (
@@ -149,8 +135,9 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
             </p>
           )}
           {turn.error && (
-            <p role="alert" className="chat-fade m-0 text-base text-error">
-              {turn.error}
+            <p role="alert" className="chat-fade m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-error">
+              <StatusMark state="error" />
+              <span>{turn.error}</span>
             </p>
           )}
           {turn.interrupted && (
@@ -168,7 +155,7 @@ function ChatTurn({ turn, activePhase, onStop }: TurnProps) {
             <div className="chat-fade mt-1 flex items-center justify-between gap-3 border-t border-line pt-2">
               <span className="flex items-center gap-2 text-sm text-ink-muted">
                 {speaking ? <SpeakingBars /> : null}
-                {speaking ? "Leyendo en voz alta" : "Preparando la respuesta…"}
+                {speaking ? "Leyendo en voz alta" : null}
               </span>
               <button
                 type="button"

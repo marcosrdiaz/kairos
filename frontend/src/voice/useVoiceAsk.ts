@@ -35,6 +35,7 @@ export interface Turn {
   id: number;
   question: string;
   channel: AskChannel;
+  status: "idle" | "processing" | "complete" | "error";
   showDisclaimer: boolean;
   sentences: Sentence[];
   done: boolean;
@@ -101,6 +102,7 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
   const [partial, setPartial] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const nextId = useRef(1);
+  const activeTurnId = useRef<number | null>(null);
   const [problem, setProblem] = useState<Problem | null>(null);
 
   const stt = useRef<SttSession | null>(null);
@@ -147,6 +149,13 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
   }, []);
 
   const cancel = useCallback(() => {
+    const turnId = activeTurnId.current;
+    activeTurnId.current = null;
+    if (turnId !== null) {
+      setTurns((all) =>
+        all.map((turn) => (turn.id === turnId ? { ...turn, status: "idle", done: true } : turn)),
+      );
+    }
     closeStt();
     abort.current?.abort();
     abort.current = null;
@@ -176,6 +185,7 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
         id,
         question,
         channel,
+        status: "processing",
         showDisclaimer: false,
         sentences: [],
         done: false,
@@ -184,10 +194,12 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
         interrupted: false,
       };
       setTurns((all) => [...all, turn].slice(-MAX_TURNS));
+      activeTurnId.current = id;
       setPhase("thinking");
       try {
         const request = { question, channel, session_id: getSessionId() };
         for await (const event of streamAsk(portfolioId, request, controller.signal)) {
+          if (controller.signal.aborted) return;
           if (event.type === "meta" && event.disclaimer) {
             // El aviso de IA se muestra en texto, pero no se lee en voz alta (decisión del equipo).
             update(() => ({ showDisclaimer: true }));
@@ -207,18 +219,22 @@ export function useVoiceAsk(portfolioId: string, speakAnswers: boolean) {
               );
             }
           } else if (event.type === "done") {
-            update(() => ({ done: true }));
+            update(() => ({ done: true, status: "complete" }));
           } else if (event.type === "error") {
-            update(() => ({ error: event.message, done: true }));
+            update(() => ({ error: event.message, done: true, status: "error" }));
           }
         }
       } catch {
-        update(() => (controller.signal.aborted ? { done: true } : { error: MSG_ASK, done: true }));
-        if (controller.signal.aborted) return;
+        if (controller.signal.aborted) {
+          update(() => ({ done: true, status: "idle" }));
+          return;
+        }
+        update(() => ({ error: MSG_ASK, done: true, status: "error" }));
       }
-      update(() => ({ done: true })); // también si se paró a medias
+      update((t) => ({ done: true, status: t.status === "error" ? "error" : "complete" }));
       if (abort.current !== controller) return;
       streaming.current = false;
+      activeTurnId.current = null;
       if (!q.busy && !stt.current) setPhase("idle");
     },
     [cancel, getQueue, portfolioId, speakAnswers],
