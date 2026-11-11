@@ -12,6 +12,29 @@
   }
 }
 
+/*
+ * Los bordes de la ventana se funden en vez de cortar en seco: así no asoman trozos de un activo
+ * («ov», «i nov») pegados al título ni al botón de pausa. Solo cuando se mueve; sin movimiento, la
+ * lista se desplaza a mano y no lleva máscara.
+ */
+.kairos-ticker-viewport {
+  --ticker-fade: 1.75rem;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--ticker-fade),
+    #000 calc(100% - var(--ticker-fade)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--ticker-fade),
+    #000 calc(100% - var(--ticker-fade)),
+    transparent
+  );
+}
+
 .kairos-ticker-track {
   animation: kairos-ticker-scroll var(--ticker-duration, 40s) linear infinite;
 }
