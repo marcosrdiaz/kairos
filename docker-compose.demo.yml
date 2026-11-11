@@ -1,0 +1,45 @@
+# Segunda instancia de KAIROS en MODO DEMO, para tenerla junto a la de producción en la misma
+# máquina (TD-15). Se usa SIEMPRE con otro nombre de proyecto, que le da su propia red, su propia
+# base de datos (volumen `kairos-demo_db-data`) y sus propios contenedores:
+#
+#   docker compose -p kairos-demo -f docker-compose.yml -f docker-compose.demo.yml up --build -d --wait
+#
+# No se toca `docker-compose.yml`. Qué cambia respecto a producción:
+# - Puertos del host: frontend 5174 (producción, 5173) y backend 8001 (producción, 8000). La base
+#   de datos no se publica. El frontend habla con SU backend: nginx reenvía `/api` a
+#   `http://backend:8000`, y ese nombre solo existe dentro de la red de cada proyecto.
+# - Variables: `.env` (las claves de Claude y ElevenLabs, que se comparten) y después `.env.demo`
+#   (modo demo, reloj fijo al 6 nov y precios offline), que manda sobre `.env`.
+#
+# Ver el README, «Segunda instancia de demo».
+
+x-demo-env: &demo-env
+  env_file: !override
+    - path: .env
+      required: false
+    - path: .env.demo
+      required: true
+
+services:
+  db:
+    ports: !reset []
+
+  seed:
+    <<: *demo-env
+
+  backend:
+    <<: *demo-env
+    ports: !override
+      - "8001:8000"
+
+  # En modo demo estos dos terminan al arrancar sin hacer nada; se mantienen para no tocar nada
+  # más del compose principal.
+  updater:
+    <<: *demo-env
+
+  news-updater:
+    <<: *demo-env
+
+  frontend:
+    ports: !override
+      - "5174:80"
