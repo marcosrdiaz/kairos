@@ -11,6 +11,7 @@ import { Change } from "./Change";
 import { DEFAULT_PERIOD, PERIODS, chipDate, pointDate, signedEur, toRows } from "./chartFormat";
 import { MarkedChart } from "./markers/MarkedChart";
 import { useEventMarkers } from "./markers/useEventMarkers";
+import { useAlertNewsMarkers } from "./markers/useAlertNewsMarkers";
 import { HistoryTable } from "./HistoryTable";
 import { PeriodPicker } from "./PeriodPicker";
 import { RangeSelector } from "./RangeSelector";
@@ -119,6 +120,7 @@ function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps)
   const compact = useCompact();
   const rows = useMemo(() => toRows(history), [history]);
   const markers = useEventMarkers(portfolioId, rows);
+  const newsMarkers = useAlertNewsMarkers(portfolioId, rows);
   const [store] = useState(createActivePointStore);
   const [range, setRange] = useState({ start: 0, end: rows.length - 1 });
   const visible = useMemo(() => rows.slice(range.start, range.end + 1), [rows, range]);
@@ -133,10 +135,11 @@ function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps)
         <MarkedChart
           rows={visible}
           markers={markers}
+          newsMarkers={newsMarkers}
           period={period}
           startValue={startValue}
           label={`Valor de la cartera. ${periodName}. Usa las flechas para recorrer los días${
-            markers.length > 0 ? "; con Tab, las noticias marcadas" : ""
+            markers.length + newsMarkers.length > 0 ? "; con Tab, las noticias marcadas" : ""
           }.`}
           store={store}
           reducedMotion={prefersReducedMotion()}
@@ -160,7 +163,7 @@ function ChartBody({ portfolioId, history, period, periodName }: ChartBodyProps)
         </div>
       )}
       <ChartLegend />
-      <HistoryTable history={history} periodName={periodName} markers={markers} />
+      <HistoryTable history={history} periodName={periodName} markers={markers} newsMarkers={newsMarkers} />
     </>
   );
 }
