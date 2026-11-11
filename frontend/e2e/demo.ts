@@ -70,9 +70,16 @@ export async function ask(page: Page, question: string): Promise<Locator> {
   return turn;
 }
 
-/** Abre la traza de una cifra y comprueba que trae entradas, fórmula, resultado y fuentes. */
+/**
+ * Abre la tarjeta de una cifra (T5-18), de ahí la traza completa, y comprueba que trae entradas,
+ * fórmula, resultado y fuentes.
+ */
 export async function expectTrace(page: Page, trigger: Locator): Promise<void> {
   await trigger.click();
+  const card = page.getByRole("group", { name: "De dónde sale esta cifra" });
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: "Ver el cálculo completo" }).click();
+  await expect(card).toBeHidden();
   const trace = page.getByRole("dialog", { name: "¿De dónde sale esta cifra?" });
   await expect(trace).toBeVisible();
   for (const heading of ["Entradas", "Fórmula", "Resultado", "Fuentes"]) {
