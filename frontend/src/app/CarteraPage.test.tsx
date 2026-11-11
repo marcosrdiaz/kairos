@@ -27,12 +27,12 @@ function renderPage() {
 const tab = (name: string) => screen.getByRole("tab", { name });
 
 describe("CarteraPage", () => {
-  it("monta el alta, las operaciones y las aportaciones periódicas", async () => {
+  it("monta las operaciones y las aportaciones periódicas, sin el alta de posiciones", async () => {
     renderPage();
     for (const name of ["Registrar una operación", "Aportaciones periódicas"]) {
       expect(screen.getByRole("heading", { level: 2, name, hidden: true })).toBeTruthy();
     }
-    expect(screen.getByRole("heading", { level: 2, name: /Añadir posiciones/, hidden: true })).toBeTruthy();
+    expect(screen.queryByRole("heading", { level: 2, name: /Añadir posiciones/, hidden: true })).toBeNull();
     expect(await screen.findByText("Esta cartera aún no tiene ningún plan de aportaciones.")).toBeTruthy();
   });
 
@@ -50,7 +50,6 @@ describe("CarteraPage", () => {
     expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual([
       "Operaciones",
       "Aportaciones periódicas",
-      "Añadir posiciones",
     ]);
     expect(tab("Operaciones").getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("heading", { level: 2, name: "Registrar una operación" })).toBeTruthy();
@@ -67,20 +66,20 @@ describe("CarteraPage", () => {
     first.focus();
     fireEvent.keyDown(first, { key: "ArrowRight" });
     expect(document.activeElement).toBe(tab("Aportaciones periódicas"));
-    fireEvent.keyDown(document.activeElement as Element, { key: "End" });
-    expect(document.activeElement).toBe(tab("Añadir posiciones"));
-    expect(tab("Añadir posiciones").getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(document.activeElement as Element, { key: "Home" });
     expect(document.activeElement).toBe(tab("Operaciones"));
-    fireEvent.keyDown(document.activeElement as Element, { key: "ArrowLeft" });
-    expect(document.activeElement).toBe(tab("Añadir posiciones"));
+    fireEvent.keyDown(document.activeElement as Element, { key: "End" });
+    expect(document.activeElement).toBe(tab("Aportaciones periódicas"));
+    expect(tab("Aportaciones periódicas").getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(document.activeElement as Element, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(tab("Operaciones"));
   });
 
   it("no pierde un formulario a medias al cambiar de pestaña", () => {
     renderPage();
     const amount = screen.getByRole("textbox", { name: /Importe/ }) as HTMLInputElement;
     fireEvent.change(amount, { target: { value: "250" } });
-    fireEvent.click(tab("Añadir posiciones"));
+    fireEvent.click(tab("Aportaciones periódicas"));
     fireEvent.click(tab("Operaciones"));
     expect((screen.getByRole("textbox", { name: /Importe/ }) as HTMLInputElement).value).toBe("250");
   });
