@@ -137,7 +137,7 @@ export function AppShell() {
           id="contenido"
           tabIndex={-1}
           inert={modal}
-          className="outline-none @container/app-content mx-auto min-w-0 w-full [&>*]:shrink-0 px-4 pb-[calc(var(--kairos-bottom-nav-height)+7.5rem)] pt-6 kairos-scroll lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-24 lg:pt-6 2xl:px-14"
+          className="outline-none @container/app-content mx-auto min-w-0 w-full [&>*]:shrink-0 px-4 pb-[calc(var(--kairos-bottom-nav-height)+7.5rem)] pt-6 kairos-scroll lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-16 lg:pt-6 2xl:px-14"
         >
           <Outlet />
           <AppNotice />
