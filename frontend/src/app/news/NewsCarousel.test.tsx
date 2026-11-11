@@ -1,18 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import type { EventImpactOut } from "../../api/generated/schema";
-import bce from "../../api/mocks/EventImpactOut.json";
-import nvda from "../../api/mocks/EventImpactOut.nvda.json";
+import type { NewsItemOut } from "../../api/generated/schema";
+import nvda from "../../api/mocks/NewsItemOut.json";
 import { AUTO_ADVANCE_MS } from "./labels";
 import { NewsCarousel } from "./NewsCarousel";
 
-const EVENTS = [bce as EventImpactOut, nvda as EventImpactOut];
+const FIRST = nvda as NewsItemOut;
+const SECOND: NewsItemOut = {
+  ...FIRST,
+  id: "news_second",
+  title: "Otra noticia que mueve la cartera",
+  category: "central_bank",
+  causal_chain: [],
+  summary: "Resumen de la fuente.",
+};
+const EVENTS = [FIRST, SECOND];
 
-function renderCarousel(events = EVENTS) {
+function renderCarousel(items = EVENTS) {
   return render(
     <MemoryRouter>
-      <NewsCarousel events={events} panelHref="/panel" />
+      <NewsCarousel items={items} newsHref="/noticias" />
     </MemoryRouter>,
   );
 }
@@ -26,19 +34,26 @@ afterEach(() => {
 });
 
 describe("NewsCarousel", () => {
-  it("muestra una noticia con su posición, rango y confianza", () => {
+  it("muestra una noticia con su posición, rango trazado, estado y confianza", () => {
     renderCarousel();
     expect(slide().getAttribute("aria-roledescription")).toBe("noticia");
     expect(slide().getAttribute("aria-label")).toBe("1 de 2");
-    expect(screen.getByRole("heading", { level: 3, name: EVENTS[0]!.title })).toBeTruthy();
-    expect(screen.getByText(/entre -10\s€ y 190\s€/)).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: FIRST.title })).toBeTruthy();
+    expect(screen.getByText(/entre -270\s€ y -110\s€/)).toBeTruthy();
+    expect(screen.getByText("Estimado")).toBeTruthy();
     expect(screen.getByText("Confianza media")).toBeTruthy();
-    expect(slide().getAttribute("data-calc-id")).toBe(EVENTS[0]!.calc_id);
+    expect(slide().getAttribute("data-calc-id")).toBe(FIRST.estimate!.calc_id);
+    expect(screen.getByText(`Fuente: ${FIRST.source.label}`)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Ver todas las noticias/ }).getAttribute("href")).toBe(
+      "/noticias",
+    );
   });
 
-  it("sin explicación todavía, enseña la cadena causal", () => {
-    renderCarousel([nvda as EventImpactOut]);
-    expect(screen.getByText(nvda.causal_chain.join(" → "))).toBeTruthy();
+  it("enseña la cadena causal y, si no la hay, el resumen de la fuente", () => {
+    renderCarousel();
+    expect(screen.getByText(FIRST.causal_chain.join(" → "))).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Noticia siguiente" }));
+    expect(screen.getByText("Resumen de la fuente.")).toBeTruthy();
   });
 
   it("las flechas avanzan y retroceden en círculo", () => {
@@ -81,14 +96,14 @@ describe("NewsCarousel", () => {
 
   it("los puntos llevan a cada noticia y marcan la actual", () => {
     renderCarousel();
-    const second = screen.getByRole("button", { name: `Noticia 2: ${EVENTS[1]!.title}` });
+    const second = screen.getByRole("button", { name: `Noticia 2: ${SECOND.title}` });
     fireEvent.click(second);
     expect(second.getAttribute("aria-current")).toBe("true");
     expect(slide().getAttribute("aria-label")).toBe("2 de 2");
   });
 
   it("con una sola noticia no hay controles", () => {
-    renderCarousel([bce as EventImpactOut]);
+    renderCarousel([FIRST]);
     expect(screen.queryByRole("button", { name: "Noticia siguiente" })).toBeNull();
     expect(screen.queryByRole("button", { name: /pase automático/ })).toBeNull();
   });

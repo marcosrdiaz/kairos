@@ -109,13 +109,12 @@ describe("polling de /status y /alerts", () => {
 });
 
 describe("aviso en pantalla de inicio", () => {
-  it("sale también en Inicio de la app, con enlace al panel", async () => {
+  it("no sale en Inicio de la app: los avisos van a la campana (TD-04)", async () => {
     alerts = [ALERT];
     show(<InicioPage />, "/inicio?p=laura");
     await tick();
-    const link = screen.getByRole("link", { name: ALERT.message });
-    expect(link.getAttribute("href")).toBe("/panel?p=laura");
-    expect(link.getAttribute("data-calc-id")).toBe(ALERT.calc_id);
+    expect(screen.queryByText(ALERT.message)).toBeNull();
+    expect(screen.queryByText("Aviso de Kairos")).toBeNull();
   });
 
   it("muestra solo el más reciente", async () => {
