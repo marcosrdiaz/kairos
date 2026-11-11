@@ -139,7 +139,9 @@ export const HistoryChart = memo(function HistoryChart({
         data={rows}
         // Con noticias, más margen arriba: el círculo del marcador va por encima del punto.
         margin={{
-          top: markers.length > 0 ? 44 + 30 * Math.max(0, ...(markerLevels?.values() ?? [])) : 16,
+          top: markers.length > 0
+            ? 44 + 30 * Math.max(0, ...(markerLevels?.values() ?? []))
+            : newsMarkers.length > 0 ? 36 : 16,
           right: compact ? 12 : 20,
           bottom: 0,
           left: compact ? 0 : 4,
