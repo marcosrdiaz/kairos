@@ -343,14 +343,6 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
   - `PhoneHomePage.tsx` sigue con `?p=` o `"laura"`.
   - En el selector solo se puede renombrar, no cambiar el tipo ni el perfil.
 
-### T4-05 · Ingesta de noticias — Jaime
-
-- **PR #126 (primera parte, ya en `main`):** `backend/app/events/ingest/` (`ecb.py` puro, `runner.run_once()`, `python -m app.events.ingest`) y `backend/tests/test_events_ingest.py`. Solo las decisiones de política monetaria del BCE (RSS oficial; texto de la nota en español o, si aún no está, en inglés); clave = URL sin idioma; últimos 30 días; solo con `DEMO_MODE=false`. Llama a `events.service.ingest` (T4-04, D-096). Decisión nueva en el PR: *Ingesta de noticias: solo las decisiones de política monetaria del BCE; resultados y OPEP, sin fuente usable todavía (T4-05)*.
-- **PR #144 (segunda parte, abierto, rama `t4-05/daily-update-ingest`):** `scripts/daily_update.py` llama a `ingest.runner.run_once()` antes de `process_pending()`. Los eventos creados van en `Report.news` y los fallos en `news:*`, sin parar el resto. Tests en `backend/tests/test_daily_update.py`. `ruff`, `mypy` y `pytest -n auto` en verde (2066).
-- **Falta del criterio:** las fechas de resultados y la OPEP. `opec.org` da 403 a las peticiones automáticas y Yahoo pide cookie y *crumb* para `calendarEvents`; no se esquivan. Hay que decidir en equipo otra fuente o dejarlas fuera.
-- **Siguiente paso exacto:** revisión y merge de #144. Llevar a la llamada diaria la fuente de resultados y OPEP. Si se dejan fuera, `docs: done T4-05`.
-- Contexto de T4-04 (Manu): `ingest(event, companies)` deja el evento pendiente si su sesión no ha cerrado (`GET /events/pending`) y `process_pending()` lo procesa después; cifras desde D+1. Limitación (T2-24): en directo, un precio intradía guardado se prefiere al cierre; afecta solo a las empresas de un evento.
-
 ### T4-03 · T4-06 · Lo que dejan T4-01 y T4-02 — Manu (para quien coja la tarea)
 
 - T4-02 en `main` (#109): `scripts/daily_update.py` (`--once` / `--loop --at 22:30`, laborables, UTC) y servicio `updater` en Compose; en demo termina sin hacer nada. `portfolio.service.held_asset_ids()`. **No probado en Docker** (solo `docker compose config`): conviene un `docker compose up updater` con `MARKET_DATA_PROVIDER=yahoo` antes de contar con él.
