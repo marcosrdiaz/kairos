@@ -1,18 +1,20 @@
 import { Fragment, memo, useMemo, useRef, useState } from "react";
 import type { PortfolioHistoryOut } from "../../../api/generated/schema";
 import { Scrollbar } from "../../../components/Scrollbar";
-import { formatEur } from "../../../lib/format";
+import { formatEur, formatEurRange } from "../../../lib/format";
 import { Change, FlowTag } from "./Change";
 import { monthOf, pointDate, toRows, trendOf, weekdayOf, type ChartRow } from "./chartFormat";
 import { EVENT_TYPE_LABEL } from "../../news/labels";
 import { markerImpact } from "./markers/markerText";
 import { markersByDate, type EventMarker } from "./markers/placeMarkers";
+import type { AlertNewsMarker } from "./markers/useAlertNewsMarkers";
 
 interface HistoryTableProps {
   history: PortfolioHistoryOut;
   periodName: string;
   /** Noticias colocadas en la serie (T2-22): salen en la fila de su cierre. */
   markers?: EventMarker[];
+  newsMarkers?: AlertNewsMarker[];
   /** De qué es la serie, para el lector de pantalla: «la cartera» o el nombre de una posición. */
   subject?: string;
 }
@@ -32,6 +34,19 @@ function EventTag({ marker }: { marker: EventMarker }) {
   );
 }
 
+function NewsTag({ marker }: { marker: AlertNewsMarker }) {
+  const estimate = marker.news.estimate;
+  return (
+    <span className="mt-1 flex flex-wrap gap-x-2 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={estimate?.calc_id ?? undefined}>
+      <span className="font-semibold text-brand-red">Noticia con aviso</span>
+      <span>{marker.news.title}</span>
+      <span className="text-ink-muted">{pointDate(marker.marketDate)}
+        {estimate?.low_eur && estimate.high_eur ? ` · impacto ${formatEurRange(estimate.low_eur, estimate.high_eur)}` : ""}
+      </span>
+    </span>
+  );
+}
+
 /** Puntos agrupados por mes, del más reciente al más antiguo. */
 function byMonth(rows: ChartRow[]) {
   const groups: { month: string; rows: ChartRow[] }[] = [];
@@ -44,9 +59,14 @@ function byMonth(rows: ChartRow[]) {
   return groups;
 }
 
-function Rows({ history, periodName, markers = [], subject = "la cartera" }: HistoryTableProps) {
+function Rows({ history, periodName, markers = [], newsMarkers = [], subject = "la cartera" }: HistoryTableProps) {
   const groups = useMemo(() => byMonth(toRows(history)), [history]);
   const byDate = useMemo(() => markersByDate(markers), [markers]);
+  const newsByDate = useMemo(() => {
+    const map = new Map<string, AlertNewsMarker[]>();
+    for (const marker of newsMarkers) map.set(marker.date, [...(map.get(marker.date) ?? []), marker]);
+    return map;
+  }, [newsMarkers]);
   const scroller = useRef<HTMLDivElement>(null);
   return (
     <div className="relative border-t border-line">
@@ -86,6 +106,7 @@ function Rows({ history, periodName, markers = [], subject = "la cartera" }: His
                       {/* En móvil, fecha corta para que quepan el valor y la variación. */}
                       <span className="sm:hidden">{weekdayOf(r.date)}</span>
                       {byDate.get(r.date)?.map((m) => <EventTag key={m.event.event_id} marker={m} />)}
+                      {newsByDate.get(r.date)?.map((m) => <NewsTag key={m.news.id} marker={m} />)}
                     </th>
                     <td className="px-4 py-2 pr-6 text-right font-medium tabular-nums text-ink sm:pr-4" data-calc-id={history.calc_id}>
                       {formatEur(r.raw)}
@@ -119,7 +140,7 @@ function Rows({ history, periodName, markers = [], subject = "la cartera" }: His
  * las aportaciones en azul; las noticias de la gráfica (T2-22) salen en la fila de su cierre.
  * Plegada por defecto; las filas solo se pintan al abrirla. Barra de scroll propia.
  */
-export const HistoryTable = memo(function HistoryTable({ history, periodName, markers, subject }: HistoryTableProps) {
+export const HistoryTable = memo(function HistoryTable({ history, periodName, markers, newsMarkers, subject }: HistoryTableProps) {
   const [open, setOpen] = useState(false);
   return (
     <details
@@ -135,7 +156,7 @@ export const HistoryTable = memo(function HistoryTable({ history, periodName, ma
           <path d="m6 9 6 6 6-6" />
         </svg>
       </summary>
-      {open && <Rows history={history} periodName={periodName} markers={markers} subject={subject} />}
+      {open && <Rows history={history} periodName={periodName} markers={markers} newsMarkers={newsMarkers} subject={subject} />}
     </details>
   );
 });

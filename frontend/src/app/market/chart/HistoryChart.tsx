@@ -20,6 +20,9 @@ import { Change, FlowTag } from "./Change";
 import { niceScale, pointDate, tickDate, tickEur, type ChartRow } from "./chartFormat";
 import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
 import { EventMarkerDot } from "./markers/EventMarkerDot";
+import { AlertNewsDot } from "./markers/AlertNewsDot";
+import type { AlertNewsMarker } from "./markers/useAlertNewsMarkers";
+import type { NewsMarkerStore } from "./markers/newsMarkerStore";
 import type { MarkerStore } from "./markers/markerStore";
 import type { EventMarker } from "./markers/placeMarkers";
 
@@ -47,6 +50,9 @@ interface HistoryChartProps {
   markerLevels?: Map<string, number>;
   markerStore?: MarkerStore;
   markerCardId?: string;
+  newsMarkers?: AlertNewsMarker[];
+  newsMarkerStore?: NewsMarkerStore;
+  newsCardId?: string;
 }
 
 /** Lleva el punto activo al almacén. El efecto depende solo de la fecha (string estable). */
@@ -94,6 +100,9 @@ export const HistoryChart = memo(function HistoryChart({
   markerLevels,
   markerStore,
   markerCardId = "",
+  newsMarkers = [],
+  newsMarkerStore,
+  newsCardId = "",
 }: HistoryChartProps) {
   const id = useId().replace(/:/g, "");
   const values = useMemo(() => rows.map((r) => r.value), [rows]);
@@ -136,7 +145,7 @@ export const HistoryChart = memo(function HistoryChart({
           left: compact ? 0 : 4,
         }}
         accessibilityLayer
-        title={label}
+        aria-label={label}
       >
         <defs>
           <linearGradient id={`${id}-stroke`} x1="0" y1="0" x2="0" y2="1">
@@ -182,7 +191,6 @@ export const HistoryChart = memo(function HistoryChart({
         <Area
           type="monotone"
           dataKey="value"
-          name="Valor de la cartera"
           stroke={`url(#${id}-stroke)`}
           strokeWidth={2.5}
           strokeLinecap="round"
@@ -222,6 +230,16 @@ export const HistoryChart = memo(function HistoryChart({
               )}
             />
           ))}
+        {newsMarkerStore && newsMarkers.map((m) => (
+          <ReferenceDot
+            key={m.news.id}
+            x={m.date}
+            y={m.value}
+            shape={(p: { cx?: number; cy?: number }) => (
+              <AlertNewsDot cx={p.cx} cy={p.cy} marker={m} store={newsMarkerStore} cardId={newsCardId} />
+            )}
+          />
+        ))}
         <ActivePointReporter rows={rows} store={store} />
       </AreaChart>
     </ResponsiveContainer>

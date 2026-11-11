@@ -17,7 +17,7 @@ export function PeriodPicker({ value, onChange }: PeriodPickerProps) {
   const index = Math.max(0, PERIODS.findIndex((p) => p.value === value));
   const style = { "--count": PERIODS.length, "--index": index } as CSSProperties;
   return (
-    <fieldset className="kchart-period m-0 w-full min-w-0 sm:w-auto" style={style}>
+    <fieldset className="kchart-period m-0 w-full min-w-0" style={style}>
       <legend className="sr-only">Periodo de la gráfica</legend>
       <span className="kchart-period-pill" aria-hidden="true" />
       {PERIODS.map((p) => (

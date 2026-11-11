@@ -42,7 +42,8 @@ interface MarkerCardProps {
 export function MarkerCard({ store, id, width }: MarkerCardProps) {
   const active = useActiveMarker(store);
   const e = active?.marker.event;
-  const left = active ? Math.min(Math.max(active.x - CARD_WIDTH / 2, 0), Math.max(width - CARD_WIDTH, 0)) : 0;
+  const cardWidth = Math.min(CARD_WIDTH, width || CARD_WIDTH);
+  const left = active ? Math.min(Math.max(active.x - cardWidth / 2, 0), Math.max(width - cardWidth, 0)) : 0;
   // Debajo del marcador (hay sitio de sobra: debajo vienen la escala y la tabla); si el marcador
   // está muy abajo en la gráfica, encima.
   const above = (active?.y ?? 0) > ABOVE_FROM_Y;
@@ -55,7 +56,7 @@ export function MarkerCard({ store, id, width }: MarkerCardProps) {
       role="tooltip"
       hidden={!active}
       className="kchart-tip pointer-events-none absolute z-20 flex flex-col gap-2 px-4 py-3 text-sm"
-      style={{ left, top, width: CARD_WIDTH, translate: above ? "0 -100%" : "0 0" }}
+      style={{ left, top, width: cardWidth, translate: above ? "0 -100%" : "0 0" }}
     >
       {active && e && (
         <>

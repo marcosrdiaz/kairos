@@ -1,14 +1,18 @@
 import { useMemo } from "react";
 import { useEvents } from "../../../../api/hooks/useEvents";
+import { useAlerts } from "../../../../api/hooks/useAlerts";
 import type { ChartRow } from "../chartFormat";
 import { placeMarkers, type EventMarker } from "./placeMarkers";
 
 /**
- * Noticias de la cartera colocadas sobre la serie (T2-22). Usa la misma consulta que el panel y
- * el carrusel de Inicio (`useEvents`, misma caché), así que no hace peticiones de más. Mientras
- * carga o si falla, no hay marcadores: la gráfica se ve igual, sin inventar nada.
+ * Solo eventos que han generado un aviso a esta cartera. Comparte caché con el panel y
+ * la bandeja. Sin avisos o datos de evento, no se dibuja ningún marcador.
  */
 export function useEventMarkers(portfolioId: string, rows: ChartRow[]): EventMarker[] {
   const { data } = useEvents(portfolioId);
-  return useMemo(() => placeMarkers(rows, data ?? []), [rows, data]);
+  const { data: alerts } = useAlerts(portfolioId);
+  return useMemo(() => {
+    const ids = new Set((Array.isArray(alerts) ? alerts : []).filter((a) => a.kind === "event_impact").map((a) => a.event_id));
+    return placeMarkers(rows, (data ?? []).filter((event) => ids.has(event.event_id)));
+  }, [rows, data, alerts]);
 }

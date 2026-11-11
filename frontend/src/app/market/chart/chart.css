@@ -170,6 +170,15 @@
   background: var(--kairos-color-surface);
   box-shadow: 0 12px 28px -16px rgb(40 28 0 / 0.45);
 }
+@media (prefers-reduced-motion: no-preference) {
+  .kchart-tip:not([hidden]) {
+    animation: kchart-tip-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes kchart-tip-enter {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
 
 /* --- Pista «de dónde sale» (hover y foco, sin modal) --- */
 .kchart-hint {
@@ -212,6 +221,11 @@
   opacity: 1;
   visibility: visible;
   transform: none;
+}
+@media (max-width: 39.999rem) {
+  .kchart-hint-pop {
+    max-width: min(12.5rem, calc(100vw - 7.5rem));
+  }
 }
 
 /* --- Tabla --- */
@@ -281,5 +295,16 @@
   .kchart-range-handle::before {
     border: 2px solid Highlight;
     forced-color-adjust: none;
+  }
+}
+@container app-content (min-width: 48rem) {
+  .kchart-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .kchart-header .kchart-period {
+    width: auto;
   }
 }

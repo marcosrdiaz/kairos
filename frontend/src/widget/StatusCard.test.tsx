@@ -52,9 +52,10 @@ describe("StatusCard + StatusTiles", () => {
     },
   );
 
-  it("las cifras van en una lista de descripción", () => {
+  it("el valor total está en Tu cartera hoy y las demás cifras en la lista de descripción", () => {
     renderStatus(atento as StatusOut);
-    expect(definition("Valor total")).toMatch(/34\.311,68\s€/);
+    expect(screen.getByRole("region").textContent).toMatch(/Tu cartera hoy.*34\.311,68\s€/);
+    expect(screen.queryByText("Valor total", { selector: "dt" })).toBeNull();
     expect(definition("Esta semana")).toMatch(/-1,5\s%/);
     expect(definition("Motivo del estado")).toBe("Un evento reciente");
     expect(definition("Precios a")).toBe("6 de noviembre de 2026");
