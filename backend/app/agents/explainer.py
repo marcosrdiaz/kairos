@@ -18,9 +18,9 @@ from collections.abc import Generator, Iterator
 from typing import Any
 from uuid import uuid4
 
-from app.agents import claude, context, templates, tools
+from app.agents import ask_context, claude, templates, tools
 from app.agents import explainer_prompt as prompt
-from app.agents.context import Preloaded
+from app.agents.ask_context import TurnData
 from app.agents.emitter import Emitter
 from app.agents.fact_format import as_evidence
 from app.agents.facts import move_facts
@@ -62,7 +62,10 @@ def new_turn_id() -> str:
 
 
 class Turn:
-    def __init__(self, portfolio_id: str, request: AskRequest, disclaimer: bool) -> None:
+    """Un turno. `portfolio_id` es la cartera elegida en la app; `None` en `POST /ask` (T4-14):
+    el asistente deduce de la pregunta por qué cartera o carteras pregunta."""
+
+    def __init__(self, portfolio_id: str | None, request: AskRequest, disclaimer: bool) -> None:
         self.portfolio_id = portfolio_id
         self.request = request
         self.disclaimer = disclaimer
@@ -77,6 +80,7 @@ class Turn:
         self._started = time.perf_counter()
         self._deadline = 0.0  # se fija al empezar la parte del modelo (`_model_part`)
         self.out = Emitter(self.turn_id, self.channel, self.kind, [], self._started)
+        self.data: TurnData | None = None  # se carga en `events`
 
     # --- Modelo ---
 
@@ -94,8 +98,10 @@ class Turn:
         for block in final.content:
             if getattr(block, "type", "") != "tool_use":
                 continue
-            result = tools.run(self.portfolio_id, block.name, block.input)
-            self.out.evidence += as_evidence(result.facts)
+            data = self._data()
+            result = tools.run(data.default_portfolio, block.name, block.input, data.names)
+            data.scope.add(result.portfolio_id, result.evidence())
+            data.scope.add(None, result.shared)
             results.append(
                 {
                     "type": "tool_result",
@@ -120,7 +126,11 @@ class Turn:
                 return None
         return None
 
-    def _stream(self, client: Any, messages: list[Any], pre: Preloaded) -> Stream:
+    def _data(self) -> TurnData:
+        assert self.data is not None, "los datos del turno se cargan en `events`"
+        return self.data
+
+    def _stream(self, client: Any, messages: list[Any], data: TurnData) -> Stream:
         """Una respuesta completa (con sus rondas de herramientas). Devuelve el motivo si una
         frase se bloquea; `None` si ha terminado bien.
 
@@ -130,7 +140,7 @@ class Turn:
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             splitter = SentenceSplitter()
             pending: list[str] = []
-            kwargs = prompt.request_kwargs(messages, pre, allow_tools=round_ < MAX_TOOL_ROUNDS)
+            kwargs = prompt.request_kwargs(messages, data, allow_tools=round_ < MAX_TOOL_ROUNDS)
             with client.messages.stream(**kwargs) as stream:
                 for event in stream:
                     self._check_deadline()
@@ -160,11 +170,11 @@ class Turn:
             self._check_deadline()
         raise _Fallback("demasiadas rondas de herramientas")
 
-    def _llm(self, client: Any, pre: Preloaded) -> Iterator[AskEvent]:
-        text = prompt.user_text(self.request, self.kind is QuestionKind.IMPACT)
+    def _llm(self, client: Any, data: TurnData) -> Iterator[AskEvent]:
+        text = prompt.user_text(self.request, self.kind is QuestionKind.IMPACT, data)
         messages: list[Any] = [{"role": "user", "content": [{"type": "text", "text": text}]}]
         for _ in range(ATTEMPTS):
-            feedback = yield from self._stream(client, messages, pre)
+            feedback = yield from self._stream(client, messages, data)
             if feedback is None:
                 return
             self.blocked_count += 1
@@ -176,20 +186,31 @@ class Turn:
 
     # --- Plantilla ---
 
-    def _move(self) -> MoveAttributionOut | None:
+    def _move(self, portfolio_id: str) -> MoveAttributionOut | None:
         if self.topic is not templates.Topic.MOVE:
             return None
         try:
-            move = impact_service.explain_move(self.portfolio_id, "week")
+            move = impact_service.explain_move(portfolio_id, "week")
         except AppError:
             return None
-        self.out.evidence += as_evidence(move_facts(move))
+        self._data().scope.add(portfolio_id, as_evidence(move_facts(move)))
         return move
 
-    def _template(self, pre: Preloaded) -> Iterator[AskEvent]:
+    def _template_sentences(self, data: TurnData) -> list[str]:
+        if not data.targets:
+            return ask_context.ambiguous_answer(data)
+        if len(data.targets) > 1:
+            return ask_context.portfolios_answer(data)
+        target = data.targets[0]
+        pre = data.preloaded(target)
+        if pre is None:
+            return ask_context.portfolios_answer(data)
+        return templates.answer(pre, self.request.question, self._move(target))
+
+    def _template(self, data: TurnData) -> Iterator[AskEvent]:
         """Sigue desde la frase siguiente a las ya dichas. `fallback_used` solo si la plantilla
         llega a emitir alguna frase."""
-        sentences = templates.answer(pre, self.request.question, self._move())
+        sentences = self._template_sentences(data)
         for sentence in sentences[len(self.out.emitted) :]:
             if self.out.full:
                 return
@@ -200,7 +221,7 @@ class Turn:
 
     # --- Turno ---
 
-    def _model_part(self, pre: Preloaded) -> Iterator[AskEvent]:
+    def _model_part(self, data: TurnData) -> Iterator[AskEvent]:
         """La respuesta del modelo; si falla de cualquier forma, la plantilla."""
         self._deadline = _monotonic() + TURN_DEADLINE_S  # el contexto no cuenta
         client = claude.get_client()
@@ -208,7 +229,7 @@ class Turn:
             logger.info("Explicador %s: sin clave de Anthropic, plantilla", self.turn_id)
         else:
             try:
-                yield from self._llm(client, pre)
+                yield from self._llm(client, data)
                 return
             except _Fallback as reason:
                 logger.warning("Explicador %s: plantilla (%s)", self.turn_id, reason)
@@ -216,14 +237,16 @@ class Turn:
                 logger.warning("Explicador %s: fallo de Claude", self.turn_id, exc_info=True)
             except Exception:
                 logger.exception("Explicador %s: error inesperado del modelo", self.turn_id)
-        yield from self._template(pre)
+        yield from self._template(data)
 
     def events(self) -> Iterator[AskEvent]:
         yield AskMetaEvent(type="meta", turn_id=self.turn_id, disclaimer=self.disclaimer)
         try:
-            pre = context.get(self.portfolio_id)
-            self.out.evidence = pre.evidence()
-            yield from self._model_part(pre)
+            data = self.data = ask_context.load(self.portfolio_id, self.request.question)
+            self.out.scope = data.scope
+            if not data.targets:  # pregunta a cuál se refiere: sin cifra en euros
+                self.kind = self.out.kind = QuestionKind.GENERAL
+            yield from self._model_part(data)
         except AppError as error:
             yield self._error(error.code.value, error.message)
             return

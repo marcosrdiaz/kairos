@@ -169,9 +169,13 @@ def reset_sessions() -> None:
         _sessions.clear()
 
 
-def ask(portfolio_id: str, request: AskRequest) -> Iterator[AskEvent]:
-    """Eventos SSE del turno. Falla con NOT_FOUND antes de emitir nada si la cartera no existe."""
-    portfolio_service.ensure_exists(portfolio_id)
+def ask(portfolio_id: str | None, request: AskRequest) -> Iterator[AskEvent]:
+    """Eventos SSE del turno. `portfolio_id` es la cartera elegida en la app; el asistente puede
+    responder sobre cualquier cartera del usuario, cada una por separado (T4-14). Con `None`
+    (`POST /ask`) deduce de la pregunta de cuál se habla. Falla con NOT_FOUND antes de emitir
+    nada si la cartera elegida no existe."""
+    if portfolio_id is not None:
+        portfolio_service.ensure_exists(portfolio_id)
     turn = explainer.Turn(
         portfolio_id, request, disclaimer=needs_disclaimer(request.session_id, request.channel)
     )

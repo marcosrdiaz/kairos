@@ -12,6 +12,7 @@ import time
 from difflib import SequenceMatcher
 
 from app.agents import guardian
+from app.agents.portfolio_scope import Scope
 from app.schemas.agents import (
     AskSentenceEvent,
     Evidence,
@@ -74,11 +75,15 @@ class Emitter:
         kind: QuestionKind,
         evidence: list[Evidence],
         started: float,
+        scope: Scope | None = None,
     ) -> None:
         self.turn_id = turn_id
         self.channel = channel
         self.kind = kind
         self.evidence = evidence
+        self.scope = scope
+        """Con varias carteras (T4-14), las evidencias van por cartera: cada frase se comprueba
+        con las de la cartera de la que habla (`portfolio_scope.py`) y no con `evidence`."""
         self.emitted: list[str] = []
         self.first_sentence_ms = 0
         self._started = started
@@ -105,20 +110,32 @@ class Emitter:
         if _META.search(guardian.normalize(text)):
             return META_DETAIL
         index = len(self.emitted)
+        portfolio_ids: list[str] = []
+        evidence = self.evidence
+        if self.scope is not None:
+            portfolio_ids = self.scope.attribute(text)
+            mix = self.scope.check_mix(text, portfolio_ids)
+            if mix is not None:
+                return mix
+            evidence = self.scope.evidence_for(portfolio_ids)
         request = GuardianRequest(
             text=text,
             channel=self.channel,
             question_kind=self.kind,
             sentence_index=index,
-            evidence=self.evidence,
+            evidence=evidence,
         )
         verdict = guardian.check(request)
         if not verdict.ok:
-            return "; ".join(reason.detail for reason in verdict.reasons)
+            details = [reason.detail for reason in verdict.reasons]
+            hint = self.scope.owner_hint(text, portfolio_ids) if self.scope else None
+            return "; ".join([*details, hint] if hint else details)
         matched = (f.matched_calc_id for f in verdict.figures if f.matched_calc_id)
         if not self.emitted:
             self.first_sentence_ms = int((time.perf_counter() - self._started) * 1000)
         self.emitted.append(text)
+        if self.scope is not None:
+            self.scope.accept(portfolio_ids)
         voice_service.register_approved(self.turn_id, index, text)
         return AskSentenceEvent(
             type="sentence",
@@ -126,4 +143,5 @@ class Emitter:
             index=index,
             text=text,
             calc_ids=list(dict.fromkeys(matched)),
+            portfolio_ids=portfolio_ids,
         )

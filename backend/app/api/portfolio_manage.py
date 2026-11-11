@@ -1,25 +1,18 @@
 """Crear, editar, borrar e importar carteras, y preguntar sin cartera elegida (T4-09).
 
 Crear, editar y borrar son reales desde T4-10; importar, desde T4-11 (`portfolio/importer.py`).
-`/ask` responde todavía con los ejemplos de `schemas/examples/` hasta T4-14.
+`/ask` es real desde T4-14 (`agents.service.ask` sin cartera elegida).
 """
 
-from collections.abc import Iterator
 from typing import Any
 
 from fastapi import APIRouter, Response, status
 from fastapi.responses import StreamingResponse
-from pydantic import TypeAdapter
 
+from app.agents import service as agents_service
+from app.api.ask import sse as _sse
 from app.portfolio import service as portfolio_service
-from app.schemas import examples
-from app.schemas.agents import (
-    AskDoneEvent,
-    AskEvent,
-    AskMetaEvent,
-    AskRequest,
-    AskSentenceEvent,
-)
+from app.schemas.agents import AskRequest
 from app.schemas.common import ErrorOut
 from app.schemas.portfolio import PortfolioSummaryOut
 from app.schemas.portfolio_manage import (
@@ -33,7 +26,6 @@ router = APIRouter(tags=["portfolio"])
 
 _NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorOut}}
 _INVALID: dict[int | str, dict[str, Any]] = {422: {"model": ErrorOut}}
-_EVENT = TypeAdapter(AskEvent)
 
 
 @router.post(
@@ -85,24 +77,13 @@ def import_portfolio(body: PortfolioImportRequest, response: Response) -> Portfo
     return result
 
 
-def _example_turn() -> Iterator[str]:
-    turn: list[AskEvent] = [
-        AskMetaEvent.model_validate(examples.load("AskMetaEvent")),
-        AskSentenceEvent.model_validate(examples.load("AskSentenceEvent")),
-        AskSentenceEvent.model_validate(examples.load("AskSentenceEvent.impact")),
-        AskDoneEvent.model_validate(examples.load("AskDoneEvent")),
-    ]
-    for event in turn:
-        yield f"data: {_EVENT.dump_json(event).decode()}\n\n"
-
-
 @router.post("/ask", response_class=StreamingResponse)
 def ask_any_portfolio(body: AskRequest) -> StreamingResponse:
     """Como `POST /portfolios/{id}/ask`, sin cartera elegida: el asistente deduce de la pregunta
     a qué cartera o carteras se refiere y responde por separado para cada una, sin sumarlas
     (`AskSentenceEvent.portfolio_ids`). Si la pregunta es ambigua, pregunta a cuál se refiere."""
     return StreamingResponse(
-        _example_turn(),
+        _sse(agents_service.ask(None, body)),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

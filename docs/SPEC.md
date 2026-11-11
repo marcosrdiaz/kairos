@@ -318,16 +318,24 @@ La frase se precalcula al cambiar el estado (plantilla + modelo rápido, validad
 | Explicador | `ANTHROPIC_MODEL_FAST` (def. `claude-haiku-5-5`) | Pregunta del usuario; frases de widget y avisos | Pregunta + contexto precargado de la cartera (caché de prompt) | Texto en español, 2-3 frases, ≥ 1 cifra en € tomada de herramientas |
 | Guardián | Reglas deterministas (+ modelo rápido opcional) | Sobre toda salida antes del usuario | Texto + resultados de herramientas del turno | `ok` / `blocked(motivo)` |
 
-**Herramientas del explicador** (`agents/tools.py`, cada una llama al `service.py` del módulo dueño):
+**Herramientas del explicador** (`agents/tools.py`, definiciones en `agents/tool_defs.py`; cada una llama al `service.py` del módulo dueño). Desde T4-14 todas, salvo `list_portfolios`, aceptan `portfolio_id` opcional: el asistente puede consultar cualquier cartera del usuario (sin él, la de la pregunta o la elegida en la app):
 
 | Herramienta | Módulo | Devuelve |
 | --- | --- | --- |
+| `list_portfolios` | portfolio | id, nombre, tipo y perfil de cada cartera |
 | `get_portfolio` | portfolio | `PortfolioOut` |
+| `get_status` | status | `StatusOut` |
 | `get_exposure` | exposure | `ExposureOut` |
 | `get_events(days)` | events + impact | `list[EventImpactOut]` |
+| `get_news(category, affecting, limit)` / `get_news_item(news_id)` | news | `NewsItemOut` con su impacto estimado o medido en esa cartera |
+| `get_alerts` | alerts | `list[AlertOut]` (los 10 más recientes) |
+| `get_radar` | exposure | `RadarOut` |
+| `get_agenda` | planning | `list[AgendaItemOut]` |
 | `estimate_impact(shocks)` | impact | escenario con rango |
 | `check_plan` | portfolio + planning | desviación, proyección DCA frente al objetivo |
 | `explain_move(period)` | impact | atribución del cambio de valor a activos y eventos |
+
+**Varias carteras (T4-14).** `POST /portfolios/{id}/ask` (con cartera elegida) y `POST /ask` (sin ella) usan el mismo turno (`agents/ask_context.py`): las carteras de la pregunta salen de sus nombres o de una palabra de su tipo («la de mis hijos» → la única `family`), de «mis carteras» (todas, hasta 5) o, si no, de la elegida; sin elegida y con varias, el asistente pregunta a cuál se refiere. El contexto de la elegida va en el bloque con caché y el de las demás de la pregunta, en el mensaje. El guardián recibe las evidencias **por cartera** (`agents/portfolio_scope.py`): cada frase se comprueba con las cifras de la cartera que nombra (o de la última de la que se habló), una frase con cifras de dos carteras se bloquea y una cifra de otra cartera se bloquea con un motivo que la nombra para el reintento. Así ninguna cifra se atribuye a otra cartera y ningún total entre carteras pasa el guardián (no casa con ninguna evidencia). `AskSentenceEvent.portfolio_ids` lleva las carteras de cada frase.
 
 **Latencia de voz**: el contexto básico (patrimonio, asignación, eventos de 7 días con su impacto, estado del plan) va precargado en el prompt con caché, para que las 3 preguntas típicas se respondan sin llamadas a herramientas. Las herramientas quedan para preguntas específicas.
 

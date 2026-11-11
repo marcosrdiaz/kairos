@@ -139,13 +139,9 @@ def test_unexpected_errors_become_a_fixed_tool_error(
 
 def test_definitions_match_handlers() -> None:
     names = [d["name"] for d in tools.DEFINITIONS]
-    assert names == [
-        "get_portfolio",
-        "get_exposure",
-        "get_events",
-        "estimate_impact",
-        "check_plan",
-        "explain_move",
-    ]
+    assert names == ["list_portfolios", *tools._HANDLERS]
     for definition in tools.DEFINITIONS:
         assert definition["input_schema"]["additionalProperties"] is False
+        if definition["name"] != "list_portfolios":
+            assert "portfolio_id" in definition["input_schema"]["properties"]
+            assert "portfolio_id" not in definition["input_schema"]["required"]
