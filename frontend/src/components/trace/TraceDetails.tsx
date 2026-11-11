@@ -3,21 +3,31 @@ import type { TraceOut } from "../../api/generated/schema";
 import { formatDate } from "../../lib/format";
 import { toTraceFields, type TraceField } from "./traceFields";
 
-function FieldList({ fields }: { fields: TraceField[] }) {
+/**
+ * Datos de un cálculo como lista agrupada: nombre a la izquierda y valor a la derecha (en móvil,
+ * uno debajo de otro); los grupos anidados van sangrados bajo su nombre.
+ */
+function FieldList({ fields, nested = false }: { fields: TraceField[]; nested?: boolean }) {
   return (
-    <dl className="m-0 flex flex-col gap-2">
-      {fields.map((field) => (
-        <div key={field.key} className="flex flex-col">
-          <dt className="text-sm text-ink-muted">{field.label}</dt>
-          {"text" in field ? (
-            <dd className="m-0 break-words text-base text-ink tabular-nums">{field.text}</dd>
-          ) : (
+    <dl className={`m-0 flex flex-col ${nested ? "" : "divide-y divide-line rounded-control border border-line"}`}>
+      {fields.map((field) =>
+        "text" in field ? (
+          <div
+            key={field.key}
+            className={`grid gap-x-4 gap-y-0.5 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] ${nested ? "py-1" : "px-3 py-2"}`}
+          >
+            <dt className="text-sm text-ink-muted">{field.label}</dt>
+            <dd className="m-0 break-words text-base text-ink tabular-nums sm:text-right">{field.text}</dd>
+          </div>
+        ) : (
+          <div key={field.key} className={nested ? "py-1" : "px-3 py-2"}>
+            <dt className="text-sm font-semibold text-ink">{field.label}</dt>
             <dd className="m-0 mt-1 border-l-2 border-line pl-3">
-              <FieldList fields={field.fields} />
+              <FieldList fields={field.fields} nested />
             </dd>
-          )}
-        </div>
-      ))}
+          </div>
+        ),
+      )}
     </dl>
   );
 }
@@ -74,7 +84,7 @@ export function TraceDetails({ trace, headingLevel }: TraceDetailsProps) {
         <Fields record={trace.inputs} />
       </Block>
       <Block title="Fórmula" level={headingLevel}>
-        <code className="block whitespace-pre-wrap break-words rounded-control bg-surface-muted p-3 text-sm text-ink">
+        <code className="block whitespace-pre-wrap break-words rounded-control bg-surface-muted px-3 py-2.5 text-sm leading-relaxed text-ink">
           {trace.formula}
         </code>
       </Block>
