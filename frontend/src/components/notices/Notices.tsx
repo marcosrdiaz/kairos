@@ -29,14 +29,15 @@ export function PanelNotice() {
   return (
     <section
       aria-labelledby="aviso-panel-titulo"
-      className="flex gap-4 rounded-card border border-line bg-surface p-5"
+      className="flex gap-3 rounded-card border border-line bg-surface p-4 sm:gap-4 sm:p-5"
     >
       <InfoIcon className="mt-0.5 size-6 shrink-0 text-accent" />
       <div className="flex flex-col gap-2">
         <h2 id="aviso-panel-titulo" className="m-0 text-base font-semibold text-ink">
           {PANEL_NOTICE_TITLE}
         </h2>
-        <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm text-ink-muted">
+        {/* En pantalla ancha, los tres avisos van en columnas: el bloque ocupa la mitad de alto. */}
+        <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm text-ink-muted lg:grid lg:grid-cols-3 lg:gap-6">
           {PANEL_NOTICE_LINES.map((line) => (
             <li key={line}>{line}</li>
           ))}

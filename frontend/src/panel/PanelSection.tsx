@@ -20,7 +20,9 @@ export function PanelSection({ id, title, intro, step = 0, children }: PanelSect
       id={id}
       aria-labelledby={`${id}-title`}
       style={{ "--panel-step": step } as CSSProperties}
-      className="panel-reveal scroll-mt-[calc(var(--kairos-header-height)+5rem)] lg:scroll-mt-24"
+      className={`panel-reveal scroll-mt-[calc(var(--kairos-header-height)+5rem)] lg:scroll-mt-24 ${
+        step > 0 ? "border-t border-line pt-8" : ""
+      }`}
     >
       <h2 id={`${id}-title`} className="m-0 text-2xl font-semibold leading-tight text-ink">
         {title}
