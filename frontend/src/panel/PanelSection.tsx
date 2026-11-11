@@ -25,7 +25,7 @@ export function PanelSection({ id, title, intro, step = 0, children }: PanelSect
       <h2 id={`${id}-title`} className="m-0 text-2xl font-semibold leading-tight text-ink">
         {title}
       </h2>
-      {intro && <p className="m-0 mt-1 max-w-[65ch] text-base text-ink-muted">{intro}</p>}
+      {intro && <p className="m-0 mt-1 text-base text-ink-muted">{intro}</p>}
       <div className="mt-5">{children}</div>
     </section>
   );

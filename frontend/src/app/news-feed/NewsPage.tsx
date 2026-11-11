@@ -4,13 +4,29 @@ import { EmptyNote, PageTitle } from "../../components/PageTitle";
 import { usePortfolioId } from "../portfolio-picker/usePortfolioId";
 import { NewsCard } from "./NewsCard";
 import { NewsDetail } from "./NewsDetail";
-import { NewsFilters } from "./NewsFilters";
+import { NewsFilters, type NewsDateRange } from "./NewsFilters";
 import { CATEGORY_LABEL } from "./labels";
 import "./news-feed.css";
 
 const DEFAULT_FILTER: NewsFilter = { category: null, affecting: true };
+const MADRID_DATE = new Intl.DateTimeFormat("en-CA", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "Europe/Madrid",
+  year: "numeric",
+});
 
-function emptyText(filter: NewsFilter): string {
+function publishedDate(isoDate: string): string {
+  const parts = MADRID_DATE.formatToParts(new Date(isoDate));
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  if (!year || !month || !day) throw new Error("No se pudo interpretar la fecha de la noticia.");
+  return `${year}-${month}-${day}`;
+}
+
+function emptyText(filter: NewsFilter, hasDateRange: boolean): string {
+  if (hasDateRange) return "No hay noticias para las fechas seleccionadas.";
   const scope = filter.category ? ` de ${CATEGORY_LABEL[filter.category].toLowerCase()}` : "";
   return filter.affecting
     ? `Ahora mismo no hay noticias${scope} que afecten a esta cartera.`
@@ -27,14 +43,26 @@ export function NewsPage() {
   const [portfolioId] = usePortfolioId();
   const [filter, setFilterState] = useState<NewsFilter>(DEFAULT_FILTER);
   const [limit, setLimit] = useState(NEWS_PAGE);
+  const [dateRange, setDateRange] = useState<NewsDateRange>({ from: "", to: "" });
   const [openId, setOpenId] = useState<string | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
-  const { data, isPending, isError, isFetching } = useNews(portfolioId, filter, limit);
+  const hasDateRange = Boolean(dateRange.from || dateRange.to);
+  const requestLimit = hasDateRange ? NEWS_MAX : limit;
+  const { data, isPending, isError, isFetching } = useNews(portfolioId, filter, requestLimit);
   const setFilter = (next: NewsFilter) => {
     setFilterState(next);
     setLimit(NEWS_PAGE);
   };
-  const canLoadMore = data !== undefined && data.length >= limit && limit < NEWS_MAX;
+  const setDates = (next: NewsDateRange) => {
+    setDateRange(next);
+    setLimit(NEWS_PAGE);
+  };
+  const visibleNews = data?.filter((item) => {
+    const date = publishedDate(item.published_at);
+    return (!dateRange.from || date >= dateRange.from) && (!dateRange.to || date <= dateRange.to);
+  });
+  const canLoadMore =
+    data !== undefined && data.length >= requestLimit && requestLimit < NEWS_MAX;
   const open = data?.find((n) => n.id === openId) ?? null;
 
   const openDetail = (id: string, button: HTMLButtonElement) => {
@@ -50,16 +78,21 @@ export function NewsPage() {
   return (
     <>
       <PageTitle>Noticias</PageTitle>
-      <div className="flex max-w-6xl flex-col gap-6">
-        <p className="m-0 max-w-[65ch] text-base text-ink-muted">
+      <div className="news-page-layout flex min-w-0 w-full flex-col gap-6">
+        <p className="m-0 text-base text-ink-muted">
           Lo que pasa en los mercados, traducido a tu cartera: cuánto podría moverla cada noticia,
           en qué plazo y desde cuándo se nota en cada posición.
         </p>
-        <NewsFilters filter={filter} onChange={setFilter} />
+        <NewsFilters
+          filter={filter}
+          onChange={setFilter}
+          dateRange={dateRange}
+          onDateRangeChange={setDates}
+        />
         <section
           aria-labelledby="news-list-title"
-          aria-busy={isPending}
-          className="flex flex-col gap-4"
+          aria-busy={isPending || isFetching}
+          className="flex min-w-0 flex-col gap-4"
         >
           <h2 id="news-list-title" className="sr-only">
             Lista de noticias
@@ -69,15 +102,22 @@ export function NewsPage() {
               Cargando noticias…
             </p>
           )}
+          {visibleNews?.length === 0 && isFetching && (
+            <p className="m-0 text-base text-ink-muted" role="status">
+              Buscando noticias…
+            </p>
+          )}
           {isError && !data && (
             <EmptyNote>
               Ahora mismo no podemos mostrar las noticias. Vuelve a intentarlo en unos segundos.
             </EmptyNote>
           )}
-          {data?.length === 0 && <EmptyNote>{emptyText(filter)}</EmptyNote>}
-          {data && data.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 @3xl/app-content:grid-cols-2">
-              {data.map((item) => (
+          {visibleNews?.length === 0 && !isFetching && (
+            <EmptyNote>{emptyText(filter, hasDateRange)}</EmptyNote>
+          )}
+          {visibleNews && visibleNews.length > 0 && (
+            <div className="grid min-w-0 grid-cols-1 gap-5 @3xl/app-content:grid-cols-2">
+              {visibleNews.map((item) => (
                 <NewsCard key={item.id} item={item} onOpen={openDetail} />
               ))}
             </div>
@@ -93,7 +133,7 @@ export function NewsPage() {
             </button>
           )}
         </section>
-        <p className="m-0 max-w-[65ch] text-sm text-ink-muted">
+        <p className="m-0 text-sm text-ink-muted">
           <strong className="font-semibold text-ink">No es asesoramiento.</strong> Kairos explica
           con contexto cómo podría afectar cada noticia a tu cartera; las cifras son estimaciones
           con un rango, calculadas sobre tus datos, y no recomiendan ninguna operación.

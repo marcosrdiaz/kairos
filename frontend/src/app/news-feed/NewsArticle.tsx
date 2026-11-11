@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { NewsItemOut, NewsPositionEstimate } from "../../api/generated/schema";
+import { TrendIcon, WalletIcon } from "../../components/icons";
 import { TraceFigure } from "../../components/trace/TraceFigure";
 import { NewsCover } from "./NewsCover";
 import { NewsEffect } from "./NewsEffect";
@@ -16,7 +17,10 @@ function PositionEffects({
   if (positions.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <h4 className="m-0 text-sm font-semibold text-ink">En tus posiciones</h4>
+      <h4 className="m-0 inline-flex items-center gap-2 text-base font-semibold text-ink">
+        <WalletIcon className="size-5 text-accent" />
+        En tus posiciones
+      </h4>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {positions.map((p) => (
           <li
@@ -59,7 +63,7 @@ function ClampedText({ text }: { text: string }) {
         <p
           id={textId}
           ref={ref}
-          className={`m-0 max-w-[65ch] text-base text-ink-muted ${expanded ? "" : "line-clamp-4"}`}
+          className={`m-0 text-base text-ink-muted ${expanded ? "" : "line-clamp-4"}`}
         >
           {text}
         </p>
@@ -112,7 +116,10 @@ export function NewsArticle({ item, titleId }: { item: NewsItemOut; titleId?: st
         <NewsEffect estimate={estimate} />
         {item.causal_chain.length > 0 && (
           <div className="flex flex-col gap-2">
-            <h4 className="m-0 text-sm font-semibold text-ink">Por qué te afecta</h4>
+            <h4 className="m-0 inline-flex items-center gap-2 text-base font-semibold text-ink">
+              <TrendIcon className="size-5 text-accent" />
+              Por qué te afecta
+            </h4>
             <ol className="m-0 flex list-decimal flex-col gap-1 pl-5 text-base text-ink-muted">
               {item.causal_chain.map((step) => (
                 <li key={step}>{step}</li>

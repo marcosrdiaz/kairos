@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import type { NewsItemOut } from "../../api/generated/schema";
+import { CloseIcon } from "../../voice/icons";
 import { NewsArticle } from "./NewsArticle";
 
 /** `id` del <main> de AppShell. */
@@ -46,22 +47,22 @@ export function NewsDetail({ item, onClose }: { item: NewsItemOut; onClose: () =
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="news-detail-backdrop absolute inset-0 bg-ink/40"
+        className="news-detail-backdrop absolute inset-0"
       />
       <div
         role="dialog"
         aria-labelledby={titleId}
-        className="news-detail-panel absolute inset-x-0 bottom-0 top-4 flex flex-col overflow-hidden rounded-t-card border border-line bg-surface shadow-lg lg:inset-y-6 lg:mx-auto lg:w-[min(46rem,calc(100%-3rem))] lg:rounded-card"
+        className="news-detail-panel absolute inset-x-0 bottom-0 top-4 flex flex-col overflow-hidden rounded-t-card border border-line bg-surface lg:inset-y-6 lg:mx-auto lg:w-[min(46rem,calc(100%-3rem))] lg:rounded-card"
       >
         <div className="flex justify-end border-b border-line px-4 py-2">
           <button
             ref={closeRef}
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-4 text-base font-semibold text-ink hover:border-accent"
+            aria-label="Cerrar noticia"
+            className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-focus"
           >
-            <span aria-hidden="true">✕</span>
-            Cerrar
+            <CloseIcon className="size-5" />
           </button>
         </div>
         <div className="kairos-scroll overflow-y-auto px-5 py-6 lg:px-8">

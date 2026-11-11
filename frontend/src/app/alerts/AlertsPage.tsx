@@ -20,7 +20,7 @@ export function AlertsPage() {
   const isRead = (item: PortfolioAlert) => readIds.get(item.portfolio.id)?.has(item.alert.id) ?? false;
 
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col gap-6" aria-label="Avisos">
+    <section className="flex w-full min-w-0 flex-col gap-6" aria-label="Avisos">
       <PageTitle>Avisos</PageTitle>
       <AlertsInbox
         portfolios={portfolios}

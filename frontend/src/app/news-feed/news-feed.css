@@ -1,7 +1,25 @@
 /*
- * Detalle de una noticia (T5-17): el fondo aparece con un fundido y el panel sube 12 px. Corto y
- * con salida suave; con prefers-reduced-motion simplemente está ahí.
+ * El detalle oscurece el contenido en los dos temas; el negro en tema oscuro evita aclarar la
+ * pantalla como ocurría al usar el color de texto como fondo translúcido.
  */
+.news-detail-backdrop {
+  background-color: rgb(29 26 21 / 54%);
+}
+
+[data-theme="dark"] .news-detail-backdrop {
+  background-color: rgb(0 0 0 / 72%);
+}
+
+.news-filter-rail {
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.news-filter-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* El panel sube 12 px; con prefers-reduced-motion simplemente está ahí. */
 @media (prefers-reduced-motion: no-preference) {
   .news-detail-backdrop {
     animation: news-detail-fade 160ms ease-out both;
