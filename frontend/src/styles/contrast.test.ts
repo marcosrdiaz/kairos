@@ -105,6 +105,9 @@ describe.each([
   it.each(UI_PAIRS)("elemento %s sobre %s ≥ 3:1", (fg, bg) => {
     expect(contrast(get(fg), get(bg))).toBeGreaterThanOrEqual(3);
   });
+  it("icono blanco sobre su fondo de alto contraste ≥ 4,5:1", () => {
+    expect(contrast("#ffffff", get("icon-contrast-bg"))).toBeGreaterThanOrEqual(4.5);
+  });
 });
 
 describe("tokens", () => {

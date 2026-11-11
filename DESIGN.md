@@ -233,6 +233,9 @@ Fondo del estado claro, texto del estado oscuro, punto decorativo y palabra siem
 ### Iconos (`src/components/icons.tsx`)
 SVG en línea con `currentColor`, `aria-hidden="true"` y `focusable="false"`. El significado siempre lo da el texto.
 
+### Filtros de Noticias
+Las chips activas usan el primario y texto `on-primary` en ambos modos. Los iconos de categoría son blancos sobre `icon-contrast-bg`, un fondo oscuro fijo para conservar contraste claro y oscuro.
+
 ## Do's and Don'ts
 
 ### Do:

@@ -75,6 +75,7 @@
   --color-icon-blue-bg: var(--kairos-color-icon-blue-bg);
   --color-icon-red: var(--kairos-color-icon-red-fg);
   --color-icon-red-bg: var(--kairos-color-icon-red-bg);
+  --color-icon-contrast-bg: var(--kairos-color-icon-contrast-bg);
 
   --color-chart-1: var(--kairos-color-chart-1);
   --color-chart-2: var(--kairos-color-chart-2);

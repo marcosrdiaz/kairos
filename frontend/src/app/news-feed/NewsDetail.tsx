@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import type { NewsItemOut } from "../../api/generated/schema";
+import { CloseIcon } from "../../voice/icons";
 import { NewsArticle } from "./NewsArticle";
 
 /** `id` del <main> de AppShell. */
@@ -58,21 +59,10 @@ export function NewsDetail({ item, onClose }: { item: NewsItemOut; onClose: () =
             ref={closeRef}
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-4 text-base font-semibold text-ink hover:border-accent"
+            aria-label="Cerrar noticia"
+            className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-focus"
           >
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              aria-hidden="true"
-              focusable="false"
-              className="size-4"
-            >
-              <path d="m5 5 10 10M15 5 5 15" />
-            </svg>
-            Cerrar
+            <CloseIcon className="size-5" />
           </button>
         </div>
         <div className="kairos-scroll overflow-y-auto px-5 py-6 lg:px-8">

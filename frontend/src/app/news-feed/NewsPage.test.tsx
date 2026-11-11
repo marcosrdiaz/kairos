@@ -82,7 +82,10 @@ describe("NewsPage", () => {
     const dialog = screen.getByRole("dialog", { name: estimated.title });
     expect(dialog.textContent).toMatch(/Cómo afecta a tu cartera/);
     expect(dialog.textContent).toMatch(/Equivale a/);
-    expect(document.activeElement?.textContent).toMatch(/Cerrar/);
+    const closeButton = screen.getByRole("button", { name: "Cerrar noticia" });
+    expect(document.activeElement).toBe(closeButton);
+    expect(closeButton.textContent).toBe("");
+    expect(closeButton.querySelector("svg")).not.toBeNull();
 
     fireEvent.keyDown(dialog, { key: "Escape" });
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -100,15 +103,39 @@ describe("NewsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Resultados" }));
     await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(1));
     expect(lastUrl()).toContain("category=earnings");
-    expect(screen.getByRole("button", { name: "Resultados" }).getAttribute("aria-pressed")).toBe(
-      "true",
-    );
+    const categoryChip = screen.getByRole("button", { name: "Resultados" });
+    expect(categoryChip.getAttribute("aria-pressed")).toBe("true");
+    expect(categoryChip.className).toContain("aria-pressed:bg-accent");
+    expect(categoryChip.querySelector("svg")?.className.baseVal).toContain("text-white");
+  });
+
+  it("filtra por fechas inclusivas y carga el límite disponible antes de filtrar", async () => {
+    serveNews(ALL);
+    renderPage();
+    await screen.findAllByRole("article");
+
+    fireEvent.click(screen.getByRole("button", { name: "Fecha" }));
+    fireEvent.change(screen.getByLabelText("Desde"), { target: { value: "2025-02-26" } });
+    fireEvent.change(screen.getByLabelText("Hasta"), { target: { value: "2025-02-26" } });
+
+    await waitFor(() => {
+      expect(lastUrl()).toContain("limit=200");
+      expect(screen.getAllByRole("article")).toHaveLength(1);
+    });
+    expect(screen.getByRole("button", { name: "Fechas activas" })).toBeTruthy();
+    expect(screen.getByRole("article", { name: estimated.title })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar fechas" }));
+    await waitFor(() => {
+      expect(lastUrl()).toContain("limit=30");
+      expect(screen.getAllByRole("article")).toHaveLength(2);
+    });
   });
 
   it("permite avanzar y retroceder por categorías con botones laterales", async () => {
     serveNews(ALL);
     renderPage();
-    const rail = screen.getByRole("region", { name: "Categorías de noticias" });
+    const rail = screen.getByRole("region", { name: "Filtros de noticias" });
     Object.defineProperty(rail, "clientWidth", { configurable: true, value: 250 });
     Object.defineProperty(rail, "scrollWidth", { configurable: true, value: 900 });
     const scrollBy = vi.fn();
@@ -116,7 +143,7 @@ describe("NewsPage", () => {
     fireEvent(window, new Event("resize"));
 
     const next = screen.getByRole<HTMLButtonElement>("button", {
-      name: "Desplazar categorías a la derecha",
+      name: "Desplazar filtros a la derecha",
     });
     await waitFor(() => expect(next.disabled).toBe(false));
     fireEvent.click(next);
@@ -125,7 +152,7 @@ describe("NewsPage", () => {
     Object.defineProperty(rail, "scrollLeft", { configurable: true, value: 200 });
     fireEvent.scroll(rail);
     const previous = screen.getByRole<HTMLButtonElement>("button", {
-      name: "Desplazar categorías a la izquierda",
+      name: "Desplazar filtros a la izquierda",
     });
     await waitFor(() => expect(previous.disabled).toBe(false));
     fireEvent.click(previous);
