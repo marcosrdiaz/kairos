@@ -64,6 +64,7 @@ export function Composer({ onAsk, leading }: ComposerProps) {
       />
       <button
         type="submit"
+        data-no-press
         aria-label="Enviar pregunta"
         disabled={!hasText}
         className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full bg-accent text-on-accent transition-[background-color,opacity,scale] duration-200 hover:bg-accent-hover active:scale-95 disabled:cursor-not-allowed disabled:bg-line-strong disabled:opacity-50 disabled:active:scale-100"
