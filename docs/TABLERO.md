@@ -60,6 +60,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | BUG | Arreglos: lo que no funciona en producción | se coge en cuanto sus dependencias estén hechas | ✅ cerrada |
 | DEMO | Ajustes para la entrega | se coge en cuanto sus dependencias estén hechas | 🔄 abierta |
 | EXTRA | Después de la entrega | después del mié 11 | ⏸ aplazada |
+| PULIDO | Pulido visual libre (rama sin PR) | para la demo del 11 nov si da tiempo | 🔄 abierta |
 
 ### Fase 0 · Cimientos y contratos (dom 8) · ✅ cerrada
 
@@ -258,6 +259,14 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 | TD-12 | **Pulido de Avisos** (excepción autorizada por Javi tras la congelación del 11-nov): convertir «Marcar como leído» en un botón con icono, colocado en la esquina superior derecha de cada aviso; alinear «Marcar todos como leídos» con el filtro de Cartera y situarlo a la derecha del ancho útil, respetando el espacio del chatbot; añadir solo los colores semánticos e iconos necesarios; separar del borde derecho el icono de la flecha del selector de carteras | Controles claros y utilizables en móvil y escritorio, con chatbot abierto o cerrado; botones conservan nombre accesible, foco visible y área táctil; marcas de lectura y filtro conservan comportamiento; iconos y colores usan tokens existentes y no son la única señal; pruebas focalizadas de Avisos en verde | T5-10 | `frontend/src/app/alerts/AlertsInbox.tsx`, `AlertItem.tsx` y pruebas de Avisos | Javi | 🔄 en curso |
 
 *TD-05 (fotos de las noticias) queda descartada (11-nov) y su ID no se reutiliza: ni el RSS de Yahoo Finance ni Google Noticias traen imagen, así que el campo estaría siempre vacío. Las portadas de categoría de `NewsCover` se quedan.*
+
+### Fase PULIDO · Pulido visual libre
+
+*Abierta por Marcos (11 nov).* Fase extra, fuera de las numeradas. IDs `TX-<nn>`. Trabaja en una rama propia (`extra/pulido-visual`) **sin PR ni merge**: Marcos decide al ver el resultado. Commits pequeños por mejora, para poder quedarse con unas y descartar otras (cherry-pick o revert).
+
+| ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
+| --- | --- | --- | --- | --- | --- | --- |
+| TX-01 | **Pulido visual libre del frontend**, sobre todo las pantallas del guion (Inicio, widget, `/panel`, Pregunta). Incluye los hallazgos de *Bloqueos* (aviso que empuja la tarjeta en el paso 3, brillo del botón del asistente, tarjetas anidadas). Solo frontend: nada de backend, contrato ni dependencias. Según `PRODUCT.md` y `DESIGN.md` | Cada mejora en su commit, con capturas antes y después (playwright-cli); `npm run e2e` en verde tras cada una (sin romper selectores); cifras con `Traced` y `calc_id` intactos y sin cálculos en el cliente; AA en claro y oscuro, móvil y escritorio; `prefers-reduced-motion` respetado | — | Estilos y componentes visuales de `frontend/src/` (`app/`, `widget/`, `panel/`, `voice/`, `components/`, `index.css`); no `frontend/src/api/` ni `frontend/e2e/` | Marcos | 🔄 en curso |
 
 ### Fase EXTRA · Después de la entrega
 
