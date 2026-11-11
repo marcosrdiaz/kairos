@@ -15,7 +15,7 @@ function errorText(error: unknown): string {
 }
 
 /**
- * "Cargar cartera de ejemplo" (RF-02): `POST /demo/reset` deja Laura y Javier en su estado
+ * "Cargar cartera de ejemplo" (RF-02): `POST /demo/reset` deja Carmen, Javier y Víctor en su estado
  * inicial. Borra las operaciones hechas, así que pide confirmación en el sitio (sin modal) y
  * pone el foco en "Cancelar", la opción que no destruye nada. Al terminar, recarga todos los datos.
  */
@@ -45,8 +45,8 @@ export function DemoReset() {
           className="flex flex-col gap-3 rounded-card border border-line-strong bg-surface-muted p-4"
         >
           <p id="demo-reset-question" className="m-0 text-base text-ink">
-            Se borrarán las posiciones y operaciones que hayas añadido y las dos carteras volverán
-            a su estado inicial.
+            Se borrarán las posiciones y operaciones que hayas añadido y las carteras de ejemplo
+            volverán a su estado inicial.
           </p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -83,7 +83,7 @@ export function DemoReset() {
       )}
       <p role="status" className="m-0 text-base empty:hidden">
         {reset.isSuccess && (
-          <span className="text-success">Laura y Javier vuelven a estar en su estado inicial.</span>
+          <span className="text-success">Carmen, Javier y Víctor vuelven a estar en su estado inicial.</span>
         )}
         {reset.isError && <span className="text-error">{errorText(reset.error)}</span>}
       </p>

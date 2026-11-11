@@ -84,7 +84,7 @@ def _error(exc: pytest.ExceptionInfo[AppError]) -> ErrorCode:
 
 def test_demo_run_creates_pending_executions_for_today(seeded: None) -> None:
     executions = {e.dca_plan_id: e for e in service.run_dca_demo()}
-    assert set(executions) == {"dca_laura", "dca_javier"}
+    assert set(executions) == {"dca_laura", "dca_javier", "dca_victor"}
     laura = executions["dca_laura"].model_dump(mode="json")
     assert laura["id"].startswith("dcx_")
     assert laura["scheduled_for"] == "2026-11-08T00:00:00Z"
@@ -114,7 +114,7 @@ def test_demo_run_creates_pending_executions_for_today(seeded: None) -> None:
 
 def test_demo_run_is_idempotent_and_skips_paused_plans(seeded: None) -> None:
     service.update_dca_plan("javier", "dca_javier", DcaPlanUpdateRequest(status="paused"))
-    assert [e.dca_plan_id for e in service.run_dca_demo()] == ["dca_laura"]
+    assert [e.dca_plan_id for e in service.run_dca_demo()] == ["dca_laura", "dca_victor"]
     assert service.run_dca_demo() == []
     assert len(service.list_dca_executions("laura")) == 1
     assert service.list_dca_executions("javier") == []

@@ -160,7 +160,7 @@ def test_replay_mock_returns_trace_per_portfolio(client: TestClient) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["event_id"] == "bce-2025-06"
-    assert set(body["portfolios"]) == {"laura", "javier"}
+    assert set(body["portfolios"]) == {"laura", "javier", "victor"}
     assert all(v.startswith("calc_") for v in body["portfolios"].values())
 
 

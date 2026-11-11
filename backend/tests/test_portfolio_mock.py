@@ -18,7 +18,7 @@ def test_get_portfolio_without_prices_is_503(client: TestClient) -> None:
 
 def test_list_portfolios(client: TestClient) -> None:
     body = client.get(f"{API_PREFIX}/portfolios").json()
-    assert [p["id"] for p in body] == ["laura", "javier"]
+    assert [p["id"] for p in body] == ["laura", "javier", "victor"]
 
 
 def test_unknown_portfolio_is_404_with_error_shape(client: TestClient) -> None:
