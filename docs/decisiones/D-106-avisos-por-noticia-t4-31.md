@@ -1,4 +1,4 @@
-### D-XXX · Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts` (T4-31)
+### D-106 · Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts` (T4-31)
 - Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
 - Contexto: el hito E (T4-27 a T4-30) ya da a cada noticia un rango en € para cada cartera, estimado o medido (D-103). Faltaba decidir cuándo una noticia merece un aviso (`kind=news_estimate`) y cómo encaja con el límite de 2 avisos por semana y cartera (D-032, D-097), que comparte con `event_impact` y `market_move`.
 - Decisión:
