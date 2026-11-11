@@ -8,7 +8,7 @@ import { TraceDialog } from "./TraceDialog";
 import { TraceFigure } from "./TraceFigure";
 import { TraceLink } from "./TraceLink";
 import { TraceProvider } from "./TraceProvider";
-import { TRACE_KIND_LABEL } from "./labels";
+import { TRACE_KIND_HOW, TRACE_KIND_LABEL } from "./labels";
 
 const ROOT = { ...(traceMock as unknown as TraceOut), calc_id: "calc_root" };
 
@@ -112,6 +112,51 @@ describe("TraceDialog", () => {
     ]);
     const dialog = await openFigure();
     expect(await within(dialog).findByText(TRACE_KIND_LABEL.exposure)).toBeTruthy();
+  });
+
+  it("arriba dice qué cálculo es, cuándo se hizo y cuántas fuentes tiene", async () => {
+    stubTraces([ROOT]);
+    const dialog = await openFigure();
+    const summary = (await within(dialog).findByText(/^Calculado el/)).textContent ?? "";
+    const n = ROOT.sources.length;
+    expect(summary).toContain(`${n} ${n === 1 ? "fuente" : "fuentes"}`);
+  });
+
+  it("los cálculos de origen son pasos numerados y en orden, también para el lector", async () => {
+    stubTraces([
+      { ...ROOT, parent_calc_ids: ["calc_a", "calc_falta"] },
+      { ...ROOT, calc_id: "calc_a", kind: "exposure", parent_calc_ids: [] },
+    ]);
+    const dialog = await openFigure();
+    await within(dialog).findByText(TRACE_KIND_LABEL.exposure);
+    const steps = within(dialog).getAllByRole("listitem", { hidden: true }).filter((li) =>
+      li.classList.contains("trace-step"),
+    );
+    expect(steps).toHaveLength(2);
+    expect(steps[0]?.closest("ol")).not.toBeNull();
+    expect(steps[0]?.textContent).toMatch(/^1Paso 1: /);
+    expect(steps[1]?.textContent).toMatch(/^2Paso 2: Traza no disponible/);
+  });
+
+  it("explica la fórmula en palabras y deja la exacta plegada", async () => {
+    stubTraces([ROOT]);
+    const dialog = await openFigure();
+    expect(await within(dialog).findByText(TRACE_KIND_HOW.valuation)).toBeTruthy();
+    const exact = within(dialog).getByText(ROOT.formula);
+    const details = exact.closest("details");
+    expect(details).not.toBeNull();
+    expect(details?.open).toBe(false);
+    expect(within(dialog).getByText("Ver la fórmula exacta")).toBeTruthy();
+  });
+
+  it("es un modal centrado sin JSON a la vista", async () => {
+    stubTraces([ROOT]);
+    const dialog = await openFigure();
+    await within(dialog).findByText(ROOT.formula);
+    expect(dialog.className).toContain("trace-dialog");
+    expect(dialog.className).toContain("sm:m-auto");
+    expect(dialog.className).not.toContain("ml-auto");
+    expect(dialog.textContent).not.toMatch(/[{}"]\s*\w+"\s*:/);
   });
 
   it("un origen que no existe se muestra como no disponible, sin romper la traza", async () => {
