@@ -415,7 +415,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 ### T6-03 · Lo que deja T6-02 — Manu (para quien coja la tarea)
 
-- En `main` (#115): `docs/entrega/KAIROS-una-cara.pdf` y `docs/entrega/KAIROS-presentacion.pptx`. Si cambian datos, precios, betas o motor antes de entregar, recalcular las cifras como dice `docs/entrega/README.md` (las de la radiografía vienen de la nota de Marcos y coinciden con el motor).
+- En `main` (#115, versión final en #172): `docs/entrega/KAIROS-una-cara.pdf`, `docs/entrega/KAIROS-presentacion.pptx` y la infografía de arquitectura `docs/entrega/KAIROS-arquitectura.{pdf,png}`. Si cambian datos, precios, betas o motor antes de entregar, recalcular las cifras como dice `docs/entrega/README.md` (las de la radiografía vienen de la nota de Marcos y coinciden con el motor).
 
 
 ### T2-03 · T2-06 · Lo que deja T2-15 — Jaime (para quien coja la tarea)
