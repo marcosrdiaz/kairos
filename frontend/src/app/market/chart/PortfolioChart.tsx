@@ -136,7 +136,7 @@ function ChartBody({ portfolioId, history, period, periodName, adjustOpen, adjus
       <Readout history={history} store={store} />
       <LiveActive store={store} />
       {/* En escritorio ancho la gráfica rellena el alto que le deja la fila (igual al de las tarjetas). */}
-      <div className="pr-1 sm:pr-2 @min-[58rem]/app-content:min-h-36 @min-[58rem]/app-content:flex-1">
+      <div className="pr-1 sm:pr-2 @min-[58rem]/app-content:min-h-[13.75rem] @min-[58rem]/app-content:flex-1">
         <MarkedChart
           className="h-[230px] sm:h-[300px] @min-[58rem]/app-content:h-full"
           fill
