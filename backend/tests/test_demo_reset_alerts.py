@@ -1,4 +1,4 @@
-"""`POST /demo/reset` deja los avisos como al empezar: sin los de evento ni los que no tienen (TD-13)."""
+"""`POST /demo/reset` deja los avisos como al empezar: sin los de evento ni los sueltos (TD-13)."""
 
 from collections.abc import Iterator
 from datetime import UTC, datetime
@@ -49,7 +49,9 @@ def _save_without_event(portfolio_id: str, kind: AlertKind) -> None:
     )
 
 
-def test_reset_deletes_news_and_market_move_alerts(client: TestClient, foreign_keys_on: None) -> None:
+def test_reset_deletes_news_and_market_move_alerts(
+    client: TestClient, foreign_keys_on: None
+) -> None:
     _save_without_event("laura", AlertKind.NEWS_ESTIMATE)
     _save_without_event("laura", AlertKind.MARKET_MOVE)
     _save_without_event("javier", AlertKind.MARKET_MOVE)
