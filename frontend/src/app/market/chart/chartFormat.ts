@@ -93,10 +93,19 @@ const fullDay = new Intl.DateTimeFormat(LOCALE, {
 });
 
 /** Etiqueta del eje X: "lun 2" en una semana; "6 oct" hasta 6 meses; "oct 25" desde un año. */
-export function tickDate(iso: string, period: HistoryPeriod): string {
+export function tickDate(iso: string, period: HistoryPeriod, spanDays?: number): string {
   const date = new Date(iso);
   if (period === "1w") return weekDay.format(date);
-  return period === "1y" || period === "max" ? monthYear.format(date) : dayMonth.format(date);
+  // Con «1A» o «Todo» pero pocos meses de datos (cartera reciente), mes y año repetirían la
+  // misma etiqueta («oct 26», «oct 26»…): se usa el día.
+  const long = (period === "1y" || period === "max") && (spanDays === undefined || spanDays > 180);
+  return long ? monthYear.format(date) : dayMonth.format(date);
+}
+
+/** Días entre el primer y el último punto de la serie. */
+export function seriesSpanDays(rows: { date: string }[]): number {
+  if (rows.length < 2) return 0;
+  return (Date.parse(rows[rows.length - 1]!.date) - Date.parse(rows[0]!.date)) / 86_400_000;
 }
 
 /** Fecha corta de los tiradores de la escala de tiempo: "6 nov 26". */

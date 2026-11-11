@@ -100,7 +100,10 @@ describe("PanelPage · Resumen", () => {
     const table = screen.getByRole("table", { name: /Posiciones de la cartera/ });
     const rows = within(table).getAllByRole("row");
     expect(rows.length).toBe(laura.positions.length + 1);
-    expect(within(table).getAllByText(/6 de noviembre de 2026/).length).toBeGreaterThan(0);
+    // Fecha corta en la columna; la completa, en el title.
+    const dates = within(table).getAllByText(/^6 nov\.?$/);
+    expect(dates.length).toBeGreaterThan(0);
+    expect(dates[0]!.getAttribute("title")).toBe("6 de noviembre de 2026");
     expect(table.querySelector("[data-calc-id]")).not.toBeNull();
   });
 

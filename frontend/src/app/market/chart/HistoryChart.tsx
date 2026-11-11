@@ -17,7 +17,14 @@ import type { HistoryPeriod } from "../../../api/generated/schema";
 import { formatEur } from "../../../lib/format";
 import type { ActivePointStore } from "./activePoint";
 import { Change, FlowTag } from "./Change";
-import { niceScale, pointDate, tickDate, tickEur, type ChartRow } from "./chartFormat";
+import {
+  niceScale,
+  pointDate,
+  seriesSpanDays,
+  tickDate,
+  tickEur,
+  type ChartRow,
+} from "./chartFormat";
 import { DOWN, DOWN_BG, INFO, REFERENCE, UP } from "./colors";
 import { EventMarkerDot } from "./markers/EventMarkerDot";
 import { AlertNewsDot } from "./markers/AlertNewsDot";
@@ -110,6 +117,7 @@ export const HistoryChart = memo(function HistoryChart({
   const id = useId().replace(/:/g, "");
   const values = useMemo(() => rows.map((r) => r.value), [rows]);
   const scale = useMemo(() => niceScale([...values, startValue], compact ? 4 : 5), [values, startValue, compact]);
+  const spanDays = seriesSpanDays(rows);
   const flowRows = useMemo(() => rows.filter((r) => r.hasFlow), [rows]);
   // La animación de entrada solo al montar: al arrastrar la escala de tiempo, sin animar.
   const [animate, setAnimate] = useState(!reducedMotion);
@@ -171,7 +179,7 @@ export const HistoryChart = memo(function HistoryChart({
         <CartesianGrid vertical={false} stroke="var(--kairos-color-border)" strokeDasharray="2 6" />
         <XAxis
           dataKey="date"
-          tickFormatter={(iso: string) => tickDate(iso, period)}
+          tickFormatter={(iso: string) => tickDate(iso, period, spanDays)}
           tick={tick}
           tickLine={false}
           axisLine={false}

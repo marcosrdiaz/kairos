@@ -77,7 +77,9 @@ export function PanelHeader({ portfolioId }: PanelHeaderProps) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      {/* Por encima de la sombra color papel de la barra de chips, que tapa el hueco superior del
+          <main> cuando la barra va pegada pero, sin pegar, caería sobre el título. */}
+      <div className="relative z-20 flex flex-wrap items-center gap-x-4 gap-y-2">
         <h1 className="m-0 text-2xl font-semibold leading-tight text-ink">Panel de contexto</h1>
         {name && (
           <p className="m-0 rounded-full bg-accent-tint px-3 py-1 text-sm font-medium text-ink">

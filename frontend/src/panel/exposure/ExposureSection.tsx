@@ -61,7 +61,7 @@ export function ExposureSection({ portfolioId }: { portfolioId: string }) {
             </div>
           </dl>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <BucketBars title="Por país" buckets={data.by_country} calcId={data.calc_id} />
             <BucketBars title="Por sector" buckets={data.by_sector} calcId={data.calc_id} />
             <BucketBars title="Por divisa" buckets={data.by_currency} calcId={data.calc_id} />
