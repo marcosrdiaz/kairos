@@ -130,6 +130,18 @@ def _under_target(current: AllocationOut, target: TargetAllocation) -> set[Asset
     return {cls for cls, (now, goal) in pairs.items() if now < goal}
 
 
+def _under_target_of(portfolio_id: str, current: AllocationOut) -> set[AssetClass]:
+    """Clases por debajo del objetivo del plan. Sin plan (cartera creada o importada), ninguna:
+    el evento no sale como oportunidad, pero el replay sigue con las demás carteras (TB-03)."""
+    try:
+        plan = portfolio_service.get_plan(portfolio_id)
+    except AppError as error:
+        if error.code is not ErrorCode.NOT_FOUND:
+            raise
+        return set()
+    return _under_target(current, plan.target)
+
+
 def _surprise(consensus: Consensus | None) -> Surprise:
     if consensus is None:
         return Surprise(label=None, expected=None, actual=None, metric=None)
@@ -160,9 +172,7 @@ def compute_event_impact(
         engine.ShocksIn(shocks.factor_shocks, shocks.company_moves, labels),
         context.coverage,
     )
-    under_target = _under_target(
-        context.valued.allocation, portfolio_service.get_plan(portfolio_id).target
-    )
+    under_target = _under_target_of(portfolio_id, context.valued.allocation)
     sources = [shocks.source, *context.sources]
     impact = EventImpactOut(
         event_id=analysis.event_id,
