@@ -49,8 +49,8 @@ def test_catalog_only_seed_leaves_no_portfolios(db: None) -> None:
 def test_seed_portfolios_carry_kind_and_risk_profile(client: TestClient) -> None:
     by_id = {p["id"]: p for p in client.get(URL).json()}
     assert by_id["laura"]["kind"] == "personal"
-    assert by_id["laura"]["risk_profile"] == "agresivo"
-    assert by_id["laura"]["profile"] == "dinamico"
+    assert by_id["laura"]["risk_profile"] == "moderado"
+    assert by_id["laura"]["profile"] == "moderado"
     assert by_id["javier"]["risk_profile"] == "conservador"
 
 
@@ -68,7 +68,7 @@ def test_create_persists_and_lists_after_the_seed(client: TestClient) -> None:
         "dinamico",
     )
     ids = [p["id"] for p in client.get(URL).json()]
-    assert ids == ["laura", "javier", created["id"]]
+    assert ids == ["laura", "javier", "victor", created["id"]]
 
 
 def test_created_portfolio_is_empty_and_valued(client: TestClient) -> None:

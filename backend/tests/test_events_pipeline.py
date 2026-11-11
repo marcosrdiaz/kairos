@@ -148,7 +148,7 @@ def test_replay_falls_back_without_analyzer_and_shows_real_impacts(client: TestC
     response = client.post(f"{API_PREFIX}/demo/replay/oil-2025-06")
     assert response.status_code == 200
     body = response.json()
-    assert set(body["portfolios"]) == {"laura", "javier"}
+    assert set(body["portfolios"]) == {"laura", "javier", "victor"}
     assert body["elapsed_ms"] >= 0
     events = client.get(f"{API_PREFIX}/portfolios/laura/events", params={"days": 1}).json()
     assert [e["event_id"] for e in events] == ["oil-2025-06"]
@@ -303,8 +303,12 @@ def test_replay_evaluates_alerts_and_status_per_portfolio(
 
     monkeypatch.setattr(status_service, "recompute", spy)
     service.replay("oil-2025-06")
-    assert calls == [("laura", "oil-2025-06"), ("javier", "oil-2025-06")]
-    assert recomputed == ["laura", "javier"]
+    assert calls == [
+        ("laura", "oil-2025-06"),
+        ("javier", "oil-2025-06"),
+        ("victor", "oil-2025-06"),
+    ]
+    assert recomputed == ["laura", "javier", "victor"]
 
 
 def test_replay_twice_replaces_the_impact(client: TestClient) -> None:

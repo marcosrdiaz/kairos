@@ -1,0 +1,16 @@
+### D-XXX · Carteras de ejemplo: Carmen (moderada), Javier (conservador) y Víctor (agresivo, familiar) (TD-09)
+- Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
+- Contexto: TD-09 pedía sustituir a Laura y Javier por otras carteras de ejemplo (Javier padre y Marcos hijo, con un fondo monetario nuevo). Eso toca unos 150 ficheros (tests, casos dorados, E2E, mocks y ejemplos de contrato) y llegaba después de la congelación, a pocas horas de la entrega. Alons reformuló la tarea (11 nov) para tener los tres perfiles de riesgo sin cambios grandes.
+- Decisión:
+  - **Laura pasa a llamarse Carmen** y su perfil pasa de `dinamico` (agresivo) a **moderado**. Posiciones, plan y DCA no cambian. **El ID sigue siendo `laura`**: así no cambian los tests, los casos dorados, el E2E, los mocks ni los ejemplos de contrato. En la URL se sigue viendo `?p=laura`.
+  - **Javier no cambia** (conservador). Carmen y Javier son los padres.
+  - **Cartera nueva `victor` («Víctor»)**, la que crean para su hijo: `kind: family`, perfil agresivo, plan 100 % renta variable (objetivo 60.000 € en 2045) y DCA de 100 €/mes al Vanguard Global Stock. Siete posiciones del catálogo actual: VWCE, Vanguard Global Stock, Vanguard Emerging Markets, CSPX, NVIDIA, Tesla y ASML. Le tocan los tres eventos del replay (NVIDIA, BCE por el dólar y petróleo por la bolsa). Ilustrativa (`"illustrative": true`). **Coste de cada lote: el cierre real de `data/prices` del día de compra** (los activos en dólares, divididos por el EURUSD de `data/factors` de ese día), como los lotes de Laura. Ninguna cifra inventada.
+  - **Sin fondo monetario nuevo**: Víctor no lo necesita, y Javier ya tiene la liquidez del depósito.
+  - **El seed admite `kind` y `risk_profile` opcionales** en el JSON de cada cartera (`portfolio/seed.py`). Sin ellos, `personal` y el perfil que se deduce de `profile`, como antes.
+- Motivo: con tres carteras salen los tres perfiles de riesgo (conservador, moderado y agresivo) y una cartera familiar para la pregunta «¿cómo va la de mi hijo?» (D-107), sin rehacer los casos dorados ni regenerar contratos a pocas horas de la entrega.
+- Consecuencias:
+  - Los avisos por noticia de Carmen usan el factor de moderado (1,0 en lugar de 1,5; D-106). El estado y los avisos de evento no dependen del perfil, así que el guion no cambia. En modo demo los avisos por noticia están desactivados.
+  - `/demo/reset` y el replay devuelven tres carteras. Los tests que listaban el seed ahora esperan `victor`. `test_ask_any_portfolio.py` borra a Víctor al empezar: también es `family` y, con las tres carteras que importa el test, «mis carteras» pasaría de 5.
+  - En una BD ya creada, `make seed` no renombra a Laura (solo crea las carteras que faltan): hace falta `/demo/reset` o `seed_db.py --force`. En una máquina limpia sale bien desde el principio.
+  - Las cifras del PDF y del PPT (T6-02) siguen siendo las de la cartera `laura` (ahora Carmen): los importes no cambian, solo el nombre.
+  - **Fuera de alcance:** el criterio original de TD-09 (Marcos y el fondo monetario) queda sustituido por esta decisión.

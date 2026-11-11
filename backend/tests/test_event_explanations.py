@@ -91,6 +91,8 @@ def test_context_is_invalidated_after_recomputing_status(
         ("invalidate", "laura"),
         ("recompute", "javier"),
         ("invalidate", "javier"),
+        ("recompute", "victor"),
+        ("invalidate", "victor"),
     ]
 
 

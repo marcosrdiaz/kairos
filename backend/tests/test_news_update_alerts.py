@@ -129,7 +129,7 @@ def test_a_big_news_alerts_every_portfolio_without_opening_the_app(
     client: TestClient, news_update: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     result = _Pass(monkeypatch).run(news_update, _news("n1", "-9000", "-6000"))
-    assert result.alerts == {"laura": 1, "javier": 1}
+    assert result.alerts == {"laura": 1, "javier": 1, "victor": 1}
     for portfolio_id in PORTFOLIOS:
         [alert] = _news_alerts(portfolio_id)
         assert alert.news_id == "n1" and alert.calc_id is not None
@@ -142,7 +142,7 @@ def test_a_second_big_news_the_same_day_does_not_alert_again(
     passes.run(news_update, _news("n1", "-9000", "-6000"))
     clock.set_now(NOW + timedelta(minutes=5))
     again = passes.run(news_update, _news("n2", "-9500", "-6500"))
-    assert again.alerts == {"laura": 0, "javier": 0}
+    assert again.alerts == {"laura": 0, "javier": 0, "victor": 0}
     assert all(len(_news_alerts(p)) == 1 for p in PORTFOLIOS)
 
 
@@ -150,7 +150,7 @@ def test_small_news_or_nothing_classified_do_not_alert(
     client: TestClient, news_update: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     small = _Pass(monkeypatch).run(news_update, _news("n1", "-2", "-1"))
-    assert small.alerts == {"laura": 0, "javier": 0}
+    assert small.alerts == {"laura": 0, "javier": 0, "victor": 0}
 
     monkeypatch.setattr(news_service, "classify_pending", lambda: 0)
     monkeypatch.setattr(

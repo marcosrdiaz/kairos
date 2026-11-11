@@ -42,6 +42,9 @@ def _clean() -> Iterator[None]:
 
 @pytest.fixture
 def ids(client: TestClient) -> dict[str, str]:
+    # Sin la cartera de Víctor del seed (TD-09): también es `family` y, con ella, «mis
+    # carteras» pasaría de 5 y «la de mis hijos» tendría dos candidatas.
+    assert client.delete(f"{API_PREFIX}/portfolios/victor").status_code in (200, 204)
     out: dict[str, str] = {}
     for name, (kind, csv) in _CSV.items():
         body = {"name": name, "kind": kind, "risk_profile": "moderado", "csv": csv}
