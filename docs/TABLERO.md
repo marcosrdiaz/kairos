@@ -301,6 +301,10 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plantilla:
 
 ```
+### T5-19 · Aviso de TD-13 — Marcos (para Javi)
+
+`statusCard` en `frontend/e2e/demo.ts` ha quedado **sin uso**: TD-13 (#171) movió el selector a `frontend/e2e/guion.e2e.ts` (busca por `aria-labelledby="status-heading"`) porque `demo.ts` es tuyo. Cuando cierres T5-19 puedes borrar `statusCard` de `demo.ts` (con «Tu cartera hoy» coincidía también con el carrusel de noticias). El resto de `demo.ts`, incluido `expectTrace`, sigue igual.
+
 ### T<x>-<nn> · <nombre> — <quién>
 **Qué estaba haciendo:** …
 **Siguiente paso exacto:** …
