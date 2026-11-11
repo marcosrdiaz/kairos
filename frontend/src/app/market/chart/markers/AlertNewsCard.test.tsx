@@ -78,10 +78,13 @@ describe("tarjeta de noticia en la gráfica", () => {
   it("muestra la portada de la categoría y fecha de la noticia", () => {
     const news = newsExample as NewsItemOut;
     const { card } = renderCard(news);
+    const rings = card.querySelectorAll('div[aria-hidden="true"] > span');
 
     expect(card.textContent).not.toContain("Ejemplo visual");
     expect(card.textContent).toContain("Resultados");
     expect(card.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    expect(rings[0]?.className).toContain("border-gold/10");
+    expect(rings[1]?.className).toContain("border-gold/15");
   });
 
   it("anuncia fecha e impacto, y abre la tarjeta con foco de teclado", () => {
@@ -105,7 +108,7 @@ describe("tarjeta de noticia en la gráfica", () => {
     expect(store.get()).toBeNull();
   });
 
-  it("usa un marcador amarillo más grande con el icono de la categoría de la noticia", () => {
+  it("usa los colores emparejados de la paleta para que el pin contraste en ambos temas", () => {
     const news = newsExample as NewsItemOut;
     const store = createNewsMarkerStore();
     render(
@@ -117,7 +120,8 @@ describe("tarjeta de noticia en la gráfica", () => {
     const circles = dot.querySelectorAll("circle");
     expect(circles[0]?.getAttribute("r")).toBe("21");
     expect(circles[1]?.getAttribute("r")).toBe("16");
-    expect(circles[1]?.getAttribute("fill")).toBe("var(--kairos-color-gold)");
+    expect(circles[1]?.getAttribute("fill")).toBe("var(--kairos-color-primary)");
+    expect(dot.querySelector("path")?.getAttribute("stroke")).toBe("var(--kairos-color-on-primary)");
     expect(dot.querySelector("path")?.getAttribute("d")).toBe(
       "M1.5 10.5h9M3 10V6.5M6 10V3.5M9 10V5",
     );

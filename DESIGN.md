@@ -139,6 +139,7 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 - Pérdida en la gráfica de evolución (T2-18): `trend-loss` (línea y texto) y `trend-loss-bg` (zonas y fondos de fila), granates de la misma familia que `trend-down`, siempre con flecha y signo.
 - Iconos de tarjeta: `icon-{gold,green,purple,blue,red}-{bg,fg}`. El rojo de icono es decorativo (tarjeta "Valor total"); no comunica estado. Estos cinco tonos y las series de gráficos dan variedad a la paleta sin cambiar el significado de los estados.
 - Gráficos: `chart-1` a `chart-4` (oro, verde azulado, violeta, azul).
+- Pines interactivos de noticias: fondo `primary` e icono `on-primary`, para mantener el contraste al invertir la paleta entre claro y oscuro; permanecen por encima del punto activo de la serie. Los aros decorativos de su portada usan `gold` con opacidad baja.
 - Distintivo del emisor del ticker (T2-28): pastilla redonda con las iniciales del grupo (VG, iS, AP…) en color plano. Como el color se reserva para los estados, **no usa tonos de estado, chip ni icono**: son siete grises matizados de croma bajo (pizarra, arena, piedra, verde azulado, azul grisáceo, malva, oliva) y un neutro `chip-nodata` para los desconocidos. Viven en `ticker.css` (claro y oscuro), pasan AA con ≥ 6,8:1 y lo comprueba `issuer.test.ts`. Son decorativos (`aria-hidden`) y no imitan logotipos: solo iniciales y color plano.
 
 ### Contraste (WCAG 2.2 AA)

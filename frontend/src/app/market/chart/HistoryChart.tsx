@@ -26,6 +26,9 @@ import type { NewsMarkerStore } from "./markers/newsMarkerStore";
 import type { MarkerStore } from "./markers/markerStore";
 import type { EventMarker } from "./markers/placeMarkers";
 
+// Recharts renders the active point at z-index 1200; chart pins must remain above it.
+const MARKER_Z_INDEX = 1201;
+
 
 /** Posición (0 arriba, 1 abajo) de `value` dentro de [`low`, `high`], acotada. */
 function offsetIn(value: number, high: number, low: number): number {
@@ -220,6 +223,7 @@ export const HistoryChart = memo(function HistoryChart({
               key={m.event.event_id}
               x={m.date}
               y={m.value}
+              zIndex={MARKER_Z_INDEX}
               shape={(p: { cx?: number; cy?: number }) => (
                 <EventMarkerDot
                   cx={p.cx}
@@ -237,6 +241,7 @@ export const HistoryChart = memo(function HistoryChart({
             key={m.news.id}
             x={m.date}
             y={m.value}
+            zIndex={MARKER_Z_INDEX}
             shape={(p: { cx?: number; cy?: number }) => (
               <AlertNewsDot cx={p.cx} cy={p.cy} marker={m} store={newsMarkerStore} cardId={newsCardId} />
             )}
