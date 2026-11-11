@@ -41,8 +41,8 @@ function useIsDesktop(): boolean {
  * Hay un único <nav aria-label="Secciones">, recolocado con CSS, para no duplicarlo en el lector.
  * NavLink pone aria-current="page" en la sección activa. Conserva `?p=` al navegar.
  * El asistente (Pregunta) no es una sección: es el botón flotante y su panel (`voice/ChatDock`).
- * En escritorio ancho abre una tercera columna; en escritorio estrecho se superpone al contenido
- * sin comprimirlo; en móvil, un modal deja el resto de la app `inert` mientras está abierto.
+ * En escritorio abre una tercera columna que estrecha el contenido; en móvil, un modal que deja
+ * el resto de la app `inert` mientras está abierto.
  * En escritorio la ventana no se desplaza: lo hace el <main>, con la barra de scroll propia
  * (`components/Scrollbar`), así la barra queda pegada al contenido y no al borde de la pantalla.
  */
@@ -59,8 +59,8 @@ export function AppShell() {
     <div
       className={`min-h-dvh bg-paper lg:grid lg:h-dvh lg:overflow-hidden lg:transition-[grid-template-columns] lg:duration-300 lg:ease-out motion-reduce:transition-none ${
         chatOpen
-          ? "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)] min-[1440px]:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_var(--kairos-chat-width)]"
-          : "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)] min-[1440px]:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_0rem]"
+          ? "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_var(--kairos-chat-width)]"
+          : "lg:grid-cols-[var(--kairos-sidebar-width)_minmax(0,1fr)_0rem]"
       }`}
     >
       {/* Primer elemento con foco: salta la cabecera y la navegación (WCAG 2.4.1). */}
@@ -113,12 +113,7 @@ export function AppShell() {
                       >
                         <Icon className="size-5 lg:size-6" />
                       </span>
-                      {to === "/panel" ? (
-                        <>
-                          <span aria-hidden="true" className="lg:hidden">Panel</span>
-                          <span className="sr-only lg:not-sr-only">{label}</span>
-                        </>
-                      ) : label}
+                      {label}
                     </>
                   )}
                 </NavLink>
@@ -141,7 +136,7 @@ export function AppShell() {
           id="contenido"
           tabIndex={-1}
           inert={modal}
-          className="outline-none @container/app-content mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-8 lg:pb-12 lg:pt-10 2xl:px-10"
+          className="outline-none @container/app-content mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
         >
           <Outlet />
           <AppNotice />
