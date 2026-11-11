@@ -52,6 +52,11 @@ export function horizonText(sessions: number): string {
   return sessions === 1 ? "en la próxima sesión" : `en las próximas ${sessions} sesiones`;
 }
 
+/** "1 sesión" / "5 sesiones": el plazo como cantidad, con su singular. */
+export function sessionsText(sessions: number): string {
+  return sessions === 1 ? "1 sesión" : `${sessions} sesiones`;
+}
+
 /** De dónde sale el rango, en palabras: nunca del modelo de lenguaje. */
 export function methodText(estimate: NewsEstimateOut): string {
   switch (estimate.method) {

@@ -143,4 +143,32 @@ describe("tarjeta de noticia en la gráfica", () => {
       "M1.5 10.5h9M3 10V6.5M6 10V3.5M9 10V5",
     );
   });
+
+  describe("plazo en singular y plural", () => {
+    const withHorizon = (sessions: number) => {
+      const news = newsExample as NewsItemOut;
+      return { ...news, estimate: { ...news.estimate!, horizon_sessions: sessions } } as NewsItemOut;
+    };
+
+    it.each([
+      [1, "A 1 sesión"],
+      [5, "A 5 sesiones"],
+    ])("tarjeta con plazo %i: «%s»", (sessions, text) => {
+      const { card } = renderCard(withHorizon(sessions));
+      expect(card.textContent).toContain(text);
+      expect(card.textContent).not.toContain("1 sesiones");
+    });
+
+    it.each([
+      [1, "a 1 sesión."],
+      [5, "a 5 sesiones."],
+    ])("etiqueta del punto con plazo %i: «%s»", (sessions, text) => {
+      render(
+        <svg>
+          <AlertNewsDot cx={120} cy={80} marker={marker(withHorizon(sessions))} store={createNewsMarkerStore()} cardId="news-card" />
+        </svg>,
+      );
+      expect(screen.getByRole("button").getAttribute("aria-label")).toContain(text);
+    });
+  });
 });

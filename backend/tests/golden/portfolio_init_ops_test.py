@@ -44,7 +44,7 @@ def _init(asset_id: str, units: str, cost: str, acquired_at: datetime | None = N
 
 
 def test_seed_is_idempotent(db: None) -> None:
-    assert service.load_seed() == ["laura", "javier"]
+    assert service.load_seed() == ["laura", "javier", "victor"]
     first = service.get_valued("laura").total_eur
     service.load_seed()
     assert service.get_valued("laura").total_eur == first == LAURA_TOTAL
@@ -59,8 +59,8 @@ def test_seed_without_force_keeps_user_changes(db: None) -> None:
 
 def test_list_portfolio_ids(db: None) -> None:
     service.load_seed()
-    assert service.list_portfolio_ids() == ["laura", "javier"]
-    assert [p.id for p in service.list_portfolios()] == ["laura", "javier"]
+    assert service.list_portfolio_ids() == ["laura", "javier", "victor"]
+    assert [p.id for p in service.list_portfolios()] == ["laura", "javier", "victor"]
 
 
 # --- Alta ---
@@ -150,7 +150,10 @@ def test_api_demo_reset_restores_seed(client: TestClient) -> None:
     client.post(f"{API_PREFIX}/portfolios/laura/positions", json=body)
     response = client.post(f"{API_PREFIX}/demo/reset", json={"preload": False})
     assert response.status_code == 200
-    assert response.json() == {"portfolio_ids": ["laura", "javier"], "preloaded_event_ids": []}
+    assert response.json() == {
+        "portfolio_ids": ["laura", "javier", "victor"],
+        "preloaded_event_ids": [],
+    }
     total = client.get(f"{API_PREFIX}/portfolios/laura").json()["total_eur"]
     assert Decimal(total) == LAURA_TOTAL
 

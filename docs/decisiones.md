@@ -138,4 +138,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-106](decisiones/D-106-avisos-por-noticia-t4-31.md) | 2026-11-11 | Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts` (T4-31) | Propuesta |
 | [D-107](decisiones/D-107-asistente-sobre-cualquier-cartera-t4-14.md) | 2026-11-11 | El asistente ve todos los datos de cada cartera y el guardián comprueba las cifras por cartera (T4-14) | Propuesta |
 | [D-108](decisiones/D-108-noticias-cada-5-minutos-tb-01.md) | 2026-11-11 | Noticias en producción cada 5 minutos: frecuencia por fuente, espera al ser limitados y avisos tras cada pasada (TB-01, TB-02) | Propuesta |
+| [D-109](decisiones/D-109-carteras-de-ejemplo-carmen-javier-victor-td-09.md) | 2026-11-11 | Carteras de ejemplo: Carmen (moderada), Javier (conservador) y Víctor (agresivo, familiar) (TD-09) | Propuesta |
 <!-- INDICE:FIN -->

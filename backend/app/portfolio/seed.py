@@ -1,4 +1,6 @@
-"""Carga de `data/seed` (formato en D-038): catálogo de activos y carteras de Laura y Javier.
+"""Carga de `data/seed` (formato en D-038): catálogo y carteras de ejemplo (TD-09).
+
+Carmen (ID `laura`, moderada), Javier (conservador) y Víctor (agresivo, cartera familiar).
 
 Solo lo llama `portfolio/service.py` (`load_seed`, `reset_demo`).
 """
@@ -14,11 +16,12 @@ from sqlalchemy.orm import Session
 from app.core import clock
 from app.core.db import session_scope
 from app.portfolio import ledger, manage, repository
-from app.schemas.common import PortfolioKind, Profile
+from app.schemas.common import PortfolioKind, Profile, RiskProfile
 
 SEED_DIR = Path(__file__).resolve().parents[3] / "data" / "seed"
 """En local, `<repo>/data/seed`; en Docker, `/data/seed` (montado en Compose)."""
-SEED_PORTFOLIOS = ("laura", "javier")
+SEED_PORTFOLIOS = ("laura", "javier", "victor")
+"""`laura` se muestra como «Carmen» (TD-09): el ID no cambia para no tocar tests ni contratos."""
 
 
 def _read_json(path: Path) -> Any:
@@ -45,6 +48,7 @@ def load(force: bool = False, seed_dir: Path = SEED_DIR, portfolios: bool = True
 def _load_portfolio(session: Session, raw: dict[str, Any], now: datetime) -> None:
     pid = str(raw["id"])
     profile = Profile(raw["profile"])
+    risk = RiskProfile(raw["risk_profile"]) if "risk_profile" in raw else None
     repository.upsert_portfolio(
         session,
         pid,
@@ -52,8 +56,8 @@ def _load_portfolio(session: Session, raw: dict[str, Any], now: datetime) -> Non
         profile.value,
         raw["base_currency"],
         now,
-        kind=PortfolioKind.PERSONAL.value,
-        risk_profile=manage.risk_from_profile(profile).value,
+        kind=PortfolioKind(raw.get("kind", PortfolioKind.PERSONAL.value)).value,
+        risk_profile=(risk or manage.risk_from_profile(profile)).value,
     )
     repository.clear_portfolio(session, pid)
     repository.set_plan(session, pid, raw["plan"])

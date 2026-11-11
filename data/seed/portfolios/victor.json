@@ -1,0 +1,108 @@
+{
+  "illustrative": true,
+  "id": "victor",
+  "name": "Víctor",
+  "profile": "dinamico",
+  "risk_profile": "agresivo",
+  "kind": "family",
+  "base_currency": "EUR",
+  "plan": {
+    "target": {
+      "equity": "1.00",
+      "fixed_income": "0.00",
+      "cash": "0.00"
+    },
+    "drift_threshold": "0.10",
+    "goal_amount_eur": "60000.00",
+    "goal_year": 2045
+  },
+  "dca_plans": [
+    {
+      "id": "dca_victor",
+      "amount_eur": "100.00",
+      "frequency": "monthly",
+      "day": 15,
+      "status": "active",
+      "allocations": [
+        {
+          "asset_id": "IE00B03HD191",
+          "weight": "1"
+        }
+      ],
+      "last_execution_at": "2026-10-15T00:00:00Z",
+      "next_execution_at": "2026-11-15T00:00:00Z"
+    }
+  ],
+  "positions": [
+    {
+      "asset_id": "IE00BK5BQT80",
+      "lots": [
+        {
+          "acquired_at": "2024-03-04T00:00:00Z",
+          "units": "20.00000000",
+          "cost_eur_per_unit": "114.94000000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B03HD191",
+      "lots": [
+        {
+          "acquired_at": "2024-03-04T00:00:00Z",
+          "units": "40.00000000",
+          "cost_eur_per_unit": "44.37590000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE0031786142",
+      "lots": [
+        {
+          "acquired_at": "2024-03-04T00:00:00Z",
+          "units": "6.00000000",
+          "cost_eur_per_unit": "186.87220000"
+        }
+      ]
+    },
+    {
+      "asset_id": "IE00B5BMR087",
+      "lots": [
+        {
+          "acquired_at": "2024-09-02T00:00:00Z",
+          "units": "3.00000000",
+          "cost_eur_per_unit": "539.43700000"
+        }
+      ]
+    },
+    {
+      "asset_id": "US67066G1040",
+      "lots": [
+        {
+          "acquired_at": "2024-09-02T00:00:00Z",
+          "units": "12.00000000",
+          "cost_eur_per_unit": "107.73028171"
+        }
+      ]
+    },
+    {
+      "asset_id": "US88160R1014",
+      "lots": [
+        {
+          "acquired_at": "2025-03-03T00:00:00Z",
+          "units": "4.00000000",
+          "cost_eur_per_unit": "273.33791057"
+        }
+      ]
+    },
+    {
+      "asset_id": "NL0010273215",
+      "lots": [
+        {
+          "acquired_at": "2025-03-03T00:00:00Z",
+          "units": "2.00000000",
+          "cost_eur_per_unit": "690.30000000"
+        }
+      ]
+    }
+  ]
+}

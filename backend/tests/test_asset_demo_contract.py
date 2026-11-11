@@ -40,7 +40,7 @@ def test_demo_reset_reloads_both_portfolios(
 ) -> None:
     response = client.post(f"{API_PREFIX}/demo/reset", json=body)
     assert response.status_code == 200
-    assert response.json()["portfolio_ids"] == ["laura", "javier"]
+    assert response.json()["portfolio_ids"] == ["laura", "javier", "victor"]
 
 
 def test_demo_reset_disabled_outside_demo_mode(

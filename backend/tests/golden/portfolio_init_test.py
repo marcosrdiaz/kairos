@@ -73,7 +73,7 @@ def test_positions_carry_catalog_data() -> None:
 
 def test_profiles_and_names() -> None:
     laura, javier = service.get_valued("laura"), service.get_valued("javier")
-    assert (laura.name, laura.profile) == ("Laura", "dinamico")
+    assert (laura.name, laura.profile) == ("Carmen", "moderado")
     assert (javier.name, javier.profile) == ("Javier", "conservador")
 
 
