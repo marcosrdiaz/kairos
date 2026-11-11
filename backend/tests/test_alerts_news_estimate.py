@@ -236,6 +236,38 @@ def test_alert_carries_news_id_calc_id_range_and_horizon(
     assert guardian.find_forbidden(message) == []
 
 
+@pytest.mark.parametrize(
+    ("risk_profile", "times", "alerts"),
+    [("conservador", "0.8", True), ("moderado", "1.2", True), ("agresivo", "1.2", False)],
+)
+def test_rises_alert_with_the_same_threshold_as_falls(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    risk_profile: str,
+    times: str,
+    alerts: bool,
+) -> None:
+    portfolio_id = _import(client, "Prueba", risk_profile)
+    low, high = _falling(portfolio_id, times)
+    rising = _item("n1", -high, -low)  # el mismo rango, a favor
+    monkeypatch.setattr(news_service, "list_for_portfolio", _FakeNews(rising))
+    got = _news_alerts(client, portfolio_id)
+    assert len(got) == (1 if alerts else 0)
+    if alerts:
+        assert "se estima que tu cartera suba entre" in got[0]["message"]
+        assert guardian.find_forbidden(got[0]["message"]) == []
+
+
+def test_a_big_measured_rise_also_alerts(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    measured = _item("n1", _d("1700"), _d("1900"), status=NewsEstimateStatus.MEASURED)
+    monkeypatch.setattr(news_service, "list_for_portfolio", _FakeNews(measured))
+    (alert,) = _news_alerts(client)
+    assert "tu cartera subió unos 1.800 euros, entre 1.700 euros y 1.900 euros" in alert["message"]
+    assert guardian.find_forbidden(alert["message"]) == []
+
+
 def test_ranges_crossing_zero_and_old_news_do_not_alert(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
