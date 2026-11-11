@@ -1,7 +1,8 @@
 """Avisos por noticia (`kind=news_estimate`, T4-31).
 
-Una noticia avisa si el extremo de su rango más cercano a cero supera el umbral de la cartera
-(D-032) multiplicado por el factor de su perfil: conservador 0,6, moderado 1, agresivo 1,5.
+Una noticia avisa si su movimiento posible más grande (al alza o a la baja, también si el rango
+cruza el cero) supera el umbral de la cartera (D-032) multiplicado por el factor de su perfil:
+conservador 0,6, moderado 1, agresivo 1,5.
 Comparte el límite semanal por cartera con `event_impact` y `market_move`; como mucho un aviso
 nuevo por cartera y día; el medido rehace el aviso del estimado en lugar de crear otro.
 
@@ -51,10 +52,10 @@ def _d(value: str) -> Decimal:
 
 @pytest.mark.parametrize(
     ("low", "high", "expected"),
-    [("-500", "-300", "-300"), ("200", "400", "200"), ("-100", "300", "0"), ("0", "50", "0")],
+    [("-500", "-300", "500"), ("200", "400", "400"), ("-100", "300", "300"), ("-600", "50", "600")],
 )
-def test_closest_to_zero(low: str, high: str, expected: str) -> None:
-    assert news_estimate.closest_to_zero(_d(low), _d(high)) == _d(expected)
+def test_largest_move(low: str, high: str, expected: str) -> None:
+    assert news_estimate.largest_move(_d(low), _d(high)) == _d(expected)
 
 
 @pytest.mark.parametrize(
@@ -72,15 +73,17 @@ def test_profile_factor(risk_profile: str | None, legacy: str | None, factor: st
     assert news_estimate.profile_factor(risk_profile, legacy) == _d(factor)
 
 
-def test_score_uses_the_end_closest_to_zero_and_the_profile() -> None:
-    # Extremo cercano 252 € frente a 210 € × factor.
-    assert news_estimate.score_if_alert(_d("-400"), _d("-252"), TOTAL, _d("1")) == _d("1.2")
-    assert news_estimate.score_if_alert(_d("-400"), _d("-252"), TOTAL, _d("1.5")) is None
-    assert news_estimate.score_if_alert(_d("-400"), _d("-252"), TOTAL, _d("0.6")) == _d("2")
+def test_score_uses_the_largest_possible_move_and_the_profile() -> None:
+    # Movimiento posible más grande, 252 €, frente a 210 € × factor.
+    assert news_estimate.score_if_alert(_d("-252"), _d("-100"), TOTAL, _d("1")) == _d("1.2")
+    assert news_estimate.score_if_alert(_d("-252"), _d("-100"), TOTAL, _d("1.5")) is None
+    assert news_estimate.score_if_alert(_d("-252"), _d("-100"), TOTAL, _d("0.6")) == _d("2")
 
 
-def test_a_range_that_crosses_zero_never_alerts() -> None:
-    assert news_estimate.score_if_alert(_d("-5000"), _d("10"), TOTAL, _d("0.6")) is None
+def test_rises_falls_and_ranges_that_cross_zero_use_the_same_rule() -> None:
+    for low, high in (("-252", "-100"), ("100", "252"), ("-252", "80"), ("-80", "252")):
+        assert news_estimate.score_if_alert(_d(low), _d(high), TOTAL, _d("1")) == _d("1.2")
+    assert news_estimate.score_if_alert(_d("-150"), _d("150"), TOTAL, _d("1")) is None
 
 
 # --- Servicio ---
@@ -161,9 +164,9 @@ def _base(portfolio_id: str) -> Decimal:
 
 
 def _falling(portfolio_id: str, times: str) -> tuple[Decimal, Decimal]:
-    """Rango a la baja cuyo extremo cercano a cero es `times` veces el umbral base."""
-    near = (_base(portfolio_id) * _d(times)).quantize(_d("0.01"))
-    return -near * 2, -near
+    """Rango a la baja cuyo movimiento posible más grande es `times` veces el umbral base."""
+    largest = (_base(portfolio_id) * _d(times)).quantize(_d("0.01"))
+    return -largest, -largest / 2
 
 
 def _news_alerts(client: TestClient, portfolio_id: str = "laura") -> list[dict[str, Any]]:
@@ -268,12 +271,25 @@ def test_a_big_measured_rise_also_alerts(
     assert guardian.find_forbidden(alert["message"]) == []
 
 
-def test_ranges_crossing_zero_and_old_news_do_not_alert(
+def test_a_range_that_crosses_zero_alerts_with_both_directions(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    crossing = _item("n1", _d("-5000"), _d("100"))
-    old = _item("n2", _d("-5000"), _d("-4000"), published=NOW - config.NEWS_LOOKBACK * 2)
-    monkeypatch.setattr(news_service, "list_for_portfolio", _FakeNews(crossing, old))
+    crossing = _item("n1", _d("-2400"), _d("700"))
+    monkeypatch.setattr(news_service, "list_for_portfolio", _FakeNews(crossing))
+    (alert,) = _news_alerts(client)
+    assert (
+        "se estima que tu cartera se mueva entre 2.400 euros a la baja y 700 euros al alza "
+        "en las próximas 5 sesiones"
+    ) in alert["message"]
+    assert guardian.find_forbidden(alert["message"]) == []
+
+
+def test_old_news_and_small_moves_do_not_alert(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    old = _item("n1", _d("-5000"), _d("-4000"), published=NOW - config.NEWS_LOOKBACK * 2)
+    small = _item("n2", _d("-50"), _d("40"))
+    monkeypatch.setattr(news_service, "list_for_portfolio", _FakeNews(old, small))
     assert _news_alerts(client) == []
 
 

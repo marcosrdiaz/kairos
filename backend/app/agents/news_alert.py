@@ -23,8 +23,7 @@ def _figures(item: NewsItemOut) -> NewsEstimateOut:
 
 
 def _ends(estimate: NewsEstimateOut) -> tuple[Decimal, Decimal]:
-    """Extremos del rango, del más cercano a cero al más lejano. En un estimado tienen el mismo
-    signo (si el rango cruza el cero no hay aviso)."""
+    """Extremos del rango, del más cercano a cero al más lejano (pueden tener signo distinto)."""
     assert estimate.low_eur is not None and estimate.high_eur is not None
     low, high = estimate.low_eur, estimate.high_eur
     return (low, high) if abs(low) <= abs(high) else (high, low)
@@ -52,21 +51,23 @@ def news_alert_message(item: NewsItemOut) -> str:
     estimate = _figures(item)
     assert estimate.impact_eur is not None and estimate.horizon_sessions is not None
     near, far = _ends(estimate)
-    span = f"entre {format_eur(near)} y {format_eur(far)}"
+    if near * far < 0:  # el rango cruza el cero: puede ir en los dos sentidos
+        low, high = min(near, far), max(near, far)
+        span = f"entre {format_eur(low)} a la baja y {format_eur(high)} al alza"
+    else:
+        span = f"entre {format_eur(near)} y {format_eur(far)}"
     if estimate.status is NewsEstimateStatus.MEASURED:
-        # Medido: recoge todo lo que movió el mercado ese día, no solo la noticia (D-103). El rango
-        # medido puede cruzar el cero si el estimado ya había avisado.
+        # Medido: recoge todo lo que movió el mercado ese día, no solo la noticia (D-103).
         impact = estimate.impact_eur
         if impact == 0:
             return f"{item.title}: ya medido, el día de la noticia tu cartera apenas se movió."
         moved = "subió" if impact > 0 else "bajó"
-        detail = f", {span}" if near * far > 0 else ""
         return (
             f"{item.title}: ya medido, el día de la noticia tu cartera {moved} unos "
-            f"{format_eur(impact)}{detail}."
+            f"{format_eur(impact)}, {span}."
         )
-    moves = "suba" if near > 0 else "baje"
-    return (
-        f"{item.title}: se estima que tu cartera {moves} {span} "
-        f"{_horizon(estimate.horizon_sessions)}."
-    )
+    horizon = _horizon(estimate.horizon_sessions)
+    if near * far < 0:
+        return f"{item.title}: se estima que tu cartera se mueva {span} {horizon}."
+    moves = "suba" if far > 0 else "baje"
+    return f"{item.title}: se estima que tu cartera {moves} {span} {horizon}."
