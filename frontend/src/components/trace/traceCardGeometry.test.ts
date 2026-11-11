@@ -44,3 +44,32 @@ describe("placeCard", () => {
     expect(place).toMatchObject({ left: 16, width: 240 });
   });
 });
+
+describe("placeCard con el botón flotante del chat", () => {
+  const FULL: Box = { left: 300, top: 0, right: 1440, bottom: 900 };
+  const LAUNCHER: Box = { left: 1324, top: 784, right: 1412, bottom: 872 };
+
+  it("una cifra a 860 px abre por encima aunque esté por debajo del botón", () => {
+    const place = placeCard(box(400, 860, 80, 43), { width: 320, height: 180 }, FULL, LAUNCHER);
+    expect(place.side).toBe("above");
+    expect(place.top).toBe(860 - 8 - 180);
+  });
+
+  it("el botón no recorta el sitio de las cifras que no están en su columna", () => {
+    const place = placeCard(box(400, 600), { width: 320, height: 180 }, FULL, LAUNCHER);
+    expect(place).toMatchObject({ side: "below", top: 632, left: 400 });
+  });
+
+  it("se corre a la izquierda del botón si lo tocaría", () => {
+    const place = placeCard(box(1300, 800), { width: 320, height: 180 }, FULL, LAUNCHER);
+    expect(place.left + place.width).toBeLessThanOrEqual(LAUNCHER.left - 8);
+  });
+
+  it("sin sitio a su izquierda, no baja más allá de la parte alta del botón", () => {
+    const narrow: Box = { left: 1300, top: 0, right: 1440, bottom: 900 };
+    const high: Box = { left: 1324, top: 300, right: 1412, bottom: 400 };
+    const place = placeCard(box(1310, 100), { width: 320, height: 300 }, narrow, high);
+    expect(place.side).toBe("below");
+    expect(place.top + place.maxHeight).toBeLessThanOrEqual(high.top - 8);
+  });
+});
