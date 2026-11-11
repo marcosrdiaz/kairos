@@ -189,6 +189,55 @@ def test_a_failed_beta_recompute_is_reported(
     assert report.betas is None
 
 
+def test_news_are_ingested_before_processing_pending_events(
+    daily_update: ModuleType,
+    live: tuple[FakeCharts, FakeRates],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.events import service as events_service
+    from app.events.ingest import runner
+
+    calls: list[str] = []
+
+    def fake_run_once() -> runner.IngestReport:
+        calls.append("ingest")
+        return runner.IngestReport(
+            created=["ecb-mp251030"], failed={"https://ecb.example/feed": "sin conexión"}
+        )
+
+    def fake_pending() -> list[str]:
+        calls.append("pending")
+        return []
+
+    monkeypatch.setattr(runner, "run_once", fake_run_once)
+    monkeypatch.setattr(events_service, "process_pending", fake_pending)
+    report = daily_update.update_once()
+
+    assert calls == ["ingest", "pending"]  # una nota de hoy entra pendiente y se mide después
+    assert report.news == ["ecb-mp251030"]
+    assert report.failed["news:https://ecb.example/feed"] == "sin conexión"
+
+
+def test_a_failed_ingest_is_reported_and_the_rest_runs(
+    daily_update: ModuleType,
+    live: tuple[FakeCharts, FakeRates],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.events import service as events_service
+    from app.events.ingest import runner
+
+    def boom() -> runner.IngestReport:
+        raise RuntimeError("feed roto")
+
+    monkeypatch.setattr(runner, "run_once", boom)
+    monkeypatch.setattr(events_service, "process_pending", lambda: ["evt-1"])
+    report = daily_update.update_once()
+
+    assert report.failed["news"] == "feed roto"
+    assert report.news == []
+    assert report.events == ["evt-1"]
+
+
 def test_a_stale_value_counts_as_a_failure(
     daily_update: ModuleType, live: tuple[FakeCharts, FakeRates]
 ) -> None:
