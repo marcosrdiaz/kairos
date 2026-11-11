@@ -5,6 +5,7 @@ import { formatEur, formatEurRange } from "../../../lib/format";
 import { Change, FlowTag } from "./Change";
 import { monthOf, pointDate, toRows, trendOf, weekdayOf, type ChartRow } from "./chartFormat";
 import { EVENT_TYPE_LABEL } from "../../news/labels";
+import { sessionsText } from "../../news-feed/labels";
 import { markerImpact } from "./markers/markerText";
 import { markersByDate, type EventMarker } from "./markers/placeMarkers";
 import type { AlertNewsMarker } from "./markers/useAlertNewsMarkers";
@@ -54,7 +55,7 @@ function NewsTag({ marker }: { marker: AlertNewsMarker }) {
       <span>{marker.news.title}</span>
       <span className="text-ink-muted">{pointDate(marker.marketDate)}
         {range
-          ? ` · impacto ${range.status === "measured" ? "medido" : "estimado"} ${formatEurRange(range.low, range.high)}${range.horizon ? ` a ${range.horizon} sesiones` : ""}`
+          ? ` · impacto ${range.status === "measured" ? "medido" : "estimado"} ${formatEurRange(range.low, range.high)}${range.horizon ? ` a ${sessionsText(range.horizon)}` : ""}`
           : ""}
       </span>
     </span>

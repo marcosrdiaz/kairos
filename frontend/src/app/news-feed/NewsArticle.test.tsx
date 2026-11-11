@@ -5,7 +5,7 @@ import estimated from "../../api/mocks/NewsItemOut.json";
 import notRelevant from "../../api/mocks/NewsItemOut.not_relevant.json";
 import pending from "../../api/mocks/NewsItemOut.pending.json";
 import { NewsArticle } from "./NewsArticle";
-import { eurRangeText, horizonText, methodText } from "./labels";
+import { eurRangeText, horizonText, methodText, sessionsText } from "./labels";
 
 afterEach(cleanup);
 
@@ -64,6 +64,8 @@ describe("textos de la estimación", () => {
   it("plazo en sesiones", () => {
     expect(horizonText(1)).toBe("en la próxima sesión");
     expect(horizonText(5)).toBe("en las próximas 5 sesiones");
+    expect(sessionsText(1)).toBe("1 sesión");
+    expect(sessionsText(5)).toBe("5 sesiones");
   });
 
   it("de dónde sale el rango", () => {

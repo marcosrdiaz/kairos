@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { formatEurRange } from "../../../../lib/format";
+import { sessionsText } from "../../../news-feed/labels";
 import { pointDate } from "../chartFormat";
 import { NEWS_CATEGORY_ICON_PATH } from "./newsCategoryIconPaths";
 import type { NewsMarkerStore } from "./newsMarkerStore";
@@ -16,7 +17,7 @@ export function AlertNewsDot({ cx, cy, marker, store, cardId }: {
   const estimate = marker.news.estimate;
   const range = estimate?.low_eur && estimate.high_eur &&
     (estimate.status === "estimated" || estimate.status === "measured")
-    ? ` ${estimate.status === "measured" ? "Impacto medido" : "Impacto estimado"} en tu cartera: ${formatEurRange(estimate.low_eur, estimate.high_eur)}${estimate.horizon_sessions ? ` a ${estimate.horizon_sessions} sesiones` : ""}.`
+    ? ` ${estimate.status === "measured" ? "Impacto medido" : "Impacto estimado"} en tu cartera: ${formatEurRange(estimate.low_eur, estimate.high_eur)}${estimate.horizon_sessions ? ` a ${sessionsText(estimate.horizon_sessions)}` : ""}.`
     : "";
   const onKeyDown = (event: KeyboardEvent<SVGGElement>) => {
     if (event.key === "Escape") store.set(null);
