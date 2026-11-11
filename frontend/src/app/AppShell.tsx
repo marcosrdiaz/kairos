@@ -7,15 +7,16 @@ import { HomeIcon, LogoTile, PanelIcon, WalletIcon } from "../components/icons";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { ChatLauncher, ChatPanel } from "../voice/ChatDock";
 import { ChatDockContext } from "../voice/chatDockContext";
-import { AlertsBell } from "./alerts/AlertsBell";
+import { AlertsNavIcon } from "./alerts/AlertsNavIcon";
 import { NewsIcon } from "./news-feed/NewsIcon";
 import { FirstRunGate } from "./onboarding/FirstRunGate";
-import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 const TABS: { to: string; label: string; Icon: ComponentType<{ className?: string }> }[] = [
   { to: "/inicio", label: "Inicio", Icon: HomeIcon },
   { to: "/cartera", label: "Cartera", Icon: WalletIcon },
   { to: "/noticias", label: "Noticias", Icon: NewsIcon },
+  { to: "/alertas", label: "Avisos", Icon: AlertsNavIcon },
+  { to: "/panel", label: "Panel de contexto", Icon: PanelIcon },
 ];
 
 const DESKTOP = "(min-width: 64rem)";
@@ -36,7 +37,7 @@ function useIsDesktop(): boolean {
 /**
  * Marco de la app, adaptable (DESIGN.md § Layout):
  * - Móvil (< lg): cabecera con la marca y el modo oscuro; pestañas con icono fijas abajo.
- * - Escritorio (≥ lg): barra lateral con la marca, las secciones, el panel y el modo oscuro.
+ * - Escritorio (≥ lg): barra lateral con la marca, cinco secciones y el modo oscuro.
  * Hay un único <nav aria-label="Secciones">, recolocado con CSS, para no duplicarlo en el lector.
  * NavLink pone aria-current="page" en la sección activa. Conserva `?p=` al navegar.
  * El asistente (Pregunta) no es una sección: es el botón flotante y su panel (`voice/ChatDock`).
@@ -90,14 +91,14 @@ export function AppShell() {
           aria-label="Secciones"
           className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:static lg:border-t-0 lg:border-b lg:bg-transparent lg:pb-6"
         >
-          <ul className="m-0 flex list-none p-0 lg:flex-col lg:gap-1">
+          <ul className="m-0 flex min-h-22 list-none p-0 lg:min-h-0 lg:flex-col lg:gap-1">
             {TABS.map(({ to, label, Icon }) => (
               <li key={to} className="flex flex-1 lg:flex-none">
                 <NavLink
                   to={`${to}${search}`}
                   className={({ isActive }) =>
                     [
-                      "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-sm font-medium no-underline transition-colors",
+                      "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 text-center text-xs font-medium leading-tight no-underline transition-colors sm:text-sm",
                       "lg:min-h-touch lg:flex-row lg:justify-start lg:gap-3 lg:rounded-control lg:px-4 lg:py-2.5 lg:text-base",
                       isActive
                         ? "text-accent lg:bg-accent lg:text-on-accent"
@@ -110,7 +111,7 @@ export function AppShell() {
                       <span
                         className={`flex h-8 w-14 items-center justify-center rounded-full lg:h-auto lg:w-auto ${isActive ? "bg-accent-tint lg:bg-transparent" : ""}`}
                       >
-                        <Icon className="size-6" />
+                        <Icon className="size-5 lg:size-6" />
                       </span>
                       {label}
                     </>
@@ -121,29 +122,7 @@ export function AppShell() {
           </ul>
         </nav>
 
-        <Link
-          to={`/panel${search}`}
-          className="hidden min-h-touch items-center gap-3 rounded-control px-4 text-base font-medium text-ink-muted no-underline hover:bg-surface hover:text-ink lg:flex"
-        >
-          <PanelIcon className="size-6" />
-          Panel de contexto
-        </Link>
-
-        {/* Selector de cartera (T1-19): en escritorio, siempre a mano; en móvil, en Cartera. */}
-        <div className="hidden lg:block lg:px-1">
-          <p className="m-0 mb-2 px-3 text-sm font-medium text-ink-muted" aria-hidden="true">
-            Cartera
-          </p>
-          <PortfolioPicker compact />
-        </div>
-
-        {/* Bandeja de avisos (T2-20): en móvil, junto al modo oscuro; en escritorio, en la barra. */}
-        <div className="hidden lg:block">
-          <AlertsBell showLabel />
-        </div>
-
         <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <AlertsBell />
           <ThemeToggle />
         </div>
         <div className="hidden lg:mt-auto lg:block">
