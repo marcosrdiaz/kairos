@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from app.alerts.models import Alert
 from app.core.db import session_scope
@@ -115,6 +115,13 @@ def count_between(portfolio_id: str, start: datetime, end: datetime) -> int:
             )
             or 0
         )
+
+
+def delete_without_event() -> None:
+    """Borra los avisos que no vienen de un evento (`news_estimate`, `market_move`). Los de evento
+    se van solos al borrar los eventos (`ON DELETE CASCADE`)."""
+    with session_scope() as session:
+        session.execute(delete(Alert).where(Alert.event_id.is_(None)))
 
 
 def save(

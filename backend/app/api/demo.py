@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
+from app.alerts import service as alerts_service
 from app.config import get_settings
 from app.core import clock
 from app.core.errors import AppError, ErrorCode
@@ -37,6 +38,7 @@ def reset_demo(body: DemoResetRequest | None = None) -> DemoResetOut:
     impact_service.reset()
     status_service.reset()
     events_service.reset()
+    alerts_service.reset()
     preloaded = events_service.preload() if body is not None and body.preload else []
     return DemoResetOut(portfolio_ids=portfolio_ids, preloaded_event_ids=preloaded)
 
