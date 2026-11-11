@@ -18,10 +18,17 @@ const MOVE_ALERT = {
   calc_id: "calc_move",
 } as unknown as AlertOut; // `market_move` llega con T2-21; el frontend ya lo acepta
 
+const IMPACT_CASES = [
+  { label: "positivo", low: "120.00", high: "300.00", tone: "text-trend-up", hasArrow: true },
+  { label: "negativo", low: "-620.00", high: "-320.00", tone: "text-trend-down", hasArrow: true },
+  { label: "que cruza el cero", low: "-20.00", high: "30.00", tone: "text-ink", hasArrow: false },
+] as const;
+
 let alerts: AlertOut[] = [];
+let events: EventImpactOut[] = [];
 const fetchMock = vi.fn((input: RequestInfo | URL) => {
   const url = String(input);
-  const body = url.includes("/alerts") ? alerts : url.includes("/events") ? [nvdaMock] : {};
+  const body = url.includes("/alerts") ? alerts : url.includes("/events") ? events : {};
   return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
 });
 
@@ -47,6 +54,7 @@ async function openInbox() {
 
 beforeEach(() => {
   localStorage.clear();
+  events = [nvdaMock as EventImpactOut];
   vi.stubGlobal("fetch", fetchMock);
   // jsdom no siempre implementa los métodos modales de <dialog>.
   HTMLDialogElement.prototype.showModal = function showModal() {
@@ -91,8 +99,10 @@ describe("AlertsBell", () => {
     const dialog = await openInbox();
     const [eventItem, moveItem] = within(dialog).getAllByRole("article", { hidden: true });
     expect(within(eventItem!).getByText(EVENT_ALERT.message)).toBeTruthy();
-    expect(await within(eventItem!).findByText(/Impacto estimado.*entre .* y /)).toBeTruthy();
-    expect(within(eventItem!).getByText(/Confianza (alta|media|baja)/)).toBeTruthy();
+    await waitFor(() => expect(eventItem!.querySelector(".tabular-nums")).not.toBeNull());
+    const impactText = within(eventItem!).getByText(/Confianza (alta|media|baja)/);
+    expect(impactText.textContent).toMatch(/entre -620\s€ y -320\s€/);
+    expect(eventItem!.querySelector(".tabular-nums")?.className).toContain("text-trend-down");
     expect(eventItem!.getAttribute("data-calc-id")).toBe(EVENT_ALERT.calc_id);
     // `market_move`: sin evento, sin rango, pero con su tipo y su traza.
     expect(within(moveItem!).getByText("Movimiento de tu cartera")).toBeTruthy();
@@ -106,7 +116,11 @@ describe("AlertsBell", () => {
     renderBell();
     const dialog = await openInbox();
     const [eventItem] = within(dialog).getAllByRole("article", { hidden: true });
-    fireEvent.click(within(eventItem!).getByRole("button", { name: "Marcar como leído", hidden: true }));
+    const markRead = within(eventItem!).getByRole("button", { name: "Marcar como leído", hidden: true });
+    expect(markRead.className).toContain("min-h-touch");
+    expect(markRead.className).toContain("rounded-control");
+    expect(markRead.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+    fireEvent.click(markRead);
     expect(bell().getAttribute("aria-label")).toBe("Avisos, 1 sin leer");
     expect(within(eventItem!).queryByText("Nuevo")).toBeNull();
     expect(localStorage.getItem("kairos-alerts-read:laura")).toContain(EVENT_ALERT.id);
@@ -116,10 +130,27 @@ describe("AlertsBell", () => {
     alerts = [EVENT_ALERT, MOVE_ALERT];
     renderBell();
     const dialog = await openInbox();
-    fireEvent.click(within(dialog).getByRole("button", { name: "Marcar todos como leídos", hidden: true }));
+    const markAll = within(dialog).getByRole("button", { name: "Marcar todos como leídos", hidden: true });
+    expect(markAll.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+    fireEvent.click(markAll);
     expect(bell().getAttribute("aria-label")).toBe("Avisos, ninguno sin leer");
     expect(within(dialog).queryByRole("button", { name: "Marcar todos como leídos", hidden: true })).toBeNull();
   });
+
+  it.each(IMPACT_CASES)(
+    "muestra el impacto $label con color semántico y sin depender solo del color",
+    async ({ low, high, tone, hasArrow }) => {
+      alerts = [EVENT_ALERT];
+      events = [{ ...(nvdaMock as EventImpactOut), low_eur: low, high_eur: high }];
+      renderBell();
+      const dialog = await openInbox();
+      const [item] = within(dialog).getAllByRole("article", { hidden: true });
+      await waitFor(() => expect(item!.querySelector(".tabular-nums")).not.toBeNull());
+      const range = item!.querySelector(".tabular-nums");
+      expect(range?.className).toContain(tone);
+      expect(range?.querySelector("svg") !== null).toBe(hasArrow);
+    },
+  );
 
   it("los leídos son de cada cartera", async () => {
     alerts = [EVENT_ALERT];

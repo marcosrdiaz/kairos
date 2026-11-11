@@ -45,24 +45,56 @@ export function AlertsInbox({ portfolios, items, loading, failed, isRead, onMark
 
   return (
     <div className="flex flex-col gap-4">
-      {several && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={filterId} className="text-base font-semibold text-ink">Cartera</label>
-          <select
-            id={filterId}
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="min-h-touch w-full rounded-control border border-line-strong bg-surface px-3 text-base text-ink sm:max-w-sm"
-          >
-            <option value="">Todas las carteras</option>
-            {portfolios.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+      {(several || unread.length > 0) && (
+        <div className="flex flex-wrap items-end gap-3">
+          {several && (
+            <div className="flex w-full max-w-sm flex-col gap-2">
+              <label htmlFor={filterId} className="text-base font-semibold text-ink">Cartera</label>
+              <div className="relative">
+                <select
+                  id={filterId}
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value)}
+                  className="min-h-touch w-full appearance-none rounded-control border border-line-strong bg-surface px-3 pr-12 text-base text-ink"
+                >
+                  <option value="">Todas las carteras</option>
+                  {portfolios.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                  className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-ink-muted"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
+            </div>
+          )}
+          {unread.length > 0 && (
+            <button type="button" className={`${buttonSecondary} ml-auto whitespace-nowrap`} onClick={() => onMarkRead(unread)}>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                viewBox="0 0 24 24"
+                className="size-5 text-success"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+              Marcar todos como leídos
+            </button>
+          )}
         </div>
-      )}
-      {unread.length > 0 && (
-        <button type="button" className={`${buttonSecondary} self-start`} onClick={() => onMarkRead(unread)}>
-          Marcar todos como leídos
-        </button>
       )}
       {failed && items.length === 0 && (
         <p role="alert" className="m-0 text-base text-error">

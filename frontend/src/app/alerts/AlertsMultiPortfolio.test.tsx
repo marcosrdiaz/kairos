@@ -97,6 +97,9 @@ describe("Avisos con varias carteras", () => {
     renderBell();
     const dialog = await openInbox();
     const select = within(dialog).getByLabelText("Cartera");
+    expect(select.className).toContain("appearance-none");
+    expect(select.className).toContain("pr-12");
+    expect(select.parentElement?.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
     fireEvent.change(select, { target: { value: "pf_hijos" } });
     expect(within(dialog).getAllByRole("article", { hidden: true })).toHaveLength(1);
     fireEvent.change(select, { target: { value: "javier" } });
@@ -108,9 +111,9 @@ describe("Avisos con varias carteras", () => {
     renderBell();
     const dialog = await openInbox();
     fireEvent.change(within(dialog).getByLabelText("Cartera"), { target: { value: "pf_hijos" } });
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Marcar todos como leídos", hidden: true }),
-    );
+    const markAll = within(dialog).getByRole("button", { name: "Marcar todos como leídos", hidden: true });
+    expect(markAll.className).toContain("ml-auto");
+    fireEvent.click(markAll);
     expect(bell().getAttribute("aria-label")).toBe("Avisos, 1 sin leer");
     expect(localStorage.getItem("kairos-alerts-read:pf_hijos")).toContain("alr_hijos");
     expect(localStorage.getItem("kairos-alerts-read:laura")).toBeNull();
