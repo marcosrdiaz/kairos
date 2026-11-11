@@ -249,8 +249,8 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 
 
 ### T4-31 · Avisos por noticia — Alons
-**Qué estaba haciendo:** PR #139 abierto (rama `t4-31/news-estimate-alerts`), con `make lint && make test` en verde. Regla: el extremo del rango más cercano a cero frente al umbral × factor del perfil (0,6 / 1 / 1,5); un aviso nuevo por cartera y día; el medido rehace el aviso del estimado. Decisión nueva: «Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts`».
-**Siguiente paso exacto:** revisión y merge de #139, y `docs: done T4-31`. Tras el merge, `make seed` (migración `0009`). En la demo: `make news-alerts` (Laura, 1 aviso; Javier, ninguno). Gasta uno de los 2 avisos de la semana: lanzarlo después del replay del paso 3.
+**Qué estaba haciendo:** PR #139 abierto (rama `t4-31/news-estimate-alerts`), con `make lint && make test` en verde. Regla: el movimiento posible más grande (al alza o a la baja, también si el rango cruza el cero) frente al umbral × factor del perfil (0,6 / 1 / 1,5); un aviso nuevo por cartera y día; el medido rehace el aviso del estimado. Decisión nueva: «Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts`».
+**Siguiente paso exacto:** revisión y merge de #139, y `docs: done T4-31`. Tras el merge, `make seed` (migración `0009`). En la demo: `make news-alerts` (Laura, 1 aviso al alza; Javier, 1 a la baja). Gasta uno de los 2 avisos de la semana: lanzarlo después del replay del paso 3.
 **Ficheros tocados:** los de la fila de T4-31.
 
 ### Lo que deja el hito E (T4-27 a T4-30 y T4-32) — Alons (para quien coja la tarea)
