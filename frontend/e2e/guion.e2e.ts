@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   ask,
   choose,
@@ -8,8 +8,16 @@ import {
   RANGE,
   replay,
   resetDemo,
-  statusCard,
 } from "./demo";
+
+/**
+ * La tarjeta de estado de Inicio («Tu cartera hoy»). Se busca por el encabezado al que está
+ * asociada: con el texto «Tu cartera hoy» también coincidía el carrusel de noticias (TD-04). Va
+ * aquí y no en `demo.ts` porque ese fichero lo tiene T5-19 (solo `expectTrace`).
+ */
+function statusCard(page: Page): Locator {
+  return page.locator('section[aria-labelledby="status-heading"]');
+}
 
 /**
  * Guion de demo de 8 pasos (`docs/kairos-spec.md`, «Guion de demo») en el navegador, contra el
@@ -65,7 +73,9 @@ test("paso 3 · el evento en directo pasa el widget a Atento y llega el aviso", 
 
   // Inicio ya no pinta el aviso encima del estado (TD-04): llega a la campana de «Avisos».
   await expect(statusCard(page)).toContainText("Atento");
-  await expect(page.getByRole("link", { name: "Avisos" }).getByTestId("alerts-badge")).toHaveText("1");
+  // `/demo/reset` deja la campana a cero (TD-13). La campana junta las carteras: el evento toca a
+  // dos, así que llegan dos avisos.
+  await expect(page.getByRole("link", { name: "Avisos" }).getByTestId("alerts-badge")).toHaveText("2");
   await expect(page.getByText("Aviso de Kairos")).toHaveCount(0);
 
   await page.getByRole("link", { name: "Avisos" }).click();

@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { TraceCardBody } from "./TraceCard";
-import { contentBounds, overlaps, placeCard } from "./traceCardGeometry";
+import { contentBounds, launcherBox, overlaps, placeCard } from "./traceCardGeometry";
 import { useTrace } from "./traceContext";
 import "./trace.css";
 
@@ -66,10 +66,10 @@ export function TraceAnchor({ calcId, value, triggerClassName, children }: Trace
     if (!open || !el || !anchor) return;
     if (POPOVER && !el.matches(":popover-open")) el.showPopover();
     const place = () => {
-      const bounds = contentBounds();
+      const bounds = contentBounds(anchor);
       const rect = anchor.getBoundingClientRect();
       if (rect.width > 0 && !overlaps(rect, bounds)) return setState("closed");
-      const spot = placeCard(rect, { width: CARD_WIDTH_PX, height: el.scrollHeight + 2 }, bounds);
+      const spot = placeCard(rect, { width: CARD_WIDTH_PX, height: el.scrollHeight + 2 }, bounds, launcherBox());
       el.style.left = `${spot.left}px`;
       el.style.top = `${spot.top}px`;
       el.style.width = `${spot.width}px`;

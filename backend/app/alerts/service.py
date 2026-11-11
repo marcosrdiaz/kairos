@@ -61,6 +61,16 @@ def evaluate(portfolio_id: str, event_id: str) -> None:
         )
 
 
+def reset() -> None:
+    """Deja los avisos como al empezar la demo (`/demo/reset`): borra los que no tienen evento
+    (`news_estimate`, `market_move`) y olvida cuándo se revisó cada cartera, para que los vuelva a
+    generar solo lo que toque a partir del reloj de ese momento. Los de evento los borra
+    `events.service.reset` por la clave foránea."""
+    repository.delete_without_event()
+    reset_market_move_checks()
+    reset_news_checks()
+
+
 def reset_market_move_checks() -> None:
     """Olvida cuándo se comprobó cada cartera (tests)."""
     with _lock:
