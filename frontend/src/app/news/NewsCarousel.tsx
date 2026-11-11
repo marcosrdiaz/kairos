@@ -127,18 +127,15 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
         </div>
       </div>
 
-      {/* Portada y fuente a la izquierda; texto a la derecha. */}
-      <div className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-5">
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="relative min-h-24 flex-1 overflow-hidden rounded-control">
-            <div
-              key={current.id}
-              className={`absolute inset-0 flex [&>div]:flex-1 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
-            >
-              <NewsCover category={current.category} publishedAt={current.published_at} dense />
-            </div>
+      {/* Solo la portada a la izquierda (a todo el alto del texto); todo el texto a la derecha. */}
+      <div className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:items-stretch md:gap-5">
+        <div className="relative min-h-28 overflow-hidden rounded-control">
+          <div
+            key={current.id}
+            className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+          >
+            <NewsCover category={current.category} publishedAt={current.published_at} dense />
           </div>
-          <p className="m-0 truncate text-sm text-ink-muted">Fuente: {current.source.label}</p>
         </div>
 
         <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
