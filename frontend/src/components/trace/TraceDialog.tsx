@@ -45,8 +45,12 @@ function Origin({ origin, step }: { origin: TraceOrigin; step: number }) {
 /** Cabecera: qué cálculo es y cuándo se hizo, antes del detalle. */
 function Summary({ trace }: { trace: TraceChain["root"] }) {
   return (
-    <div className="flex flex-col gap-1 rounded-card bg-surface-muted px-4 py-3">
-      <p className="m-0 text-lg font-semibold leading-snug text-ink">{TRACE_KIND_LABEL[trace.kind]}</p>
+    <div className="flex flex-col gap-1.5 rounded-card border border-line bg-surface-muted px-4 py-3.5">
+      <p className="m-0 text-xl font-semibold leading-snug text-ink">{TRACE_KIND_LABEL[trace.kind]}</p>
+      <p className="m-0 max-w-[60ch] text-base text-ink">
+        Así se ha hecho la cuenta: con qué datos, cómo se combinan y qué sale. Las cifras las calcula
+        KAIROS sobre tu cartera; la inteligencia artificial no pone ningún número.
+      </p>
       <p className="m-0 text-sm text-ink-muted">
         Calculado el <time dateTime={trace.created_at}>{formatDate(trace.created_at)}</time>
         {trace.sources.length > 0 &&
@@ -63,7 +67,12 @@ function Chain({ chain }: { chain: TraceChain }) {
       <TraceDetails trace={chain.root} headingLevel={3} />
       {chain.origins.length > 0 && (
         <section className="flex flex-col gap-3 border-t border-line pt-5">
-          <h3 className="m-0 text-base font-semibold text-ink">Cálculos de los que parte</h3>
+          <div className="flex flex-col gap-0.5">
+            <h3 className="m-0 text-base font-semibold text-ink">Cálculos de los que parte</h3>
+            <p className="m-0 text-sm text-ink-muted">
+              Esta cifra usa el resultado de otras cuentas. Ábrelas para ver las suyas, paso a paso.
+            </p>
+          </div>
           <ol className="trace-steps m-0 list-none p-0">
             {chain.origins.map((origin, i) => (
               <Origin key={origin.calcId} origin={origin} step={i + 1} />
@@ -146,9 +155,11 @@ export function TraceDialog({ calcId, onClose }: TraceDialogProps) {
             type="button"
             aria-label="Cerrar"
             onClick={close}
-            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-2xl leading-none text-ink-muted hover:bg-surface-muted"
+            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
           >
-            <span aria-hidden="true">×</span>
+            <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" />
+            </svg>
           </button>
         </header>
         <div className="flex flex-col gap-5 px-5 py-5">
