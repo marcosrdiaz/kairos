@@ -63,7 +63,7 @@ function ClampedText({ text }: { text: string }) {
         <p
           id={textId}
           ref={ref}
-          className={`m-0 max-w-[65ch] text-base text-ink-muted ${expanded ? "" : "line-clamp-4"}`}
+          className={`m-0 text-base text-ink-muted ${expanded ? "" : "line-clamp-4"}`}
         >
           {text}
         </p>

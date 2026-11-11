@@ -9,7 +9,7 @@ const BASE_CHIP =
   "inline-flex min-h-touch shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-base font-medium whitespace-nowrap text-ink transition-colors hover:border-accent focus-visible:outline-focus motion-reduce:transition-none";
 const FILTER_CHIP = `${BASE_CHIP} aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent`;
 const ICON_BADGE =
-  "grid size-6 shrink-0 place-items-center rounded-full bg-icon-contrast-bg text-white";
+  "grid size-6 shrink-0 place-items-center rounded-full bg-icon-contrast-bg text-white group-aria-pressed:bg-accent";
 
 const SCROLL_BUTTON =
   "grid size-touch shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-ink transition-colors hover:border-accent disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none";
@@ -147,7 +147,7 @@ export function NewsFilters({
                 type="button"
                 aria-pressed={filter.category === category}
                 onClick={() => pickCategory(category)}
-                className={FILTER_CHIP}
+                className={`${FILTER_CHIP} group`}
               >
                 <span className={ICON_BADGE}>
                   <CategoryIcon category={category} className="size-4 text-white" />

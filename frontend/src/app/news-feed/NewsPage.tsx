@@ -79,7 +79,7 @@ export function NewsPage() {
     <>
       <PageTitle>Noticias</PageTitle>
       <div className="news-page-layout flex min-w-0 w-full flex-col gap-6">
-        <p className="m-0 max-w-[65ch] text-base text-ink-muted">
+        <p className="m-0 text-base text-ink-muted">
           Lo que pasa en los mercados, traducido a tu cartera: cuánto podría moverla cada noticia,
           en qué plazo y desde cuándo se nota en cada posición.
         </p>
@@ -133,7 +133,7 @@ export function NewsPage() {
             </button>
           )}
         </section>
-        <p className="m-0 max-w-[65ch] text-sm text-ink-muted">
+        <p className="m-0 text-sm text-ink-muted">
           <strong className="font-semibold text-ink">No es asesoramiento.</strong> Kairos explica
           con contexto cómo podría afectar cada noticia a tu cartera; las cifras son estimaciones
           con un rango, calculadas sobre tus datos, y no recomiendan ninguna operación.

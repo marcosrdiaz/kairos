@@ -37,7 +37,7 @@ export function NewsSlide({ event, position, total, direction, panelHref }: News
           <time dateTime={event.occurred_at}>{formatDate(event.occurred_at)}</time>
         </p>
         <h3 className="m-0 text-xl font-semibold leading-snug text-ink">{event.title}</h3>
-        <p className="m-0 max-w-[65ch] text-base text-ink-muted">{summary}</p>
+        <p className="m-0 text-base text-ink-muted">{summary}</p>
 
         <dl className="m-0 mt-1 flex flex-wrap items-end gap-x-6 gap-y-3">
           <div>
