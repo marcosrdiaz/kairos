@@ -114,9 +114,9 @@ export function ChoiceGroup<T extends string>({ legend, value, options, onValue 
   return (
     <fieldset className="m-0 min-w-0 border-0 p-0">
       <legend className="mb-2 p-0 text-base font-semibold text-ink">{legend}</legend>
-      <div className="inline-flex max-w-full flex-wrap gap-1 rounded-[1.75rem] border border-line-strong bg-surface p-1">
+      <div className="grid w-full grid-cols-2 gap-1 rounded-[1.75rem] border border-line-strong bg-surface p-1 @3xl/app-content:inline-grid @3xl/app-content:w-fit">
         {options.map((o) => (
-          <label key={o.value} className="relative flex">
+          <label key={o.value} className="relative flex min-w-0">
             <input
               type="radio"
               name={name}
@@ -127,7 +127,7 @@ export function ChoiceGroup<T extends string>({ legend, value, options, onValue 
             />
             <span
               className={[
-                "flex min-h-touch cursor-pointer items-center rounded-full px-5 text-base font-medium text-ink-muted transition-colors",
+                "flex min-h-touch min-w-0 cursor-pointer items-center justify-center rounded-full px-2 text-center text-base leading-tight font-medium text-ink-muted transition-colors @3xl/app-content:px-5",
                 "peer-checked:bg-accent peer-checked:font-semibold peer-checked:text-on-accent",
                 "peer-[:not(:checked)]:hover:bg-surface-muted peer-[:not(:checked)]:hover:text-ink",
                 "peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus",
