@@ -13,12 +13,12 @@ interface NewsSectionProps {
 function Header() {
   return (
     <>
-      <h2 id="news-heading" className="m-0 mb-1 text-lg font-semibold text-ink">
+      <h2 id="news-heading" className="m-0 text-base font-semibold leading-snug text-ink">
         Lo que más mueve tu cartera hoy
       </h2>
-      <p className="m-0 text-sm text-ink-muted">
-        Las {TOP_NEWS} noticias de las últimas 24 horas con más impacto en tu cartera. El impacto
-        es una estimación con rango.
+      <p className="m-0 line-clamp-2 text-xs leading-snug text-ink-muted">
+        Las {TOP_NEWS} noticias de las últimas 24 horas con más impacto en tu cartera. Impacto
+        estimado, con rango.
       </p>
     </>
   );
@@ -36,7 +36,7 @@ export function NewsSection({ portfolioId, newsHref }: NewsSectionProps) {
     <section
       aria-roledescription="carrusel"
       aria-labelledby="news-heading"
-      className="rounded-card border border-line bg-surface p-5 lg:p-6"
+      className="rounded-card border border-line bg-surface p-4"
     >
       {hasNews ? (
         <NewsCarousel items={data} newsHref={newsHref} header={<Header />} />
@@ -49,7 +49,7 @@ export function NewsSection({ portfolioId, newsHref }: NewsSectionProps) {
             <div
               role="status"
               aria-label="Cargando noticias"
-              className="h-60 rounded-control bg-surface-muted motion-safe:animate-pulse"
+              className="h-32 rounded-control bg-surface-muted motion-safe:animate-pulse"
             />
           )}
           {isError && !data && (

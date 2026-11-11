@@ -25,28 +25,27 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
     <section
       aria-labelledby="status-heading"
       data-calc-id={status.calc_id}
-      className="flex min-w-0 flex-col rounded-card border border-line bg-surface p-5"
+      className="flex min-w-0 grow flex-col gap-2 rounded-card border border-line bg-surface p-4"
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className="flex size-11 items-center justify-center rounded-control bg-icon-red-bg text-icon-red">
-          <CoinsIcon className="size-6" />
+      <div className="flex items-center gap-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-icon-red-bg text-icon-red">
+          <CoinsIcon className="size-5" />
         </span>
-        <span className={`mt-1 h-1.5 w-10 rounded-full ${stateBandClass(status.state)}`} aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <p className="m-0 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
+          <p className="m-0 text-lg font-semibold tabular-nums text-ink">
+            <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
+          </p>
+        </div>
+        <div aria-live="polite" aria-atomic="true">
+          <StatusBadge state={status.state} label={status.state_label} />
+        </div>
       </div>
-      <p className="m-0 mt-3 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
-      <p className="m-0 mt-1 text-lg font-semibold tabular-nums text-ink sm:text-xl">
-        <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
-      </p>
-      <div aria-live="polite" aria-atomic="true" className="mt-3">
-        <StatusBadge state={status.state} label={status.state_label} />
-      </div>
-      <h2
-        id="status-heading"
-        className="mb-0 mt-3 text-base font-medium leading-snug text-ink"
-      >
+      <span className={`h-1 w-full rounded-full ${stateBandClass(status.state)}`} aria-hidden="true" />
+      <h2 id="status-heading" className="m-0 text-base font-medium leading-snug text-ink">
         <TextMorph text={withoutTapHint(status.sentence)} />
       </h2>
-      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1">
         {hasReason && (
           <Link to={detailHref} className={buttonPrimary}>
             Ver por qué

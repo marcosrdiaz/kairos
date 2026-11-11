@@ -1,4 +1,5 @@
 import { useEffect, useState, type FocusEvent, type ReactNode } from "react";
+import { Link } from "react-router";
 import type { NewsItemOut } from "../../api/generated/schema";
 import { ArrowLeftIcon, ArrowRightIcon, PauseIcon, PlayIcon } from "../../components/icons";
 import { NewsCover } from "../news-feed/NewsCover";
@@ -76,40 +77,17 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
       onMouseLeave={() => setHovered(false)}
       onFocus={onFocus}
       onBlur={onBlur}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-2"
     >
-      <div className="flex items-start justify-between gap-4">
+      {/* Título a la izquierda; contador, flechas, puntos, pausa y enlace a la derecha. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 lg:flex-nowrap">
         <div className="min-w-0">{header}</div>
-        {total > 1 && (
-          <div className="flex shrink-0 items-center gap-3">
-            <p className="m-0 text-sm text-ink-muted" aria-hidden="true">
-              {index + 1} / {total}
-            </p>
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              className={arrowButton}
-              aria-label={paused ? "Reanudar el pase automático" : "Pausar el pase automático"}
-            >
-              {paused ? <PlayIcon className="size-5" /> : <PauseIcon className="size-5" />}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Portada y controles a la izquierda; texto a la derecha. */}
-      <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
-        <div className="flex min-w-0 flex-col gap-3">
-          <div className="relative min-h-40 flex-1 overflow-hidden rounded-control md:min-h-56">
-            <div
-              key={current.id}
-              className={`absolute inset-0 flex [&>div]:flex-1 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
-            >
-              <NewsCover category={current.category} publishedAt={current.published_at} large />
-            </div>
-          </div>
+        <div className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 lg:shrink-0">
           {total > 1 && (
-            <div className="flex items-center justify-between gap-2">
+            <>
+              <p className="m-0 text-sm text-ink-muted" aria-hidden="true">
+                {index + 1} / {total}
+              </p>
               <button
                 type="button"
                 onClick={() => go(index - 1, "prev")}
@@ -145,8 +123,39 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
               >
                 <ArrowRightIcon className="size-5" />
               </button>
-            </div>
+              <button
+                type="button"
+                onClick={() => setPaused((p) => !p)}
+                className={arrowButton}
+                aria-label={paused ? "Reanudar el pase automático" : "Pausar el pase automático"}
+              >
+                {paused ? <PlayIcon className="size-5" /> : <PauseIcon className="size-5" />}
+              </button>
+            </>
           )}
+          <Link
+            to={newsHref}
+            aria-label="Ver todas las noticias"
+            className="inline-flex min-h-touch items-center gap-1 pl-2 text-sm font-semibold text-accent underline"
+          >
+            Ver todas
+            <ArrowRightIcon className="size-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Portada y fuente a la izquierda; texto a la derecha. */}
+      <div className="grid gap-3 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-5">
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="relative min-h-24 flex-1 overflow-hidden rounded-control">
+            <div
+              key={current.id}
+              className={`absolute inset-0 flex [&>div]:flex-1 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+            >
+              <NewsCover category={current.category} publishedAt={current.published_at} dense />
+            </div>
+          </div>
+          <p className="m-0 truncate text-xs text-ink-muted">Fuente: {current.source.label}</p>
         </div>
 
         <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
@@ -156,7 +165,6 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
             position={index + 1}
             total={total}
             direction={direction}
-            newsHref={newsHref}
           />
         </div>
       </div>

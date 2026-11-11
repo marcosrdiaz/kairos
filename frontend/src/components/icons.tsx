@@ -161,6 +161,13 @@ export const TrendIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const TrendDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 7l6 6 4-4 8 8" />
+    <path d="M15 17h6v-6" />
+  </Icon>
+);
+
 export const CompassIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="9" />

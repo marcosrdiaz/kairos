@@ -119,17 +119,22 @@ export function NewsCover({
   category,
   publishedAt,
   large = false,
+  dense = false,
 }: {
   category: NewsCategory;
   publishedAt: string;
   large?: boolean;
+  /** Sin alto mínimo: la portada se adapta al hueco que le dan (carrusel de Inicio). */
+  dense?: boolean;
 }) {
   const tone = COVER_TONE[category];
   return (
     <div
       className={cn(
         "relative isolate flex items-center overflow-hidden text-ink",
-        large
+        dense
+          ? "min-h-0 rounded-control px-4 py-3"
+          : large
           ? "min-h-40 rounded-control px-5 py-5"
           : "min-h-28 rounded-t-[15px] px-4 py-4",
         tone.background,

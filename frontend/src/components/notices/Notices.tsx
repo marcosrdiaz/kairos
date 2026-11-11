@@ -50,7 +50,7 @@ export function PanelNotice() {
 /** Pie de todas las pantallas de la app (AppShell): aviso de IA y "no es asesoramiento". */
 export function AppNotice() {
   return (
-    <p className="m-0 mt-10 flex items-start gap-2 border-t border-line pt-4 text-sm text-ink-muted">
+    <p className="m-0 mt-4 flex items-start gap-2 border-t border-line pt-3 text-sm text-ink-muted">
       <InfoIcon className="mt-0.5 size-5 shrink-0" />
       <span>{APP_NOTICE}</span>
     </p>

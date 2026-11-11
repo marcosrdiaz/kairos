@@ -23,7 +23,7 @@ export function PeriodPicker({ value, onChange }: PeriodPickerProps) {
       {PERIODS.map((p) => (
         <label
           key={p.value}
-          className="relative z-10 flex min-h-touch cursor-pointer items-center justify-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:text-ink sm:min-w-14"
+          className="relative z-10 flex min-h-touch cursor-pointer items-center justify-center rounded-full px-3 text-sm font-semibold text-ink-muted transition-colors duration-200 hover:text-ink sm:min-w-12"
         >
           <input
             type="radio"
