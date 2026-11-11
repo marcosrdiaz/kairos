@@ -64,8 +64,10 @@ describe("indexAtX", () => {
 
 describe("describeSeries", () => {
   it("resume la serie en español", () => {
-    expect(describeSeries([100, 135], fmt)).toBe("2 puntos, de 100 a 135, sube un 35 %");
-    expect(describeSeries([100, 50], fmt)).toBe("2 puntos, de 100 a 50, baja un 50 %");
+    expect(describeSeries([100, 135], fmt)).toBe("2 puntos, de 100 a 135");
+    expect(describeSeries([100, 50], fmt)).toBe("2 puntos, de 100 a 50");
+    // Sin variación calculada en el cliente: ni «sube» ni «baja» ni %.
+    expect(describeSeries([100, 135, 150], fmt)).not.toMatch(/sube|baja|%/);
     expect(describeSeries([], fmt)).toBe("Sin datos");
   });
 });

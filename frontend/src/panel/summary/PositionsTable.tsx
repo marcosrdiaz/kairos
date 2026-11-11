@@ -5,6 +5,7 @@ import { formatPrice } from "../../app/operations/usePortfolio";
 import { formatDate, formatEur, formatPercent, formatUnits } from "../../lib/format";
 import { signedEur } from "../figures";
 import { Traced } from "../Traced";
+import { PositionSparkline } from "./PositionSparkline";
 
 const th = "px-4 py-3 text-left text-sm font-semibold text-ink-muted";
 const num = "px-4 py-3 text-right tabular-nums";
@@ -23,9 +24,10 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
         tabIndex={0}
         className="mt-2 overflow-x-auto"
       >
-        <table className="w-full min-w-[44rem] border-collapse text-base">
+        <table className="w-full min-w-[54rem] border-collapse text-base">
           <caption className="sr-only">
-            Posiciones de la cartera de {portfolio.name}, con su valor en euros y la fecha del precio
+            Posiciones de la cartera de {portfolio.name}, con la evolución de su precio en el último mes,
+            su valor en euros y la fecha del precio
           </caption>
           <thead>
             <tr className="border-b border-line">
@@ -37,6 +39,9 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
               </th>
               <th scope="col" className={`${th} text-right`}>
                 Precio
+              </th>
+              <th scope="col" className={th}>
+                Evolución <span className="font-normal">(1 mes)</span>
               </th>
               <th scope="col" className={`${th} text-right`}>
                 Valor
@@ -70,6 +75,9 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
                   <span className="block text-sm text-ink-muted">
                     <time dateTime={pos.price_at}>{formatDate(pos.price_at)}</time>
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  <PositionSparkline portfolioId={portfolio.id} assetId={pos.asset_id} name={pos.name} />
                 </td>
                 <td className={`${num} font-semibold text-ink`}>
                   <Traced calcId={portfolio.calc_id}>{formatEur(pos.value_eur)}</Traced>
