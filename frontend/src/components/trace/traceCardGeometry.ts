@@ -41,8 +41,9 @@ export function overlaps(a: Box, b: Box): boolean {
 
 /**
  * Área de contenido visible, leída del DOM de `AppShell`: el ancho de `<main id="contenido">` (deja
- * fuera la barra lateral y el chat de escritorio) y, en móvil, el alto entre la cabecera fija y la
- * barra de navegación inferior. Sin `AppShell` (tests, `/lab`), la ventana entera.
+ * fuera la barra lateral y el chat de escritorio), por encima del botón flotante del chat y, en
+ * móvil, entre la cabecera fija y la barra de navegación inferior. Sin `AppShell` (tests, `/lab`),
+ * la ventana entera.
  */
 export function contentBounds(): Box {
   const bounds: Box = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
@@ -51,6 +52,11 @@ export function contentBounds(): Box {
   const rect = main.getBoundingClientRect();
   bounds.left = Math.max(bounds.left, rect.left);
   bounds.right = Math.min(bounds.right, rect.right);
+  // El botón flotante del chat, mientras se ve, marca el borde inferior: la tarjeta no lo tapa.
+  const launcher = document.getElementById("chat-launcher");
+  if (launcher && getComputedStyle(launcher).opacity !== "0") {
+    bounds.bottom = Math.min(bounds.bottom, launcher.getBoundingClientRect().top - GAP_PX);
+  }
   // En escritorio se desplaza el <main> y la cabecera es la barra lateral: solo cuenta el ancho.
   if (getComputedStyle(main).overflowY === "auto") return bounds;
   const header = document.querySelector("header");
