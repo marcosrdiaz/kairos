@@ -16,7 +16,7 @@ import { SummarySection } from "./summary/SummarySection";
 export function PanelPage() {
   const [portfolioId] = usePortfolioId();
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+    <div className="flex w-full min-w-0 flex-col gap-10">
       {/* Título y barra de bloques: hijos directos para que la barra quede fija en todo el panel. */}
       <PanelHeader portfolioId={portfolioId} />
       <PanelNoticeSlot />

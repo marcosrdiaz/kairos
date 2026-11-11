@@ -23,6 +23,10 @@ describe("NewsArticle", () => {
     expect(screen.getByText("Confianza media")).toBeTruthy();
     expect(screen.getByText(/entre -0,6\s% y -0,3\s%/)).toBeTruthy();
     expect(screen.getByText(/Según 8 casos parecidos del histórico/)).toBeTruthy();
+    expect(article.querySelector("svg[data-news-art]")).not.toBeNull();
+    expect(article.querySelector("[data-news-value-tone='riesgo']")?.className).toContain(
+      "text-trend-down",
+    );
     // La cifra lleva su calc_id para «¿De dónde sale?».
     expect(article.querySelector(`[data-calc-id="${NVDA.estimate!.calc_id}"]`)).not.toBeNull();
   });
@@ -88,6 +92,23 @@ describe("textos de la estimación", () => {
     render(<NewsArticle item={measured} />);
     expect(screen.getByText(/Ese día tu cartera se movió/)).toBeTruthy();
     expect(screen.getByText("Medido")).toBeTruthy();
+  });
+
+  it("usa el color semántico de subida para una oportunidad", () => {
+    const opportunity = {
+      ...NVDA,
+      estimate: {
+        ...NVDA.estimate!,
+        polarity: "oportunidad",
+        low_eur: "110",
+        high_eur: "270",
+        low_pct: "0.003",
+        high_pct: "0.006",
+      },
+    } as NewsItemOut;
+    render(<NewsArticle item={opportunity} />);
+    expect(screen.getByText(/entre 110\s€ y 270\s€/).className).toContain("text-trend-up");
+    expect(screen.getByText("Estimado").className).toContain("bg-icon-gold-bg");
   });
 
   it("un texto que no cabe sale recortado con «Mostrar más», y se despliega", () => {

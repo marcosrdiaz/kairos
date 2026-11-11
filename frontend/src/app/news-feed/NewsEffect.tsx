@@ -1,9 +1,21 @@
-import type { NewsEstimateOut } from "../../api/generated/schema";
+import type { Confidence, NewsEstimateOut, NewsEstimateStatus } from "../../api/generated/schema";
+import { ArrowDownIcon, ArrowUpIcon } from "../../components/icons";
 import { TraceFigure } from "../../components/trace/TraceFigure";
 import { CONFIDENCE_LABEL, POLARITY } from "../news/labels";
 import { STATUS_LABEL, horizonText, methodText, rangeTexts } from "./labels";
 
 const PILL = "m-0 rounded-full px-3 py-1 text-sm font-semibold";
+const STATUS_TONE: Record<NewsEstimateStatus, string> = {
+  estimated: "bg-icon-gold-bg text-icon-gold",
+  measured: "bg-icon-green-bg text-icon-green",
+  pending: "bg-icon-blue-bg text-icon-blue",
+  not_relevant: "bg-nodata-bg text-nodata",
+};
+const CONFIDENCE_TONE: Record<Confidence, string> = {
+  alta: "bg-icon-green-bg text-icon-green",
+  media: "bg-icon-blue-bg text-icon-blue",
+  baja: "bg-icon-gold-bg text-icon-gold",
+};
 
 /**
  * Lo primero de cada noticia: qué puede significar para la cartera elegida. Todas las cifras
@@ -36,6 +48,18 @@ export function NewsEffect({
     );
   }
   const polarity = estimate.polarity ? POLARITY[estimate.polarity] : null;
+  const MovementIcon =
+    estimate.polarity === "riesgo"
+      ? ArrowDownIcon
+      : estimate.polarity === "oportunidad"
+        ? ArrowUpIcon
+        : null;
+  const movementTone =
+    estimate.polarity === "riesgo"
+      ? "text-trend-down"
+      : estimate.polarity === "oportunidad"
+        ? "text-trend-up"
+        : "text-ink";
   const method = methodText(estimate);
   return (
     <div className="flex flex-col gap-2">
@@ -43,15 +67,25 @@ export function NewsEffect({
         {polarity && (
           <>
             <dt className="sr-only">Tipo de efecto</dt>
-            <dd className={`${PILL} ${polarity.className}`}>{polarity.label}</dd>
+            <dd
+              data-news-polarity={estimate.polarity}
+              className={`${PILL} ${polarity.className}`}
+            >
+              {polarity.label}
+            </dd>
           </>
         )}
         <dt className="sr-only">Tipo de cifra</dt>
-        <dd className={`${PILL} border border-line text-ink`}>{STATUS_LABEL[estimate.status]}</dd>
+        <dd
+          data-news-status={estimate.status}
+          className={`${PILL} ${STATUS_TONE[estimate.status]}`}
+        >
+          {STATUS_LABEL[estimate.status]}
+        </dd>
         {estimate.confidence && (
           <>
             <dt className="sr-only">Fiabilidad de la estimación</dt>
-            <dd className={`${PILL} bg-nodata-bg text-nodata`}>
+            <dd className={`${PILL} ${CONFIDENCE_TONE[estimate.confidence]}`}>
               {CONFIDENCE_LABEL[estimate.confidence]}
             </dd>
           </>
@@ -61,7 +95,17 @@ export function NewsEffect({
         <p className={sentence}>
           Ese día tu cartera se movió{" "}
           <span className="tabular-nums">
-            <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
+            {MovementIcon && (
+              <MovementIcon
+                aria-hidden="true"
+                className={`mr-1 inline size-4 ${movementTone}`}
+              />
+            )}
+            <TraceFigure calcId={estimate.calc_id}>
+              <span data-news-value-tone={estimate.polarity} className={movementTone}>
+                {ranges.eur}
+              </span>
+            </TraceFigure>
           </span>{" "}
           por esta vía.
         </p>
@@ -69,7 +113,17 @@ export function NewsEffect({
         <p className={sentence}>
           Tu cartera podría moverse{" "}
           <span className="tabular-nums">
-            <TraceFigure calcId={estimate.calc_id}>{ranges.eur}</TraceFigure>
+            {MovementIcon && (
+              <MovementIcon
+                aria-hidden="true"
+                className={`mr-1 inline size-4 ${movementTone}`}
+              />
+            )}
+            <TraceFigure calcId={estimate.calc_id}>
+              <span data-news-value-tone={estimate.polarity} className={movementTone}>
+                {ranges.eur}
+              </span>
+            </TraceFigure>
           </span>{" "}
           {horizonText(estimate.horizon_sessions)}.
         </p>

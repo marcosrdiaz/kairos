@@ -43,8 +43,9 @@ function useIsDesktop(): boolean {
  * El asistente (Pregunta) no es una sección: es el botón flotante y su panel (`voice/ChatDock`).
  * En escritorio abre una tercera columna que estrecha el contenido; en móvil, un modal que deja
  * el resto de la app `inert` mientras está abierto.
- * En escritorio la ventana no se desplaza: lo hace el <main>, con la barra de scroll propia
- * (`components/Scrollbar`), así la barra queda pegada al contenido y no al borde de la pantalla.
+ * El contenido ocupa el ancho disponible en todos los tamaños; cada pantalla limita localmente
+ * solo las zonas de lectura o formularios que lo necesitan. En escritorio la ventana no se
+ * desplaza: lo hace el <main>, con la barra de scroll propia (`components/Scrollbar`).
  */
 export function AppShell() {
   const { search } = useLocation();
@@ -136,7 +137,7 @@ export function AppShell() {
           id="contenido"
           tabIndex={-1}
           inert={modal}
-          className="outline-none @container/app-content mx-auto w-full max-w-xl px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:max-w-none lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
+          className="outline-none @container/app-content mx-auto min-w-0 w-full px-4 pb-[calc(var(--kairos-bottom-nav-height)+1.5rem)] pt-6 kairos-scroll lg:h-dvh lg:overflow-y-auto lg:scroll-pb-4 lg:scroll-pt-4 lg:px-10 lg:pb-12 lg:pt-10 2xl:px-14"
         >
           <Outlet />
           <AppNotice />

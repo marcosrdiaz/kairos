@@ -194,12 +194,13 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 
 Móvil primero, pero la app también se usa en escritorio.
 
-- **Móvil (< 1024 px):** cabecera fija de 64 px con la marca y el botón de modo oscuro; contenido en una columna de 36 rem (576 px) con 16 px de margen; barra inferior fija con tres pestañas (icono + texto; la activa con una píldora de tinte de oro detrás del icono).
+- **Móvil (< 1024 px):** cabecera fija de 64 px con la marca y el botón de modo oscuro; el contenido ocupa el ancho disponible con 16 px de margen, también en tabletas; barra inferior fija con tres pestañas (icono + texto; la activa con una píldora de tinte de oro detrás del icono). Cada pantalla limita localmente solo los formularios o textos largos que lo necesitan.
 - **Escritorio (≥ 1024 px, `lg`):** barra lateral de 19 rem. Arriba, a sangre, el banner de marca (`BrandBanner`: logo en su cuadrado, "Kairos" y el lema "Analiza · comprende · decide" sobre ondas doradas). Debajo, las secciones (la activa rellena de oro), un separador, el enlace al panel y, al pie, el interruptor de modo oscuro. El contenido ocupa todo el ancho restante con 40 px de margen (56 px en pantallas muy anchas).
 - Es un único `<nav aria-label="Secciones">`, recolocado con CSS. Los landmarks (`header`, `nav`, `main`) permiten saltar de zona con el lector de pantalla.
 - `scroll-padding` evita que la cabecera o la barra fijas tapen el elemento con foco.
 - **Inicio:** cabecera con degradado de tinte de oro (estado, frase como titular, botón "Ver por qué" y, a la derecha, la ilustración `HeroArt`: un globo con una órbita de eventos que desemboca en una moneda en euros, con los colores de los tokens; en oscuro añade estrellas y halo), cuatro tarjetas de cifras (2 columnas en móvil, 4 en escritorio ancho) y una tarjeta de atajos. Previsto: ticker de mercado y gráfica interactiva entre la cabecera y las tarjetas (T2-17, T2-18) y carrusel de noticias debajo de las tarjetas (T2-19).
 - El panel (`/panel`) mantiene su layout de escritorio propio.
+- El contenedor principal no impone un `max-width`: se estrecha junto al panel del asistente; Noticias, Avisos y Panel usan el ancho restante y sus componentes conservan límites locales de lectura.
 - El widget de la pantalla de inicio del móvil es un componente aparte que se hará después.
 
 Ritmo de espacio en pasos de 8, 16 y 24 px. Todo objetivo táctil mide al menos 44×44 px. El texto debe poder ampliarse al 200 % sin perder contenido ni producir desplazamiento horizontal.

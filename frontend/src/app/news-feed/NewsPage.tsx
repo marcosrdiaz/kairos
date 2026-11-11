@@ -50,7 +50,7 @@ export function NewsPage() {
   return (
     <>
       <PageTitle>Noticias</PageTitle>
-      <div className="flex max-w-6xl flex-col gap-6">
+      <div className="news-page-layout flex min-w-0 w-full flex-col gap-6">
         <p className="m-0 max-w-[65ch] text-base text-ink-muted">
           Lo que pasa en los mercados, traducido a tu cartera: cuánto podría moverla cada noticia,
           en qué plazo y desde cuándo se nota en cada posición.
@@ -59,7 +59,7 @@ export function NewsPage() {
         <section
           aria-labelledby="news-list-title"
           aria-busy={isPending}
-          className="flex flex-col gap-4"
+          className="flex min-w-0 flex-col gap-4"
         >
           <h2 id="news-list-title" className="sr-only">
             Lista de noticias
@@ -76,7 +76,7 @@ export function NewsPage() {
           )}
           {data?.length === 0 && <EmptyNote>{emptyText(filter)}</EmptyNote>}
           {data && data.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 @3xl/app-content:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-1 gap-5 @3xl/app-content:grid-cols-2">
               {data.map((item) => (
                 <NewsCard key={item.id} item={item} onOpen={openDetail} />
               ))}

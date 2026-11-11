@@ -46,12 +46,12 @@ export function NewsDetail({ item, onClose }: { item: NewsItemOut; onClose: () =
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="news-detail-backdrop absolute inset-0 bg-ink/40"
+        className="news-detail-backdrop absolute inset-0"
       />
       <div
         role="dialog"
         aria-labelledby={titleId}
-        className="news-detail-panel absolute inset-x-0 bottom-0 top-4 flex flex-col overflow-hidden rounded-t-card border border-line bg-surface shadow-lg lg:inset-y-6 lg:mx-auto lg:w-[min(46rem,calc(100%-3rem))] lg:rounded-card"
+        className="news-detail-panel absolute inset-x-0 bottom-0 top-4 flex flex-col overflow-hidden rounded-t-card border border-line bg-surface lg:inset-y-6 lg:mx-auto lg:w-[min(46rem,calc(100%-3rem))] lg:rounded-card"
       >
         <div className="flex justify-end border-b border-line px-4 py-2">
           <button
@@ -60,7 +60,18 @@ export function NewsDetail({ item, onClose }: { item: NewsItemOut; onClose: () =
             onClick={onClose}
             className="inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-4 text-base font-semibold text-ink hover:border-accent"
           >
-            <span aria-hidden="true">✕</span>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              aria-hidden="true"
+              focusable="false"
+              className="size-4"
+            >
+              <path d="m5 5 10 10M15 5 5 15" />
+            </svg>
             Cerrar
           </button>
         </div>
