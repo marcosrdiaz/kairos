@@ -54,7 +54,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | 1 | Datos y motores | lun 9 | ✅ cerrada |
 | 2 | Experiencia e integración | hasta el mar 10, 18:00 | ✅ cerrada |
 | 3 | Endurecimiento | mar 10, 18:00 → mié 11, 16:00 | ✅ cerrada |
-| 4 | Producción: datos reales y varias carteras | validada; después de la entrega salvo acuerdo | 🔄 abierta |
+| 4 | Producción: datos reales y varias carteras | validada; después de la entrega salvo acuerdo | ✅ cerrada |
 | 5 | Rediseño visual: interfaz y componentes | por definir | 🔄 abierta |
 | 6 | Entrega | mié 11, 21:00 (se coge sin esperar a las fases 4 y 5) | ⬜ pendiente |
 | EXTRA | Después de la entrega | después del mié 11 | ⏸ aplazada |
