@@ -73,7 +73,7 @@ export function PortfolioRow({ portfolio, selected, onRenamed, onDelete }: Portf
 
   if (editing) {
     return (
-      <li className="rounded-card border border-line bg-surface p-4">
+      <li className="border-t border-line py-3 first:border-t-0">
         <form noValidate onSubmit={submit} className="flex flex-col gap-2">
           <label htmlFor={`${id}-name`} className="text-base font-semibold text-ink">
             Nuevo nombre de «{portfolio.name}»
@@ -111,7 +111,7 @@ export function PortfolioRow({ portfolio, selected, onRenamed, onDelete }: Portf
   }
 
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-line bg-surface p-4">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line py-3 first:border-t-0">
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-base font-semibold text-ink">{portfolio.name}</span>
         <span className="text-sm text-ink-muted">

@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useStatus } from "../../api/hooks/useStatus";
 import { FirstRunGate } from "../onboarding/FirstRunGate";
 import { PortfolioManager } from "./PortfolioManager";
-import { PortfolioPicker } from "./PortfolioPicker";
 import { PORTFOLIO_STORAGE_KEY } from "./storedPortfolio";
 import { usePortfolioId } from "./usePortfolioId";
 
@@ -87,7 +86,6 @@ function renderApp(path = "/cartera") {
             path="*"
             element={
               <FirstRunGate>
-                <PortfolioPicker />
                 <PortfolioManager />
                 <ScreenProbe />
               </FirstRunGate>

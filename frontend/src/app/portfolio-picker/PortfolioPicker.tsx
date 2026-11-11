@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, type Ref } from "react";
 import { cn } from "../../lib/cn";
 import { initials } from "./initials";
 import { kindSuffix } from "./kindLabel";
@@ -9,6 +9,10 @@ import { useSyncPortfolioId } from "./useSyncPortfolioId";
 interface PortfolioPickerProps {
   /** Sin leyenda visible (barra lateral). La leyenda sigue para el lector de pantalla. */
   compact?: boolean;
+  /** Título visible que también nombra el grupo de radios. */
+  labelledBy?: string;
+  onCreate?: () => void;
+  createButtonRef?: Ref<HTMLButtonElement>;
 }
 
 /** Colores de los círculos, por orden de la lista (fondo y letra con contraste AA en claro y oscuro). */
@@ -27,6 +31,37 @@ const SPREAD =
 const NAME_SHOWN =
   "group-hover/picker:opacity-100 group-focus-within/picker:opacity-100 pointer-coarse:opacity-100";
 
+function CreatePortfolioButton({
+  onCreate,
+  buttonRef,
+}: {
+  onCreate: () => void;
+  buttonRef?: Ref<HTMLButtonElement>;
+}) {
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      aria-label="Nueva cartera"
+      onClick={onCreate}
+      className="relative z-10 ml-1 flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-line-strong bg-transparent text-accent transition-colors hover:border-accent hover:bg-accent-tint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-95 motion-reduce:transition-none"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        viewBox="0 0 24 24"
+        className="size-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    </button>
+  );
+}
+
 /**
  * Selector de cartera (T1-19, T4-13; rediseñado en T5-15) como círculos de perfil. Por dentro
  * sigue siendo un grupo de radios nativos: flechas para moverse, el lector anuncia "Cartera,
@@ -34,7 +69,12 @@ const NAME_SHOWN =
  * nombre, al pasar el ratón o al recibir foco. La elegida lleva anillo y marca, y su nombre
  * se ve siempre debajo («Ahora: …»). La elegida va en `?p=` y se recuerda en el navegador.
  */
-export function PortfolioPicker({ compact = false }: PortfolioPickerProps) {
+export function PortfolioPicker({
+  compact = false,
+  labelledBy,
+  onCreate,
+  createButtonRef,
+}: PortfolioPickerProps) {
   const [current, select] = usePortfolioId();
   const { data, isPending, isError } = usePortfolios();
   const name = useId();
@@ -42,17 +82,25 @@ export function PortfolioPicker({ compact = false }: PortfolioPickerProps) {
 
   if (isPending) {
     return (
-      <div
-        aria-hidden="true"
-        className="size-14 animate-pulse rounded-full bg-surface-muted motion-reduce:animate-none"
-      />
+      <div className="flex items-center gap-2">
+        <div
+          aria-hidden="true"
+          className="size-14 animate-pulse rounded-full bg-surface-muted motion-reduce:animate-none"
+        />
+        {onCreate && <CreatePortfolioButton onCreate={onCreate} buttonRef={createButtonRef} />}
+      </div>
     );
   }
   if (isError || data.length === 0) {
     return compact ? null : (
-      <p className="m-0 text-base text-ink-muted">
-        Ahora mismo no podemos cargar las carteras. Vuelve a intentarlo en unos segundos.
-      </p>
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <p className="m-0 text-base text-ink-muted">
+          {isError
+            ? "Ahora mismo no podemos cargar las carteras. Puedes volver a intentarlo en unos segundos."
+            : "Todavía no hay carteras. Crea una para empezar."}
+        </p>
+        {onCreate && <CreatePortfolioButton onCreate={onCreate} buttonRef={createButtonRef} />}
+      </div>
     );
   }
 
@@ -60,8 +108,8 @@ export function PortfolioPicker({ compact = false }: PortfolioPickerProps) {
   const selectedKind = selected ? kindSuffix(selected) : "";
 
   return (
-    <fieldset className="m-0 min-w-0 border-0 p-0">
-      <legend className={compact ? "sr-only" : "mb-3 p-0 text-base font-semibold text-ink"}>
+    <fieldset aria-labelledby={labelledBy} className="m-0 min-w-0 border-0 p-0">
+      <legend className={compact || labelledBy ? "sr-only" : "mb-3 p-0 text-base font-semibold text-ink"}>
         Cartera
       </legend>
       <div className="flex flex-col gap-2">
@@ -131,6 +179,7 @@ export function PortfolioPicker({ compact = false }: PortfolioPickerProps) {
               </label>
             );
           })}
+          {onCreate && <CreatePortfolioButton onCreate={onCreate} buttonRef={createButtonRef} />}
         </div>
         {selected && !compact && (
           <p aria-hidden="true" className="m-0 text-base text-ink-muted">
