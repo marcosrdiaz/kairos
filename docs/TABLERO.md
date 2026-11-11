@@ -290,6 +290,10 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T5-20 · Cartera: gestión integrada y formulario de operaciones — Javi
+**Qué estaba haciendo:** En la rama `t5-20/cartera-ui-polish` (commit local `9812e38`) se amplió la página al ancho disponible, se integró la gestión en «Carteras» con el botón circular de alta y se renovó el formulario de operaciones.
+**Siguiente paso exacto:** Javi lo comprueba con Docker en claro/oscuro, con el chatbot abierto y en móvil/escritorio; recoger su feedback. No ejecutar la batería completa del frontend ni subir la rama hasta que lo indique.
+**Ficheros tocados:** `frontend/src/app/CarteraPage.tsx`, `CarteraPage.test.tsx`, `portfolio-picker/PortfolioPicker.tsx`, `PortfolioManager.tsx`, `PortfolioManager.test.tsx`, `PortfolioRow.tsx`, `NewPortfolioForm.tsx`, `operations/OperationsSection.tsx`, `OperationsForm.tsx` y `OperationKindPicker.tsx`.
 
 ### Lo que deja T5-18 (cifras explicadas al pasar o enfocar) — Alons (para quien coja la tarea)
 - En `main` (#153). Las cifras abren una tarjeta anclada (`components/trace/TraceAnchor.tsx` + `TraceCard.tsx`): se abre al pasar el ratón o con el foco, el clic la fija, y Esc, pulsar fuera o un segundo clic la cierran. «Ver el cálculo completo» abre `TraceDialog`. La colocación está en `traceCardGeometry.ts`: dentro de `#contenido`, por encima del botón del chat y de la barra inferior.
