@@ -113,6 +113,31 @@ export function CategoryIcon({
 }
 
 /**
+ * Fila de metadatos de una noticia: chip de categoría y fecha (carrusel de Inicio, encima del
+ * título). Lo mismo que lleva la portada completa, para que la portada compacta sea solo imagen.
+ */
+export function NewsMeta({ category, publishedAt }: { category: NewsCategory; publishedAt: string }) {
+  const tone = COVER_TONE[category];
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-0.5 text-sm font-semibold",
+          tone.foreground,
+        )}
+      >
+        <CategoryIcon category={category} className="size-4" />
+        {CATEGORY_LABEL[category]}
+      </span>
+      <time dateTime={publishedAt} className="inline-flex items-center gap-2 text-sm text-ink-muted">
+        <CalendarIcon className={cn("size-4", tone.foreground)} />
+        {formatDate(publishedAt)}
+      </time>
+    </div>
+  );
+}
+
+/**
  * Portada editorial geométrica por categoría; no representa una noticia o cifra concreta.
  */
 export function NewsCover({
@@ -128,13 +153,29 @@ export function NewsCover({
   dense?: boolean;
 }) {
   const tone = COVER_TONE[category];
+  // Compacta (carrusel de Inicio): solo la ilustración, a todo el recuadro. La categoría y la fecha
+  // las pinta `NewsMeta` junto al texto.
+  if (dense) {
+    return (
+      <div
+        aria-hidden="true"
+        className={cn(
+          "relative isolate flex size-full items-center justify-center overflow-hidden rounded-control",
+          tone.background,
+          tone.foreground,
+        )}
+      >
+        <div className="flex size-full items-center justify-center p-4 opacity-75 [&>svg]:max-h-full [&>svg]:max-w-full">
+          <CategoryArtwork category={category} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className={cn(
         "relative isolate flex items-center overflow-hidden text-ink",
-        dense
-          ? "min-h-0 rounded-control px-4 py-3"
-          : large
+        large
           ? "min-h-40 rounded-control px-5 py-5"
           : "min-h-28 rounded-t-[15px] px-4 py-4",
         tone.background,
@@ -158,9 +199,7 @@ export function NewsCover({
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute z-0 flex items-center justify-center opacity-75",
-          // En el carrusel (dense) la ilustración es pequeña y va arriba a la derecha: no pisa la fecha.
-          dense ? "right-2 top-2 size-20" : "inset-y-0 right-1 w-[46%]",
+          "pointer-events-none absolute inset-y-0 right-1 z-0 flex w-[46%] items-center justify-center opacity-75",
           tone.foreground,
         )}
       >
