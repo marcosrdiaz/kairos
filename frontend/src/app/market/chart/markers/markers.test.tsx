@@ -77,6 +77,15 @@ describe("tarjeta de la noticia", () => {
     act(() => store.set({ marker: MARKER, x: 490, y: 80 }));
     expect(screen.getByRole("tooltip", { hidden: true }).style.left).toBe("180px");
   });
+
+  it("ajusta el ancho a gráficas estrechas", () => {
+    const store = createMarkerStore();
+    render(<MarkerCard store={store} id="tarjeta" width={250} />);
+    act(() => store.set({ marker: MARKER, x: 240, y: 80 }));
+    const card = screen.getByRole("tooltip", { hidden: true });
+    expect(card.style.width).toBe("250px");
+    expect(card.style.left).toBe("0px");
+  });
 });
 
 describe("tabla alternativa", () => {

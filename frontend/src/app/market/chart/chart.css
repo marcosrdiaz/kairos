@@ -222,6 +222,11 @@
   visibility: visible;
   transform: none;
 }
+@media (max-width: 39.999rem) {
+  .kchart-hint-pop {
+    max-width: min(12.5rem, calc(100vw - 7.5rem));
+  }
+}
 
 /* --- Tabla --- */
 .kchart-table summary::-webkit-details-marker {
