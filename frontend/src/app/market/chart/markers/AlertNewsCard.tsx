@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { TraceLink } from "../../../../components/trace/TraceLink";
-import { CATEGORY_LABEL } from "../../../news-feed/labels";
+import { CATEGORY_LABEL, sessionsText } from "../../../news-feed/labels";
 import { formatEurRange } from "../../../../lib/format";
 import { pointDate } from "../chartFormat";
 import { NewsCategoryIcon } from "./NewsCategoryIcon";
@@ -79,7 +79,7 @@ export function AlertNewsCard({ store, id, width, height = 0 }: { store: NewsMar
               {range ? (
                 <>
                   <p className="m-0 tabular-nums text-ink">{formatEurRange(range.low, range.high)}</p>
-                  {estimate.horizon_sessions && <p className="m-0 text-ink-muted">A {estimate.horizon_sessions} sesiones</p>}
+                  {estimate.horizon_sessions && <p className="m-0 text-ink-muted">A {sessionsText(estimate.horizon_sessions)}</p>}
                   <p className={`m-0 text-xs text-ink-muted${compact ? " hidden" : ""}`}>
                     El movimiento medido del mercado no está disponible; se muestra el impacto en tu cartera.
                   </p>

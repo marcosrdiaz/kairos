@@ -90,4 +90,27 @@ describe("marcadores de Inicio respaldados por avisos", () => {
     expect(screen.getByText(/impacto estimado entre .* a 5 sesiones/)).toBeTruthy();
     expect(document.querySelector(`[data-calc-id="${news.estimate?.calc_id}"]`)).toBeTruthy();
   });
+
+  it("en la tabla alternativa, el plazo de 1 sesión va en singular", () => {
+    const base = newsExample as NewsItemOut;
+    const news = {
+      ...base,
+      published_at: "2026-11-06T10:00:00Z",
+      estimate: { ...base.estimate!, horizon_sessions: 1 },
+    } as NewsItemOut;
+    const firstRow = rows[0]!;
+    render(
+      <HistoryTable
+        history={history as PortfolioHistoryOut}
+        periodName="Último mes"
+        newsMarkers={[{ news, marketDate: news.published_at, date: firstRow.date, value: firstRow.value }]}
+      />,
+    );
+    fireEvent.click(screen.getByText(/^Ver tabla/));
+    const details = document.querySelector("details") as HTMLDetailsElement;
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+    expect(screen.getByText(/impacto estimado entre .* a 1 sesión$/)).toBeTruthy();
+    expect(screen.queryByText(/1 sesiones/)).toBeNull();
+  });
 });
