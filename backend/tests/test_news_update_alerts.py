@@ -21,6 +21,7 @@ from app.agents import claude
 from app.alerts import repository as alerts_repository
 from app.alerts import service as alerts_service
 from app.core import clock, trace
+from app.main import API_PREFIX
 from app.news import service as news_service
 from app.news.ingest.runner import NewsIngestReport, SourceSchedule
 from app.schemas.alerts import AlertKind
@@ -158,3 +159,24 @@ def test_small_news_or_nothing_classified_do_not_alert(
     nothing = news_update.poll_once({})
     assert nothing.alerts == {}  # sin noticias clasificadas no se revisa nada
     assert all(_news_alerts(p) == [] for p in PORTFOLIOS)
+
+
+def test_the_alert_a_pass_creates_reaches_the_api_with_the_news_the_chart_draws(
+    client: TestClient, news_update: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Noticia → aviso → `/alerts` → `/news/{id}`: lo que lee la campana y el punto de la gráfica
+    de Inicio (TD-06). La gráfica pide la noticia por el `news_id` del aviso, con su cifra
+    trazada."""
+    item = _news("n1", "-9000", "-6000")
+    _Pass(monkeypatch).run(news_update, item)
+    monkeypatch.setattr(news_service, "get_for_portfolio", lambda portfolio_id, news_id: item)
+
+    for portfolio_id in PORTFOLIOS:
+        alerts = client.get(f"{API_PREFIX}/portfolios/{portfolio_id}/alerts").json()
+        [alert] = [a for a in alerts if a["kind"] == "news_estimate"]
+        assert alert["news_id"] == "n1" and alert["event_id"] is None
+
+        news = client.get(f"{API_PREFIX}/portfolios/{portfolio_id}/news/{alert['news_id']}").json()
+        assert news["id"] == "n1"
+        assert news["estimate"]["calc_id"] == alert["calc_id"]
+        assert trace.get(alert["calc_id"]) is not None

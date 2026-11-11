@@ -75,16 +75,33 @@ describe("tarjeta de noticia en la gráfica", () => {
     expect(screen.queryByRole("button", { name: "¿De dónde sale?" })).toBeNull();
   });
 
-  it("muestra la portada de la categoría y fecha de la noticia", () => {
+  it("muestra la categoría y la fecha de la noticia, con título y resumen recortados", () => {
     const news = newsExample as NewsItemOut;
-    const { card } = renderCard(news);
-    const rings = card.querySelectorAll('div[aria-hidden="true"] > span');
+    const { card } = renderCard(news, 400);
 
     expect(card.textContent).not.toContain("Ejemplo visual");
     expect(card.textContent).toContain("Resultados");
-    expect(card.querySelector('[aria-hidden="true"]')).not.toBeNull();
-    expect(rings[0]?.className).toContain("border-gold/10");
-    expect(rings[1]?.className).toContain("border-gold/15");
+    expect(card.querySelector("p.line-clamp-2.font-semibold")?.textContent).toBe(news.title);
+    expect(card.querySelector("p.line-clamp-1.text-ink-muted")?.textContent).toBe(news.summary);
+  });
+
+  it("en una gráfica estrecha oculta el resumen y el aviso largo para no tapar el resto", () => {
+    const { card } = renderCard(newsExample as NewsItemOut, 320);
+    const summary = card.querySelector("p.line-clamp-1.text-ink-muted");
+    expect(summary?.className).toContain("hidden");
+    expect(card.querySelector("p.text-xs.hidden")?.textContent).toContain("no está disponible");
+    expect(screen.getByRole("button", { name: "¿De dónde sale?" })).toBeTruthy(); // la traza se queda
+  });
+
+  it("con la altura de la gráfica, limita la altura de la tarjeta a esa altura", () => {
+    const store = createNewsMarkerStore();
+    render(
+      <TraceProvider>
+        <AlertNewsCard store={store} id="news-card" width={600} height={300} />
+      </TraceProvider>,
+    );
+    act(() => store.set({ marker: marker(newsExample as NewsItemOut), x: 300, y: 250 }));
+    expect(screen.getByRole("tooltip").style.maxHeight).toBe("min(21rem, 292px)");
   });
 
   it("anuncia fecha e impacto, y abre la tarjeta con foco de teclado", () => {
