@@ -136,4 +136,5 @@ Sirve para retomar el trabajo tras un `/clear` o al cambiar de tarea sin repetir
 | [D-104](decisiones/D-104-laboratorio-de-componentes-t5-01.md) | 2026-11-10 | Laboratorio de componentes (`/lab`) y dependencias de la fase 5 (T5-01) | Aceptada (acuerdo del equipo, 10-nov) |
 | [D-105](decisiones/D-105-rojo-de-marca-t5-10.md) | 2026-11-11 | Rojo de marca y jerarquía de color (T5-10) | Aceptada (dirección de rebranding solicitada por Javi) |
 | [D-106](decisiones/D-106-avisos-por-noticia-t4-31.md) | 2026-11-11 | Avisos por noticia: umbral según el perfil, un aviso nuevo al día y en la demo solo con `make news-alerts` (T4-31) | Propuesta |
+| [D-107](decisiones/D-107-asistente-sobre-cualquier-cartera-t4-14.md) | 2026-11-11 | El asistente ve todos los datos de cada cartera y el guardián comprueba las cifras por cartera (T4-14) | Propuesta |
 <!-- INDICE:FIN -->

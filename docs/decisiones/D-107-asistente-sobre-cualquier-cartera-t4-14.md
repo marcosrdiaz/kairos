@@ -1,4 +1,4 @@
-### D-XXX · El asistente ve todos los datos de cada cartera y el guardián comprueba las cifras por cartera (T4-14)
+### D-107 · El asistente ve todos los datos de cada cartera y el guardián comprueba las cifras por cartera (T4-14)
 - Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
 - Contexto: T4-14 pide preguntar por cualquier cartera sin elegirla en la app («¿cómo va la de mis hijos?»), responder cartera por cartera sin sumar nunca y que el guardián bloquee una cifra atribuida a la cartera equivocada. Alons amplió el alcance (11 nov): el asistente tiene que poder ver todos los datos del sistema de cada cartera, incluidas las noticias y cómo le afectan, los avisos, el radar, la agenda y el estado. Hasta ahora solo veía la cartera elegida, con 6 herramientas.
 - Decisión:
