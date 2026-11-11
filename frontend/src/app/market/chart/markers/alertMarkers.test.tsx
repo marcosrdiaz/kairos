@@ -58,6 +58,7 @@ describe("marcadores de Inicio respaldados por avisos", () => {
     details.open = true;
     fireEvent(details, new Event("toggle"));
     expect(screen.getByText(news.title)).toBeTruthy();
+    expect(screen.getByText(/impacto estimado entre .* a 5 sesiones/)).toBeTruthy();
     expect(document.querySelector(`[data-calc-id="${news.estimate?.calc_id}"]`)).toBeTruthy();
   });
 });

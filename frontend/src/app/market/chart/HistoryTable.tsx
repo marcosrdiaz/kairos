@@ -36,12 +36,26 @@ function EventTag({ marker }: { marker: EventMarker }) {
 
 function NewsTag({ marker }: { marker: AlertNewsMarker }) {
   const estimate = marker.news.estimate;
+  const range =
+    estimate &&
+    (estimate.status === "estimated" || estimate.status === "measured") &&
+    estimate.low_eur != null &&
+    estimate.high_eur != null
+      ? {
+          low: estimate.low_eur,
+          high: estimate.high_eur,
+          status: estimate.status,
+          horizon: estimate.horizon_sessions,
+        }
+      : null;
   return (
     <span className="mt-1 flex flex-wrap gap-x-2 rounded-control border border-line bg-surface px-2 py-1 text-sm text-ink" data-calc-id={estimate?.calc_id ?? undefined}>
       <span className="font-semibold text-brand-red">Noticia con aviso</span>
       <span>{marker.news.title}</span>
       <span className="text-ink-muted">{pointDate(marker.marketDate)}
-        {estimate?.low_eur && estimate.high_eur ? ` · impacto ${formatEurRange(estimate.low_eur, estimate.high_eur)}` : ""}
+        {range
+          ? ` · impacto ${range.status === "measured" ? "medido" : "estimado"} ${formatEurRange(range.low, range.high)}${range.horizon ? ` a ${range.horizon} sesiones` : ""}`
+          : ""}
       </span>
     </span>
   );

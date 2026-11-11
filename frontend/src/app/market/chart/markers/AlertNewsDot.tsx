@@ -13,8 +13,9 @@ export function AlertNewsDot({ cx, cy, marker, store, cardId }: {
 }) {
   if (cx === undefined || cy === undefined) return null;
   const estimate = marker.news.estimate;
-  const range = estimate?.low_eur && estimate.high_eur
-    ? ` Impacto ${formatEurRange(estimate.low_eur, estimate.high_eur)}.`
+  const range = estimate?.low_eur && estimate.high_eur &&
+    (estimate.status === "estimated" || estimate.status === "measured")
+    ? ` ${estimate.status === "measured" ? "Impacto medido" : "Impacto estimado"} en tu cartera: ${formatEurRange(estimate.low_eur, estimate.high_eur)}${estimate.horizon_sessions ? ` a ${estimate.horizon_sessions} sesiones` : ""}.`
     : "";
   const onKeyDown = (event: KeyboardEvent<SVGGElement>) => {
     if (event.key === "Escape") store.set(null);

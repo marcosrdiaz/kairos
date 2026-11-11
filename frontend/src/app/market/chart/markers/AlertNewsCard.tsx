@@ -10,6 +10,13 @@ export function AlertNewsCard({ store, id, width }: { store: NewsMarkerStore; id
   const cardWidth = Math.min(320, width || 320);
   const left = active ? Math.min(Math.max(active.x - cardWidth / 2, 0), Math.max(width - cardWidth, 0)) : 0;
   const above = (active?.y ?? 0) > 220;
+  const range =
+    estimate &&
+    (estimate.status === "estimated" || estimate.status === "measured") &&
+    estimate.low_eur != null &&
+    estimate.high_eur != null
+      ? { low: estimate.low_eur, high: estimate.high_eur }
+      : null;
   return (
     <div
       id={id}
@@ -25,13 +32,28 @@ export function AlertNewsCard({ store, id, width }: { store: NewsMarkerStore; id
           </p>
           <p className="m-0 text-base font-semibold leading-snug text-ink">{news.title}</p>
           <p className="m-0 line-clamp-3 text-ink-muted">{news.summary}</p>
-          {estimate && estimate.low_eur && estimate.high_eur && (
+          {estimate && (
             <div className="border-t border-line pt-2" data-calc-id={estimate.calc_id ?? undefined}>
               <p className="m-0 font-semibold text-ink">
-                {estimate.status === "measured" ? "Impacto medido" : "Impacto estimado"} en tu cartera
+                {estimate.status === "measured"
+                  ? "Impacto medido en tu cartera"
+                  : estimate.status === "estimated"
+                    ? "Impacto estimado en tu cartera"
+                    : estimate.status === "pending"
+                      ? "Impacto en tu cartera pendiente de medición"
+                      : "Sin impacto estimado para tu cartera"}
               </p>
-              <p className="m-0 tabular-nums text-ink">{formatEurRange(estimate.low_eur, estimate.high_eur)}</p>
-              {estimate.horizon_sessions && <p className="m-0 text-ink-muted">A {estimate.horizon_sessions} sesiones</p>}
+              {range ? (
+                <>
+                  <p className="m-0 tabular-nums text-ink">{formatEurRange(range.low, range.high)}</p>
+                  {estimate.horizon_sessions && <p className="m-0 text-ink-muted">A {estimate.horizon_sessions} sesiones</p>}
+                  <p className="m-0 text-xs text-ink-muted">
+                    El movimiento medido del mercado no está disponible; se muestra el impacto en tu cartera.
+                  </p>
+                </>
+              ) : (
+                <p className="m-0 text-ink-muted">No se muestran cifras porque no hay un rango disponible.</p>
+              )}
               <TraceLink calcId={estimate.calc_id} className="text-sm" />
             </div>
           )}
