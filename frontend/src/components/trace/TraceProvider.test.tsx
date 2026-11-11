@@ -8,7 +8,7 @@ import { TraceDialog } from "./TraceDialog";
 import { TraceFigure } from "./TraceFigure";
 import { TraceLink } from "./TraceLink";
 import { TraceProvider } from "./TraceProvider";
-import { TRACE_KIND_LABEL } from "./labels";
+import { TRACE_KIND_HOW, TRACE_KIND_LABEL } from "./labels";
 
 const ROOT = { ...(traceMock as unknown as TraceOut), calc_id: "calc_root" };
 
@@ -136,6 +136,17 @@ describe("TraceDialog", () => {
     expect(steps[0]?.closest("ol")).not.toBeNull();
     expect(steps[0]?.textContent).toMatch(/^1Paso 1: /);
     expect(steps[1]?.textContent).toMatch(/^2Paso 2: Traza no disponible/);
+  });
+
+  it("explica la fórmula en palabras y deja la exacta plegada", async () => {
+    stubTraces([ROOT]);
+    const dialog = await openFigure();
+    expect(await within(dialog).findByText(TRACE_KIND_HOW.valuation)).toBeTruthy();
+    const exact = within(dialog).getByText(ROOT.formula);
+    const details = exact.closest("details");
+    expect(details).not.toBeNull();
+    expect(details?.open).toBe(false);
+    expect(within(dialog).getByText("Ver la fórmula exacta")).toBeTruthy();
   });
 
   it("es un modal centrado sin JSON a la vista", async () => {
