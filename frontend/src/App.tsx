@@ -5,6 +5,7 @@ import { CarteraPage } from "./app/CarteraPage";
 import { InicioPage } from "./app/InicioPage";
 import { AssetPage } from "./app/market/asset-chart/AssetPage";
 import { NewsPage } from "./app/news-feed/NewsPage";
+import { AlertsPage } from "./app/alerts/AlertsPage";
 import { TraceProvider } from "./components/trace/TraceProvider";
 import { PanelPage } from "./panel/PanelPage";
 import { PhoneHomePage } from "./widget/PhoneHomePage";
@@ -22,10 +23,11 @@ export function App() {
         <Route path="inicio" element={<InicioPage />} />
         <Route path="cartera" element={<CarteraPage />} />
         <Route path="noticias" element={<NewsPage />} />
+        <Route path="alertas" element={<AlertsPage />} />
+        <Route path="panel" element={<PanelPage />} />
         <Route path="pregunta" element={<OpenChatRoute />} />
         <Route path="activo/:assetId" element={<AssetPage />} />
       </Route>
-      <Route path="panel" element={<PanelPage />} />
       <Route path="widget" element={<PhoneHomePage />} />
       {LabPage && (
         <Route

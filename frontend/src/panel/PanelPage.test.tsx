@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter, useLocation } from "react-router";
+import { Link, MemoryRouter, useLocation } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import bce from "../api/mocks/EventImpactOut.json";
 import nvda from "../api/mocks/EventImpactOut.nvda.json";
@@ -61,6 +61,7 @@ function renderPanel(path = "/panel?p=laura") {
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
         <PanelPage />
+        <Link to="/panel?p=javier">Abrir panel de Javier</Link>
         <LocationProbe />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -120,16 +121,16 @@ describe("PanelPage · Eventos", () => {
 });
 
 describe("PanelPage · cambio de cartera", () => {
-  it("un clic en Javier cambia los datos y mantiene ?p= para enlazar", async () => {
+  it("al abrir el panel para Javier cambian los datos y se mantiene ?p=", async () => {
     stubApi();
     renderPanel();
     await screen.findByRole("heading", { level: 3, name: bce.title });
-    fireEvent.click(await screen.findByRole("radio", { name: "Javier" }));
+    fireEvent.click(screen.getByRole("link", { name: "Abrir panel de Javier" }));
     expect(screen.getByTestId("search").textContent).toBe("?p=javier");
     await waitFor(() => expect(screen.queryByRole("heading", { level: 3, name: bce.title })).toBeNull());
     expect(await screen.findByRole("heading", { level: 3, name: nvda.title })).toBeTruthy();
     expect((await screen.findByText("Patrimonio")).parentElement?.textContent).toMatch(/\d/);
-    expect(document.querySelector("header [role=status]")?.textContent).toContain("Javier");
+    expect(screen.getByText("Mostrando la cartera de Javier")).toBeTruthy();
   });
 });
 
@@ -250,20 +251,17 @@ describe("PanelPage · filtro de eventos", () => {
     renderPanel();
     await screen.findByRole("heading", { level: 3, name: bce.title });
     fireEvent.click(screen.getByRole("radio", { name: "Resultados" }));
-    fireEvent.click(await screen.findByRole("radio", { name: "Javier" }));
+    fireEvent.click(screen.getByRole("link", { name: "Abrir panel de Javier" }));
     expect(await screen.findByRole("heading", { level: 3, name: bce.title })).toBeTruthy();
     expect((screen.getByRole("radio", { name: "Todos" }) as HTMLInputElement).checked).toBe(true);
   });
 });
 
 describe("PanelPage · accesibilidad", () => {
-  it("tiene enlace para saltar al contenido y un único h1", async () => {
+  it("tiene un único h1; el enlace de salto lo aporta AppShell", async () => {
     stubApi();
     renderPanel();
     await screen.findByText("Patrimonio");
-    const skip = screen.getByRole("link", { name: "Saltar al contenido" });
-    expect(skip.getAttribute("href")).toBe("#contenido");
-    expect(document.getElementById("contenido")?.tagName).toBe("MAIN");
     expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
   });
 

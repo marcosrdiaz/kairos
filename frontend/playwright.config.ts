@@ -37,7 +37,7 @@ export default defineConfig({
   projects: [
     {
       name: "escritorio",
-      // Escritorio: el asistente es un panel lateral y el selector de cartera está en la barra.
+      // Escritorio: el asistente es un panel lateral y el selector de cartera está en Cartera.
       use: { ...devices["Desktop Chrome"], channel, viewport: { width: 1440, height: 900 } },
     },
   ],

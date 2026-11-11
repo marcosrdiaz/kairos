@@ -30,13 +30,13 @@ test("paso 1 · Laura arranca en Tranquilo, con sus precios y los avisos de IA",
   const status = statusCard(page);
   await expect(status).toContainText("Tranquilo");
   await expect(status.getByRole("heading", { level: 2 })).toContainText(/[\d.]+ euros/);
-  await expect(page.getByRole("radio", { name: "Laura" })).toBeChecked();
 
   const assets = page.getByRole("region", { name: "Tus activos" });
   await expect(assets.getByRole("listitem").first()).toContainText(/\d\s(€|US\$)/);
 
   await expect(page.getByText(/usa inteligencia artificial.*No es asesoramiento/)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Avisos, ninguno sin leer" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Avisos" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Avisos" }).getByTestId("alerts-badge")).toHaveCount(0);
 });
 
 test("paso 2 · radiografía: país y empresas mirando dentro de los fondos", async ({ page }) => {
@@ -70,7 +70,7 @@ test("paso 3 · el evento en directo pasa el widget a Atento y llega el aviso", 
   await expect(notice).toHaveAccessibleName(/[\d.]+ euros menos/);
   await expect(notice).not.toHaveAccessibleName(ORDERS);
   await expect(statusCard(page)).toContainText("Atento");
-  await expect(page.getByRole("button", { name: "Avisos, 1 sin leer" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Avisos" }).getByTestId("alerts-badge")).toHaveText("1");
 
   // La pantalla de inicio del móvil simulada (widget, RF-13) dice lo mismo.
   await page.goto("/widget");
@@ -143,7 +143,9 @@ test("paso 6 · la misma noticia, distinta en la cartera de Laura y en la de Jav
   await expect(range).toBeVisible();
   const laura = { range: await range.textContent(), text: await nvidia.textContent() };
 
+  await page.getByRole("link", { name: "Cartera" }).click();
   await choose(page, "Cartera", "Javier");
+  await page.getByRole("link", { name: "Panel de contexto" }).click();
   await expect(page).toHaveURL(/[?&]p=javier/);
   await expect(range).toBeVisible();
   await expect(range).not.toHaveText(laura.range ?? "");

@@ -11,31 +11,24 @@ import { ScenariosSection } from "./scenarios/ScenariosSection";
 import { SummarySection } from "./summary/SummarySection";
 
 /**
- * Panel de contexto: layout de escritorio, sin pestañas inferiores. La cartera sale de `?p=`
- * (la cambia el selector de la cabecera); al cambiarla, los bloques se montan de nuevo y
- * entran con su animación corta.
+ * Panel de contexto dentro de AppShell. La cartera sale de `?p=`; al cambiarla en Cartera,
+ * los bloques se montan de nuevo y entran con su animación corta.
  */
 export function PanelPage() {
   const [portfolioId] = usePortfolioId();
   return (
-    <div className="min-h-dvh bg-paper">
-      <a
-        href="#contenido"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-20 focus:rounded-full focus:bg-accent focus:px-5 focus:py-3 focus:text-base focus:font-semibold focus:text-on-accent"
-      >
-        Saltar al contenido
-      </a>
-      <PanelHeader portfolioId={portfolioId} />
-      <main id="contenido" tabIndex={-1} className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8 outline-none">
-        <PageTitle visuallyHidden>Panel de contexto</PageTitle>
-        <PanelNoticeSlot />
-        <SummarySection key={`resumen-${portfolioId}`} portfolioId={portfolioId} />
-        <EventsSection key={`eventos-${portfolioId}`} portfolioId={portfolioId} />
-        <ExposureSection key={`exposicion-${portfolioId}`} portfolioId={portfolioId} />
-        <RadarSection key={`radar-${portfolioId}`} portfolioId={portfolioId} />
-        <AgendaSection key={`agenda-${portfolioId}`} portfolioId={portfolioId} />
-        <ScenariosSection key={`escenarios-${portfolioId}`} portfolioId={portfolioId} />
-      </main>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+      <div className="flex flex-col gap-4">
+        <PageTitle>Panel de contexto</PageTitle>
+        <PanelHeader portfolioId={portfolioId} />
+      </div>
+      <PanelNoticeSlot />
+      <SummarySection key={`resumen-${portfolioId}`} portfolioId={portfolioId} />
+      <EventsSection key={`eventos-${portfolioId}`} portfolioId={portfolioId} />
+      <ExposureSection key={`exposicion-${portfolioId}`} portfolioId={portfolioId} />
+      <RadarSection key={`radar-${portfolioId}`} portfolioId={portfolioId} />
+      <AgendaSection key={`agenda-${portfolioId}`} portfolioId={portfolioId} />
+      <ScenariosSection key={`escenarios-${portfolioId}`} portfolioId={portfolioId} />
     </div>
   );
 }

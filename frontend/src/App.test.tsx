@@ -18,11 +18,11 @@ function renderAt(path: string) {
 }
 
 describe("App", () => {
-  it("muestra las 2 pestañas y el botón del asistente", () => {
+  it("muestra las cinco rutas integradas y el botón del asistente", () => {
     renderAt("/inicio");
     const nav = screen.getByRole("navigation", { name: "Secciones" });
-    for (const name of ["Inicio", "Cartera"]) {
-      expect(nav.querySelector(`a[href="/${name.toLowerCase()}"]`)).not.toBeNull();
+    for (const [name, path] of [["Inicio", "/inicio"], ["Cartera", "/cartera"], ["Noticias", "/noticias"], ["Avisos", "/alertas"], ["Panel de contexto", "/panel"]]) {
+      expect(nav.querySelector(`a[href="${path}"]`)?.textContent).toContain(name);
     }
     expect(nav.querySelector('a[href="/pregunta"]')).toBeNull();
     const launcher = screen.getByRole("button", { name: /Abrir el asistente/ });
@@ -32,7 +32,7 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Pregunta a Kairos" })).toBeTruthy();
   });
   it("todas las pantallas llevan el aviso de IA y un enlace para saltar al contenido", () => {
-    for (const path of ["/inicio", "/cartera"]) {
+    for (const path of ["/inicio", "/cartera", "/alertas"]) {
       renderAt(path);
       expect(screen.getByText(/usa inteligencia artificial.*No es asesoramiento financiero/)).toBeTruthy();
       const skip = screen.getByRole("link", { name: "Saltar al contenido" });
@@ -47,13 +47,24 @@ describe("App", () => {
     renderAt("/");
     expect(screen.getByRole("heading", { name: "Inicio" })).toBeTruthy();
   });
-  it("/pregunta abre el asistente sobre Inicio; /panel va sin pestañas", () => {
+  it("Avisos cambia el contenido sin abrir un diálogo y conserva el asistente", () => {
+    renderAt("/inicio");
+    fireEvent.click(screen.getByRole("link", { name: "Avisos" }));
+    expect(screen.getByRole("heading", { level: 1, name: "Avisos" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Avisos" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.queryByRole("dialog", { name: "Avisos" })).toBeNull();
+    expect(screen.getByRole("button", { name: /Abrir el asistente/ })).toBeTruthy();
+  });
+  it("/pregunta abre el asistente sobre Inicio; /panel conserva la navegación y el chatbot", () => {
     renderAt("/pregunta");
     expect(screen.getByRole("heading", { name: "Inicio" })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Abrir el asistente/ }).getAttribute("aria-expanded")).toBe("true");
     cleanup();
     renderAt("/panel");
     expect(screen.getByRole("heading", { name: "Panel de contexto" })).toBeTruthy();
-    expect(screen.queryByRole("navigation", { name: "Secciones" })).toBeNull();
+    expect(screen.getByRole("navigation", { name: "Secciones" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Panel de contexto" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("button", { name: /Abrir el asistente/ })).toBeTruthy();
+    expect(screen.queryByRole("radio", { name: "Laura" })).toBeNull();
   });
 });
