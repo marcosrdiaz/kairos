@@ -7,17 +7,13 @@ import { formatUnits } from "../../lib/format";
 import { AssetCombobox } from "../onboarding/AssetCombobox";
 import { ASSET_TYPE_LABEL } from "../onboarding/labels";
 import { ChoiceGroup, SelectField, TextField } from "./fields";
+import { OperationKindPicker } from "./OperationKindPicker";
 import { OperationResult } from "./OperationResult";
 import { SAME_ASSET, buildOperation, emptyDraft, type DraftErrors, type OperationDraft, type OperationKind } from "./operationDraft";
 import { operationErrorText, transferNotAllowed } from "./operationError";
 import { TransferNotAllowedNotice } from "./TransferNotAllowedNotice";
 import { usePortfolio } from "./usePortfolio";
 
-const KINDS: { value: OperationKind; label: string }[] = [
-  { value: "buy", label: "Compra" },
-  { value: "sell", label: "Venta" },
-  { value: "transfer", label: "Traspaso" },
-];
 const SUBMIT: Record<OperationKind, string> = {
   buy: "Registrar compra",
   sell: "Registrar venta",
@@ -123,7 +119,7 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
   else if (positions.length === 0) positionsHint = "Esta cartera aún no tiene posiciones.";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 w-full flex-col gap-5">
       {save.isSuccess && (
         <OperationResult
           ref={resultRef}
@@ -132,11 +128,13 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
           fallbackToName={save.variables.toLabel}
         />
       )}
-      <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5 rounded-card border border-line bg-surface p-5">
-        <ChoiceGroup
-          legend="Tipo de operación"
+      <form
+        noValidate
+        onSubmit={onSubmit}
+        className="flex min-w-0 flex-col gap-5 rounded-card border border-line bg-surface p-5 sm:p-6"
+      >
+        <OperationKindPicker
           value={draft.kind}
-          options={KINDS}
           onValue={(kind) => {
             // Cantidad vacía: cada tipo tiene su unidad por defecto (importe o participaciones)
             // y conservar la cifra la cambiaría de unidad sin que se note.
@@ -145,50 +143,60 @@ export function OperationsForm({ portfolioId }: { portfolioId: string }) {
             save.reset();
           }}
         />
-        {draft.kind === "buy" ? (
-          <AssetCombobox label="Activo" value={draft.asset} onChange={(asset) => update({ asset })} error={errors.asset} />
-        ) : (
-          <SelectField
-            label={draft.kind === "sell" ? "Posición" : "Fondo de origen"}
-            hint={positionsHint ?? (draft.kind === "transfer" ? "Solo hay traspaso entre fondos de inversión." : undefined)}
-            placeholder="Elige una posición"
-            value={draft.heldAssetId}
-            options={positionOptions}
-            onValue={(heldAssetId) => update({ heldAssetId })}
-            error={errors.heldAssetId}
+        <div className="grid min-w-0 gap-5 @3xl/app-content:grid-cols-2">
+          {draft.kind === "buy" ? (
+            <AssetCombobox
+              label="Activo"
+              value={draft.asset}
+              onChange={(asset) => update({ asset })}
+              error={errors.asset}
+            />
+          ) : (
+            <SelectField
+              label={draft.kind === "sell" ? "Posición" : "Fondo de origen"}
+              hint={
+                positionsHint ??
+                (draft.kind === "transfer" ? "Solo hay traspaso entre fondos de inversión." : undefined)
+              }
+              placeholder="Elige una posición"
+              value={draft.heldAssetId}
+              options={positionOptions}
+              onValue={(heldAssetId) => update({ heldAssetId })}
+              error={errors.heldAssetId}
+            />
+          )}
+          <ChoiceGroup
+            legend="Cantidad"
+            value={draft.mode}
+            options={[
+              { value: "amount", label: "Por importe (€)" },
+              { value: "units", label: "Por participaciones" },
+            ]}
+            onValue={(mode) => update({ mode, quantity: "" })}
           />
-        )}
-        {draft.kind === "transfer" && (
-          <AssetCombobox
-            label="Fondo de destino"
-            value={draft.asset}
-            onChange={(asset) => update({ asset })}
-            error={errors.asset}
-            selectedError={errors.asset}
+          {draft.kind === "transfer" && (
+            <AssetCombobox
+              label="Fondo de destino"
+              value={draft.asset}
+              onChange={(asset) => update({ asset })}
+              error={errors.asset}
+              selectedError={errors.asset}
+            />
+          )}
+          <TextField
+            label={draft.mode === "amount" ? "Importe (€)" : "Participaciones"}
+            hint={
+              draft.mode === "amount"
+                ? "Con coma para los céntimos. Se usa el precio del momento."
+                : "Con coma para los decimales. Se usa el precio del momento."
+            }
+            inputMode="decimal"
+            autoComplete="off"
+            value={draft.quantity}
+            onValue={(quantity) => update({ quantity })}
+            error={errors.quantity}
           />
-        )}
-        <ChoiceGroup
-          legend="Cantidad"
-          value={draft.mode}
-          options={[
-            { value: "amount", label: "Por importe (€)" },
-            { value: "units", label: "Por participaciones" },
-          ]}
-          onValue={(mode) => update({ mode, quantity: "" })}
-        />
-        <TextField
-          label={draft.mode === "amount" ? "Importe (€)" : "Participaciones"}
-          hint={
-            draft.mode === "amount"
-              ? "Con coma para los céntimos. Se usa el precio del momento."
-              : "Con coma para los decimales. Se usa el precio del momento."
-          }
-          inputMode="decimal"
-          autoComplete="off"
-          value={draft.quantity}
-          onValue={(quantity) => update({ quantity })}
-          error={errors.quantity}
-        />
+        </div>
         <button
           ref={submitRef}
           type="submit"

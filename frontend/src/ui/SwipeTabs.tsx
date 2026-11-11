@@ -75,7 +75,7 @@ export function SwipeTabs({ items, label, className, swipeable = true }: SwipeTa
         role="tablist"
         aria-label={label}
         onKeyDown={onKeyDown}
-        className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-line bg-surface-muted p-1"
+        className="grid w-full grid-flow-col auto-cols-fr gap-1 rounded-full border border-line bg-surface-muted p-1 @3xl/app-content:inline-flex @3xl/app-content:w-fit"
       >
         {items.map((item) => {
           const selected = item.id === items[index]?.id;
@@ -94,7 +94,7 @@ export function SwipeTabs({ items, label, className, swipeable = true }: SwipeTa
               tabIndex={selected ? 0 : -1}
               onClick={() => setActiveId(item.id)}
               className={cn(
-                "relative min-h-touch shrink-0 rounded-full px-5 text-base font-medium whitespace-nowrap transition-colors",
+                "relative min-h-touch min-w-0 rounded-full px-2 py-2 text-center text-base leading-tight font-medium whitespace-normal transition-colors @3xl/app-content:shrink-0 @3xl/app-content:px-5 @3xl/app-content:py-0 @3xl/app-content:whitespace-nowrap",
                 selected ? "text-on-accent" : "text-ink-muted hover:text-ink",
               )}
             >

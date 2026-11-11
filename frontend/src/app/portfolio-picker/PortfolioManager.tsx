@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import type { PortfolioSummaryOut } from "../../api/generated/schema";
 import { useDeletePortfolio } from "../../api/hooks/usePortfolioManage";
-import { buttonPrimary } from "../../components/button";
 import { DeletePortfolioDialog } from "./DeletePortfolioDialog";
 import { NewPortfolioForm } from "./NewPortfolioForm";
+import { PortfolioPicker } from "./PortfolioPicker";
 import { PortfolioRow } from "./PortfolioRow";
 import { usePortfolioId } from "./usePortfolioId";
 import { usePortfolios } from "./usePortfolios";
@@ -14,7 +14,7 @@ import { usePortfolios } from "./usePortfolios";
  * si era la última, la lista queda vacía y `FirstRunGate` abre el asistente de primer uso.
  * Cada cambio se anuncia en una región de estado.
  */
-export function PortfolioManager() {
+export function PortfolioManager({ pickerLabelledBy }: { pickerLabelledBy?: string } = {}) {
   const { data } = usePortfolios();
   const [current, select] = usePortfolioId();
   const remove = useDeletePortfolio();
@@ -22,7 +22,7 @@ export function PortfolioManager() {
   const [toDelete, setToDelete] = useState<PortfolioSummaryOut | null>(null);
   const [message, setMessage] = useState("");
   const newButtonRef = useRef<HTMLButtonElement>(null);
-  const listTitleRef = useRef<HTMLHeadingElement>(null);
+  const portfolioListRef = useRef<HTMLUListElement>(null);
   const list = data ?? [];
 
   function created(p: PortfolioSummaryOut, imported: boolean) {
@@ -50,22 +50,28 @@ export function PortfolioManager() {
             ? `Cartera «${gone.name}» borrada. Ahora estás viendo «${next.name}».`
             : `Cartera «${gone.name}» borrada.`,
         );
-        requestAnimationFrame(() => listTitleRef.current?.focus());
+        requestAnimationFrame(() => portfolioListRef.current?.focus());
       },
     });
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <h3
-        ref={listTitleRef}
-        tabIndex={-1}
-        className="m-0 text-lg font-semibold text-ink outline-none"
-      >
-        Tus carteras
-      </h3>
+      <PortfolioPicker
+        labelledBy={pickerLabelledBy}
+        onCreate={() => {
+          setMessage("");
+          setCreating(true);
+        }}
+        createButtonRef={newButtonRef}
+      />
       {list.length > 0 && (
-        <ul aria-label="Tus carteras" className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul
+          ref={portfolioListRef}
+          aria-label="Tus carteras"
+          tabIndex={-1}
+          className="m-0 flex list-none flex-col border-t border-line p-0 pt-1 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
           {list.map((p) => (
             <PortfolioRow
               key={p.id}
@@ -82,7 +88,7 @@ export function PortfolioManager() {
         </ul>
       )}
 
-      {creating ? (
+      {creating && (
         <NewPortfolioForm
           onCreated={created}
           onCancel={() => {
@@ -90,18 +96,6 @@ export function PortfolioManager() {
             requestAnimationFrame(() => newButtonRef.current?.focus());
           }}
         />
-      ) : (
-        <button
-          ref={newButtonRef}
-          type="button"
-          className={`${buttonPrimary} self-start`}
-          onClick={() => {
-            setMessage("");
-            setCreating(true);
-          }}
-        >
-          Nueva cartera
-        </button>
       )}
 
       <p role="status" className="m-0 text-base text-success empty:hidden">

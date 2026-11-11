@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CarteraPage } from "./CarteraPage";
@@ -12,7 +12,13 @@ afterEach(() => {
 function renderPage() {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => new Response("[]", { status: 200, headers: { "Content-Type": "application/json" } })),
+    vi.fn(async (input: RequestInfo | URL) => {
+      const body =
+        String(input) === "/api/v1/portfolios"
+          ? [{ id: "laura", name: "Laura", kind: "personal", risk_profile: "moderado", profile: "moderado" }]
+          : [];
+      return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+    }),
   );
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
@@ -43,6 +49,14 @@ describe("CarteraPage", () => {
     expect(carteras.compareDocumentPosition(tablist) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(tablist.contains(carteras)).toBe(false);
     expect(screen.getByRole("tabpanel").contains(carteras)).toBe(false);
+  });
+
+  it("agrupa el selector y la gestión de carteras en el contenedor inicial", async () => {
+    renderPage();
+    const portfolios = screen.getByRole("region", { name: "Carteras" });
+    expect(await within(portfolios).findByRole("button", { name: "Nueva cartera" })).toBeTruthy();
+    expect(await within(portfolios).findByRole("button", { name: "Renombrar «Laura»" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Tus carteras" })).toBeNull();
   });
 
   it("no ofrece cargar las carteras de ejemplo", () => {

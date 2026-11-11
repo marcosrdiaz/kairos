@@ -3,7 +3,6 @@ import { SwipeTabs } from "../ui/SwipeTabs";
 import { DcaSection } from "./dca/DcaSection";
 import { OperationsSection } from "./operations/OperationsSection";
 import { PortfolioManager } from "./portfolio-picker/PortfolioManager";
-import { PortfolioPicker } from "./portfolio-picker/PortfolioPicker";
 
 /**
  * Cartera (armonizada en T5-15): primero con qué cartera se trabaja, con los círculos de perfil
@@ -13,8 +12,8 @@ export function CarteraPage() {
   return (
     <>
       <PageTitle>Cartera</PageTitle>
-      <div className="flex max-w-3xl flex-col gap-8">
-        <p className="m-0 max-w-[65ch] text-base text-ink-muted">
+      <div className="flex min-w-0 w-full flex-col gap-8">
+        <p className="m-0 text-base text-ink-muted">
           Tus carteras, las operaciones que apuntas en cada una y sus aportaciones periódicas.
         </p>
         <section aria-labelledby="portfolios-title" className="flex flex-col gap-6">
@@ -28,9 +27,8 @@ export function CarteraPage() {
                 navegador y todas las pantallas muestran sus datos.
               </p>
             </div>
-            <PortfolioPicker />
+            <PortfolioManager pickerLabelledBy="portfolios-title" />
           </div>
-          <PortfolioManager />
         </section>
         <SwipeTabs
           label="Secciones de la cartera"

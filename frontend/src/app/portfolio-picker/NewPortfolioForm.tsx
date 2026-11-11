@@ -39,7 +39,7 @@ export function NewPortfolioForm({ onCreated, onCancel }: NewPortfolioFormProps)
   return (
     <section
       aria-labelledby="new-portfolio-title"
-      className="flex flex-col gap-6 rounded-card border border-line bg-surface p-5"
+      className="flex flex-col gap-6 border-t border-line pt-5"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
