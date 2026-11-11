@@ -64,6 +64,7 @@ export function WealthCard({
 
   return (
     <MetricCard
+      className="h-full rounded-none border-0 bg-transparent p-6"
       label="Patrimonio"
       periods={OPTIONS}
       activeId={period}
@@ -89,7 +90,7 @@ export function WealthCard({
         {p.demo_adjustments?.map((a) => (
           <div key={a.calc_id}>
             <dt className="text-sm font-medium text-ink-muted">Ajuste de demostración</dt>
-            <dd className="m-0 text-base text-ink">
+            <dd className={`m-0 text-base ${TREND_CLASS[trendOf(a.impact_eur)]}`}>
               {eventTitles.get(a.event_id) ?? a.label}:{" "}
               <span className="tabular-nums">
                 <Traced calcId={a.calc_id}>{signedEur(a.impact_eur)}</Traced>

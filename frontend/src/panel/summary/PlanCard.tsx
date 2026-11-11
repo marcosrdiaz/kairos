@@ -28,7 +28,10 @@ function drawing(plan: PlanOut) {
 
 function Card({ children }: { children: ReactNode }) {
   return (
-    <section aria-labelledby="plan-card-title" className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section
+      aria-labelledby="plan-card-title"
+      className="flex h-full flex-col gap-4 rounded-none border-0 bg-transparent p-6"
+    >
       <h3 id="plan-card-title" className="m-0 text-base font-medium text-ink-muted">
         Tu plan
       </h3>
@@ -47,7 +50,7 @@ export function PlanCard({ portfolioId }: { portfolioId: string }) {
 
   if (plan.isPending) {
     return (
-      <div role="status" aria-label="Cargando tu plan" className="h-40 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse" />
+      <div role="status" aria-label="Cargando tu plan" className="h-full min-h-40 bg-surface-muted motion-safe:animate-pulse" />
     );
   }
   if (!plan.data) {

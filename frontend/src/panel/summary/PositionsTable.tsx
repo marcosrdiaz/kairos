@@ -3,12 +3,18 @@ import type { PortfolioOut } from "../../api/generated/schema";
 import { assetHref } from "../../app/market/asset-chart/assetHref";
 import { formatPrice } from "../../app/operations/usePortfolio";
 import { formatDate, formatDayMonth, formatEur, formatPercent, formatUnits } from "../../lib/format";
+import { trendOf } from "../../widget/states";
 import { signedEur } from "../figures";
 import { Traced } from "../Traced";
 import { PositionSparkline } from "./PositionSparkline";
 
 const th = "px-4 py-3 text-left text-sm font-semibold text-ink-muted";
 const num = "px-4 py-3 text-right tabular-nums";
+const PNL_CLASS = {
+  up: "text-trend-up",
+  down: "text-trend-down",
+  flat: "text-ink-muted",
+} as const;
 
 /**
  * Posiciones con cifra exacta y la fecha del precio de cada una. Los fondos cotizan una vez al
@@ -85,7 +91,9 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
                   <Traced calcId={portfolio.calc_id}>{formatEur(pos.value_eur)}</Traced>
                 </td>
                 <td className={num}>{formatPercent(pos.weight)}</td>
-                <td className={`${num} pr-6`}>{signedEur(pos.unrealized_pnl_eur)}</td>
+                <td className={`${num} pr-6 ${PNL_CLASS[trendOf(pos.unrealized_pnl_eur)]}`}>
+                  {signedEur(pos.unrealized_pnl_eur)}
+                </td>
               </tr>
             ))}
           </tbody>

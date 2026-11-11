@@ -49,7 +49,7 @@ function Trend({ series, label, busy }: { series: readonly number[]; label?: str
   const domain = computeDomain(series);
   const layout = computeLayout(series, { width, height: HEIGHT, padding: PADDING, domain });
   return (
-    <div ref={ref} className={cn("w-full text-accent transition-opacity", busy && "opacity-50")}>
+    <div ref={ref} className={cn("w-full text-chart-1 transition-opacity", busy && "opacity-50")}>
       <svg
         width={width}
         height={HEIGHT}

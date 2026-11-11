@@ -3,8 +3,9 @@ import { CONFIDENCE_LABEL, EVENT_TYPE_LABEL, POLARITY } from "../../app/news/lab
 import { ArrowRightIcon } from "../../components/icons";
 import { formatDate, formatEur } from "../../lib/format";
 import { RangeBar } from "../../ui/RangeBar";
-import { impactRange } from "../figures";
+import { signedEur, impactRange } from "../figures";
 import { Traced } from "../Traced";
+import { trendOf } from "../../widget/states";
 
 const SURPRISE_TEXT: Record<SurpriseLabel, string> = {
   mejor: "Mejor de lo esperado",
@@ -22,6 +23,22 @@ export function EventCard({ event }: { event: EventImpactOut }) {
   const polarity = POLARITY[event.polarity];
   const surprise = event.surprise.label ? SURPRISE_TEXT[event.surprise.label] : null;
   const source = event.sources[0];
+  const lowTrend = trendOf(event.low_eur);
+  const highTrend = trendOf(event.high_eur);
+  const impactTrend = lowTrend === highTrend ? lowTrend : "flat";
+  const impactText = impactRange(event.low_eur, event.high_eur);
+  const impactLabel =
+    impactTrend !== "up"
+      ? impactText
+      : impactText.startsWith("≈ ")
+        ? `≈ ${signedEur(event.low_eur, 0)}`
+        : `entre ${signedEur(event.low_eur, 0)} y ${signedEur(event.high_eur, 0)}`;
+  const impactClass =
+    impactTrend === "up"
+      ? "text-trend-up"
+      : impactTrend === "down"
+        ? "text-trend-down"
+        : "text-ink";
   return (
     <article
       id={`evento-${event.event_id}`}
@@ -66,10 +83,10 @@ export function EventCard({ event }: { event: EventImpactOut }) {
       <dl className="m-0 mt-5 flex flex-wrap items-end gap-x-8 gap-y-3">
         <div>
           <dt className="text-sm font-medium text-ink-muted">Impacto estimado en tu cartera</dt>
-          <dd className="m-0 text-2xl font-semibold tabular-nums text-ink">
-            <Traced calcId={event.calc_id}>{impactRange(event.low_eur, event.high_eur)}</Traced>
+          <dd className={`m-0 text-2xl font-semibold tabular-nums ${impactClass}`}>
+            <Traced calcId={event.calc_id}>{impactLabel}</Traced>
           </dd>
-          {!impactRange(event.low_eur, event.high_eur).startsWith("≈") && (
+          {!impactText.startsWith("≈") && (
             <dd className="m-0 mt-2">
               <RangeBar
                 low={Number(event.low_eur)}

@@ -6,7 +6,6 @@ import "./panel.css";
 import { PanelHeader } from "./PanelHeader";
 import { PanelNoticeSlot } from "./PanelNoticeSlot";
 import { RadarSection } from "./radar/RadarSection";
-import { ScenariosSection } from "./scenarios/ScenariosSection";
 import { SummarySection } from "./summary/SummarySection";
 
 /**
@@ -25,7 +24,6 @@ export function PanelPage() {
       <ExposureSection key={`exposicion-${portfolioId}`} portfolioId={portfolioId} />
       <RadarSection key={`radar-${portfolioId}`} portfolioId={portfolioId} />
       <AgendaSection key={`agenda-${portfolioId}`} portfolioId={portfolioId} />
-      <ScenariosSection key={`escenarios-${portfolioId}`} portfolioId={portfolioId} />
     </div>
   );
 }
