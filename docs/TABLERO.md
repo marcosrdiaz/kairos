@@ -222,7 +222,7 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6-01 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | Jaime | 🔄 en curso |
+| T6-01 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
 | T6-02 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | Manu | ✅ hecho |
 | T6-03 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T6-01, T6-02 | `docs/entrega/` | — | ⬜ |
 | T6-04 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
@@ -290,6 +290,12 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Siguiente paso exacto:** …
 **Ficheros tocados:** …
 ```
+
+### T6-01 · Prueba en máquina limpia — Jaime (soltada: sin Docker en su máquina)
+**Qué se comprobó (11 nov, sin Docker):** ZIP de `main` con `git archive --format=zip origin/main` (3,2 MB). Trae `.env.example`, `backend/Dockerfile`, `frontend/Dockerfile`, `backend/uv.lock`, `frontend/package-lock.json`, `data/` (incluido `data/news/2026-11.jsonl`) y `.gitattributes` con LF. `docker-compose.yml` coherente. Falta lo importante: `docker compose up --build` y `demo_smoke.py` desde el ZIP.
+**Hallazgos para quien la coja:** (1) `env_file` con `required: false` exige Docker Compose ≥ 2.24; el README solo dice «v2». (2) El README (*Limitaciones conocidas*) dice que no hay lectura de noticias en directo, y TB-01 ya la añadió. `README.md` no está en los ficheros de T6-01: es un arreglo aparte.
+**Siguiente paso exacto:** en una máquina con Docker, descomprimir el ZIP en una carpeta nueva, seguir solo el README (`.env`, `docker compose up --build`, reset con `preload`, `make replay EVENT=nvda-2025-02` o su `curl`) y `docker compose exec backend python /scripts/demo_smoke.py` (ocho `OK`).
+**Ficheros tocados:** ninguno.
 
 ### T5-21 · Pulido del Panel de Contexto — Javi
 - Implementados subtítulo y badge «Cartera:», separación de chips, altura compartida entre Patrimonio y Tu plan, colores semánticos para importes y paleta en gráficas; el bloque «¿Y si…?» ya no se muestra. Tests focalizados, contraste, tipos y lint en verde.
