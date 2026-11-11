@@ -132,6 +132,9 @@ describe("formato de los ejes", () => {
   it("fechas cortas en periodos cortos y mes y año desde un año", () => {
     expect(tickDate("2026-10-06T00:00:00Z", "1m")).toMatch(/6 oct/);
     expect(tickDate("2025-10-06T00:00:00Z", "max")).toMatch(/oct.*25/);
+    // «1A» con solo unas semanas de datos: el día, no «oct 26» repetido.
+    expect(tickDate("2026-10-06T00:00:00Z", "1y", 30)).toMatch(/6 oct/);
+    expect(tickDate("2025-10-06T00:00:00Z", "1y", 365)).toMatch(/oct.*25/);
   });
   it("euros compactos en el eje Y", () => {
     expect(tickEur(34500)).toMatch(/34,5\s?mil\s?€/);

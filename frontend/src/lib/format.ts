@@ -92,3 +92,14 @@ const dateFmt = new Intl.DateTimeFormat(LOCALE, {
 export function formatDate(iso: string): string {
   return dateFmt.format(new Date(iso));
 }
+
+const dayMonthFmt = new Intl.DateTimeFormat(LOCALE, {
+  day: "numeric",
+  month: "short",
+  timeZone: "Europe/Madrid",
+});
+
+/** ISO 8601 con zona -> "8 nov" (hora de Madrid), para columnas estrechas. */
+export function formatDayMonth(iso: string): string {
+  return dayMonthFmt.format(new Date(iso));
+}

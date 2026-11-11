@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import type { PortfolioOut } from "../../api/generated/schema";
 import { assetHref } from "../../app/market/asset-chart/assetHref";
 import { formatPrice } from "../../app/operations/usePortfolio";
-import { formatDate, formatEur, formatPercent, formatUnits } from "../../lib/format";
+import { formatDate, formatDayMonth, formatEur, formatPercent, formatUnits } from "../../lib/format";
 import { signedEur } from "../figures";
 import { Traced } from "../Traced";
 import { PositionSparkline } from "./PositionSparkline";
@@ -72,8 +72,10 @@ export function PositionsTable({ portfolio }: { portfolio: PortfolioOut }) {
                 <td className={num}>{formatUnits(pos.units)}</td>
                 <td className={num}>
                   {formatPrice(pos.price, pos.price_currency)}
-                  <span className="block text-sm text-ink-muted">
-                    <time dateTime={pos.price_at}>{formatDate(pos.price_at)}</time>
+                  <span className="block whitespace-nowrap text-sm text-ink-muted">
+                    <time dateTime={pos.price_at} title={formatDate(pos.price_at)}>
+                      {formatDayMonth(pos.price_at)}
+                    </time>
                   </span>
                 </td>
                 <td className="px-4 py-3">

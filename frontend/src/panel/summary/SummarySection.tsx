@@ -76,7 +76,7 @@ export function SummarySection({ portfolioId }: { portfolioId: string }) {
         )}
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <WealthCard portfolioId={portfolioId} portfolio={p} eventTitles={eventTitles} />
         <PlanCard portfolioId={portfolioId} />
       </div>
