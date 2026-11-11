@@ -33,9 +33,11 @@ export function InicioPage() {
   return (
     <>
       <PageTitle visuallyHidden>Inicio</PageTitle>
-      {/* Columna que ocupa el alto de la pantalla: el espacio que sobra va solo a la fila de la
-          gráfica (`.home-top`); noticias, ticker y aviso se quedan con su alto natural. */}
+      {/* Columna que ocupa el alto de la pantalla: arriba el ticker «Tus activos», a todo el ancho; el
+          espacio que sobra va solo a la fila de la gráfica (`.home-top`); noticias y aviso se
+          quedan con su alto natural. */}
       <div className="flex flex-col gap-4 lg:flex-1">
+        <MarketTicker portfolioId={portfolioId} />
         <div className="home-top">
           <PortfolioChart key={portfolioId} portfolioId={portfolioId} />
           {isPending && <StatusSkeleton />}
@@ -53,11 +55,6 @@ export function InicioPage() {
           )}
         </div>
         <NewsSection portfolioId={portfolioId} newsHref={`/noticias${query}`} />
-        {/* En escritorio, el botón flotante del asistente queda sobre el borde derecho: la barra
-            lo esquiva para que su pausa siga a la vista. */}
-        <div className="lg:mr-20">
-          <MarketTicker portfolioId={portfolioId} />
-        </div>
       </div>
     </>
   );
