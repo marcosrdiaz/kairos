@@ -1,7 +1,7 @@
 /*
  * Estilos de la gráfica de evolución (T2-18). La atención va a la línea: la tarjeta, la escala de
  * tiempo y la tabla son sobrias. Colores semánticos de DESIGN.md: `trend-up` (subida, verde),
- * `trend-down` (bajada, cálido neutro: sin rojo en el mercado) e `info` (aportaciones y valor de
+ * `trend-down` (bajada, rojo con signo y flecha) e `info` (aportaciones y valor de
  * referencia). Todo con tokens --kairos-*, así que cambia con el tema.
  *
  * Fluidez: nada de `backdrop-filter`, desenfoques animados ni filtros sobre el SVG; solo se animan

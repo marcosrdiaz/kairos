@@ -37,7 +37,7 @@ Proyecto de hackathon (Hack Finance, BEST UC3M), 4 días, demo de menos de 3 min
 
 ## Brand Commitments
 
-Nombre KAIROS. Tono tranquilo, directo, sin urgencia gratuita. Sin rojos alarmistas.
+Nombre KAIROS. Tono tranquilo, directo, sin urgencia gratuita. Las cifras negativas pueden usar rojo sobrio junto al signo y la flecha; los estados del producto no usan rojo alarmista.
 
 ## Evidence on Hand
 
@@ -49,7 +49,7 @@ Prototipo de referencia enlazado en `docs/kairos-spec.md`. No hay aún datos rea
 2. **Menos es más.** Una cifra y una frase en pantalla; lo que no cabe va al panel.
 3. **Siempre en euros de su cartera.** Nunca "el mercado cae un 2%".
 4. **Contexto, no órdenes.** Nunca "compra" ni "vende"; riesgos y oportunidades frente a las reglas del propio usuario.
-5. **Calmar antes que alarmar.** El silencio también es información; nada de rojos ni urgencia gratuita.
+5. **Calmar antes que alarmar.** El silencio también es información; las cifras negativas usan rojo con signo y flecha, sin destellos ni urgencia gratuita.
 6. **Todo es verificable.** Cada cifra tiene un "¿de dónde sale?". Los impactos estimados se muestran como rango con confianza; el patrimonio y las posiciones, como cifra exacta con la fecha del precio.
 7. **Por dentro complejo, por fuera simple.**
 8. **Estados con color + palabra**, nunca solo color.
