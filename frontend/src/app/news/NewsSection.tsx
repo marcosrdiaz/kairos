@@ -1,32 +1,36 @@
+import { Link } from "react-router";
 import { EmptyNote } from "../../components/PageTitle";
 import { NewsCarousel } from "./NewsCarousel";
-import { useEventNews } from "./useEventNews";
+import { TOP_NEWS } from "./topNews";
+import { useTopNews } from "./useTopNews";
 
 interface NewsSectionProps {
   portfolioId: string;
-  /** Destino de "Ver en el panel" (conserva `?p=`). */
-  panelHref: string;
+  /** Destino de «Ver todas las noticias» (conserva `?p=`). */
+  newsHref: string;
 }
 
 function Header() {
   return (
     <>
       <h2 id="news-heading" className="m-0 mb-1 text-lg font-semibold text-ink">
-        Noticias que afectan a tu cartera
+        Lo que más mueve tu cartera hoy
       </h2>
       <p className="m-0 text-sm text-ink-muted">
-        Solo lo que toca a tus fondos y acciones. El impacto es una estimación con rango.
+        Las {TOP_NEWS} noticias de las últimas 24 horas con más impacto en tu cartera. El impacto
+        es una estimación con rango.
       </p>
     </>
   );
 }
 
 /**
- * Resumen de noticias de Inicio (T2-19): eventos que afectan a la cartera, en carrusel.
- * Es la región etiquetada del patrón de carrusel (aria-roledescription="carrusel").
+ * Resumen de noticias de Inicio (T2-19, TD-04): las noticias reales de las últimas 24 horas que
+ * más mueven la cartera, en carrusel. Es la región etiquetada del patrón de carrusel
+ * (aria-roledescription="carrusel").
  */
-export function NewsSection({ portfolioId, panelHref }: NewsSectionProps) {
-  const { data, isPending, isError } = useEventNews(portfolioId);
+export function NewsSection({ portfolioId, newsHref }: NewsSectionProps) {
+  const { data, isPending, isError } = useTopNews(portfolioId);
   const hasNews = data !== undefined && data.length > 0;
   return (
     <section
@@ -35,7 +39,7 @@ export function NewsSection({ portfolioId, panelHref }: NewsSectionProps) {
       className="rounded-card border border-line bg-surface p-5 lg:p-6"
     >
       {hasNews ? (
-        <NewsCarousel events={data} panelHref={panelHref} header={<Header />} />
+        <NewsCarousel items={data} newsHref={newsHref} header={<Header />} />
       ) : (
         <div className="flex flex-col gap-4">
           <div>
@@ -48,12 +52,19 @@ export function NewsSection({ portfolioId, panelHref }: NewsSectionProps) {
               className="h-60 rounded-control bg-surface-muted motion-safe:animate-pulse"
             />
           )}
-          {isError && (
+          {isError && !data && (
             <EmptyNote>
               Ahora mismo no podemos cargar las noticias. Vuelve a intentarlo en un rato.
             </EmptyNote>
           )}
-          {data && <EmptyNote>Estos días no ha pasado nada que afecte a tu cartera.</EmptyNote>}
+          {data && (
+            <EmptyNote>
+              En las últimas 24 horas no ha salido ninguna noticia que mueva tu cartera.{" "}
+              <Link to={newsHref} className="font-semibold text-accent underline">
+                Ver todas las noticias
+              </Link>
+            </EmptyNote>
+          )}
         </div>
       )}
     </section>

@@ -63,14 +63,17 @@ test("paso 3 · el evento en directo pasa el widget a Atento y llega el aviso", 
 
   await replay(request);
 
-  const notice = page.getByRole("link", { name: LIVE_EVENT_TITLE }).filter({
-    hasText: "Aviso de Kairos",
-  });
-  await expect(notice).toBeVisible();
-  await expect(notice).toHaveAccessibleName(/[\d.]+ euros menos/);
-  await expect(notice).not.toHaveAccessibleName(ORDERS);
+  // Inicio ya no pinta el aviso encima del estado (TD-04): llega a la campana de «Avisos».
   await expect(statusCard(page)).toContainText("Atento");
   await expect(page.getByRole("link", { name: "Avisos" }).getByTestId("alerts-badge")).toHaveText("1");
+  await expect(page.getByText("Aviso de Kairos")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Avisos" }).click();
+  // La bandeja junta las carteras: puede haber otro aviso del mismo evento (Javier).
+  const notice = page.getByRole("article").filter({ hasText: LIVE_EVENT_TITLE }).first();
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText(/[\d.]+ euros menos/);
+  await expect(notice).not.toContainText(ORDERS);
 
   // La pantalla de inicio del móvil simulada (widget, RF-13) dice lo mismo.
   await page.goto("/widget");

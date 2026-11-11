@@ -4,7 +4,6 @@ import { EmptyNote, PageTitle } from "../components/PageTitle";
 import { PortfolioChart } from "./market/chart/PortfolioChart";
 import { MarketTicker } from "./market/ticker/MarketTicker";
 import { NewsSection } from "./news/NewsSection";
-import { AlertNotice } from "../widget/AlertNotice";
 import { StatusCard } from "../widget/StatusCard";
 import { StatusTiles } from "../widget/StatusTiles";
 import { usePortfolioId } from "./portfolio-picker/usePortfolioId";
@@ -38,7 +37,6 @@ export function InicioPage() {
       <PageTitle visuallyHidden>Inicio</PageTitle>
       <div className="flex flex-col gap-6">
         <PortfolioChart key={portfolioId} portfolioId={portfolioId} />
-        <AlertNotice portfolioId={portfolioId} href={`/panel${query}`} />
         {isPending && <StatusSkeleton />}
         {isError && !data && (
           <EmptyNote>
@@ -53,7 +51,7 @@ export function InicioPage() {
             <StatusTiles status={data} />
           </div>
         )}
-        <NewsSection portfolioId={portfolioId} panelHref={`/panel${query}`} />
+        <NewsSection portfolioId={portfolioId} newsHref={`/noticias${query}`} />
       </div>
     </>
   );
