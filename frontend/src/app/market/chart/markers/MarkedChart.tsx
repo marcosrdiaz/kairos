@@ -16,20 +16,21 @@ type MarkedChartProps = Omit<
   newsMarkers?: AlertNewsMarker[];
 };
 
-/** Ancho del contenedor, para que la tarjeta no se salga por los lados. */
-function useWidth() {
+/** Ancho y alto del contenedor, para que la tarjeta no se salga de él. */
+function useSize() {
   const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    setWidth(el.clientWidth);
+    const measure = () => setSize({ width: el.clientWidth, height: el.clientHeight });
+    measure();
     if (typeof ResizeObserver !== "function") return;
-    const observer = new ResizeObserver(() => setWidth(el.clientWidth));
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  return [ref, width] as const;
+  return [ref, size] as const;
 }
 
 /**
@@ -41,7 +42,7 @@ export function MarkedChart({ markers, newsMarkers = [], rows, ...chart }: Marke
   const [newsStore] = useState(createNewsMarkerStore);
   const cardId = useId();
   const newsCardId = useId();
-  const [ref, width] = useWidth();
+  const [ref, { width, height }] = useSize();
   // Solo cambia un atributo del contenedor: la gráfica (memo) no se vuelve a renderizar.
   const active = useActiveMarker(store);
   const activeNews = useActiveNewsMarker(newsStore);
@@ -80,7 +81,7 @@ export function MarkedChart({ markers, newsMarkers = [], rows, ...chart }: Marke
         newsCardId={newsCardId}
       />
       <MarkerCard store={store} id={cardId} width={width} />
-      <AlertNewsCard store={newsStore} id={newsCardId} width={width} />
+      <AlertNewsCard store={newsStore} id={newsCardId} width={width} height={height} />
     </div>
   );
 }

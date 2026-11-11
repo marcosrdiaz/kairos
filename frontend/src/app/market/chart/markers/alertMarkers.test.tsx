@@ -3,9 +3,10 @@ import { cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testin
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import alertExample from "../../../../api/mocks/AlertOut.news_estimate.json";
+import nvda from "../../../../api/mocks/EventImpactOut.nvda.json";
 import newsExample from "../../../../api/mocks/NewsItemOut.json";
 import history from "../../../../api/mocks/PortfolioHistoryOut.json";
-import type { AlertOut, NewsItemOut, PortfolioHistoryOut } from "../../../../api/generated/schema";
+import type { AlertOut, EventImpactOut, NewsItemOut, PortfolioHistoryOut } from "../../../../api/generated/schema";
 import { toRows } from "../chartFormat";
 import { HistoryTable } from "../HistoryTable";
 import { useAlertNewsMarkers } from "./useAlertNewsMarkers";
@@ -26,6 +27,34 @@ describe("marcadores de Inicio respaldados por avisos", () => {
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => json(String(input).endsWith("/alerts") ? [] : [])));
     const { result } = renderHook(() => useEventMarkers("laura", rows), { wrapper });
     await waitFor(() => expect(result.current).toEqual([]));
+  });
+
+  describe("aviso de evento (event_impact)", () => {
+    const eventAlert = { ...alertExample, kind: "event_impact", event_id: "nvda-2025-02", news_id: null } as AlertOut;
+    const stubApi = (marketDate: string) => {
+      const event = { ...nvda, market_date: marketDate } as EventImpactOut;
+      vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        return json(url.endsWith("/alerts") ? [eventAlert] : url.includes("/events") ? [event] : []);
+      }));
+    };
+
+    it("marca el evento cuando su fecha cae dentro del periodo de la gráfica", async () => {
+      stubApi("2026-11-04T21:20:00Z");
+      const { result } = renderHook(() => useEventMarkers("laura", rows), { wrapper });
+      await waitFor(() => expect(result.current).toHaveLength(1));
+      expect(result.current[0]?.event.event_id).toBe("nvda-2025-02");
+      expect(result.current[0]?.date).toBe("2026-11-04T00:00:00Z");
+    });
+
+    it("no lo marca cuando su fecha real queda fuera del periodo, aunque tenga aviso", async () => {
+      stubApi("2025-02-26T21:20:00Z");
+      const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
+      const { result } = renderHook(() => useEventMarkers("laura", rows), { wrapper });
+      await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).includes("/events"))).toBe(true));
+      await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/alerts"))).toBe(true));
+      expect(result.current).toEqual([]);
+    });
   });
 
   it("pide por id solo la noticia avisada y la sitúa en su cierre", async () => {
