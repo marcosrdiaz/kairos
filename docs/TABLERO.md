@@ -291,6 +291,11 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 **Ficheros tocados:** …
 ```
 
+### T5-21 · Pulido del Panel de Contexto — Javi
+- Implementados subtítulo y badge «Cartera:», separación de chips, altura compartida entre Patrimonio y Tu plan, colores semánticos para importes y paleta en gráficas; el bloque «¿Y si…?» ya no se muestra. Tests focalizados, contraste, tipos y lint en verde.
+- **Siguiente paso exacto:** revisar en Docker los modos claro y oscuro en móvil y escritorio; incorporar cualquier ajuste visual antes de preparar el commit y PR.
+- **Ficheros tocados:** `frontend/src/panel/PanelHeader.tsx`, `PanelPage.tsx`, `sections.ts`, `events/EventCard.tsx`, `exposure/BucketBars.tsx`, `exposure/TopCompanies.tsx`, `summary/SummarySection.tsx`, `summary/WealthCard.tsx`, `summary/PlanCard.tsx`, `summary/PositionsTable.tsx`, `PanelPage.test.tsx`, `frontend/src/ui/MetricCard.tsx`.
+
 ### Lo que deja T5-18 (cifras explicadas al pasar o enfocar) — Alons (para quien coja la tarea)
 - En `main` (#153). Las cifras abren una tarjeta anclada (`components/trace/TraceAnchor.tsx` + `TraceCard.tsx`): se abre al pasar el ratón o con el foco, el clic la fija, y Esc, pulsar fuera o un segundo clic la cierran. «Ver el cálculo completo» abre `TraceDialog`. La colocación está en `traceCardGeometry.ts`: dentro de `#contenido`, por encima del botón del chat y de la barra inferior.
 - **Pendiente sin tarea:**
