@@ -57,7 +57,7 @@ Definición completa en `docs/superpowers/specs/2026-11-08-kairos-mvp-design.md`
 | 4 | Producción: datos reales y varias carteras | validada; después de la entrega salvo acuerdo | ✅ cerrada |
 | 5 | Rediseño visual: interfaz y componentes | por definir | 🔄 abierta |
 | 6 | Entrega | mié 11, 21:00 (se coge sin esperar a las fases 4 y 5) | ⬜ pendiente |
-| BUG | Arreglos: lo que no funciona en producción | se coge en cuanto sus dependencias estén hechas | ⬜ pendiente |
+| BUG | Arreglos: lo que no funciona en producción | se coge en cuanto sus dependencias estén hechas | ✅ cerrada |
 | EXTRA | Después de la entrega | después del mié 11 | ⏸ aplazada |
 
 ### Fase 0 · Cimientos y contratos (dom 8) · ✅ cerrada
