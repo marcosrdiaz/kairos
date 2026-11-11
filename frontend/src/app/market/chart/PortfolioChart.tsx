@@ -154,7 +154,10 @@ function ChartBody({ portfolioId, history, period, periodName, adjustOpen, adjus
         />
       </div>
       {adjustOpen && (
-        <div id={adjustId} className="flex flex-col gap-1">
+        <div id={adjustId} className="flex flex-col gap-1 pb-3">
+          <p className="m-0 px-4 text-sm text-ink-muted sm:px-5">
+            Valor con precios de cierre. No incluye el impacto estimado de los eventos.
+          </p>
           {rows.length >= RANGE_MIN_POINTS && (
             <div className="flex flex-col gap-1">
               <RangeSelector rows={rows} start={range.start} end={range.end} onChange={onRange} />
@@ -242,11 +245,6 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
         >
           <ChartBody key={data.calc_id} portfolioId={portfolioId} history={data} period={period} periodName={periodName} adjustOpen={adjustOpen} adjustId={adjustId} />
         </div>
-      )}
-      {hasPoints && (
-        <p className="m-0 px-4 pb-3 text-xs text-ink-muted sm:px-5">
-          Valor con precios de cierre. No incluye el impacto estimado de los eventos.
-        </p>
       )}
     </section>
   );

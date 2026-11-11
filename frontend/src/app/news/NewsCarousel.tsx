@@ -155,7 +155,7 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
               <NewsCover category={current.category} publishedAt={current.published_at} dense />
             </div>
           </div>
-          <p className="m-0 truncate text-xs text-ink-muted">Fuente: {current.source.label}</p>
+          <p className="m-0 truncate text-sm text-ink-muted">Fuente: {current.source.label}</p>
         </div>
 
         <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
