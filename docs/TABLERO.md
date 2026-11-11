@@ -306,7 +306,7 @@ Una subsección por tarea en curso. Bórrala al marcar la tarea como hecha. Plan
 ```
 ### TD-14 · «Precios a» y datos al día — Marcos
 
-En PR #176 (rama `td-14/fix-prices-as-of`): solo el arreglo de «Precios a» (ignora los activos de valor fijo), con su test. **La actualización de datos hasta el 10 nov se descartó** y pasa a la tarea T4-33 (después de la entrega). La entrega va con los datos hasta el 5-6 nov y el reloj fijo al 6 nov; con esa configuración la gráfica, «Precios a» y «Tu cartera hoy» cuadran en las tres carteras. **Siguiente paso al mergear:** `docs: done TD-14` y borrar estas notas.
+En PR #176 (rama `td-14/fix-prices-as-of`): solo el arreglo de «Precios a» (ignora los activos de valor fijo), con su test. **La actualización de datos hasta el 10 nov se descartó** y pasa a la tarea T4-33 (después de la entrega). La entrega va con los datos hasta el 5-6 nov y el reloj fijo al 6 nov; con esa configuración la gráfica, «Precios a» y «Tu cartera hoy» cuadran en las tres carteras. **Descartado (11 nov): blindar `docker-compose.yml` con `DEMO_MODE`, `DEMO_CLOCK` y `MARKET_DATA_PROVIDER` por defecto**, porque la demo en directo va en producción. Tampoco entra en #176 el cambio de `clock.now()` para ignorar `DEMO_CLOCK` con `DEMO_MODE=false`: queda para T4-25, que sigue pendiente. **Siguiente paso al mergear:** `docs: done TD-14` y borrar estas notas.
 
 ### T<x>-<nn> · <nombre> — <quién>
 **Qué estaba haciendo:** …
