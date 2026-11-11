@@ -33,7 +33,9 @@ export function InicioPage() {
   return (
     <>
       <PageTitle visuallyHidden>Inicio</PageTitle>
-      <div className="flex flex-col gap-4">
+      {/* Columna que ocupa el alto de la pantalla: el espacio que sobra va solo a la fila de la
+          gráfica (`.home-top`); noticias, ticker y aviso se quedan con su alto natural. */}
+      <div className="flex flex-col gap-4 lg:flex-1">
         <div className="home-top">
           <PortfolioChart key={portfolioId} portfolioId={portfolioId} />
           {isPending && <StatusSkeleton />}

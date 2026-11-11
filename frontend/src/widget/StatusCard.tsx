@@ -31,16 +31,14 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
         <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-icon-red-bg text-icon-red">
           <CoinsIcon className="size-5" />
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="m-0 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
-          <p className="m-0 text-3xl font-semibold leading-tight tabular-nums text-ink">
-            <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
-          </p>
-        </div>
+        <p className="m-0 min-w-0 flex-1 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
         <div aria-live="polite" aria-atomic="true">
           <StatusBadge state={status.state} label={status.state_label} />
         </div>
       </div>
+      <p className="m-0 text-3xl font-semibold leading-none tabular-nums text-ink">
+        <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
+      </p>
       <span className={`h-1 w-full rounded-full ${stateBandClass(status.state)}`} aria-hidden="true" />
       <h2 id="status-heading" className="m-0 text-base font-medium leading-snug text-ink">
         <TextMorph text={withoutTapHint(status.sentence)} />

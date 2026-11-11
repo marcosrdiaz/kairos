@@ -21,7 +21,7 @@
   .home-top {
     grid-template-columns: minmax(0, 1fr) clamp(18rem, 32%, 22rem);
     align-items: stretch;
-    /* Más alta en pantallas altas (1080) que en 900; nunca por debajo de lo que pide su contenido. */
-    min-height: clamp(19rem, calc(46dvh - 2rem), 36rem);
+    /* Toma el alto que sobra en la columna de la página; el mínimo lo pone el trazado de la gráfica. */
+    flex: 1 1 auto;
   }
 }
