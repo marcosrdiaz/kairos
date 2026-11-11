@@ -111,16 +111,14 @@ export function indexAtX(
   return Math.min(count - 1, Math.max(0, raw));
 }
 
-/** Resumen para lector de pantalla: «12 puntos, de 3,1 a 4,2, sube un 35 %». */
+/**
+ * Resumen para lector de pantalla: «12 puntos, de 3,1 a 4,2». Sin variación en %: las cifras
+ * no se calculan en el cliente (regla 1); si hace falta, la da la API con su `calc_id`.
+ */
 export function describeSeries(values: readonly number[], format: (n: number) => string): string {
   const finite = values.filter(Number.isFinite);
   const first = finite[0];
   const last = finite.at(-1);
   if (first === undefined || last === undefined) return "Sin datos";
-  let text = `${finite.length} puntos, de ${format(first)} a ${format(last)}`;
-  if (first !== 0 && last !== first) {
-    const change = Math.round((Math.abs(last - first) / Math.abs(first)) * 100);
-    text += `, ${last > first ? "sube" : "baja"} un ${change} %`;
-  }
-  return text;
+  return `${finite.length} puntos, de ${format(first)} a ${format(last)}`;
 }

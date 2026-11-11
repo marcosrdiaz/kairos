@@ -26,6 +26,8 @@ export interface SparklineProps {
   curve?: SparklineCurve;
   /** Formatea los valores del resumen para lectores de pantalla. */
   formatValue?: (value: number) => string;
+  /** Texto para lectores de pantalla en lugar del resumen generado (p. ej. con cifras exactas de la API). */
+  label?: string;
   /** Avisa del dato bajo el puntero (null al salir). Sirve para mostrar su valor fuera. */
   onActiveChange?: (index: number | null) => void;
   className?: string;
@@ -40,6 +42,7 @@ export function Sparkline({
   area = true,
   curve = "monotone",
   formatValue = String,
+  label,
   onActiveChange,
   className,
 }: SparklineProps) {
@@ -69,7 +72,7 @@ export function Sparkline({
   return (
     <svg
       role="img"
-      aria-label={describeSeries(values, formatValue)}
+      aria-label={label ?? describeSeries(values, formatValue)}
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
