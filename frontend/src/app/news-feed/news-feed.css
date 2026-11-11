@@ -1,0 +1,23 @@
+/*
+ * Detalle de una noticia (T5-17): el fondo aparece con un fundido y el panel sube 12 px. Corto y
+ * con salida suave; con prefers-reduced-motion simplemente está ahí.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .news-detail-backdrop {
+    animation: news-detail-fade 160ms ease-out both;
+  }
+  .news-detail-panel {
+    animation: news-detail-rise 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  @keyframes news-detail-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes news-detail-rise {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+  }
+}
