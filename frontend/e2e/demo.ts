@@ -43,11 +43,6 @@ export async function choose(page: Page, group: string, option: string): Promise
   await expect(radios.getByRole("radio", { name: option })).toBeChecked();
 }
 
-/** La tarjeta de estado de Inicio («Tu cartera hoy»): su nombre accesible cambia con la frase. */
-export function statusCard(page: Page): Locator {
-  return page.getByRole("region").filter({ hasText: "Tu cartera hoy" });
-}
-
 /**
  * Pregunta por escrito en el asistente (plan B de la voz, T2-14) y devuelve el turno ya
  * terminado: las frases y los botones «¿De dónde sale?» llegan al acabar el SSE.

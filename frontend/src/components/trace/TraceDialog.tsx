@@ -10,37 +10,65 @@ import { loadTraceChain, type TraceChain, type TraceOrigin } from "./traceChain"
 
 const UNAVAILABLE = "Traza no disponible";
 
-function Origin({ origin }: { origin: TraceOrigin }) {
+/** Un cálculo de origen, como paso numerado de la cadena; el detalle se despliega. */
+function Origin({ origin, step }: { origin: TraceOrigin; step: number }) {
   const { trace } = origin;
-  if (!trace) return <li className="py-3 text-base text-ink-muted">{UNAVAILABLE}</li>;
   return (
-    <li>
-      <details className="py-1">
-        <summary className="flex min-h-touch cursor-pointer flex-wrap items-center gap-x-2 font-semibold text-ink">
-          {TRACE_KIND_LABEL[trace.kind]}
-          <span className="text-sm font-normal text-ink-muted">{formatDate(trace.created_at)}</span>
-        </summary>
-        <div className="pb-4 pt-2">
-          <TraceDetails trace={trace} headingLevel={5} />
-        </div>
-      </details>
+    <li className="trace-step relative pb-4 pl-10 last:pb-0">
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-1.5 flex size-7 items-center justify-center rounded-full border border-line-strong bg-surface text-sm font-semibold text-ink tabular-nums"
+      >
+        {step}
+      </span>
+      {trace ? (
+        <details className="rounded-control border border-line bg-surface">
+          <summary className="flex min-h-touch cursor-pointer flex-wrap items-center gap-x-2 px-3 py-2 font-semibold text-ink">
+            <span className="sr-only">Paso {step}: </span>
+            {TRACE_KIND_LABEL[trace.kind]}
+            <span className="text-sm font-normal text-ink-muted">{formatDate(trace.created_at)}</span>
+          </summary>
+          <div className="border-t border-line px-3 pb-4 pt-3">
+            <TraceDetails trace={trace} headingLevel={5} />
+          </div>
+        </details>
+      ) : (
+        <p className="m-0 flex min-h-touch items-center text-base text-ink-muted">
+          <span className="sr-only">Paso {step}: </span>
+          {UNAVAILABLE}
+        </p>
+      )}
     </li>
+  );
+}
+
+/** Cabecera: qué cálculo es y cuándo se hizo, antes del detalle. */
+function Summary({ trace }: { trace: TraceChain["root"] }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-card bg-surface-muted px-4 py-3">
+      <p className="m-0 text-lg font-semibold leading-snug text-ink">{TRACE_KIND_LABEL[trace.kind]}</p>
+      <p className="m-0 text-sm text-ink-muted">
+        Calculado el <time dateTime={trace.created_at}>{formatDate(trace.created_at)}</time>
+        {trace.sources.length > 0 &&
+          ` · ${trace.sources.length} ${trace.sources.length === 1 ? "fuente" : "fuentes"}`}
+      </p>
+    </div>
   );
 }
 
 function Chain({ chain }: { chain: TraceChain }) {
   return (
     <>
-      <p className="m-0 text-lg font-semibold text-ink">{TRACE_KIND_LABEL[chain.root.kind]}</p>
+      <Summary trace={chain.root} />
       <TraceDetails trace={chain.root} headingLevel={3} />
       {chain.origins.length > 0 && (
-        <section className="mt-2 border-t border-line pt-5">
+        <section className="flex flex-col gap-3 border-t border-line pt-5">
           <h3 className="m-0 text-base font-semibold text-ink">Cálculos de los que parte</h3>
-          <ul className="m-0 list-none divide-y divide-line p-0">
-            {chain.origins.map((origin) => (
-              <Origin key={origin.calcId} origin={origin} />
+          <ol className="trace-steps m-0 list-none p-0">
+            {chain.origins.map((origin, i) => (
+              <Origin key={origin.calcId} origin={origin} step={i + 1} />
             ))}
-          </ul>
+          </ol>
           {chain.truncated && (
             <p className="m-0 mt-2 text-sm text-ink-muted">
               Hay más cálculos de origen que no se muestran aquí.
@@ -79,9 +107,9 @@ interface TraceDialogProps {
 
 /**
  * «¿De dónde sale?» (RF-19, UC-10): entradas, fórmula, resultado, fuentes y fecha de una cifra,
- * y los cálculos de los que parte. Todo viene de `GET /traces/{calc_id}`.
+ * y los cálculos de los que parte como pasos encadenados. Todo viene de `GET /traces/{calc_id}`.
  * `<dialog>` nativo con `showModal`: atrapa el foco, cierra con Esc, deja el resto de la app
- * inerte y devuelve el foco a la cifra al cerrar.
+ * inerte y devuelve el foco a la cifra al cerrar. Modal centrado; pantalla completa en móvil (T5-19).
  */
 export function TraceDialog({ calcId, onClose }: TraceDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -107,10 +135,10 @@ export function TraceDialog({ calcId, onClose }: TraceDialogProps) {
       onClick={(event) => {
         if (event.target === event.currentTarget) close(); // clic en el fondo
       }}
-      className="m-0 ml-auto h-dvh max-h-dvh w-full max-w-xl overflow-y-auto border-0 border-l border-line bg-surface p-0 text-ink backdrop:bg-black/50"
+      className="trace-dialog m-0 h-dvh max-h-dvh w-full max-w-none overflow-y-auto overscroll-contain border-0 bg-surface p-0 text-ink backdrop:bg-black/50 sm:m-auto sm:h-auto sm:max-h-[min(90dvh,56rem)] sm:max-w-2xl sm:rounded-card sm:border sm:border-line"
     >
       <div className="flex min-h-full flex-col">
-        <header className="sticky top-0 flex items-center justify-between gap-3 border-b border-line bg-surface px-5 py-2">
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-surface px-5 py-2">
           <h2 id={titleId} className="m-0 text-xl font-semibold text-ink">
             ¿De dónde sale esta cifra?
           </h2>
