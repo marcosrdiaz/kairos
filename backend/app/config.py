@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     market_data_api_key: str = ""
 
     database_url: str = "postgresql+psycopg://kairos:kairos@localhost:5432/kairos"
+
+    news_poll_minutes: int = Field(default=5, ge=1)
+    """Cada cuánto busca noticias el servicio `news-updater` y lee los RSS (TB-01)."""
+    news_google_minutes: int = Field(default=15, ge=1)
+    """Cada cuánto se busca en Google Noticias (17 búsquedas por pasada; decisión de TB-01)."""
 
     demo_mode: bool = True
     demo_clock: datetime | None = None
