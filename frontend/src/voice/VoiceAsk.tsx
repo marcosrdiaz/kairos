@@ -41,7 +41,10 @@ function prefersReducedMotion(): boolean {
     : true;
 }
 
-function Welcome() {
+/** Preguntas para empezar: solo texto, sin cifras; se envían como si el usuario las escribiera. */
+const STARTER_QUESTIONS = ["¿Por qué ha bajado?", "¿Voy bien?", "¿Qué evento me afecta más?"];
+
+function Welcome({ onAsk }: { onAsk: (question: string) => void }) {
   return (
     <section className="chat-fade my-auto flex flex-col items-center gap-3 px-2 py-6 text-center">
       <h3 className="m-0 text-xl font-semibold text-ink">¿Qué quieres saber de tu cartera?</h3>
@@ -49,6 +52,19 @@ function Welcome() {
         Escribe tu pregunta o toca la esfera para hablar conmigo. Te respondo con las cifras de tu
         cartera.
       </p>
+      <ul aria-label="Preguntas para empezar" className="m-0 mt-2 flex list-none flex-wrap justify-center gap-2 p-0">
+        {STARTER_QUESTIONS.map((question) => (
+          <li key={question}>
+            <button
+              type="button"
+              onClick={() => onAsk(question)}
+              className="min-h-touch rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+            >
+              {question}
+            </button>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -160,7 +176,7 @@ export function VoiceAsk({ portfolioId, onClose }: VoiceAskProps) {
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div ref={scroller} className="kairos-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
           {turns.length === 0 && draft === null ? (
-            <Welcome />
+            <Welcome onAsk={askText} />
           ) : (
             <ChatMessages turns={turns} phase={phase} onStop={cancel} draft={draft} />
           )}
