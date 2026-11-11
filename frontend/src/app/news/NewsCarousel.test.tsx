@@ -94,11 +94,12 @@ describe("NewsCarousel", () => {
     expect(slide().getAttribute("aria-label")).toBe("2 de 2");
   });
 
-  it("los puntos llevan a cada noticia y marcan la actual", () => {
+  it("sin puntos: el contador y las flechas son la navegación", () => {
     renderCarousel();
-    const second = screen.getByRole("button", { name: `Noticia 2: ${SECOND.title}` });
-    fireEvent.click(second);
-    expect(second.getAttribute("aria-current")).toBe("true");
+    expect(screen.queryByRole("button", { name: /^Noticia 2:/ })).toBeNull();
+    expect(screen.getByText("1 / 2")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Noticia siguiente" }));
+    expect(screen.getByText("2 / 2")).toBeTruthy();
     expect(slide().getAttribute("aria-label")).toBe("2 de 2");
   });
 
