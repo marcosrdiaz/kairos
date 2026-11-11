@@ -39,34 +39,10 @@ function wave(length: number, base: number, amplitude: number, phase: number): n
   return Array.from({ length }, (_, i) => Math.round(base + amplitude * Math.sin(i / 3 + phase) + i * 0.6));
 }
 
-export const METRIC_PERIODS: MetricPeriod[] = [
-  {
-    id: "7",
-    label: "7 d",
-    value: 1200,
-    series: wave(7, 40, 6, 0),
-    previousSeries: wave(7, 38, 5, 1),
-    changeText: "+3 %",
-    direction: "up",
-  },
-  {
-    id: "30",
-    label: "30 d",
-    value: 4850,
-    series: wave(30, 40, 8, 0.5),
-    previousSeries: wave(30, 42, 7, 2),
-    changeText: "-2 %",
-    direction: "down",
-  },
-  {
-    id: "90",
-    label: "90 d",
-    value: 14300,
-    series: wave(45, 36, 9, 1),
-    previousSeries: wave(45, 36, 8, 1),
-    changeText: "0 %",
-    direction: "flat",
-  },
+export const METRIC_PERIODS: (MetricPeriod & { value: number; series: number[] })[] = [
+  { id: "7", label: "7 d", value: 1200, series: wave(7, 40, 6, 0) },
+  { id: "30", label: "30 d", value: 4850, series: wave(30, 40, 8, 0.5) },
+  { id: "90", label: "90 d", value: 14300, series: wave(45, 36, 9, 1) },
 ];
 
 const day = (pattern: string): DayState[] =>
