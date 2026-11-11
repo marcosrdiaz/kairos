@@ -128,7 +128,7 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
       </div>
 
       {/* Portada y fuente a la izquierda; texto a la derecha. */}
-      <div className="grid gap-3 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-5">
+      <div className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-5">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="relative min-h-24 flex-1 overflow-hidden rounded-control">
             <div

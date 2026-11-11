@@ -160,7 +160,7 @@ export function NewsCover({
         className={cn(
           "pointer-events-none absolute z-0 flex items-center justify-center opacity-75",
           // En el carrusel (dense) la ilustración es pequeña y va arriba a la derecha: no pisa la fecha.
-          dense ? "right-2 top-2 size-14" : "inset-y-0 right-1 w-[46%]",
+          dense ? "right-2 top-2 size-20" : "inset-y-0 right-1 w-[46%]",
           tone.foreground,
         )}
       >
