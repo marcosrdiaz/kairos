@@ -34,7 +34,7 @@ export function StatusCard({ status, detailHref = "/panel" }: StatusCardProps) {
         <span className={`mt-1 h-1.5 w-10 rounded-full ${stateBandClass(status.state)}`} aria-hidden="true" />
       </div>
       <p className="m-0 mt-3 text-sm font-medium text-ink-muted">Tu cartera hoy</p>
-      <p className="m-0 mt-1 text-xl font-semibold tabular-nums text-ink">
+      <p className="m-0 mt-1 text-lg font-semibold tabular-nums text-ink sm:text-xl">
         <TraceFigure calcId={status.calc_id}>{formatEur(status.total_eur)}</TraceFigure>
       </p>
       <div aria-live="polite" aria-atomic="true" className="mt-3">

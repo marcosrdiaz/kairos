@@ -33,14 +33,14 @@ interface TileProps {
  */
 function Tile({ label, tone, Icon, children }: TileProps) {
   return (
-    <div className="flex flex-col gap-1 rounded-card border border-line bg-surface p-5">
+    <div className="flex min-w-0 flex-col gap-1 rounded-card border border-line bg-surface p-5">
       <dt className="flex flex-col gap-3 text-sm font-medium text-ink-muted">
         <span className={`flex size-11 items-center justify-center rounded-control ${TONE[tone]}`}>
           <Icon className="size-6" />
         </span>
         {label}
       </dt>
-      <dd className="m-0 text-xl font-semibold leading-snug text-ink">{children}</dd>
+      <dd className="m-0 text-lg font-semibold leading-snug text-ink sm:text-xl">{children}</dd>
     </div>
   );
 }

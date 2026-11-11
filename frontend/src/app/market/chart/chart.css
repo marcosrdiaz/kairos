@@ -292,3 +292,14 @@
     forced-color-adjust: none;
   }
 }
+@container app-content (min-width: 48rem) {
+  .kchart-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .kchart-header .kchart-period {
+    width: auto;
+  }
+}

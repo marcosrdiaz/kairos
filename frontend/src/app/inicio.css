@@ -1,0 +1,29 @@
+.home-status-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@container app-content (min-width: 22rem) {
+  .home-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container app-content (min-width: 22rem) and (max-width: 31rem) {
+  .home-status-grid > :first-child,
+  .home-status-grid > dl > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@container app-content (min-width: 58rem) {
+  .home-status-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .home-status-grid > :first-child,
+  .home-status-grid > dl > :last-child {
+    grid-column: auto;
+  }
+}

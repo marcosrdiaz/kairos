@@ -8,13 +8,14 @@ import { AlertNotice } from "../widget/AlertNotice";
 import { StatusCard } from "../widget/StatusCard";
 import { StatusTiles } from "../widget/StatusTiles";
 import { usePortfolioId } from "./portfolio-picker/usePortfolioId";
+import "./inicio.css";
 
 /** Esqueleto de carga: misma forma que la cabecera y las tarjetas, sin cifras. */
 function StatusSkeleton() {
   return (
     <div role="status" aria-label="Cargando el estado de tu cartera" className="flex flex-col gap-6">
       <div className="h-64 rounded-card border border-line bg-surface-muted motion-safe:animate-pulse" />
-      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4">
+      <div className="home-status-grid">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
@@ -47,7 +48,7 @@ export function InicioPage() {
         )}
         <MarketTicker portfolioId={portfolioId} />
         {data && (
-          <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 xl:grid-cols-4">
+          <div className="home-status-grid">
             <StatusCard status={data} detailHref={`/panel${query}`} />
             <StatusTiles status={data} />
           </div>

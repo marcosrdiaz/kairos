@@ -3,8 +3,8 @@
  *
  * - `ChatLauncher`: botón flotante abajo a la derecha con el logo del asistente (`ChatLogo`).
  *   En móvil queda por encima de las pestañas. Desaparece mientras el asistente está abierto.
- * - `ChatPanel`: en escritorio (≥ lg), una columna a la derecha que estrecha el contenido (la
- *   barra lateral no cambia); en móvil, un modal a pantalla completa por encima de todo.
+ * - `ChatPanel`: en escritorio ancho, una columna a la derecha; en escritorio estrecho, un panel
+ *   sobre el contenido que deja visible la barra lateral; en móvil, un modal a pantalla completa.
  *   Está siempre montado: la conversación sigue ahí al cerrarlo y al navegar. Cerrado es
  *   `inert` (fuera del orden de foco y del lector). Al abrir, el foco va al campo de texto; al
  *   cerrar, vuelve al botón flotante.
@@ -35,11 +35,11 @@ export function ChatLauncher() {
       aria-expanded={open}
       aria-controls="asistente"
       tabIndex={open ? -1 : 0}
-      className={`chat-launcher fixed bottom-[calc(var(--kairos-bottom-nav-height)+1rem)] right-4 z-30 grid size-20 cursor-pointer place-items-center rounded-full transition-[opacity,scale,translate,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-95 lg:bottom-7 lg:right-7 lg:size-22 ${
+      className={`chat-launcher fixed bottom-[calc(var(--kairos-bottom-nav-height)+1rem)] right-5 z-30 grid size-16 cursor-pointer place-items-center rounded-full transition-[opacity,scale,translate,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-95 sm:size-20 lg:bottom-7 lg:right-7 lg:size-22 ${
         open ? "pointer-events-none scale-75 opacity-0" : "scale-100 opacity-100"
       }`}
     >
-      <ChatLogo outlined className="size-14 translate-y-0.5 lg:size-15" />
+      <ChatLogo outlined className="size-11 translate-y-0.5 sm:size-14 lg:size-15" />
     </button>
   );
 }
@@ -72,13 +72,13 @@ export function ChatPanel() {
         // Móvil: modal a pantalla completa.
         "fixed inset-0 z-50 overflow-hidden bg-paper transition-[opacity,translate,visibility] duration-300 ease-out",
         open ? "visible translate-y-0 opacity-100" : "invisible translate-y-6 opacity-0",
-        // Escritorio: tercera columna de AppShell, con su propio alto.
-        "lg:static lg:z-10 lg:h-dvh lg:translate-y-0 lg:opacity-100",
+        // Escritorio estrecho: panel sobre el contenido. Ancho: tercera columna de AppShell.
+        "lg:left-auto lg:right-0 lg:w-[min(26rem,calc(100vw-var(--kairos-sidebar-width)))] lg:translate-y-0 lg:opacity-100 min-[1440px]:static min-[1440px]:z-10 min-[1440px]:h-dvh min-[1440px]:w-auto",
       ].join(" ")}
     >
       {/* Ancho fijo dentro de la columna que se abre: el contenido se revela, no se recoloca. El
           borde va aquí dentro para que, cerrada (columna de 0), no asome 1 px de scroll. */}
-      <div className="h-full w-full lg:w-(--kairos-chat-width) lg:border-l lg:border-line">
+      <div className="h-full w-full lg:border-l lg:border-line min-[1440px]:w-(--kairos-chat-width)">
         <VoiceAsk key={portfolioId} portfolioId={portfolioId} onClose={() => setOpen(false)} />
       </div>
     </aside>

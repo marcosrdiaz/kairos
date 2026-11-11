@@ -184,7 +184,7 @@ export function PortfolioChart({ portfolioId }: { portfolioId: string }) {
   return (
     <section aria-labelledby="chart-heading" className="kchart-card flex flex-col gap-4 rounded-card border border-line bg-surface pt-5 sm:pt-6">
       <ChartBackdrop />
-      <div className="flex flex-col gap-4 px-5 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+      <div className="kchart-header flex flex-col gap-4 px-5 sm:px-6">
         <div>
           <h2 id="chart-heading" className="m-0 mb-1 text-lg font-semibold text-ink">
             Evolución de tu cartera
