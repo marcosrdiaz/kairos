@@ -47,6 +47,7 @@ Para pararlo: `Ctrl+C` o `docker compose down`. Para empezar de cero, borrando l
 | `DEMO_MODE` | `true` | Activa los controles de demo (`/demo/reset`, `/demo/replay`, `/demo/clock`) |
 | `DEMO_CLOCK` | `2026-11-06T18:00:00Z` | Fija el reloj al último cierre de `data/prices`, para que las cifras salgan siempre iguales. Vacío = reloj real |
 | `MARKET_DATA_PROVIDER` | `offline` | Precios de `data/prices` (CSV con históricos reales). No necesita red. Con `yahoo` (y `DEMO_MODE=false`), precios en directo: modo producción (D-065) |
+| `NEWS_POLL_MINUTES` | `5` | Solo con `DEMO_MODE=false`: el servicio `news-updater` busca noticias, las clasifica y lanza sus avisos cada 5 min (Google Noticias, cada `NEWS_GOOGLE_MINUTES`). En la demo no busca |
 
 Sin `.env` la app también arranca, pero con el reloj real, así que las cifras del guion no coinciden con las del día de los datos.
 

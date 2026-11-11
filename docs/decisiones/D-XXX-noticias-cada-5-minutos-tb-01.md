@@ -1,0 +1,23 @@
+### D-XXX · Noticias en producción cada 5 minutos: frecuencia por fuente, espera al ser limitados y avisos tras cada pasada (TB-01, TB-02)
+- Fecha: 2026-11-11 · Autor: Alons · Estado: Propuesta
+- Contexto: el 11 nov no entró ninguna noticia nueva. La ingesta de T4-28 (`app.news.ingest`) solo se lanzaba a mano (`make news`) y la app enseñaba lo de `data/news/2026-11.jsonl`, que el `seed` vuelve a cargar en cada `make up`. El servicio `updater` (`daily_update.py`, una vez al día) no la llama. Los avisos por noticia (T4-31, D-106) solo se revisan al leer `GET /portfolios/{id}/alerts`. Alons pide buscar cada 5 minutos, clasificar y seguir el flujo de siempre.
+- Decisión:
+  - **Servicio nuevo `news-updater`** en Compose (`scripts/news_update.py --loop`), separado de `updater`, con una sola réplica. Solo con `DEMO_MODE=false`: en modo demo termina al arrancar y la demo no cambia.
+  - **Frecuencia por fuente:**
+    - Los RSS de Yahoo Finance (11 feeds) y de la Reserva Federal (1) se leen **cada `NEWS_POLL_MINUTES` = 5 min**. Son feeds pensados para leerse a menudo.
+    - **Google Noticias, cada `NEWS_GOOGLE_MINUTES` = 15 min.** Cada pasada son 17 búsquedas (11 empresas y 6 temas) con 1,5 s entre ellas: cada 5 min serían unas 4.900 al día desde la misma IP. No hay una API ni un límite publicado (es el RSS de búsqueda), así que se usa un ritmo prudente (unas 1.600 al día) que se puede bajar en `.env`.
+    - GDELT no entra en la pasada periódica por su límite de peticiones.
+  - **Si una fuente nos limita** (429 o 503), se dejan de lanzar sus búsquedas en esa pasada y la fuente espera el doble de la última espera, hasta 1 hora. La primera pasada sin límite vuelve al ritmo normal. Las demás fuentes siguen. No se esquivan bloqueos (D-098).
+  - **Ventana incremental:** cada pasada busca desde la última noticia guardada hasta ahora. Mira siempre al menos el último día, porque Google busca por días y publica con retraso. Si la ingesta ha estado parada, recupera como mucho 7 días (también con la base vacía). Los duplicados los evita la clave de URL y de titular de T4-28.
+  - **Clasificación:** tras cada pasada, `classify_pending` clasifica con Claude lo que falte, por lotes, y solo lo nuevo (lo ya clasificado con la misma versión no se repite). Sin `ANTHROPIC_API_KEY` las noticias se guardan sin clasificar y se registra; no salen en «Te afectan» hasta que se clasifiquen.
+  - **Avisos (TB-02):** si la pasada ha clasificado alguna noticia, se lanza `alerts.service.check_news(cartera, force=True)` para cada cartera, con la regla de D-106 (umbral según el perfil, un aviso de noticia por cartera y día, cupo semanal compartido). `force` solo se salta la espera de 15 minutos entre revisiones que usa el backend al leer los avisos. Así el aviso llega aunque nadie tenga la app abierta, y la campana lo enseña en el siguiente sondeo.
+  - **No se invalida ninguna caché.** La estimación por noticia (`impact/news_batch.py`) usa el id de la noticia como clave, así que una noticia nueva se calcula desde cero. El contexto del asistente no incluye noticias (las pide con herramientas) y caduca a los 60 s. Las dos viven en la memoria del backend, no en la del `news-updater`.
+  - **Nunca dos pasadas a la vez:** el bucle es secuencial y `news.service.refresh` toma un cerrojo sin esperar. Si está ocupado, la pasada se salta.
+  - Una línea de log por pasada: leídas, nuevas, clasificadas, avisos, fallos y fuentes limitadas.
+- Motivo: es lo mínimo para que las noticias y sus avisos lleguen solos en producción, sin tocar la demo ni el contrato. Separar la frecuencia de Google respeta una fuente sin límite publicado sin renunciar a los RSS cada 5 minutos.
+- Alternativas descartadas:
+  - Meterlo en `daily_update.py`: es de una vez al día, y mezclar ritmos complica los dos bucles.
+  - Una tarea periódica dentro del proceso de FastAPI: con varios workers habría pasadas duplicadas, y un fallo de red afectaría a la API.
+  - Google cada 5 minutos por defecto: unas 4.900 búsquedas al día sin límite publicado; se puede poner en `.env` si hace falta.
+  - Avisar de cada noticia que supere el umbral: lo impide D-106 (un aviso de noticia al día).
+- Consecuencias: variables nuevas `NEWS_POLL_MINUTES` y `NEWS_GOOGLE_MINUTES` en `.env.example` y en el README. Lo que guarda el `news-updater` queda solo en la BD. Para que una instalación limpia lo tenga sin red, hay que exportarlo a `data/news/` con `make news … --export`, como hasta ahora. En cada pasada se clasifica con Claude, con un coste pequeño proporcional a las noticias nuevas.

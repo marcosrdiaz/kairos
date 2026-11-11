@@ -1,15 +1,22 @@
 """Interfaz pública de `news` (hito E).
 
 - `ingest`: lee las fuentes reales de un periodo y guarda lo nuevo (T4-28).
+- `refresh`: una pasada incremental de las fuentes a las que les toca (TB-01, cada 5 minutos).
 - `export_snapshot` / `load_snapshot`: la base de noticias de `data/news/` (JSON Lines), para que
   `make up` arranque con las noticias ya cargadas y clasificadas, sin red ni claves.
 """
 
 import json
 import logging
-from datetime import datetime
+import threading
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 from app.agents import news_classifier
 from app.core import clock
@@ -25,6 +32,68 @@ NEWS_DIR = Path(__file__).resolve().parents[3] / "data" / "news"
 log = logging.getLogger(__name__)
 
 NewsIngestReport = runner.NewsIngestReport
+SourceSchedule = runner.SourceSchedule
+
+REFRESH_OVERLAP = timedelta(days=1)
+"""La pasada vuelve a mirar al menos el último día: Google busca por días y publica con retraso."""
+REFRESH_MAX_GAP = timedelta(days=7)
+"""Si la ingesta ha estado parada, recupera como mucho esto hacia atrás."""
+
+_refresh_lock = threading.Lock()
+
+
+@contextmanager
+def refresh_lock() -> Iterator[None]:
+    """El cerrojo de `refresh`, ocupado mientras dura el bloque (tests)."""
+    with _refresh_lock:
+        yield
+
+
+def refresh_window(now: datetime) -> tuple[datetime, datetime]:
+    """Desde la última noticia guardada (con `REFRESH_OVERLAP` de solape y como mucho
+    `REFRESH_MAX_GAP` atrás) hasta ahora. Sin noticias recientes (base vacía o ingesta parada más
+    de una semana), la última semana."""
+    oldest = now - REFRESH_MAX_GAP
+    recent = repository.list_items(oldest, now)  # de la más reciente a la más antigua
+    latest = as_utc(recent[0].published_at) if recent else oldest
+    start = min(now - REFRESH_OVERLAP, latest)
+    return max(oldest, start), now
+
+
+def refresh(
+    schedules: dict[str, SourceSchedule],
+    *,
+    http: httpx.Client | None = None,
+    sleep: runner.Sleep = time.sleep,
+) -> NewsIngestReport | None:
+    """Una pasada de las fuentes a las que les toca (`schedules`: `google` y `rss`) y guarda lo
+    nuevo, sin duplicados. Ajusta cuándo vuelve a tocar cada una; si una nos limita, espera más.
+    Devuelve `None` si ya hay otra pasada en curso (nunca dos a la vez)."""
+    if not _refresh_lock.acquire(blocking=False):
+        return None
+    try:
+        now = clock.now()
+        due = {name for name, schedule in schedules.items() if schedule.is_due(now)}
+        if not due:
+            return NewsIngestReport()
+        start, end = refresh_window(now)
+        report = runner.run_once(
+            start,
+            end,
+            http=http,
+            sleep=sleep,
+            use_google="google" in due,
+            use_gdelt=False,
+            use_rss="rss" in due,
+        )
+        for name in due:
+            if name in report.limited:
+                schedules[name].limited(now)
+            else:
+                schedules[name].succeeded(now)
+        return report
+    finally:
+        _refresh_lock.release()
 
 
 def ingest(

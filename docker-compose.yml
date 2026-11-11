@@ -89,6 +89,22 @@ services:
     command: ["python", "/scripts/daily_update.py", "--loop", "--at", "22:30"]
     restart: on-failure
 
+  # Noticias en producción cada NEWS_POLL_MINUTES (TB-01): busca, clasifica y avisa (TB-02).
+  # Con DEMO_MODE=true termina al arrancar sin buscar nada. Una sola réplica.
+  news-updater:
+    build: ./backend
+    <<: *backend-env
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - ./data:/data:ro
+      - ./scripts:/scripts:ro
+    command: ["python", "/scripts/news_update.py", "--loop"]
+    restart: on-failure
+
   frontend:
     build: ./frontend
     depends_on:
