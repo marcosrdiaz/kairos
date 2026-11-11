@@ -105,6 +105,49 @@ docker compose exec backend python /scripts/demo_smoke.py
 
 Salida esperada: ocho líneas `OK` y `Guion completo.`. En Git Bash para Windows, antepón `MSYS_NO_PATHCONV=1` al comando.
 
+## Segunda instancia de demo junto a la de producción
+
+La demo en directo se hace en producción, pero el replay de eventos (`/demo/replay`) solo existe con `DEMO_MODE=true`. Para tener las dos a la vez en la misma máquina, sin cambiar código, se levanta una segunda instancia en **modo demo** con otro nombre de proyecto de Compose (`-p kairos-demo`): así tiene su propia red, su propia base de datos (volumen `kairos-demo_db-data`) y sus propios contenedores, y no toca los de producción.
+
+| | Producción | Demo |
+| --- | --- | --- |
+| Frontend | http://localhost:5173 | http://localhost:5174 |
+| Backend | http://localhost:8000 | http://localhost:8001 |
+| Modo | el de tu `.env` | `DEMO_MODE=true`, reloj fijo al 6 nov, precios offline (`.env.demo`) |
+| Base de datos | volumen `kairos_db-data` | volumen `kairos-demo_db-data` (no se publica) |
+
+El frontend de la demo habla con **su** backend: nginx reenvía `/api` a `http://backend:8000`, y ese nombre solo existe dentro de la red de cada proyecto. Las claves de Claude y ElevenLabs se leen de `.env` (se comparten); `.env.demo` se lee después y manda sobre `.env`, así que aunque `.env` esté en producción la demo arranca en modo demo. No pongas secretos en `.env.demo`.
+
+**Levantar las dos** (desde la raíz del repositorio):
+
+```bash
+docker compose up --build -d --wait
+docker compose -p kairos-demo -f docker-compose.yml -f docker-compose.demo.yml up --build -d --wait
+```
+
+**Resetear la demo** (carteras de ejemplo y sin eventos; con `{"preload":true}` deja BCE y petróleo ya ocurridos, como al empezar el guion):
+
+```bash
+curl -X POST http://localhost:8001/api/v1/demo/reset -H "Content-Type: application/json" -d '{"preload":true}'
+```
+
+**Lanzar el evento de NVIDIA en directo** y mirar la demo en http://localhost:5174/inicio?p=laura (el widget pasa a Atento y llega el aviso):
+
+```bash
+curl -X POST http://localhost:8001/api/v1/demo/replay/nvda-2025-02
+```
+
+Para repetir el ensayo, vuelve a resetear. En PowerShell usa `curl.exe` en lugar de `curl` y comillas simples para el JSON: `curl.exe -X POST http://localhost:8001/api/v1/demo/reset -H "Content-Type: application/json" -d '{\"preload\":true}'`.
+
+**Bajarlas** (`-v` borra también la base de datos de esa instancia):
+
+```bash
+docker compose -p kairos-demo -f docker-compose.yml -f docker-compose.demo.yml down -v
+docker compose down
+```
+
+Cuidado: el comando sin `-p kairos-demo` es siempre el de producción. En la instancia de producción `/demo/*` responde 403 (salvo que sea modo demo).
+
 ## Desarrollo
 
 Además de Docker, hacen falta [uv](https://docs.astral.sh/uv/) (Python 3.12), Node.js 22 y `make`.
