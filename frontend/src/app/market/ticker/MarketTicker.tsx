@@ -57,7 +57,7 @@ function TickerEntry({ item, href }: { item: TickerItemOut & { change_pct: strin
   const label = item.ticker ?? item.name;
   const issuer = issuerOf(item.name);
   return (
-    <li className="flex shrink-0 items-baseline gap-2 px-5 text-sm whitespace-nowrap">
+    <li className="flex shrink-0 items-center gap-2 px-5 text-sm whitespace-nowrap">
       <span aria-hidden="true" className="kairos-issuer-badge" data-issuer={issuer.key}>
         {issuer.initials}
       </span>
