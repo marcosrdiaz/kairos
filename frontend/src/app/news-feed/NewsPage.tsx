@@ -18,8 +18,9 @@ function emptyText(filter: NewsFilter): string {
 }
 
 /**
- * Sección Noticias (T4-32, rediseñada en T5-17): cards en dos columnas (una en pantallas
- * estrechas) con lo que cada noticia puede significar para la cartera elegida; al pulsar una,
+ * Sección Noticias (T4-32, rediseñada en T5-17, a todo el ancho en TD-01): cards en una columna
+ * en pantallas estrechas, dos en medianas y tres en anchas (la página de 30 llena las filas), con
+ * lo que cada noticia puede significar para la cartera elegida; al pulsar una,
  * el detalle se abre sobre el contenido. Por defecto solo «Te afectan»; se puede ver todas y
  * filtrar por tipo. Al final, el aviso «No es asesoramiento» como párrafo.
  */
@@ -50,7 +51,8 @@ export function NewsPage() {
   return (
     <>
       <PageTitle>Noticias</PageTitle>
-      <div className="flex max-w-6xl flex-col gap-6">
+      {/* A todo el ancho del contenido (TD-01); los párrafos siguen en 65ch para leerse bien. */}
+      <div className="flex w-full flex-col gap-6">
         <p className="m-0 max-w-[65ch] text-base text-ink-muted">
           Lo que pasa en los mercados, traducido a tu cartera: cuánto podría moverla cada noticia,
           en qué plazo y desde cuándo se nota en cada posición.
@@ -76,7 +78,7 @@ export function NewsPage() {
           )}
           {data?.length === 0 && <EmptyNote>{emptyText(filter)}</EmptyNote>}
           {data && data.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 @3xl/app-content:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @3xl/app-content:grid-cols-2 @6xl/app-content:grid-cols-3">
               {data.map((item) => (
                 <NewsCard key={item.id} item={item} onOpen={openDetail} />
               ))}
