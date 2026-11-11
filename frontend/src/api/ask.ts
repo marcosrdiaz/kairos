@@ -22,6 +22,8 @@ export interface AskSentenceEvent {
   index: number;
   text: string;
   calc_ids: string[];
+  /** Carteras de las que habla la frase (T4-14); sus cifras nunca se suman entre sí. */
+  portfolio_ids?: string[];
 }
 
 export interface AskDoneEvent {
@@ -74,9 +76,13 @@ async function* mockAsk(signal?: AbortSignal): AsyncGenerator<AskEvent> {
   }
 }
 
-/** Eventos de la respuesta, en orden. Un 4xx/5xx antes del stream sale como `ApiError`. */
+/**
+ * Eventos de la respuesta, en orden. Un 4xx/5xx antes del stream sale como `ApiError`.
+ * `portfolioId` es la cartera elegida en la app: el asistente puede responder sobre cualquier
+ * cartera que nombre la pregunta (T4-14). Con `null`, `POST /ask` sin cartera elegida.
+ */
 export async function* streamAsk(
-  portfolioId: string,
+  portfolioId: string | null,
   request: AskRequest,
   signal?: AbortSignal,
 ): AsyncGenerator<AskEvent> {
@@ -84,7 +90,7 @@ export async function* streamAsk(
     yield* mockAsk(signal);
     return;
   }
-  const path = `/portfolios/${encodeURIComponent(portfolioId)}/ask`;
+  const path = portfolioId === null ? "/ask" : `/portfolios/${encodeURIComponent(portfolioId)}/ask`;
   const init: RequestInit = {
     method: "POST",
     headers: { Accept: "text/event-stream", "Content-Type": "application/json" },

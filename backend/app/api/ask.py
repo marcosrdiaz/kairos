@@ -14,7 +14,7 @@ router = APIRouter(tags=["ask"])
 _EVENT = TypeAdapter(AskEvent)
 
 
-def _sse(events: Iterator[AskEvent]) -> Iterator[str]:
+def sse(events: Iterator[AskEvent]) -> Iterator[str]:
     for event in events:
         yield f"data: {_EVENT.dump_json(event).decode()}\n\n"
 
@@ -23,7 +23,7 @@ def _sse(events: Iterator[AskEvent]) -> Iterator[str]:
 def ask(portfolio_id: str, body: AskRequest) -> StreamingResponse:
     events = service.ask(portfolio_id, body)  # NOT_FOUND sale aquí, antes de abrir el stream
     return StreamingResponse(
-        _sse(events),
+        sse(events),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
