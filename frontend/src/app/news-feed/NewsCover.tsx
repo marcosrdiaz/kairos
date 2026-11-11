@@ -158,7 +158,9 @@ export function NewsCover({
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-y-0 right-1 z-0 flex w-[46%] items-center justify-center opacity-75",
+          "pointer-events-none absolute z-0 flex items-center justify-center opacity-75",
+          // En el carrusel (dense) la ilustración es pequeña y va arriba a la derecha: no pisa la fecha.
+          dense ? "right-2 top-2 size-14" : "inset-y-0 right-1 w-[46%]",
           tone.foreground,
         )}
       >

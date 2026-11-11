@@ -97,23 +97,6 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
               >
                 <ArrowLeftIcon className="size-5" />
               </button>
-              <ul className="m-0 flex list-none items-center gap-0.5 p-0">
-                {items.map((n, i) => (
-                  <li key={n.id} className="flex">
-                    <button
-                      type="button"
-                      onClick={() => go(i, i < index ? "prev" : "next")}
-                      aria-label={`Noticia ${i + 1}: ${n.title}`}
-                      aria-current={i === index ? "true" : undefined}
-                      className="group inline-flex size-6 items-center justify-center rounded-full"
-                    >
-                      <span
-                        className={`block h-2 rounded-full transition-all ${i === index ? "w-4 bg-accent" : "w-2 bg-line-strong group-hover:bg-ink-muted"}`}
-                      />
-                    </button>
-                  </li>
-                ))}
-              </ul>
               <button
                 type="button"
                 onClick={() => go(index + 1, "next")}
