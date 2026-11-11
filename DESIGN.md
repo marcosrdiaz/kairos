@@ -1,12 +1,15 @@
 ---
 name: KAIROS
-description: El mundo, traducido a tu cartera. Interfaz cálida en oro y papel (o en oro sobre negro), que habla en euros y nunca alarma.
+description: El mundo, traducido a tu cartera. Interfaz cálida de papel, oro y rojo de marca, que habla en euros sin alarmar.
 colors:
   primary: "#765600"
   primary-dark-mode: "#f2c14e"
   on-primary: "#ffffff"
   primary-tint: "#f7edd5"
   gold: "#f2c14e"
+  brand-red: "#a3222e"
+  brand-red-dark-mode: "#ff9aa3"
+  brand-red-tint: "#f9e7e9"
   bg: "#f5f3ee"
   surface: "#ffffff"
   surface-muted: "#fbf8f2"
@@ -94,17 +97,17 @@ components:
 
 ## Overview
 
-**Creative North Star: "Oro en calma"**
+**Creative North Star: "Papel, oro y pulso rojo"**
 
-KAIROS es un sitio cálido y ordenado donde alguien de confianza te dice cómo está tu dinero hoy y si tienes que hacer algo. Papel crema y tinta oscura en modo claro; negro cálido y oro en modo oscuro. Mucho aire, tarjetas limpias, una frase grande y pocas cifras. El oro es la marca y la acción principal; el color de estado solo aparece para decir en qué estado estás, siempre junto a una palabra.
+KAIROS es un sitio cálido y ordenado donde alguien de confianza te dice cómo está tu dinero hoy y si tienes que hacer algo. Papel crema y tinta oscura en modo claro; negro cálido y oro en modo oscuro. El rojo de marca da un acento reconocible a la interfaz y convive con el oro de la acción principal. Mucho aire, tarjetas limpias, una frase grande y pocas cifras. El color de estado solo aparece para decir en qué estado estás, siempre junto a una palabra.
 
-La densidad es baja en el móvil (la superficie que usan Laura y Javier) y algo mayor en escritorio. La interfaz nunca grita: los estados del mercado no usan rojo, no hay destellos ni urgencia gratuita. El silencio también es información.
+La densidad es baja en el móvil (la superficie que usan Laura y Javier) y algo mayor en escritorio. La interfaz nunca grita: las cifras negativas usan un rojo sobrio acompañado de signo y flecha, sin destellos ni urgencia gratuita. El silencio también es información.
 
 El texto es grande por defecto (18 px de base) porque una parte de los usuarios son mayores y escuchan antes de leer; la voz y su transcripción son ciudadanas de primera, no accesorios.
 
 **Key Characteristics:**
 - Dos modos, claro y oscuro, con los mismos tokens (`--kairos-color-*`).
-- Oro como acento único de interfaz; el color de estado es un lenguaje, no un adorno.
+- Oro para la acción principal; rojo de marca como acento secundario de identidad. El color de estado es un lenguaje, no un adorno.
 - Planos: capas tonales y bordes finos, sin sombras.
 - Texto base de 18 px, objetivos táctiles de 44 px o más.
 - Cada estado lleva color y palabra; nunca solo color.
@@ -119,8 +122,9 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 - **Oro Viejo** (`primary`, #765600 en claro) y **Oro Miel** (#f2c14e en oscuro): elemento activo de la navegación, botón principal, enlaces y anillo de foco. Menos del 10 % de la pantalla.
 - **Tinte de oro** (`primary-tint`): fondo de la cabecera de Inicio, iconos de atajo y pestaña activa en móvil.
 - **Oro** (`gold`, #f2c14e): solo decorativo (ilustraciones, degradados). Nunca para texto sobre claro.
+- **Rojo de marca** (`brand-red`, #a3222e en claro y #ff9aa3 en oscuro): acento secundario para hitos visuales, iconografía, selección de texto y series categóricas. Su tinte `brand-red-tint` sirve como fondo suave. No se usa para botones principales, estados financieros ni mensajes de error; esos roles conservan sus tokens. En una misma pantalla, elegir un foco rojo reconocible en lugar de repetirlo en cada tarjeta.
 
-### Estados del widget (sin rojo)
+### Estados del widget (sin rojo de pérdida)
 - *Tranquilo*: verde (`state-tranquilo-fg` sobre `state-tranquilo-bg`).
 - *Atento*: ámbar (`state-atento-*`).
 - *Revisa tu plan*: violeta (`state-revisa-plan-*`), precisamente para no alarmar.
@@ -131,9 +135,9 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 
 ### Resto
 - Superficies: `bg`, `surface`, `surface-muted`; texto: `text`, `text-muted`; bordes: `border` (decorativo) y `border-strong` (controles).
-- Variación: `trend-up` y `trend-down`, siempre con flecha y signo.
-- Pérdida en la gráfica de evolución (T2-18): `trend-loss` (línea y texto) y `trend-loss-bg` (zonas y fondos de fila), los dos granates del icono «Valor total», siempre con flecha y signo. Excepción acordada a «sin rojo en el mercado», solo en esa gráfica y su tabla; el resto de la app sigue con `trend-down`.
-- Iconos de tarjeta: `icon-{gold,green,purple,blue,red}-{bg,fg}`. El rojo de icono es decorativo (tarjeta "Valor total"); no comunica estado.
+- Variación: `trend-up` verde y `trend-down` rojo para cifras negativas, siempre con flecha y signo. Incluye el ticker y la tarjeta «Esta semana» de Inicio, en claro y oscuro.
+- Pérdida en la gráfica de evolución (T2-18): `trend-loss` (línea y texto) y `trend-loss-bg` (zonas y fondos de fila), granates de la misma familia que `trend-down`, siempre con flecha y signo.
+- Iconos de tarjeta: `icon-{gold,green,purple,blue,red}-{bg,fg}`. El rojo de icono es decorativo (tarjeta "Valor total"); no comunica estado. Estos cinco tonos y las series de gráficos dan variedad a la paleta sin cambiar el significado de los estados.
 - Gráficos: `chart-1` a `chart-4` (oro, verde azulado, violeta, azul).
 - Distintivo del emisor del ticker (T2-28): pastilla redonda con las iniciales del grupo (VG, iS, AP…) en color plano. Como el color se reserva para los estados, **no usa tonos de estado, chip ni icono**: son siete grises matizados de croma bajo (pizarra, arena, piedra, verde azulado, azul grisáceo, malva, oliva) y un neutro `chip-nodata` para los desconocidos. Viven en `ticker.css` (claro y oscuro), pasan AA con ≥ 6,8:1 y lo comprueba `issuer.test.ts`. Son decorativos (`aria-hidden`) y no imitan logotipos: solo iniciales y color plano.
 
@@ -156,8 +160,15 @@ Los tokens viven en `frontend/src/styles/tokens.css` con el prefijo `--kairos-co
 
 ### Named Rules
 **The Palabra Con Color Rule.** Un estado se comunica siempre con color y palabra ("Tranquilo", "Atento", "Revisa tu plan"). El color solo nunca basta.
-**The Sin Rojo En El Mercado Rule.** El rojo no se usa para estados, caídas ni impactos; solo para errores del sistema.
-**The One Accent Rule.** El oro ocupa menos del 10 % de la pantalla; su escasez es lo que lo hace legible.
+**The Rojo Con Papel Rule.** Las cifras negativas y las líneas de pérdida usan rojo sobrio junto a signo y flecha; el color por sí solo no comunica la variación. El rojo de error se reserva a errores del sistema. Los estados «Tranquilo», «Atento» y «Revisa tu plan» conservan sus propios colores y palabras.
+**The Accent Hierarchy Rule.** El oro señala la acción principal y el rojo de marca una zona o detalle secundario. Ambos se dosifican para que las cifras y la frase principal sigan siendo lo primero que se lee.
+
+### Interacción y personalización
+
+- Botones, enlaces, pestañas, selectores y controles con rol interactivo muestran cursor de acción al pasar el ratón; los deshabilitados muestran el cursor correspondiente. El foco visible usa un anillo de 3 px y no depende del hover.
+- Los estados `hover`, `focus-visible`, activo y deshabilitado se diseñan en ambos temas. Una selección conserva una señal de forma o texto además del color.
+- La personalización se expresa con nombre y tipo de cartera, cifras de esa cartera y contexto de sus noticias. Los acentos de color no sustituyen esa información ni inventan un estado financiero.
+- Las animaciones de identidad se reducen con `prefers-reduced-motion`; las cifras nunca ruedan ni se recalculan en el cliente.
 
 ## Modo claro y oscuro
 

@@ -36,6 +36,8 @@
   --color-accent-tint: var(--kairos-color-primary-tint);
   --color-accent-tint-strong: var(--kairos-color-primary-tint-strong);
   --color-gold: var(--kairos-color-gold);
+  --color-brand-red: var(--kairos-color-brand-red);
+  --color-brand-red-tint: var(--kairos-color-brand-red-tint);
   --color-focus: var(--kairos-color-focus);
 
   --color-tranquilo: var(--kairos-color-state-tranquilo-fg);
@@ -123,6 +125,17 @@
     font-family: var(--kairos-font);
     font-size: var(--text-base);
     line-height: 1.5;
+  }
+  ::selection {
+    background: var(--kairos-color-brand-red-tint);
+    color: var(--kairos-color-brand-red);
+  }
+  :is(button, a[href], summary, select, [role="button"], [role="link"], [role="tab"], [role="switch"]):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  :is(button, select):disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
   }
   /* Al cambiar de tema (src/theme/theme.ts) se cortan las transiciones para que no haya fundidos a destiempo. */
   .theme-switching *:not([data-keep-transition]),

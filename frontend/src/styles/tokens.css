@@ -6,8 +6,8 @@
  * - Resto de tokens (radios, tipografía, tamaños): prefijo --kairos-*.
  * - Cada par texto/fondo cumple WCAG AA: ≥ 4,5:1 para texto y ≥ 3:1 para bordes de control y
  *   foco. Lo comprueba src/styles/contrast.test.ts en los dos modos: si cambias un color, pasa el test.
- * - Los estados del mercado (tranquilo · atento · revisa_plan) nunca usan rojo y siempre van con
- *   palabra. El rojo (--kairos-color-error-*) es solo para errores del sistema o de un formulario.
+ * - Los estados del mercado siempre van con palabra. El rojo de marca no codifica estados;
+ *   el rojo de error sigue reservado a errores del sistema o de formularios.
  * - Valores como #rrggbb (sin alfa, sin funciones): el test de contraste los lee tal cual.
  */
 
@@ -22,6 +22,8 @@
   --kairos-color-primary-tint-strong: #efdcab;
   --kairos-color-gold: #f2c14e; /* solo decorativo: ilustraciones y franjas, nunca texto */
   --kairos-color-gold-deep: #8a6200; /* fin del degradado del logo y del banner */
+  --kairos-color-brand-red: #a3222e; /* acento de marca, no estado financiero */
+  --kairos-color-brand-red-tint: #f9e7e9;
 
   /* Superficies y texto */
   --kairos-color-bg: #f5f3ee;
@@ -56,9 +58,9 @@
   --kairos-color-chip-nodata-bg: #ecebe8;
   --kairos-color-chip-nodata-fg: #4a4740;
 
-  /* Variación: sube / baja. Siempre con flecha y signo, no solo color */
+  /* Variación: sube / baja. Las cifras negativas usan rojo con flecha y signo. */
   --kairos-color-trend-up: #145c33;
-  --kairos-color-trend-down: #5a5246;
+  --kairos-color-trend-down: #a3222e;
   /* Pérdida en la gráfica de evolución (T2-18): los dos granates del icono «Valor total».
      -loss para la línea y el texto; -loss-bg para zonas sombreadas y fondos de fila. */
   --kairos-color-trend-loss: #b42318;
@@ -107,6 +109,8 @@
   --kairos-color-primary-tint-strong: #42351a;
   --kairos-color-gold: #f2c14e;
   --kairos-color-gold-deep: #b98516;
+  --kairos-color-brand-red: #ff9aa3;
+  --kairos-color-brand-red-tint: #3f1b21;
 
   --kairos-color-bg: #11100e;
   --kairos-color-surface: #1b1916;
@@ -139,7 +143,7 @@
   --kairos-color-chip-nodata-fg: #cbc4b9;
 
   --kairos-color-trend-up: #86dba8;
-  --kairos-color-trend-down: #b8afa1;
+  --kairos-color-trend-down: #ff9aa3;
   --kairos-color-trend-loss: #f6a9a1;
   --kairos-color-trend-loss-bg: #3d1714;
 

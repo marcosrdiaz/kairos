@@ -1,0 +1,6 @@
+### D-XXX · Rojo de marca y jerarquía de color (T5-10)
+- Fecha: 2026-11-11 · Autor: Javi · Estado: Aceptada (dirección de rebranding solicitada por Javi)
+- Contexto: el rebranding de la fase 5 pide aplicar rojo y usar más variedad de la paleta. `DESIGN.md` y `PRODUCT.md` pedían evitar rojos alarmistas; ya existían el icono rojo de «Valor total» y `trend-loss` en la gráfica.
+- Decisión: añadir `brand-red` y `brand-red-tint` como tokens de identidad en claro y oscuro. El oro conserva la acción principal. Las cifras negativas usan `trend-down` rojo, junto al signo y la flecha, también en el ticker y «Esta semana»; la gráfica conserva `trend-loss`. El rojo por sí solo no expresa una variación. `chip-error` sigue reservado para errores. Cada pantalla elige dónde poner otros acentos rojos en vez de repetirlos en todas las tarjetas.
+- Motivo: satisface la dirección visual y hace legibles las pérdidas de un vistazo, sin confundir los estados del producto con errores o alertas.
+- Consecuencias: `PRODUCT.md` y `DESIGN.md` explican el uso del rojo en cifras negativas; `tokens.css` e `index.css` exponen los roles. La selección de texto usa el rojo de marca y el test de contraste comprueba los pares en ambos temas. Las tareas T5-11 a T5-18 pueden aplicarlo donde tenga sentido.
