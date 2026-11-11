@@ -48,6 +48,8 @@ describe("tarjeta de noticia en la gráfica", () => {
     );
     expect(card.style.width).toBe("250px");
     expect(card.style.left).toBe("0px");
+    expect(card.style.maxHeight).toBe("13rem");
+    expect(card.className).toContain("overflow-y-auto");
   });
 
   it("etiqueta como medido el rango real devuelto por la API", () => {
@@ -73,6 +75,15 @@ describe("tarjeta de noticia en la gráfica", () => {
     expect(screen.queryByRole("button", { name: "¿De dónde sale?" })).toBeNull();
   });
 
+  it("muestra la portada de la categoría y fecha de la noticia", () => {
+    const news = newsExample as NewsItemOut;
+    const { card } = renderCard(news);
+
+    expect(card.textContent).not.toContain("Ejemplo visual");
+    expect(card.textContent).toContain("Resultados");
+    expect(card.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  });
+
   it("anuncia fecha e impacto, y abre la tarjeta con foco de teclado", () => {
     const news = newsExample as NewsItemOut;
     const active = marker(news);
@@ -92,5 +103,23 @@ describe("tarjeta de noticia en la gráfica", () => {
     expect(onChartKey).not.toHaveBeenCalled();
     fireEvent.keyDown(dot, { key: "Escape" });
     expect(store.get()).toBeNull();
+  });
+
+  it("usa un marcador amarillo más grande con el icono de la categoría de la noticia", () => {
+    const news = newsExample as NewsItemOut;
+    const store = createNewsMarkerStore();
+    render(
+      <svg>
+        <AlertNewsDot cx={120} cy={80} marker={marker(news)} store={store} cardId="news-card" />
+      </svg>,
+    );
+    const dot = screen.getByRole("button");
+    const circles = dot.querySelectorAll("circle");
+    expect(circles[0]?.getAttribute("r")).toBe("21");
+    expect(circles[1]?.getAttribute("r")).toBe("16");
+    expect(circles[1]?.getAttribute("fill")).toBe("var(--kairos-color-gold)");
+    expect(dot.querySelector("path")?.getAttribute("d")).toBe(
+      "M1.5 10.5h9M3 10V6.5M6 10V3.5M9 10V5",
+    );
   });
 });
