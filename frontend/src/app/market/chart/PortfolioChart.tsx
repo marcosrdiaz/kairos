@@ -60,7 +60,7 @@ function Readout({ history, store }: { history: PortfolioHistoryOut; store: Acti
   return (
     <div className="flex flex-col gap-0.5 px-4 sm:px-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-        <p className="m-0 text-2xl font-semibold tabular-nums text-ink sm:text-3xl">
+        <p className="m-0 text-lg font-semibold tabular-nums text-ink">
           <TraceHint calcId={history.calc_id} text="Valor de tu cartera ese día: participaciones × precio de cierre." source={source}>
             {formatEur(row.raw)}
           </TraceHint>
@@ -69,9 +69,10 @@ function Readout({ history, store }: { history: PortfolioHistoryOut; store: Acti
           <Change row={row} />
         </span>
       </div>
-      <p className="m-0 text-xs text-ink-muted sm:text-sm">
-        <span>{active ? pointDate(row.date) : `Último cierre: ${pointDate(row.date)}`}</span>
-        {DOT}
+      <p className="m-0 text-sm text-ink-muted">
+        Valor al cierre del {pointDate(row.date)}, sin el impacto estimado de los eventos.
+      </p>
+      <p className="m-0 text-sm text-ink-muted">
         <span>
           Al empezar el periodo:{" "}
           <span className="font-semibold tabular-nums text-ink">
