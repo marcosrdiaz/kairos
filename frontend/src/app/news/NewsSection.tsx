@@ -36,7 +36,7 @@ export function NewsSection({ portfolioId, newsHref }: NewsSectionProps) {
     <section
       aria-roledescription="carrusel"
       aria-labelledby="news-heading"
-      className="rounded-card border border-line bg-surface p-4"
+      className={`rounded-card border border-line bg-surface ${hasNews ? "p-4 md:p-1.5" : "p-4"}`}
     >
       {hasNews ? (
         <NewsCarousel items={data} newsHref={newsHref} header={<Header />} />

@@ -77,10 +77,11 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
       onMouseLeave={() => setHovered(false)}
       onFocus={onFocus}
       onBlur={onBlur}
-      className="flex flex-col gap-2"
+      className="grid gap-2 md:grid-cols-[15rem_minmax(0,1fr)] md:grid-rows-[auto_1fr] md:gap-x-4 md:gap-y-2"
     >
-      {/* Título a la izquierda; contador, flechas, puntos, pausa y enlace a la derecha. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 lg:flex-nowrap">
+      {/* Título a la izquierda; contador, flechas, pausa y enlace a la derecha. En escritorio va en
+          la columna derecha, a la derecha de la imagen. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 md:col-start-2 md:row-start-1 md:pr-3 md:pt-2.5 lg:flex-nowrap">
         <div className="min-w-0">{header}</div>
         <div className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 lg:shrink-0">
           {total > 1 && (
@@ -127,26 +128,29 @@ export function NewsCarousel({ items, newsHref, header }: NewsCarouselProps) {
         </div>
       </div>
 
-      {/* Solo la portada a la izquierda (a todo el alto del texto); todo el texto a la derecha. */}
-      <div className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:items-stretch md:gap-5">
-        <div className="relative min-h-28 overflow-hidden rounded-control">
-          <div
-            key={current.id}
-            className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
-          >
-            <NewsCover category={current.category} publishedAt={current.published_at} dense />
-          </div>
+      {/* La imagen, casi a los bordes de la tarjeta y a toda su altura (escritorio); en móvil, entre la
+          cabecera y el texto. */}
+      <div className="relative min-h-28 overflow-hidden rounded-control md:col-start-1 md:row-span-2 md:row-start-1 md:min-h-0">
+        <div
+          key={current.id}
+          className={`absolute inset-0 ${direction === "next" ? "motion-safe:animate-news-in-next" : "motion-safe:animate-news-in-prev"}`}
+        >
+          <NewsCover category={current.category} publishedAt={current.published_at} dense />
         </div>
+      </div>
 
-        <div id="news-slides" aria-live={rotating ? "off" : "polite"} className="min-w-0">
-          <NewsSlide
-            key={current.id}
-            news={current}
-            position={index + 1}
-            total={total}
-            direction={direction}
-          />
-        </div>
+      <div
+        id="news-slides"
+        aria-live={rotating ? "off" : "polite"}
+        className="min-w-0 md:col-start-2 md:row-start-2 md:pb-2.5 md:pr-3"
+      >
+        <NewsSlide
+          key={current.id}
+          news={current}
+          position={index + 1}
+          total={total}
+          direction={direction}
+        />
       </div>
     </div>
   );
