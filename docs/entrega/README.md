@@ -4,6 +4,7 @@
 | --- | --- |
 | `KAIROS-una-cara.pdf` | PDF de una cara (A4): problema, solución, valor diferencial, la misma noticia en dos carteras, negocio y confianza |
 | `KAIROS-presentacion.pptx` | Presentación para el jurado: 10 diapositivas con notas de orador. La 6 es la de arquitectura |
+| `KAIROS-arquitectura.pdf` / `.png` | Infografía de la arquitectura completa (A3 apaisado; PNG a 3174×2246). Fuente: `fuentes/arquitectura.html`, se genera igual que el PDF de una cara (el PNG con `--screenshot --window-size=1587,1123 --force-device-scale-factor=2`) |
 | `fuentes/` | Lo necesario para regenerar los dos y recalcular las cifras |
 
 **Pendiente: revisión del equipo** (criterio de T6-02). Los textos y el orden de las diapositivas se pueden cambiar; las cifras, solo recalculándolas (ver abajo).
@@ -41,6 +42,6 @@ uv run python ../docs/entrega/fuentes/pitch_figures.py
 ```
 
 - **Presentación:** `node fuentes/deck.js KAIROS-presentacion.pptx` (necesita `pptxgenjs@3.12.0`, instalado aparte: no es una dependencia del proyecto) y después `python fuentes/strip_dirs.py KAIROS-presentacion.pptx`, que quita las entradas de carpeta del ZIP.
-- **PDF de una cara:** imprimir `fuentes/onepager.html` a PDF en A4 sin encabezados ni pies, por ejemplo `msedge --headless=new --no-pdf-header-footer --print-to-pdf=KAIROS-una-cara.pdf fuentes/onepager.html`.
+- **PDF de una cara:** imprimir `fuentes/onepager.html` a PDF en A4 sin encabezados ni pies, por ejemplo `msedge --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=KAIROS-una-cara.pdf fuentes/onepager.html`. Necesita conexión para cargar Figtree de Google Fonts.
 
-Fuentes tipográficas: Cambria para los títulos y Calibri para el texto, que vienen con Office. Colores: los tokens `--kairos-*` de la app.
+PDF de una cara: mismo estilo que `KAIROS-presentacion.pdf` (fondo negro cálido, oro, ondas y logo de la app), con Figtree y los tokens del modo oscuro de la app (`--kairos-*`). Presentación `.pptx`: Cambria y Calibri, que vienen con Office.

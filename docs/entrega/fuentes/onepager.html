@@ -3,118 +3,245 @@
 <head>
 <meta charset="utf-8">
 <title>KAIROS · Resumen de una cara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&display=block" rel="stylesheet">
 <style>
   @page { size: A4; margin: 0; }
+  /* Tokens del modo oscuro de la app (frontend/src/styles/tokens.css), los mismos del deck. */
   :root {
-    --ink: #1d1a15; --bronze: #765600; --gold: #f2c14e; --tint: #f7edd5;
-    --paper: #f5f3ee; --muted: #5a5246; --line: #e6e0d4;
+    --bg: #11100e; --surface: #1b1916; --surface-2: #161512; --border: #34302a;
+    --text: #f4efe6; --muted: #b8afa1; --gold: #f2c14e; --gold-deep: #b98516;
+    --gold-tint: #2e2613; --green-bg: #143021; --green: #86dba8; --purple-bg: #2a2246;
+    --purple: #c8b8f7; --blue-bg: #142849; --blue: #a3c4ff; --loss: #f6a9a1;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    width: 210mm; height: 297mm; overflow: hidden; background: #fff; color: var(--ink);
-    font-family: Calibri, "Segoe UI", Arial, sans-serif; font-size: 10.3pt; line-height: 1.34;
+    background: var(--bg); color: var(--text);
+    font-family: Figtree, "Segoe UI", Arial, sans-serif; font-size: 9pt; line-height: 1.36;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  h1, h2, .big { font-family: Cambria, Georgia, serif; }
-  header { background: var(--ink); color: #fff; padding: 9mm 14mm 7mm; }
-  .brand { display: flex; align-items: center; gap: 4mm; }
-  .k { width: 11mm; height: 11mm; border-radius: 50%; background: var(--gold); color: var(--ink);
-       display: grid; place-items: center; font: 700 15pt Cambria, Georgia, serif; }
-  h1 { font-size: 30pt; margin: 0; letter-spacing: .5px; }
-  .tag { font: italic 15pt Cambria, Georgia, serif; color: var(--gold); margin: 2mm 0 2.5mm; }
-  .pitch { color: #e8e2d6; font-size: 11pt; margin: 0; max-width: 165mm; }
-  main { padding: 6mm 14mm 0; }
-  h2 { font-size: 13.5pt; color: var(--bronze); margin: 0 0 2mm; }
-  section { margin-bottom: 4.2mm; }
-  p { margin: 0 0 1.6mm; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
-  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 3mm; padding: 3.2mm 3.6mm; }
-  .card.hl { background: var(--tint); }
-  .big { font-size: 21pt; font-weight: 700; color: var(--bronze); line-height: 1.05; margin-bottom: 1.2mm; }
-  .card b { display: block; margin-bottom: .8mm; }
-  ul { margin: 0; padding-left: 4.5mm; }
-  li { margin-bottom: 0.8mm; }
-  table { width: 100%; border-collapse: collapse; font-size: 9.8pt; }
-  th { background: var(--ink); color: #fff; text-align: left; padding: 1.6mm 2.4mm; font-weight: 700; }
-  td { border: 1px solid var(--line); padding: 1.5mm 2.4mm; }
-  td.hl { background: var(--tint); font-weight: 700; }
-  .src { color: var(--muted); font-size: 8.4pt; font-style: italic; margin-top: 1.4mm; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
-  footer { position: absolute; bottom: 7mm; left: 14mm; right: 14mm; color: var(--muted); font-size: 8.4pt;
-           border-top: 1px solid var(--line); padding-top: 2mm; display: flex; justify-content: space-between; }
+  /* La hoja recorta los orbes: sin esto el navegador encoge la página para que quepan. */
+  .sheet { width: 210mm; height: 297mm; overflow: hidden; position: relative; background: var(--bg); }
+  /* Orbes de luz y ondas: decoración de fondo, como en la portada del deck. */
+  .orb { position: absolute; border-radius: 50%; pointer-events: none; }
+  .orb.gold { width: 92mm; height: 92mm; right: -22mm; top: -30mm;
+    background: radial-gradient(circle, rgba(242,193,78,.30) 0%, rgba(242,193,78,.10) 45%, rgba(242,193,78,0) 70%); }
+  .orb.purple { width: 70mm; height: 70mm; left: -26mm; top: 6mm;
+    background: radial-gradient(circle, rgba(139,107,224,.30) 0%, rgba(139,107,224,.08) 45%, rgba(139,107,224,0) 70%); }
+  .orb.teal { width: 80mm; height: 80mm; left: 40mm; bottom: -40mm;
+    background: radial-gradient(circle, rgba(47,184,176,.20) 0%, rgba(47,184,176,.06) 45%, rgba(47,184,176,0) 70%); }
+  .orb.blue { width: 60mm; height: 60mm; right: -16mm; bottom: -22mm;
+    background: radial-gradient(circle, rgba(110,162,255,.18) 0%, rgba(110,162,255,.05) 45%, rgba(110,162,255,0) 70%); }
+  .waves { position: absolute; left: 0; width: 100%; pointer-events: none; }
+  .waves.top { top: 0; height: 64mm; }
+  .waves.bottom { bottom: 6mm; height: 36mm; }
+
+  .page { position: relative; padding: 8mm 13mm 0; }
+
+  /* Cabecera */
+  header { display: flex; align-items: center; gap: 5mm; margin-bottom: 4mm; }
+  .tile { width: 17mm; height: 17mm; flex: none; border-radius: 28%; border: 1px solid #3a352d;
+    background: linear-gradient(145deg, #1d1b18, #0d0c0a); display: grid; place-items: center; }
+  .tile svg { width: 70%; height: auto; display: block; }
+  h1 { font-size: 33pt; font-weight: 700; letter-spacing: -.02em; line-height: 1; margin: 0; }
+  .tag { font-size: 11pt; font-weight: 500; color: #ddd4c6; margin-top: 1.4mm; line-height: 1.3; }
+  .tag em { font-style: italic; font-weight: 600; color: var(--gold); }
+
+  .pitch { position: relative; background: linear-gradient(120deg, rgba(46,38,19,.85), rgba(27,25,22,.85));
+    border: 1px solid #4a3d1f; border-radius: 4mm; padding: 3mm 4.5mm 3mm 6mm; font-size: 9.6pt;
+    line-height: 1.42; color: #ece5d8; margin-bottom: 4.6mm; }
+  .pitch::before { content: ""; position: absolute; left: 0; top: 4mm; bottom: 4mm; width: 1.1mm;
+    border-radius: 0 1mm 1mm 0; background: linear-gradient(var(--gold), var(--gold-deep)); }
+  .pitch b { color: var(--text); font-weight: 700; }
+
+  /* Secciones */
+  section { margin-bottom: 3.9mm; }
+  .eyebrow { font-size: 7.6pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--gold); margin: 0 0 .6mm; }
+  h2 { font-size: 13.5pt; font-weight: 700; letter-spacing: -.01em; margin: 0 0 2.4mm; line-height: 1.15; }
+
+  .card { background: rgba(27,25,22,.92); border: 1px solid var(--border); border-radius: 3.2mm; padding: 2.8mm 3.4mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.4mm; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.4mm; }
+  .stat { font-size: 19pt; font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--gold); margin-bottom: 1.6mm; }
+  .card p { margin: 0; color: #d9d1c4; }
+  .src { color: #8f877a; font-size: 7.6pt; margin: 1.6mm 0 0; }
+
+  .feat { display: flex; gap: 3mm; align-items: flex-start; }
+  .ic { width: 7.6mm; height: 7.6mm; flex: none; border-radius: 2.2mm; display: grid; place-items: center; }
+  .ic svg { width: 4.6mm; height: 4.6mm; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .ic.gold { background: var(--gold-tint); color: var(--gold); }
+  .ic.green { background: var(--green-bg); color: var(--green); }
+  .ic.purple { background: var(--purple-bg); color: var(--purple); }
+  .ic.blue { background: var(--blue-bg); color: var(--blue); }
+  .ic.teal { background: #103230; color: #7fd8d1; }
+  .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.6mm; }
+  .sol { display: flex; flex-direction: column; padding: 3mm 3mm 3.2mm; }
+  .sol .ic { margin-bottom: 2.2mm; }
+  .sol h3 { font-size: 9pt; font-weight: 700; line-height: 1.2; margin: 0 0 1.2mm; }
+  .sol p { font-size: 8pt; line-height: 1.36; color: #cfc7b9; }
+  .sol.voice { border-color: #5a4a22; background: linear-gradient(160deg, rgba(46,38,19,.95), rgba(27,25,22,.92)); }
+  .ic.logo { background: none; width: 9mm; height: 9mm; }
+  .ic.logo svg { width: 9mm; height: 9mm; }
+  .feat h3 { font-size: 9.4pt; font-weight: 700; margin: .3mm 0 .5mm; }
+  .feat p { font-size: 8.4pt; line-height: 1.36; color: #cfc7b9; }
+
+  /* Tabla de impacto */
+  .table { border: 1px solid var(--border); border-radius: 3.4mm; overflow: hidden; background: rgba(22,21,18,.92); }
+  table { width: 100%; border-collapse: collapse; font-size: 8.6pt; }
+  th { text-align: left; font-weight: 600; color: var(--muted); padding: 1.8mm 3.2mm; background: var(--surface); border-bottom: 1px solid var(--border); }
+  th b { color: var(--text); font-weight: 700; }
+  td { padding: 1.6mm 3.2mm; border-top: 1px solid #26231f; }
+  tr:first-child td { border-top: 0; }
+  td.ev { font-weight: 600; }
+  td.ev span { font-weight: 400; color: #8f877a; font-size: 7.8pt; margin-left: 1mm; }
+  .rng { color: var(--loss); font-weight: 600; white-space: nowrap; }
+  .pct { color: var(--muted); }
+
+  .diff { display: grid; grid-template-columns: 1fr 1fr; gap: 2.6mm 5mm; }
+
+  footer { position: absolute; left: 13mm; right: 13mm; bottom: 7mm; display: flex; align-items: center; gap: 3mm;
+    font-size: 8pt; color: var(--muted); border-top: 1px solid var(--border); padding-top: 3mm; }
+  footer svg { width: 6.4mm; height: auto; flex: none; }
+  footer .legal { margin-left: auto; color: #8f877a; }
   .nw { white-space: nowrap; }
 </style>
 </head>
 <body>
-<header>
-  <div class="brand"><div class="k">K</div><h1>KAIROS</h1></div>
-  <div class="tag">El mundo, traducido a tu cartera</div>
-  <p class="pitch">KAIROS vigila mercados, noticias y bancos centrales y lo traduce a la cartera de cada inversor: qué ha pasado, cuánto le afecta en euros y qué significa para su plan. Una frase en el móvil, una pregunta por voz y un panel para profundizar. Sin ruido y sin decirle qué comprar.</p>
-</header>
+<div class="sheet">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="kgold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f2c14e"/><stop offset="1" stop-color="#b98516"/>
+      </linearGradient>
+      <symbol id="mark" viewBox="0 0 64 48">
+        <g fill="url(#kgold)">
+          <rect x="1" y="29" width="8" height="17" rx="1.5"/>
+          <rect x="12" y="20" width="8" height="26" rx="1.5"/>
+          <rect x="23" y="4" width="9" height="42" rx="1.5"/>
+          <path d="M32 27 50.5 4H62L37.5 32.5z"/>
+          <path d="M37 25.5 43.5 19 63 46H51.5z"/>
+        </g>
+      </symbol>
+      <!-- Logo del asistente de voz (frontend/src/voice/ChatLogo.tsx), con los tokens del modo oscuro. -->
+      <symbol id="chatlogo" viewBox="0 0 64 64">
+        <path d="M15 5h34a11 11 0 0 1 11 11v25a11 11 0 0 1-11 11H25l-11.5 8.5V51.6A11 11 0 0 1 4 41V16A11 11 0 0 1 15 5z"
+          fill="#11100e" stroke="#4a3d1f" stroke-width="1.5" stroke-linejoin="round"/>
+        <g transform="translate(13.5 15.5) scale(0.56)" fill="url(#kgold)">
+          <rect x="1" y="29" width="8" height="17" rx="1.5"/>
+          <rect x="12" y="20" width="8" height="26" rx="1.5"/>
+          <rect x="23" y="4" width="9" height="42" rx="1.5"/>
+          <path d="M32 27 50.5 4H62L37.5 32.5z"/>
+          <path d="M37 25.5 43.5 19 63 46H51.5z"/>
+        </g>
+        <circle cx="53" cy="11" r="9.5" fill="url(#kgold)" stroke="#11100e" stroke-width="2.5"/>
+        <g stroke="#11100e" stroke-width="2" stroke-linecap="round"><path d="M49 10v2M53 7v8M57 9.5v3"/></g>
+      </symbol>
+    </defs>
+  </svg>
 
-<main>
-  <section>
-    <h2>El problema</h2>
-    <div class="grid3">
-      <div class="card"><div class="big">19,1&nbsp;M</div>cuentas en fondos españoles, frente al 12,2&nbsp;% de hogares con acciones: se invierte a través de fondos, sin saber qué hay dentro.</div>
-      <div class="card"><div class="big">19&nbsp;%</div>de los inversores españoles vendió en la caída del COVID: sin contexto, se decide por pánico.</div>
-      <div class="card"><div class="big">¿Y a mí?</div>«El BCE baja los tipos» no dice nada de lo que pasa con tus 40.000&nbsp;€. Las noticias hablan del mercado, no de tu cartera.</div>
+  <div class="orb gold"></div><div class="orb purple"></div><div class="orb teal"></div><div class="orb blue"></div>
+
+  <svg class="waves top" viewBox="0 0 300 64" preserveAspectRatio="none" fill="none" stroke="#f2c14e" stroke-width=".35" aria-hidden="true">
+    <path d="M-10 26 C 60 6, 120 36, 190 18 S 290 4, 320 14" opacity=".22"/>
+    <path d="M-10 28 C 60 8, 120 38, 190 20 S 290 6, 320 16" opacity=".28"/>
+    <path d="M-10 30 C 60 10, 120 40, 190 22 S 290 8, 320 18" opacity=".34"/>
+    <path d="M-10 32 C 60 12, 120 42, 190 24 S 290 10, 320 20" opacity=".40"/>
+    <path d="M-10 34 C 60 14, 120 44, 190 26 S 290 12, 320 22" opacity=".34"/>
+    <path d="M-10 36 C 60 16, 120 46, 190 28 S 290 14, 320 24" opacity=".26"/>
+  </svg>
+  <svg class="waves bottom" viewBox="0 0 300 36" preserveAspectRatio="none" fill="none" stroke-width=".35" aria-hidden="true">
+    <path d="M-10 26 C 70 10, 140 34, 200 18 S 280 6, 320 12" stroke="#f2c14e" opacity=".22"/>
+    <path d="M-10 28 C 70 12, 140 36, 200 20 S 280 8, 320 14" stroke="#f2c14e" opacity=".30"/>
+    <path d="M-10 30 C 70 14, 140 38, 200 22 S 280 10, 320 16" stroke="#a68af0" opacity=".30"/>
+    <path d="M-10 32 C 70 16, 140 40, 200 24 S 280 12, 320 18" stroke="#a68af0" opacity=".22"/>
+  </svg>
+
+  <div class="page">
+    <header>
+      <div class="tile"><svg viewBox="0 0 64 48"><use href="#mark"/></svg></div>
+      <div>
+        <h1>Kairos</h1>
+        <div class="tag">Copiloto financiero inteligente<br><em>El mundo, traducido a tu cartera</em></div>
+      </div>
+    </header>
+
+    <div class="pitch">
+      Kairos vigila mercados, noticias y bancos centrales y lo traduce a la cartera de cada inversor: <b>qué ha pasado, cuánto le afecta en euros y qué significa para su plan.</b> Una frase en el móvil, una pregunta por voz y un panel para profundizar. Sin ruido y sin decirle qué comprar.
     </div>
-    <p class="src">Fuentes: CNMV y Encuesta Financiera de las Familias; ING, vía Funds Society.</p>
-  </section>
 
-  <section>
-    <h2>La solución</h2>
-    <div class="two">
-      <ul>
-        <li><b>Widget:</b> una cifra y una frase, con tres estados (Tranquilo, Atento, Revisa tu plan).</li>
-        <li><b>Voz:</b> «¿por qué ha bajado?», «¿voy bien?». Primera palabra hablada en 1,7&nbsp;s (mediana).</li>
-        <li><b>Panel:</b> eventos traducidos a euros, exposición real mirando dentro de los fondos y la traza de cada cifra.</li>
-      </ul>
-      <ul>
-        <li><b>Avisos que importan:</b> como mucho 2 por semana, solo si algo te toca o te alejas de tu plan.</li>
-        <li><b>La IA explica, los motores calculan:</b> agentes de Claude entienden y redactan; el gestor de cartera y el motor de impacto, deterministas, calculan todas las cifras.</li>
-        <li><b>Guardián:</b> revisa cada frase. 0 órdenes de compraventa en 30 preguntas, 10 de ellas trampa.</li>
-      </ul>
-    </div>
-  </section>
+    <section>
+      <div class="eyebrow">El problema</div>
+      <h2>Las noticias hablan del mercado, no de tu cartera.</h2>
+      <div class="grid3">
+        <div class="card"><div class="stat">19,1&nbsp;M</div><p>cuentas en fondos españoles, frente al 12,2&nbsp;% de hogares con acciones: se invierte a través de fondos, sin saber qué hay dentro.</p></div>
+        <div class="card"><div class="stat">19&nbsp;%</div><p>de los inversores españoles vendió en la caída del COVID: sin contexto, se decide por pánico.</p></div>
+        <div class="card"><div class="stat">¿Y a mí?</div><p>«El BCE baja los tipos» no dice nada de lo que pasa con tus 40.000&nbsp;€. Falta visibilidad sobre riesgos e impacto real.</p></div>
+      </div>
+      <p class="src">Fuentes: CNMV y Encuesta Financiera de las Familias; ING, vía Funds Society.</p>
+    </section>
 
-  <section>
-    <h2>La misma noticia, dos carteras</h2>
-    <table>
-      <tr><th>Evento real</th><th>Laura · 42.364&nbsp;€ · 76&nbsp;% renta variable</th><th>Javier · 180.000&nbsp;€ · 65&nbsp;% renta fija</th></tr>
-      <tr><td>El BCE baja los tipos (5 jun 2025)</td><td><span class="nw">entre −89&nbsp;€ y −73&nbsp;€</span> (−0,19&nbsp;%)</td><td><span class="nw">entre −243&nbsp;€ y −206&nbsp;€</span> (−0,12&nbsp;%)</td></tr>
-      <tr><td>El petróleo sube un 7&nbsp;% (13 jun 2025)</td><td><span class="nw">entre −250&nbsp;€ y −207&nbsp;€</span> (−0,54&nbsp;%)</td><td><span class="nw">entre −451&nbsp;€ y −352&nbsp;€</span> (−0,22&nbsp;%)</td></tr>
-      <tr><td>Resultados de NVIDIA (26 feb 2025)</td><td class="hl"><span class="nw">entre −349&nbsp;€ y −325&nbsp;€</span> (−0,80&nbsp;%)</td><td><span class="nw">entre −273&nbsp;€ y −206&nbsp;€</span> (−0,13&nbsp;%)</td></tr>
-    </table>
-    <p class="src">Laura tiene el 63,7&nbsp;% de su dinero en EE.&nbsp;UU. y el 25,9&nbsp;% en 7 empresas repetidas en sus fondos. Carteras de ejemplo ilustrativas, movimientos reales del mercado de cada día; cifras del motor de impacto, cada una con su traza.</p>
-  </section>
+    <section>
+      <div class="eyebrow">La solución</div>
+      <h2>Analiza · comprende · decide.</h2>
+      <div class="grid5">
+        <div class="card sol">
+          <div class="ic gold"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/></svg></div>
+          <h3>Widget y avisos que importan</h3><p>Una cifra y una frase con tres estados: Tranquilo, Atento y Revisa tu plan. Como mucho 2 avisos por semana.</p>
+        </div>
+        <div class="card sol voice">
+          <div class="ic logo"><svg viewBox="0 0 64 64"><use href="#chatlogo"/></svg></div>
+          <h3>Asistente de voz</h3><p>«¿Por qué ha bajado?», «¿voy bien?». Primera palabra en 1,7&nbsp;s de mediana y transcripción en pantalla.</p>
+        </div>
+        <div class="card sol">
+          <div class="ic green"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></svg></div>
+          <h3>La IA explica, los motores calculan</h3><p>Agentes de IA entienden y redactan; motores deterministas calculan todas las cifras.</p>
+        </div>
+        <div class="card sol">
+          <div class="ic blue"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>Guardián y trazabilidad</h3><p>Revisa cada frase: contexto, nunca órdenes de compraventa. Cada cifra, con su traza.</p>
+        </div>
+        <div class="card sol">
+          <div class="ic teal"><svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 8.5l7 1.5 7-1.5M12 10v5M12 15l-3 6M12 15l3 6"/></svg></div>
+          <h3>Accesible para todos</h3><p>Texto grande, contraste WCAG&nbsp;AA, estados con color y palabra, y voz para quien prefiere escuchar.</p>
+        </div>
+      </div>
+    </section>
 
-  <section class="two">
-    <div>
-      <h2>Valor diferencial</h2>
-      <ul>
-        <li><b>Mira dentro de los fondos:</b> avisa aunque la empresa esté dentro de tu fondo indexado.</li>
-        <li><b>Avisa sin que preguntes,</b> en euros y con la cadena causal, no solo con una puntuación.</li>
-        <li><b>Del evento a tu plan:</b> cada noticia se cruza con tu objetivo y tus aportaciones.</li>
-        <li><b>Hecho para España:</b> fondos y planes, traspasos sin tributar, FIFO, valor liquidativo.</li>
-      </ul>
-    </div>
-    <div>
-      <h2>Negocio y confianza</h2>
-      <ul>
-        <li><b>B2B2C:</b> marca blanca para brókers y neobancos, por usuario activo al mes. Al bróker le interesa que su cliente no venda en pánico y siga aportando.</li>
-        <li><b>Contexto, no órdenes</b> (MiFID&nbsp;II): nunca «compra» ni «vende».</li>
-        <li><b>AI Act:</b> aviso de IA en la app y en la voz; cada cifra, trazable.</li>
-      </ul>
-    </div>
-  </section>
-</main>
+    <section>
+      <div class="eyebrow">Se entiende con los ojos</div>
+      <h2>La misma noticia, dos carteras.</h2>
+      <div class="table">
+        <table>
+          <tr><th>Evento real</th><th><b>Laura</b> · 42.364&nbsp;€ · 76&nbsp;% renta variable</th><th><b>Javier</b> · 180.000&nbsp;€ · 65&nbsp;% renta fija</th></tr>
+          <tr><td class="ev">El BCE baja los tipos<span>5 jun 2025</span></td><td><span class="rng">entre −89&nbsp;€ y −73&nbsp;€</span> <span class="pct">(−0,19&nbsp;%)</span></td><td><span class="rng">entre −243&nbsp;€ y −206&nbsp;€</span> <span class="pct">(−0,12&nbsp;%)</span></td></tr>
+          <tr><td class="ev">El petróleo sube un 7&nbsp;%<span>13 jun 2025</span></td><td><span class="rng">entre −250&nbsp;€ y −207&nbsp;€</span> <span class="pct">(−0,54&nbsp;%)</span></td><td><span class="rng">entre −451&nbsp;€ y −352&nbsp;€</span> <span class="pct">(−0,22&nbsp;%)</span></td></tr>
+          <tr><td class="ev">Resultados de NVIDIA<span>26 feb 2025</span></td><td><span class="rng">entre −349&nbsp;€ y −325&nbsp;€</span> <span class="pct">(−0,80&nbsp;%)</span></td><td><span class="rng">entre −273&nbsp;€ y −206&nbsp;€</span> <span class="pct">(−0,13&nbsp;%)</span></td></tr>
+        </table>
+      </div>
+      <p class="src">Laura tiene el 63,7&nbsp;% de su dinero en EE.&nbsp;UU. y el 25,9&nbsp;% en 7 empresas repetidas en sus fondos. Carteras de ejemplo ilustrativas, movimientos reales del mercado de cada día; cifras del motor de impacto, cada una con su traza.</p>
+    </section>
 
-<footer>
-  <span>KAIROS · Hack Finance · BEST UC3M · noviembre de 2026</span>
-  <span>Información, no asesoramiento. Las respuestas las genera una IA.</span>
-</footer>
+    <section>
+      <div class="eyebrow">Valor diferencial</div>
+      <h2>Lo que no hace un agregador de noticias.</h2>
+      <div class="card">
+        <div class="diff">
+          <div class="feat"><div class="ic gold"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></div><div><h3>Mira dentro de los fondos</h3><p>Avisa aunque la empresa esté dentro de tu fondo indexado.</p></div></div>
+          <div class="feat"><div class="ic purple"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></div><div><h3>Avisa sin que preguntes</h3><p>En euros, en rango y con la cadena causal, no solo con una puntuación.</p></div></div>
+          <div class="feat"><div class="ic green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></div><div><h3>Del evento a tu plan</h3><p>Cada noticia se cruza con tu objetivo y tus aportaciones: contexto, no órdenes (MiFID&nbsp;II).</p></div></div>
+          <div class="feat"><div class="ic blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></div><div><h3>Hecho para España, listo para B2B2C</h3><p>Fondos y planes, traspasos sin tributar, FIFO. Marca blanca para brókers y neobancos.</p></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <svg viewBox="0 0 64 48"><use href="#mark"/></svg>
+    <span>KAIROS · Hack Finance · BEST UC3M 2026 · Software Cervelopers</span>
+    <span class="legal">Información, no asesoramiento. Las respuestas las genera una IA.</span>
+  </footer>
+</div>
 </body>
 </html>
