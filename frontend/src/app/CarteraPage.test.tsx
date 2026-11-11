@@ -45,6 +45,11 @@ describe("CarteraPage", () => {
     expect(screen.getByRole("tabpanel").contains(carteras)).toBe(false);
   });
 
+  it("no ofrece cargar las carteras de ejemplo", () => {
+    renderPage();
+    expect(screen.queryByRole("button", { name: /carteras de ejemplo/i, hidden: true })).toBeNull();
+  });
+
   it("muestra una sección cada vez, empezando por Operaciones", () => {
     renderPage();
     expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual([
