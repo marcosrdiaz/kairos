@@ -222,7 +222,7 @@ Rediseño de las pantallas y pulido visual de los componentes (skills `impeccabl
 
 | ID | Tarea | Criterio de hecho | Depende de | Ficheros que toca | Cogida por | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6-01 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | — | ⬜ |
+| T6-01 | Prueba en máquina limpia con el ZIP | `docker compose up` + README sin ayuda | T3-06 | `docker-compose.yml`, `Makefile` (solo arreglos) | Jaime | 🔄 en curso |
 | T6-02 | PDF de una cara + PPT + diapositiva de arquitectura | Revisado por el equipo | T2-03 | `docs/entrega/` | Manu | ✅ hecho |
 | T6-03 | Vídeo de respaldo + ZIP + formulario BEST UC3M | Enviado antes de las 21:00 | T6-01, T6-02 | `docs/entrega/` | — | ⬜ |
 | T6-04 | 3 ensayos cronometrados del guion | < 3 min cada uno | T2-03 | Ninguno | — | ⬜ |
